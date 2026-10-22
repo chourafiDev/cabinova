@@ -1,7 +1,7 @@
 {
   "version": "0.0.1",
   "configurations": [
-    { "name": "web", "runtimeExecutable": "pnpm", "runtimeArgs": ["--filter", "web", "dev"], "port": 3000 },
-    { "name": "api", "runtimeExecutable": "pnpm", "runtimeArgs": ["--filter", "api", "start:dev"], "port": 4000 }
+    { "name": "admin-web", "runtimeExecutable": "pnpm", "runtimeArgs": ["--filter", "admin-web", "dev"], "port": 3000 },
+    { "name": "admin-api", "runtimeExecutable": "pnpm", "runtimeArgs": ["--filter", "admin-api", "start:dev"], "port": 4000 }
   ]
 }

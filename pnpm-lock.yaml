@@ -8,7 +8,7 @@ importers:
 
   .: {}
 
-  apps/api:
+  apps/admin-api:
     dependencies:
       '@neondatabase/serverless':
         specifier: ^1.2.0
@@ -141,7 +141,7 @@ importers:
         specifier: ^4.1.2
         version: 4.1.11(@types/node@24.19.2)(@vitest/coverage-v8@4.1.11)(vite@8.3.4(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
 
-  apps/web:
+  apps/admin-web:
     dependencies:
       '@hookform/resolvers':
         specifier: ^5.9.1
