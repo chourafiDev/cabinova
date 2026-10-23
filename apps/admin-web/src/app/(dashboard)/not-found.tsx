@@ -3,7 +3,7 @@ import { HiMagnifyingGlass } from "react-icons/hi2";
 import { Button } from "@/components/ui/button";
 
 // Shown inside the dashboard layout when a page calls notFound()
-// (e.g. a deleted patient or an unknown id).
+// (e.g. an unknown cabinet id).
 export default function DashboardNotFound() {
 	return (
 		<div className="flex flex-1 flex-col items-center justify-center gap-3 py-20 text-center">

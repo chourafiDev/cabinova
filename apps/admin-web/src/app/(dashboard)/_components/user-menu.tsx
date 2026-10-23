@@ -1,20 +1,18 @@
 "use client";
 
-import { ChevronDown, LogOut, Settings, Users } from "lucide-react";
-import Link from "next/link";
+import { ChevronDown, LogOut } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
 	DropdownMenu,
 	DropdownMenuContent,
-	DropdownMenuGroup,
 	DropdownMenuItem,
 	DropdownMenuLabel,
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { api } from "@/lib/api-client";
-import { useCan, useSessionStore } from "@/stores/session-store";
+import { useSessionStore } from "@/stores/session-store";
 
 function initials(name: string) {
 	return name
@@ -29,8 +27,6 @@ function initials(name: string) {
 export function UserMenu() {
 	const router = useRouter();
 	const user = useSessionStore((s) => s.session?.user);
-	const canSettings = useCan("settings:read");
-	const canStaff = useCan("users:read");
 	if (!user) return null;
 
 	async function signOut() {
@@ -66,29 +62,6 @@ export function UserMenu() {
 						<span className="text-muted-foreground truncate text-xs">{user.email}</span>
 					</div>
 				</DropdownMenuLabel>
-				{(canSettings || canStaff) && (
-					<>
-						<DropdownMenuSeparator />
-						<DropdownMenuGroup>
-							{canSettings && (
-								<DropdownMenuItem asChild>
-									<Link href="/settings">
-										<Settings />
-										Réglages
-									</Link>
-								</DropdownMenuItem>
-							)}
-							{canStaff && (
-								<DropdownMenuItem asChild>
-									<Link href="/staff">
-										<Users />
-										Équipe
-									</Link>
-								</DropdownMenuItem>
-							)}
-						</DropdownMenuGroup>
-					</>
-				)}
 				<DropdownMenuSeparator />
 				<DropdownMenuItem variant="destructive" onSelect={signOut}>
 					<LogOut />

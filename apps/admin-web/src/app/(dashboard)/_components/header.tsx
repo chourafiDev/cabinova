@@ -15,7 +15,7 @@ const Header = () => {
 					Bienvenue, <span className="text-brand-light font-semibold">{name}</span>
 				</h1>
 				<p className="text-white/80 text-sm tracking-[0.010rem]">
-					Gérez vos rendez-vous, patients et consultations en toute simplicité.
+					Vue d&apos;ensemble de la plateforme Cabinova.
 				</p>
 			</div>
 

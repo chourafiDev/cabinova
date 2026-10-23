@@ -1,11 +1,9 @@
-/** Centered auth layout: clinic mark, title, description, form. */
+/** Centered auth layout: Cabinova mark, title, description, form. */
 export function AuthCard({
-	tenantName,
 	title,
 	description,
 	children,
 }: {
-	tenantName: string;
 	title: string;
 	description: React.ReactNode;
 	children?: React.ReactNode;
@@ -15,9 +13,9 @@ export function AuthCard({
 			<div className="flex flex-col justify-center items-center px-6 py-8 sm:px-10">
 				<div className="flex items-center gap-3">
 					<span className="bg-primary text-primary-foreground flex size-10 items-center justify-center rounded-lg text-lg font-semibold">
-						{tenantName.trim().charAt(0).toUpperCase() || "C"}
+						C
 					</span>
-					<span className="text-lg font-semibold">{tenantName}</span>
+					<span className="text-lg font-semibold">Cabinova</span>
 				</div>
 
 				<div className="flex flex-1 py-10">

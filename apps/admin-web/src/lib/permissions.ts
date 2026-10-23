@@ -1,23 +1,22 @@
-// Permission catalog shared with the API (apps/api/src/auth/permissions.ts).
-// Format "resource:action". A user's effective permissions = role defaults
-// + user grants − user denies, computed by the API at login.
+// Platform permission catalog shared with admin-api
+// (apps/admin-api/src/auth/permissions.ts). A user's effective permissions =
+// role defaults + user grants − user denies, computed by the API at login.
 
 export const PERMISSIONS = [
   "dashboard:read",
-  "appointments:read",
-  "appointments:write",
-  "patients:read",
-  "patients:write",
-  "patients:delete",
-  "emr:read",
-  "emr:write",
-  "documents:read",
-  "documents:write",
+  "tenants:read",
+  "tenants:write",
+  "subscriptions:read",
+  "subscriptions:write",
   "billing:read",
   "billing:write",
-  "reports:read",
+  "technical:read",
+  "technical:write",
   "users:read",
   "users:write",
+  "support:read",
+  "support:write",
+  "security:read",
   "settings:read",
   "settings:write",
 ] as const;

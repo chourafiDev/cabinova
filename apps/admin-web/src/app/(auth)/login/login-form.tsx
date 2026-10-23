@@ -87,7 +87,7 @@ export function LoginForm({ next }: { next: string }) {
 			</Button>
 			<p className="text-muted-foreground text-center text-sm">
 				Pas encore d&apos;accès ?{" "}
-				<span className="text-foreground">Demandez une invitation à l&apos;administrateur de la clinique.</span>
+				<span className="text-foreground">Demandez une invitation au Super Admin.</span>
 			</p>
 		</form>
 	);

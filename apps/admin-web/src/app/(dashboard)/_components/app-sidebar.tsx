@@ -14,7 +14,6 @@ import {
 	SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import { can } from "@/lib/permissions";
-import { cn } from "@/lib/utils";
 import { useSessionStore } from "@/stores/session-store";
 import { HelpCard } from "./help-card";
 import { findNavItem, navGroups } from "./nav";
@@ -24,7 +23,6 @@ export function AppSidebar() {
 	const active = findNavItem(pathname);
 	const session = useSessionStore((s) => s.session);
 	const permissions = session?.user.permissions;
-	const tenant = session?.tenant ?? { name: "Cabinova", logoUrl: null };
 
 	const groups = navGroups
 		.map((group) => ({
@@ -39,25 +37,11 @@ export function AppSidebar() {
 				<SidebarMenu>
 					<SidebarMenuItem>
 						<SidebarMenuButton size="lg" asChild>
-							<Link href="/" aria-label={`${tenant.name} — tableau de bord`}>
-								<div
-									className={cn(
-										"flex aspect-square size-8 shrink-0 items-center justify-center rounded-lg bg-sidebar-primary font-semibold text-sidebar-primary-foreground",
-										tenant.logoUrl && "hidden group-data-[collapsible=icon]:flex",
-									)}
-								>
-									{tenant.name.trim().charAt(0).toUpperCase() || "C"}
+							<Link href="/" aria-label="Cabinova — tableau de bord">
+								<div className="flex aspect-square size-8 shrink-0 items-center justify-center rounded-lg bg-sidebar-primary font-semibold text-sidebar-primary-foreground">
+									C
 								</div>
-								{tenant.logoUrl ? (
-									// eslint-disable-next-line @next/next/no-img-element
-									<img
-										src={tenant.logoUrl}
-										alt={tenant.name}
-										className="h-10 mx-auto w-auto max-w-full object-contain object-left group-data-[collapsible=icon]:hidden"
-									/>
-								) : (
-									<span className="truncate font-semibold">{tenant.name}</span>
-								)}
+								<span className="truncate font-semibold">Cabinova</span>
 							</Link>
 						</SidebarMenuButton>
 					</SidebarMenuItem>
