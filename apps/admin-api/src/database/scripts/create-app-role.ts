@@ -16,10 +16,10 @@ if (!ownerUrl)
 const ROLE = 'cabinova_app';
 const password = randomBytes(24).toString('base64url');
 const pool = new Pool({ connectionString: ownerUrl });
-const { rows } = await pool.query<{ owner: string }>(
-  'select current_user as owner',
+const { rows } = await pool.query<{ owner: string; db: string }>(
+  'select current_user as owner, current_database() as db',
 );
-const owner = rows[0].owner;
+const { owner, db } = rows[0];
 
 const exists = (
   await pool.query('select 1 from pg_roles where rolname = $1', [ROLE])
@@ -27,11 +27,21 @@ const exists = (
 await pool.query(
   `${exists ? 'alter' : 'create'} role ${ROLE} with login nobypassrls password '${password}'`,
 );
+// The catalog refuses PUBLIC connections (clinic roles share the instance,
+// see drizzle/0005): the app role is granted CONNECT explicitly.
+await pool.query(`grant connect on database "${db}" to ${ROLE}`);
 await pool.query(`grant usage on schema public to ${ROLE}`);
 await pool.query(
   `grant select, insert, update, delete on all tables in schema public to ${ROLE}`,
 );
-// Tables created by future migrations (run as the owner) get the same grants.
+await pool.query(
+  `grant usage, select on all sequences in schema public to ${ROLE}`,
+);
+// Tables and sequences created by future migrations (run as the owner) get
+// the same grants.
+await pool.query(
+  `alter default privileges for role ${owner} in schema public grant usage, select on sequences to ${ROLE}`,
+);
 await pool.query(
   `alter default privileges for role ${owner} in schema public grant select, insert, update, delete on tables to ${ROLE}`,
 );

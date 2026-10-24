@@ -2,58 +2,55 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
-import { useForm, useWatch } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { ApiError, api } from "@/lib/api-client";
-import { type CreateTenantInput, createTenantSchema, toCreateTenantBody } from "@/lib/tenants";
+import { toUpdateTenantBody, type UpdateTenantInput, updateTenantSchema } from "@/lib/tenants";
 import { FormCard } from "../../_components/shared/form-card";
 import { UnsavedChangesBar } from "../../_components/shared/unsaved-changes-bar";
 
 const FORM_ID = "tenant-form";
 
-/** Module 2, Scenario A — create a cabinet. Read-only edit comes with the detail page's own module. */
-export function TenantForm({ defaultValues }: { defaultValues: CreateTenantInput }) {
+/**
+ * Module 2, Scenario B — edit a cabinet's administrative details and quotas.
+ * The subdomain, plan and trial are set at creation (CreateTenantForm); the
+ * plan then changes from the Abonnement tab.
+ */
+export function TenantForm({ tenantId, defaultValues }: { tenantId: string; defaultValues: UpdateTenantInput }) {
 	const router = useRouter();
-	const form = useForm<CreateTenantInput>({
-		resolver: zodResolver(createTenantSchema),
+	const form = useForm<UpdateTenantInput>({
+		resolver: zodResolver(updateTenantSchema),
 		defaultValues,
 		mode: "onTouched",
 	});
 	const { errors, isDirty, isSubmitting } = form.formState;
-	const subdomain = useWatch({ control: form.control, name: "subdomain" });
+	const backHref = `/tenants/${tenantId}`;
 
 	const onSubmit = form.handleSubmit(async (values) => {
 		try {
-			const tenant = await api<{ id: string }>("/tenants", {
-				method: "POST",
-				body: JSON.stringify(toCreateTenantBody(values)),
+			await api(`/tenants/${tenantId}`, {
+				method: "PATCH",
+				body: JSON.stringify(toUpdateTenantBody(values)),
 			});
-			toast.success("Cabinet créé");
-			router.push(`/tenants/${tenant.id}`);
+			toast.success("Cabinet mis à jour");
+			router.push(backHref);
+			router.refresh();
 		} catch (err) {
-			if (err instanceof ApiError && err.code === "EMAIL_TAKEN") {
-				form.setError("email", { message: err.message });
+			const field = { EMAIL_TAKEN: "email", NAME_TAKEN: "name" }[(err as ApiError).code ?? ""] as
+				| "email"
+				| "name"
+				| undefined;
+			if (err instanceof ApiError && field) {
+				form.setError(field, { message: err.message });
 				return;
 			}
-			if (err instanceof ApiError && err.code === "NAME_TAKEN") {
-				form.setError("name", { message: err.message });
-				return;
-			}
-			if (err instanceof ApiError && err.code === "SUBDOMAIN_TAKEN") {
-				form.setError("subdomain", { message: err.message });
-				return;
-			}
-			toast.error(err instanceof Error ? err.message : "Création impossible");
+			toast.error(err instanceof Error ? err.message : "Modification impossible");
 		}
 	});
 
-	const text = (
-		name: keyof CreateTenantInput,
-		label: string,
-		props: React.ComponentProps<typeof Input> = {},
-	) => (
+	const text = (name: keyof UpdateTenantInput, label: string, props: React.ComponentProps<typeof Input> = {}) => (
 		<Field data-invalid={!!errors[name]}>
 			<FieldLabel htmlFor={name}>{label}</FieldLabel>
 			<Input id={name} aria-invalid={!!errors[name]} {...props} {...form.register(name)} />
@@ -91,37 +88,23 @@ export function TenantForm({ defaultValues }: { defaultValues: CreateTenantInput
 				</FormCard>
 			</div>
 
-			<div className="grid gap-3">
-				<FormCard title="Domaine">
-					<Field data-invalid={!!errors.subdomain}>
-						<FieldLabel htmlFor="subdomain">Sous-domaine</FieldLabel>
-						<Input
-							id="subdomain"
-							aria-invalid={!!errors.subdomain}
-							placeholder="clinique-rabat"
-							{...form.register("subdomain")}
-						/>
-						<FieldDescription>{`${subdomain || "…"}.cabinova.ma`}</FieldDescription>
-						<FieldError errors={[errors.subdomain]} />
-					</Field>
-				</FormCard>
-
-				<FormCard title="Essai et limites">
-					<FieldGroup className="gap-4">
-						{text("trialDays", "Durée d'essai (jours)", { inputMode: "numeric" })}
-						<div className="grid gap-4 sm:grid-cols-2">
-							{text("maxDoctors", "Médecins max.", { inputMode: "numeric", placeholder: "Illimité" })}
-							{text("maxUsers", "Utilisateurs max.", { inputMode: "numeric", placeholder: "Illimité" })}
-						</div>
-					</FieldGroup>
-				</FormCard>
-			</div>
+			<FormCard title="Quotas">
+				<FieldGroup className="gap-4">
+					<div className="grid gap-4 sm:grid-cols-2">
+						{text("maxDoctors", "Médecins max.", { inputMode: "numeric", placeholder: "Illimité" })}
+						{text("maxSecretaries", "Secrétaires max.", { inputMode: "numeric", placeholder: "Illimité" })}
+						{text("maxUsers", "Utilisateurs max.", { inputMode: "numeric", placeholder: "Illimité" })}
+						{text("storageQuotaGb", "Stockage (Go)", { inputMode: "numeric", placeholder: "Illimité" })}
+					</div>
+					<FieldDescription>Vide = illimité.</FieldDescription>
+				</FieldGroup>
+			</FormCard>
 
 			<UnsavedChangesBar
 				visible={isDirty && !isSubmitting}
-				label="Nouveau cabinet non enregistré"
+				label="Modifications non enregistrées"
 				isSubmitting={isSubmitting}
-				onDiscard={() => router.push("/tenants")}
+				onDiscard={() => router.push(backHref)}
 				formId={FORM_ID}
 			/>
 		</form>

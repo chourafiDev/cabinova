@@ -23,9 +23,11 @@
     "db:migrate": "drizzle-kit migrate",
     "db:studio": "drizzle-kit studio",
     "db:seed": "tsx src/database/scripts/seed.ts",
-    "db:create-app-role": "tsx src/database/scripts/create-app-role.ts"
+    "db:create-app-role": "tsx src/database/scripts/create-app-role.ts",
+    "billing:sweep": "node dist/billing/scripts/run-sweep.js"
   },
   "dependencies": {
+    "@cabinova/tenant-db": "workspace:*",
     "@neondatabase/serverless": "^1.2.0",
     "@nestjs/common": "^12.0.1",
     "@nestjs/config": "^12.0.1",

@@ -1,6 +1,14 @@
 import type { IconType } from "react-icons";
 // Heroicons v2, solid style (react-icons "Hi*"; outline versions are "HiOutline*").
-import { HiBuildingOffice2, HiSquares2X2 } from "react-icons/hi2";
+import {
+  HiBanknotes,
+  HiBuildingOffice2,
+  HiCreditCard,
+  HiPuzzlePiece,
+  HiServerStack,
+  HiSquares2X2,
+  HiUserGroup,
+} from "react-icons/hi2";
 import type { Permission } from "@/lib/permissions";
 
 export type NavItem = {
@@ -21,6 +29,11 @@ export const navGroups: { label: string; items: NavItem[] }[] = [
     items: [
       { title: "Tableau de bord", href: "/", icon: HiSquares2X2, permission: "dashboard:read" },
       { title: "Cabinets", href: "/tenants", icon: HiBuildingOffice2, permission: "tenants:read" },
+      { title: "Offres", href: "/plans", icon: HiCreditCard, permission: "subscriptions:read" },
+      { title: "Facturation", href: "/billing", icon: HiBanknotes, permission: "billing:read" },
+      { title: "Fonctionnalités", href: "/features", icon: HiPuzzlePiece, permission: "subscriptions:read" },
+      { title: "Technique", href: "/technical", icon: HiServerStack, permission: "technical:read" },
+      { title: "Utilisateurs", href: "/users", icon: HiUserGroup, permission: "users:read" },
     ],
   },
 ];

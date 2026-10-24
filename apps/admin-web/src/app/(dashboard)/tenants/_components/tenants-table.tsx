@@ -1,7 +1,7 @@
 "use client";
 
 import type { ColumnDef } from "@tanstack/react-table";
-import { CircleDot, Search } from "lucide-react";
+import { CircleDot, CreditCard, Search } from "lucide-react";
 import Link from "next/link";
 import { useMemo } from "react";
 import { DataTable } from "@/components/data-table/data-table";
@@ -17,7 +17,16 @@ import { TenantStatusBadge } from "./tenant-status-badge";
 
 const STATUS_OPTIONS = Object.entries(STATUS_LABELS).map(([value, label]) => ({ value, label }));
 
-export function TenantsTable({ data, pageCount }: { data: TenantRow[]; pageCount: number }) {
+export function TenantsTable({
+	data,
+	pageCount,
+	planOptions,
+}: {
+	data: TenantRow[];
+	pageCount: number;
+	/** Filter options; empty when the user can't read plans. */
+	planOptions: { value: string; label: string }[];
+}) {
 	const { isPending, startTransition } = useListTransition();
 
 	const columns = useMemo<ColumnDef<DataTableFeatures, TenantRow>[]>(
@@ -72,6 +81,15 @@ export function TenantsTable({ data, pageCount }: { data: TenantRow[]; pageCount
 				enableSorting: false,
 			},
 			{
+				id: "plan",
+				accessorFn: (row) => row.plan?.key,
+				header: "Offre",
+				cell: ({ row }) => row.original.plan?.name ?? <span className="text-muted-foreground">—</span>,
+				meta: { label: "Offre", variant: "multiSelect", options: planOptions, icon: CreditCard },
+				enableColumnFilter: planOptions.length > 0,
+				enableSorting: false,
+			},
+			{
 				id: "createdAt",
 				accessorKey: "createdAt",
 				header: ({ column }) => <DataTableColumnHeader column={column} label="Créé le" />,
@@ -83,7 +101,7 @@ export function TenantsTable({ data, pageCount }: { data: TenantRow[]; pageCount
 				meta: { label: "Créé le" },
 			},
 		],
-		[],
+		[planOptions],
 	);
 
 	const { table } = useDataTable({

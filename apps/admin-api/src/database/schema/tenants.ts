@@ -1,7 +1,10 @@
+import { sql } from 'drizzle-orm';
 import {
   boolean,
   date,
+  index,
   integer,
+  jsonb,
   pgEnum,
   pgTable,
   text,
@@ -10,6 +13,7 @@ import {
   uuid,
 } from 'drizzle-orm/pg-core';
 import { id, timestamps } from './columns.js';
+import { platformUsers } from './platform-users.js';
 
 // Catalog: cabinets (tenants). Never any medical/patient data — see Module 2
 // of "Partie super admin". Each row here is a clinic; its own medical data
@@ -61,7 +65,9 @@ export const tenants = pgTable('tenants', {
   trialEndsAt: date('trial_ends_at'),
   /** NULL = no limit (e.g. Enterprise). */
   maxDoctors: integer('max_doctors'),
+  maxSecretaries: integer('max_secretaries'),
   maxUsers: integer('max_users'),
+  storageQuotaMb: integer('storage_quota_mb'),
   country: text('country').notNull().default('MA'),
   locale: text('locale').notNull().default('fr'),
   timezone: text('timezone').notNull().default('Africa/Casablanca'),
@@ -86,26 +92,34 @@ export const tenantDomains = pgTable(
 );
 
 /**
- * Connection to the tenant's own database — populated by Module 4's
- * provisioning. The secret is never stored in clear: `secretRef` points at
- * an encrypted value (see tenant-secrets table), never a plain connection
- * string.
+ * The tenant's own database (Module 4). Connection details only — the
+ * password lives encrypted in tenant_secrets (`secretRef`), never here.
  */
 export const tenantDatabases = pgTable('tenant_databases', {
   tenantId: uuid('tenant_id')
     .primaryKey()
     .references(() => tenants.id, { onDelete: 'cascade' }),
   provider: text('provider').notNull().default('neon'),
+  /** How it was created, e.g. "database" (CREATE DATABASE in the platform project). */
+  mode: text('mode').notNull().default('database'),
   /** Provider-side identifier (e.g. a Neon branch id) — not a secret. */
   providerRef: text('provider_ref'),
   host: text('host'),
   databaseName: text('database_name'),
-  /** Opaque reference; the encrypted secret itself lives in tenant_secrets. */
-  secretRef: uuid('secret_ref'),
+  roleName: text('role_name'),
+  secretRef: uuid('secret_ref').references(() => tenantSecrets.id, {
+    onDelete: 'restrict',
+  }),
+  /** Tag of the last tenant-db migration applied, e.g. "0000_baseline". */
   schemaVersion: text('schema_version'),
   lastMigratedAt: timestamp('last_migrated_at', { withTimezone: true }),
+  /** Set when the last migration failed; the tenant is skipped until fixed. */
+  lastMigrationError: text('last_migration_error'),
   lastHealthCheckAt: timestamp('last_health_check_at', { withTimezone: true }),
   healthy: boolean('healthy'),
+  lastHealthError: text('last_health_error'),
+  /** Response time of the last health check. */
+  latencyMs: integer('latency_ms'),
   ...timestamps,
 });
 
@@ -115,9 +129,107 @@ export const tenantSecrets = pgTable('tenant_secrets', {
   tenantId: uuid('tenant_id')
     .notNull()
     .references(() => tenants.id, { onDelete: 'cascade' }),
-  /** AES-256-GCM ciphertext, base64. */
+  /** AES-256-GCM, base64 of iv ‖ tag ‖ ciphertext; AAD = tenant id. */
   ciphertext: text('ciphertext').notNull(),
-  /** Which app-level key encrypted it (for rotation). */
+  /** Which master key encrypted it (for rotation). */
   keyVersion: integer('key_version').notNull().default(1),
   ...timestamps,
 });
+
+export const provisioningRunState = pgEnum('provisioning_run_state', [
+  'running',
+  'succeeded',
+  'failed',
+]);
+
+export type ProvisioningStep = {
+  /** "database" | "secret" | "migrations" | "seed" | "healthcheck" | "invitation" | "activate" */
+  key: string;
+  status: 'done' | 'skipped' | 'failed';
+  at: string;
+  detail?: string;
+};
+
+/**
+ * One attempt at provisioning a cabinet (Scenario A, system side). Steps are
+ * appended as they finish, so a failed run shows exactly where it stopped;
+ * a new run resumes safely (every step is idempotent).
+ */
+export const tenantProvisioningRuns = pgTable(
+  'tenant_provisioning_runs',
+  {
+    id: id(),
+    tenantId: uuid('tenant_id')
+      .notNull()
+      .references(() => tenants.id, { onDelete: 'cascade' }),
+    state: provisioningRunState('state').notNull().default('running'),
+    steps: jsonb('steps').$type<ProvisioningStep[]>().notNull().default([]),
+    error: text('error'),
+    sendInvitation: boolean('send_invitation').notNull().default(true),
+    startedBy: uuid('started_by').references(() => platformUsers.id, {
+      onDelete: 'set null',
+    }),
+    startedAt: timestamp('started_at', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    /** Bumped after each step; a stale running run was interrupted. */
+    heartbeatAt: timestamp('heartbeat_at', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    finishedAt: timestamp('finished_at', { withTimezone: true }),
+  },
+  (t) => [
+    index('tenant_provisioning_runs_tenant_idx').on(t.tenantId, t.startedAt),
+    uniqueIndex('tenant_provisioning_runs_one_running_idx')
+      .on(t.tenantId)
+      .where(sql`${t.state} = 'running'`),
+  ],
+);
+
+export const tenantStatusChangeState = pgEnum('tenant_status_change_state', [
+  'scheduled',
+  'applied',
+  'cancelled',
+  'failed',
+]);
+
+/**
+ * Every status transition of a cabinet (suspend, reactivate, closure…), with
+ * its motive, comment and effective date. A change dated in the future stays
+ * `scheduled` until the lifecycle sweep applies it; at most one can be
+ * scheduled per cabinet. Kept forever as the proof of the procedure.
+ */
+export const tenantStatusChanges = pgTable(
+  'tenant_status_changes',
+  {
+    id: id(),
+    tenantId: uuid('tenant_id')
+      .notNull()
+      .references(() => tenants.id, { onDelete: 'cascade' }),
+    /** Transition key, see src/tenants/lifecycle.ts. */
+    action: text('action').notNull(),
+    fromStatus: tenantStatus('from_status').notNull(),
+    toStatus: tenantStatus('to_status').notNull(),
+    reason: text('reason'),
+    comment: text('comment'),
+    effectiveAt: timestamp('effective_at', { withTimezone: true }).notNull(),
+    state: tenantStatusChangeState('state').notNull(),
+    appliedAt: timestamp('applied_at', { withTimezone: true }),
+    /** Why a scheduled change could not be applied. */
+    failureReason: text('failure_reason'),
+    notifyResponsible: boolean('notify_responsible').notNull().default(true),
+    requestedBy: uuid('requested_by').references(() => platformUsers.id, {
+      onDelete: 'set null',
+    }),
+    ...timestamps,
+  },
+  (t) => [
+    index('tenant_status_changes_tenant_idx').on(t.tenantId, t.createdAt),
+    index('tenant_status_changes_due_idx')
+      .on(t.effectiveAt)
+      .where(sql`${t.state} = 'scheduled'`),
+    uniqueIndex('tenant_status_changes_one_scheduled_idx')
+      .on(t.tenantId)
+      .where(sql`${t.state} = 'scheduled'`),
+  ],
+);

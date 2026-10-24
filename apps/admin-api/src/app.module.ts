@@ -3,24 +3,39 @@ import { ConfigModule } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { AuthModule } from './auth/auth.module.js';
+import { BillingModule } from './billing/billing.module.js';
 import { validateEnv } from './config/env.js';
+import { DashboardModule } from './dashboard/dashboard.module.js';
 import { DatabaseModule } from './database/database.module.js';
+import { FeaturesModule } from './features/features.module.js';
 import { EmailModule } from './email/email.module.js';
 import { HealthController } from './health/health.controller.js';
+import { PlansModule } from './plans/plans.module.js';
+import { PlatformUsersModule } from './platform-users/platform-users.module.js';
+import { TenantDatabasesModule } from './tenant-databases/tenant-databases.module.js';
 import { TenantsModule } from './tenants/tenants.module.js';
 
-// admin-api: the Super Admin control plane. One database (the catalog) —
-// no tenant resolution, no RLS. Each clinic's own database is provisioned
-// and migrated from here later (Module 4), but never queried from here.
+// admin-api: the Super Admin control plane. Its own database is the catalog
+// — no tenant resolution, no RLS. Each clinic's own database is provisioned,
+// migrated and health-checked from here (Module 4), never read for its
+// medical data.
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true, validate: validateEnv }),
-    // 100 requests / minute / IP by default; tighten per route with @Throttle.
-    ThrottlerModule.forRoot([{ ttl: 60_000, limit: 100 }]),
+    // 600 requests / minute / client IP by default: one dashboard page makes
+    // several API calls (the Next server forwards the admin's IP). Sensitive
+    // routes are much stricter with @Throttle (login: 5 / minute).
+    ThrottlerModule.forRoot([{ ttl: 60_000, limit: 600 }]),
     DatabaseModule,
     EmailModule,
     AuthModule,
     TenantsModule,
+    PlansModule,
+    TenantDatabasesModule,
+    PlatformUsersModule,
+    DashboardModule,
+    BillingModule,
+    FeaturesModule,
   ],
   controllers: [HealthController],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],

@@ -6,13 +6,18 @@ const API_URL = process.env.API_URL ?? "http://localhost:4000";
 
 /**
  * Calls admin-api from a server component, as the current visitor: forwards
- * their session cookie. There's no tenant to resolve — admin-web runs on
- * one domain only.
+ * their session cookie and their IP (X-Forwarded-For), so the API's rate
+ * limit and audit log see each admin, not this Next server. There's no
+ * tenant to resolve — admin-web runs on one domain only.
  */
 export async function serverApi(path: string) {
 	const h = await headers();
+	const clientIp = h.get("x-forwarded-for") ?? h.get("x-real-ip");
 	return fetch(`${API_URL}${path}`, {
-		headers: { cookie: h.get("cookie") ?? "" },
+		headers: {
+			cookie: h.get("cookie") ?? "",
+			...(clientIp && { "x-forwarded-for": clientIp }),
+		},
 		cache: "no-store",
 	});
 }

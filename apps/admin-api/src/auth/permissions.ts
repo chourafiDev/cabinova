@@ -29,7 +29,12 @@ export type PlatformPermission = keyof typeof PLATFORM_PERMISSIONS;
 
 const ALL = Object.keys(PLATFORM_PERMISSIONS) as PlatformPermission[];
 
-/** Roles seeded at setup; editable afterwards from Utilisateurs & permissions. */
+/**
+ * The platform's three central roles — the only ones that exist. Their
+ * permissions can be adjusted from Utilisateurs → Rôles et permissions
+ * (except Super Admin, which always has everything); roles can't be added
+ * or removed. `pnpm db:seed` creates them and removes any other unused role.
+ */
 export const DEFAULT_PLATFORM_ROLES: {
   key: string;
   name: string;
@@ -41,19 +46,6 @@ export const DEFAULT_PLATFORM_ROLES: {
     name: 'Super Admin',
     description: 'Administration globale de la plateforme',
     permissions: ALL,
-  },
-  {
-    key: 'admin',
-    name: 'Administrateur',
-    description: 'Gestion des cabinets et configuration autorisée',
-    permissions: [
-      'dashboard:read',
-      'tenants:read',
-      'tenants:write',
-      'subscriptions:read',
-      'billing:read',
-      'settings:read',
-    ],
   },
   {
     key: 'support_agent',
@@ -75,33 +67,6 @@ export const DEFAULT_PLATFORM_ROLES: {
       'tenants:read',
       'technical:read',
       'technical:write',
-    ],
-  },
-  {
-    key: 'billing_agent',
-    name: 'Gestionnaire de facturation',
-    description: 'Offres, factures, paiements et impayés',
-    permissions: [
-      'dashboard:read',
-      'subscriptions:read',
-      'billing:read',
-      'billing:write',
-    ],
-  },
-  {
-    key: 'auditor',
-    name: 'Auditeur',
-    description: 'Lecture seule sur toute la plateforme',
-    permissions: [
-      'dashboard:read',
-      'tenants:read',
-      'subscriptions:read',
-      'billing:read',
-      'technical:read',
-      'users:read',
-      'support:read',
-      'security:read',
-      'settings:read',
     ],
   },
 ];

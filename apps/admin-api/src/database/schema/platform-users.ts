@@ -12,8 +12,8 @@ import {
 import { id, timestamps } from './columns.js';
 import { platformPermissions, platformRoles } from './platform-access.js';
 
-// Central (platform) accounts — Super Admin, support/technical/billing
-// agents, read-only auditors. Not a clinic's staff.
+// Central (platform) accounts — Super Admin, support and technical agents.
+// Not a clinic's staff.
 
 export const platformUsers = pgTable(
   'platform_users',

@@ -32,5 +32,8 @@ export const platformAuditLogs = pgTable(
       .notNull()
       .defaultNow(),
   },
-  (t) => [index('platform_audit_logs_created_idx').on(t.createdAt)],
+  (t) => [
+    index('platform_audit_logs_created_idx').on(t.createdAt),
+    index('platform_audit_logs_tenant_idx').on(t.tenantId, t.createdAt),
+  ],
 );

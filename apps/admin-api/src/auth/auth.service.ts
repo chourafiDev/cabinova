@@ -1,7 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import argon2 from 'argon2';
 import { and, eq, gt } from 'drizzle-orm';
-import { type Database, DatabaseService } from '../database/database.module.js';
+import {
+  type Database,
+  DatabaseService,
+  type Transaction,
+} from '../database/database.module.js';
 import {
   platformPermissions,
   platformRolePermissions,
@@ -86,7 +90,8 @@ export class AuthService {
       )
       .limit(1);
     if (!row) return null;
-    return { ...row, ...(await this.loadAccess(this.database.db, row.id)) };
+    const { roles, permissions } = await this.access(row.id);
+    return { ...row, roles, permissions };
   }
 
   /** Who the invitation / reset link is for; null if unknown or expired. */
@@ -135,8 +140,11 @@ export class AuthService {
       .where(eq(platformSessions.id, sessionId));
   }
 
-  /** Roles and effective permissions: role defaults + grants − denies. */
-  private async loadAccess(tx: Database, userId: string) {
+  /**
+   * Roles, per-user overrides and effective permissions (role defaults +
+   * grants − denies). Computed on every request, so a change applies at once.
+   */
+  async access(userId: string, tx: Database | Transaction = this.database.db) {
     const userRoleRows = await tx
       .select({
         id: platformRoles.id,
@@ -181,6 +189,7 @@ export class AuthService {
 
     return {
       roles: userRoleRows.map(({ key, name }) => ({ key, name })),
+      overrides: Object.fromEntries(overrides.map((o) => [o.key, o.effect])),
       permissions: [...effective].sort() as PlatformPermission[],
     };
   }

@@ -8,6 +8,62 @@
       "when": 1792697409856,
       "tag": "0000_slimy_beyonder",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1792794321844,
+      "tag": "0001_tenant_lifecycle",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1792795111021,
+      "tag": "0002_plans_catalog",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1792795459999,
+      "tag": "0003_subscription_price",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1792843192542,
+      "tag": "0004_tenant_provisioning",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1792843477804,
+      "tag": "0005_catalog_connect_hardening",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1792850798866,
+      "tag": "0006_billing_transfers",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1792851083809,
+      "tag": "0007_app_role_sequences",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1792852079326,
+      "tag": "0008_feature_catalog",
+      "breakpoints": true
     }
   ]
 }

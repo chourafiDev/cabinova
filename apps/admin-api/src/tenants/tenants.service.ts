@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ConflictException,
   Injectable,
   NotFoundException,
@@ -11,22 +12,54 @@ import {
   eq,
   ilike,
   inArray,
+  ne,
   or,
   type SQL,
 } from 'drizzle-orm';
-import type { AuthUser } from '../auth/auth.types.js';
+import { diff } from '../audit/audit.js';
 import {
   DatabaseService,
   type Transaction,
 } from '../database/database.module.js';
 import {
   platformAuditLogs,
+  platformUsers,
+  subscriptionPlans,
+  subscriptions,
   tenantDomains,
   tenants,
+  tenantStatusChanges,
 } from '../database/schema/index.js';
-import type { CreateTenantDto, ListTenantsQuery } from './dto.js';
+import type {
+  CreateTenantDto,
+  ListTenantAuditQuery,
+  ListTenantsQuery,
+  UpdateTenantDto,
+} from './dto.js';
+import { availableTransitions, isEditable } from './lifecycle.js';
+import { type AuditActor, auditTenant } from './tenant-audit.js';
 
-const like = (term: string) => `%${term.replace(/[\\%_]/g, '\\$&')}%`;
+/** Columns an admin may edit (Scenario B), in audit order. */
+const EDITABLE = [
+  'name',
+  'legalName',
+  'responsibleName',
+  'specialty',
+  'address',
+  'city',
+  'phone',
+  'email',
+  'maxDoctors',
+  'maxSecretaries',
+  'maxUsers',
+  'storageQuotaMb',
+] as const satisfies readonly (keyof UpdateTenantDto)[];
+
+/** ILIKE pattern with wildcards escaped; `contains` wraps it in %…%. */
+const like = (term: string, contains = true) => {
+  const escaped = term.replace(/[\\%_]/g, '\\$&');
+  return contains ? `%${escaped}%` : escaped;
+};
 
 const listColumns = {
   id: tenants.id,
@@ -38,7 +71,16 @@ const listColumns = {
   status: tenants.status,
   trialEndsAt: tenants.trialEndsAt,
   createdAt: tenants.createdAt,
+  plan: { key: subscriptionPlans.key, name: subscriptionPlans.name },
 };
+
+/** The cabinet's live (non-cancelled) subscription; at most one exists. */
+const liveSubscription = and(
+  eq(subscriptions.tenantId, tenants.id),
+  ne(subscriptions.status, 'cancelled'),
+);
+
+const DAY_MS = 24 * 60 * 60 * 1000;
 
 @Injectable()
 export class TenantsService {
@@ -57,6 +99,9 @@ export class TenantsService {
         : undefined,
       query.city ? eq(tenants.city, query.city) : undefined,
       query.specialty ? eq(tenants.specialty, query.specialty) : undefined,
+      query.plan
+        ? inArray(subscriptionPlans.key, query.plan.split(','))
+        : undefined,
       term ? this.searchCondition(term) : undefined,
     );
     const [column, direction] = query.sort.split('.') as [
@@ -71,14 +116,31 @@ export class TenantsService {
         db
           .select(listColumns)
           .from(tenants)
+          .leftJoin(subscriptions, liveSubscription)
+          .leftJoin(
+            subscriptionPlans,
+            eq(subscriptionPlans.id, subscriptions.planId),
+          )
           .where(where)
           .orderBy(order, asc(tenants.id))
           .limit(query.perPage)
           .offset((query.page - 1) * query.perPage),
-        db.select({ total: count() }).from(tenants).where(where),
+        db
+          .select({ total: count() })
+          .from(tenants)
+          .leftJoin(subscriptions, liveSubscription)
+          .leftJoin(
+            subscriptionPlans,
+            eq(subscriptionPlans.id, subscriptions.planId),
+          )
+          .where(where),
       ]);
       return {
-        data: rows,
+        // Cabinets created before Module 3 have no plan.
+        data: rows.map((row) => ({
+          ...row,
+          plan: row.plan?.key ? row.plan : null,
+        })),
         total,
         pageCount: Math.max(1, Math.ceil(total / query.perPage)),
       };
@@ -89,25 +151,172 @@ export class TenantsService {
     const db = this.database.db;
     const [tenant] = await db.select().from(tenants).where(eq(tenants.id, id));
     if (!tenant) throw new NotFoundException('Cabinet introuvable.');
-    const [domain] = await db
-      .select()
-      .from(tenantDomains)
-      .where(eq(tenantDomains.tenantId, id));
-    return { ...tenant, domain: domain ?? null };
+    const [[domain], [scheduledStatusChange], [subscription]] =
+      await Promise.all([
+        db.select().from(tenantDomains).where(eq(tenantDomains.tenantId, id)),
+        db
+          .select()
+          .from(tenantStatusChanges)
+          .where(
+            and(
+              eq(tenantStatusChanges.tenantId, id),
+              eq(tenantStatusChanges.state, 'scheduled'),
+            ),
+          ),
+        db
+          .select({
+            id: subscriptions.id,
+            billingPeriod: subscriptions.billingPeriod,
+            price: subscriptions.price,
+            status: subscriptions.status,
+            startedAt: subscriptions.startedAt,
+            currentPeriodEnd: subscriptions.currentPeriodEnd,
+            plan: {
+              id: subscriptionPlans.id,
+              key: subscriptionPlans.key,
+              name: subscriptionPlans.name,
+              features: subscriptionPlans.features,
+            },
+          })
+          .from(subscriptions)
+          .innerJoin(
+            subscriptionPlans,
+            eq(subscriptionPlans.id, subscriptions.planId),
+          )
+          .where(
+            and(
+              eq(subscriptions.tenantId, id),
+              ne(subscriptions.status, 'cancelled'),
+            ),
+          ),
+      ]);
+    return {
+      ...tenant,
+      domain: domain ?? null,
+      subscription: subscription ?? null,
+      editable: isEditable(tenant.status),
+      // Nothing else can be requested while a change is scheduled.
+      availableTransitions: scheduledStatusChange
+        ? []
+        : availableTransitions(tenant.status),
+      scheduledStatusChange: scheduledStatusChange ?? null,
+    };
   }
 
-  create(actor: AuthUser, dto: CreateTenantDto) {
+  /** Scenario B: only fields that actually change are written and audited. */
+  update(id: string, actor: AuditActor, dto: UpdateTenantDto) {
+    return this.database.db.transaction(async (tx) => {
+      const [tenant] = await tx
+        .select()
+        .from(tenants)
+        .where(eq(tenants.id, id))
+        .for('update');
+      if (!tenant) throw new NotFoundException('Cabinet introuvable.');
+      if (!isEditable(tenant.status)) {
+        throw new ConflictException({
+          code: 'TENANT_CLOSED',
+          message: 'Un cabinet fermé ne peut plus être modifié.',
+        });
+      }
+
+      if (dto.email) dto.email = dto.email.toLowerCase();
+      const changes = diff(tenant, dto, EDITABLE);
+      if (!Object.keys(changes).length) return tenant;
+
+      await this.assertUnique(
+        tx,
+        {
+          name: changes.name ? dto.name : undefined,
+          email: changes.email ? dto.email : undefined,
+        },
+        id,
+      );
+
+      const [updated] = await tx
+        .update(tenants)
+        .set(
+          Object.fromEntries(
+            Object.entries(changes).map(([key, { to }]) => [key, to]),
+          ),
+        )
+        .where(eq(tenants.id, id))
+        .returning();
+
+      await auditTenant(tx, actor, {
+        action: 'tenant.update',
+        tenantId: id,
+        metadata: { changes },
+      });
+      return updated;
+    });
+  }
+
+  /** Scenario B, Audit tab: administrative changes on one cabinet. */
+  async listAudit(id: string, query: ListTenantAuditQuery) {
+    const db = this.database.db;
+    const where = eq(platformAuditLogs.tenantId, id);
+    const [rows, [{ total }]] = await Promise.all([
+      db
+        .select({
+          id: platformAuditLogs.id,
+          action: platformAuditLogs.action,
+          metadata: platformAuditLogs.metadata,
+          ip: platformAuditLogs.ip,
+          createdAt: platformAuditLogs.createdAt,
+          actor: { id: platformUsers.id, name: platformUsers.name },
+        })
+        .from(platformAuditLogs)
+        .leftJoin(platformUsers, eq(platformUsers.id, platformAuditLogs.userId))
+        .where(where)
+        .orderBy(desc(platformAuditLogs.createdAt), desc(platformAuditLogs.id))
+        .limit(query.perPage)
+        .offset((query.page - 1) * query.perPage),
+      db.select({ total: count() }).from(platformAuditLogs).where(where),
+    ]);
+    return {
+      data: rows.map((row) => ({
+        ...row,
+        actor: row.actor?.id ? row.actor : null,
+      })),
+      total,
+      pageCount: Math.max(1, Math.ceil(total / query.perPage)),
+    };
+  }
+
+  create(actor: AuditActor, dto: CreateTenantDto) {
     return this.database.db.transaction(async (tx) => {
       await this.assertUnique(tx, dto);
+      const [plan] = await tx
+        .select()
+        .from(subscriptionPlans)
+        .where(
+          and(
+            eq(subscriptionPlans.key, dto.planKey),
+            eq(subscriptionPlans.active, true),
+          ),
+        );
+      if (!plan) {
+        throw new BadRequestException({
+          code: 'PLAN_UNAVAILABLE',
+          message: "Cette offre n'existe pas ou n'est plus proposée.",
+        });
+      }
       const slug = await this.uniqueSlug(tx, dto.name);
 
       const trialStartsAt = dto.trialStartsAt
         ? new Date(dto.trialStartsAt)
         : new Date();
-      const trialDays = dto.trialDays ?? 7;
+      const trialDays = dto.trialDays ?? plan.trialDays;
       const trialEndsAt = new Date(
-        trialStartsAt.getTime() + trialDays * 24 * 60 * 60 * 1000,
+        trialStartsAt.getTime() + trialDays * DAY_MS,
       );
+      // The plan's limits, unless this cabinet overrides them.
+      const quota = <
+        K extends
+          'maxDoctors' | 'maxSecretaries' | 'maxUsers' | 'storageQuotaMb',
+      >(
+        key: K,
+      ) => (dto[key] !== undefined ? dto[key] : plan[key]);
 
       const [tenant] = await tx
         .insert(tenants)
@@ -124,8 +333,27 @@ export class TenantsService {
           status: 'pending',
           trialStartsAt: trialStartsAt.toISOString().slice(0, 10),
           trialEndsAt: trialEndsAt.toISOString().slice(0, 10),
-          maxDoctors: dto.maxDoctors,
-          maxUsers: dto.maxUsers,
+          maxDoctors: quota('maxDoctors'),
+          maxSecretaries: quota('maxSecretaries'),
+          maxUsers: quota('maxUsers'),
+          storageQuotaMb: quota('storageQuotaMb'),
+        })
+        .returning();
+
+      // Trial first; billing (Module 3, payments) takes over at its end.
+      const [subscription] = await tx
+        .insert(subscriptions)
+        .values({
+          tenantId: tenant.id,
+          planId: plan.id,
+          billingPeriod: dto.billingPeriod,
+          price:
+            dto.billingPeriod === 'annual'
+              ? plan.priceAnnual
+              : plan.priceMonthly,
+          status: 'trialing',
+          startedAt: trialStartsAt,
+          currentPeriodEnd: trialEndsAt,
         })
         .returning();
 
@@ -134,41 +362,58 @@ export class TenantsService {
         .values({ tenantId: tenant.id, subdomain: dto.subdomain })
         .returning();
 
-      await this.audit(tx, actor, {
+      await auditTenant(tx, actor, {
         action: 'tenant.create',
-        entityId: tenant.id,
-        metadata: { subdomain: dto.subdomain },
+        tenantId: tenant.id,
+        metadata: {
+          subdomain: dto.subdomain,
+          plan: plan.key,
+          billingPeriod: dto.billingPeriod,
+          trialDays,
+        },
       });
 
-      return { ...tenant, domain };
+      return { ...tenant, domain, subscription };
     });
   }
 
-  private async assertUnique(tx: Transaction, dto: CreateTenantDto) {
-    const [byEmail] = await tx
-      .select({ id: tenants.id })
-      .from(tenants)
-      .where(eq(tenants.email, dto.email.toLowerCase()));
+  /** Uniqueness rules of Scenario A; `exceptId` skips the cabinet being edited. */
+  private async assertUnique(
+    tx: Transaction,
+    dto: { name?: string; email?: string; subdomain?: string },
+    exceptId?: string,
+  ) {
+    const notSelf = exceptId ? ne(tenants.id, exceptId) : undefined;
+    const [byEmail] = dto.email
+      ? await tx
+          .select({ id: tenants.id })
+          .from(tenants)
+          .where(and(eq(tenants.email, dto.email.toLowerCase()), notSelf))
+      : [];
     if (byEmail) {
       throw new ConflictException({
         code: 'EMAIL_TAKEN',
         message: 'Un cabinet utilise déjà cette adresse e-mail.',
       });
     }
-    const [byName] = await tx
-      .select({ id: tenants.id })
-      .from(tenants)
-      .where(ilike(tenants.name, dto.name));
+    const [byName] = dto.name
+      ? await tx
+          .select({ id: tenants.id })
+          .from(tenants)
+          .where(and(ilike(tenants.name, like(dto.name, false)), notSelf))
+      : [];
     if (byName) {
       throw new ConflictException({
         code: 'NAME_TAKEN',
         message: 'Un cabinet porte déjà ce nom.',
       });
     }
-    const [byDomain] = await tx
-      .select({ tenantId: tenantDomains.tenantId })
-      .from(tenantDomains)
-      .where(eq(tenantDomains.subdomain, dto.subdomain));
+    const [byDomain] = dto.subdomain
+      ? await tx
+          .select({ tenantId: tenantDomains.tenantId })
+          .from(tenantDomains)
+          .where(eq(tenantDomains.subdomain, dto.subdomain))
+      : [];
     if (byDomain) {
       throw new ConflictException({
         code: 'SUBDOMAIN_TAKEN',
@@ -195,25 +440,6 @@ export class TenantsService {
       if (!taken) return slug;
       slug = `${base}-${n}`;
     }
-  }
-
-  private async audit(
-    tx: Transaction,
-    actor: AuthUser,
-    entry: {
-      action: string;
-      entityId: string;
-      metadata?: Record<string, unknown>;
-    },
-  ) {
-    await tx.insert(platformAuditLogs).values({
-      userId: actor.id,
-      tenantId: entry.entityId,
-      entity: 'tenant',
-      action: entry.action,
-      entityId: entry.entityId,
-      metadata: entry.metadata,
-    });
   }
 
   /** Cabinet name, responsible doctor or e-mail. */
