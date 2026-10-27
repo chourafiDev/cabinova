@@ -8,7 +8,7 @@ const at = (date: string | Date, offsetMs: number) =>
   new Date(new Date(date).getTime() + offsetMs);
 
 /**
- * The path of docs/cabinet-creation-path.md: create a cabinet, provision its
+ * The path from creating a cabinet to ready to work: create it, provision its
  * database, run the trial out, invoice, pay, then miss a payment until the
  * automatic suspension — and the reactivation when the transfer arrives.
  * Billing time is simulated by running the sweep at chosen dates.
