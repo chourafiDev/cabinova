@@ -5,10 +5,10 @@
 // Prints the app connection string to put in DATABASE_URL.
 import 'dotenv/config';
 import { randomBytes } from 'node:crypto';
-import { neonConfig, Pool } from '@neondatabase/serverless';
-import ws from 'ws';
+import { Pool } from '@neondatabase/serverless';
+import { configureNeon } from '../neon.js';
 
-neonConfig.webSocketConstructor = ws;
+configureNeon();
 const ownerUrl = process.env.DATABASE_MIGRATION_URL;
 if (!ownerUrl)
   throw new Error('DATABASE_MIGRATION_URL (owner role) is required');

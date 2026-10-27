@@ -1,4 +1,4 @@
-import { Pool, neonConfig } from '@neondatabase/serverless';
+import { Pool } from '@neondatabase/serverless';
 import {
   Global,
   Inject,
@@ -8,12 +8,11 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { drizzle, type NeonDatabase } from 'drizzle-orm/neon-serverless';
-import ws from 'ws';
 import type { Env } from '../config/env.js';
+import { configureNeon } from './neon.js';
 import * as schema from './schema/index.js';
 
-// WebSocket driver (not HTTP): needed for interactive transactions.
-neonConfig.webSocketConstructor = ws;
+configureNeon();
 
 export type Database = NeonDatabase<typeof schema>;
 export type Transaction = Parameters<Parameters<Database['transaction']>[0]>[0];

@@ -1,0 +1,24 @@
+# Throwaway Postgres for the end-to-end tests (`pnpm test:e2e:db`), reached
+# through Neon's WebSocket proxy so the API runs the same Neon driver as in
+# production. Postgres 17 like Neon: provisioning uses 16+ syntax.
+name: cabinova-test
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_PASSWORD: postgres
+    ports: ['55432:5432']
+    tmpfs: /var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD', 'pg_isready', '-U', 'postgres']
+      interval: 2s
+      retries: 20
+  wsproxy:
+    image: ghcr.io/neondatabase/wsproxy:latest
+    environment:
+      APPEND_PORT: 'postgres:5432'
+      ALLOW_ADDR_REGEX: '.*'
+    ports: ['55433:80']
+    depends_on:
+      postgres:
+        condition: service_healthy

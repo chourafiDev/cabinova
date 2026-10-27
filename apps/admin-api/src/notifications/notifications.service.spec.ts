@@ -67,7 +67,9 @@ describe('NotificationsService', () => {
       permission: 'technical:read',
       userIds: ['tech'],
     });
-    expect(inserted.map((r) => r.userId).sort((a, b) => a.localeCompare(b))).toEqual(['admin', 'tech']);
+    expect(
+      inserted.map((r) => String(r.userId)).sort((a, b) => a.localeCompare(b)),
+    ).toEqual(['admin', 'tech']);
   });
 
   it('pushes live only to the recipient', async () => {

@@ -7,7 +7,10 @@
     "dev:api": "pnpm --filter admin-api start:dev",
     "dev:web": "pnpm --filter admin-web dev",
     "build": "pnpm -r build",
-    "lint": "pnpm -r lint"
+    "lint": "pnpm -r lint",
+    "typecheck": "pnpm -r typecheck",
+    "test": "pnpm --filter admin-api test",
+    "test:e2e": "pnpm --filter admin-api test:e2e:db"
   },
   "pnpm": {
     "overrides": {

@@ -26,7 +26,13 @@ import { TenantsModule } from './tenants/tenants.module.js';
 // medical data.
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true, validate: validateEnv }),
+    ConfigModule.forRoot({
+      isGlobal: true,
+      validate: validateEnv,
+      // Tests get their whole environment from vitest.e2e.config.ts, never
+      // from a developer's .env (real Neon URLs, a live Resend key).
+      ignoreEnvFile: process.env.NODE_ENV === 'test',
+    }),
     // 600 requests / minute / client IP by default: one dashboard page makes
     // several API calls (the Next server forwards the admin's IP). Sensitive
     // routes are much stricter with @Throttle (login: 5 / minute).
