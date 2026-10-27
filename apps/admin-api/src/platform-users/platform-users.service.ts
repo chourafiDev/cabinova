@@ -22,6 +22,7 @@ import {
 } from 'drizzle-orm';
 import { writeAudit } from '../audit/audit.js';
 import { AuthService } from '../auth/auth.service.js';
+import { TwoFactorService } from '../auth/two-factor.service.js';
 import type { AuthUser } from '../auth/auth.types.js';
 import { hashToken, newToken } from '../auth/tokens.js';
 import type { Env } from '../config/env.js';
@@ -72,6 +73,7 @@ export class PlatformUsersService {
   constructor(
     private readonly database: DatabaseService,
     private readonly auth: AuthService,
+    private readonly twoFactor: TwoFactorService,
     private readonly roles: PlatformRolesService,
     private readonly email: EmailService,
     private readonly config: ConfigService<Env, true>,
@@ -386,6 +388,22 @@ export class PlatformUsersService {
     return { url, isReset: !!user.passwordHash };
   }
 
+  /** Lost phone: turns the user's 2FA off and signs them out everywhere. */
+  async resetTwoFactor(actor: Actor, id: string) {
+    return this.database.db.transaction(async (tx) => {
+      const user = await this.find(id, tx);
+      const { permissions } = await this.auth.access(id, tx);
+      assertWithin(actor.user.permissions, permissions, 'Utilisateur');
+      if (!user.totpEnabledAt) return { ok: true };
+      await this.twoFactor.adminReset(
+        tx,
+        { userId: actor.user.id, ip: actor.ip },
+        id,
+      );
+      return { ok: true };
+    });
+  }
+
   /** Signs the user out on every device (except the caller's own session). */
   async revokeSessions(actor: Actor, id: string) {
     return this.database.db.transaction(async (tx) => {
@@ -484,6 +502,7 @@ export class PlatformUsersService {
         u.inviteExpiresAt < new Date(),
       lastLoginAt: u.lastLoginAt,
       createdAt: u.createdAt,
+      twoFactorEnabled: !!u.totpEnabledAt,
     };
   }
 

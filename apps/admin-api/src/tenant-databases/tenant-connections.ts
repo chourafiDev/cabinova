@@ -11,11 +11,10 @@ import {
 import { eq } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/neon-serverless';
 import { migrate } from 'drizzle-orm/neon-serverless/migrator';
+import { SECRET_BOX } from '../crypto/crypto.module.js';
 import { DatabaseService } from '../database/database.module.js';
 import { tenantDatabases, tenantSecrets } from '../database/schema/index.js';
 import { SecretBox } from './secret-box.js';
-
-export const SECRET_BOX = Symbol('SECRET_BOX');
 
 /** Migrations of @cabinova/tenant-db, the schema every clinic database gets. */
 const MIGRATIONS_FOLDER = join(

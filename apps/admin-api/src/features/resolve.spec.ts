@@ -118,4 +118,16 @@ describe('feature resolution', () => {
       source: 'kill_switch',
     });
   });
+
+  it('never enables a feature the code does not implement', () => {
+    expect(
+      resolveFeature({
+        status: 'active',
+        planLevel: 'included',
+        override: { level: 'included', startsAt: null, endsAt: null },
+        now,
+        implemented: false,
+      }),
+    ).toEqual({ level: 'none', enabled: false, source: 'not_implemented' });
+  });
 });

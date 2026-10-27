@@ -54,15 +54,19 @@ export function RecordPaymentDialog({
 		setSaving(true);
 		setError(null);
 		try {
-			const result = await api<{ tenantSuspended: boolean }>(`/billing/invoices/${invoice.id}/payments`, {
+			const result = await api<{ tenantSuspended: boolean; reactivated: boolean }>(`/billing/invoices/${invoice.id}/payments`, {
 				method: "POST",
 				body: JSON.stringify({ amount: cents, receivedAt, reference, note }),
 			});
 			onOpenChange(false);
 			router.refresh();
-			if (result.tenantSuspended) {
+			if (result.reactivated) {
+				toast.success(`Virement enregistré — ${invoice.tenant.name} est réactivé`, {
+					description: "Il avait été suspendu pour impayé ; l’accès est rétabli.",
+				});
+			} else if (result.tenantSuspended) {
 				toast.success(`Virement enregistré — ${invoice.tenant.name} est suspendu`, {
-					description: "Réactivez le cabinet depuis sa fiche (Statut → Réactiver).",
+					description: "Suspendu pour un autre motif, ou d’autres factures restent impayées : vérifiez sa fiche.",
 					action: { label: "Ouvrir", onClick: () => router.push(`/tenants/${invoice.tenantId}`) },
 				});
 			} else {

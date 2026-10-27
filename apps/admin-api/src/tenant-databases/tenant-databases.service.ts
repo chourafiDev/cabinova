@@ -1,6 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { and, asc, eq, inArray, isNotNull } from 'drizzle-orm';
 import { type AuditActor, writeAudit } from '../audit/audit.js';
+import { NotificationsService } from '../notifications/notifications.service.js';
+import { TeamAlertsService } from '../settings/team-alerts.service.js';
 import { DatabaseService } from '../database/database.module.js';
 import { tenantDatabases, tenants } from '../database/schema/index.js';
 import {
@@ -26,6 +28,8 @@ const publicColumns = {
   healthy: tenantDatabases.healthy,
   lastHealthError: tenantDatabases.lastHealthError,
   latencyMs: tenantDatabases.latencyMs,
+  sizeBytes: tenantDatabases.sizeBytes,
+  sizeCheckedAt: tenantDatabases.sizeCheckedAt,
   createdAt: tenantDatabases.createdAt,
 };
 
@@ -42,6 +46,8 @@ export class TenantDatabasesService {
   constructor(
     private readonly database: DatabaseService,
     private readonly connections: TenantConnections,
+    private readonly alerts: TeamAlertsService,
+    private readonly notifications: NotificationsService,
   ) {}
 
   async get(tenantId: string) {
@@ -130,6 +136,19 @@ export class TenantDatabasesService {
           metadata: { from: before?.schemaVersion ?? null, error },
         });
       });
+      const [tenant] = await this.database.db
+        .select({ name: tenants.name })
+        .from(tenants)
+        .where(eq(tenants.id, tenantId));
+      await this.notifications.notify({
+        kind: 'technical.migration.failed',
+        severity: 'critical',
+        title: 'Migration échouée',
+        body: `${tenant?.name ?? tenantId} — ${error.slice(0, 200)}`,
+        href: `/tenants/${tenantId}?tab=technical`,
+        tenantId,
+        permission: 'technical:read',
+      });
       return { tenantId, ok: false as const, error };
     }
   }
@@ -154,15 +173,22 @@ export class TenantDatabasesService {
   async check(tenantId: string, actor: AuditActor) {
     const started = Date.now();
     let error: string | null = null;
+    let sizeBytes: number | null = null;
     try {
-      await this.connections.with(tenantId, (pool) => pool.query('select 1'));
+      // The connection test doubles as the storage measure (quota, Module 4).
+      const { rows } = await this.connections.with(tenantId, (pool) =>
+        pool.query<{ size: string }>(
+          'select pg_database_size(current_database()) as size',
+        ),
+      );
+      sizeBytes = Number(rows[0]?.size ?? 0);
     } catch (err) {
       error = err instanceof Error ? err.message : String(err);
     }
     const healthy = error === null;
     const latencyMs = Date.now() - started;
 
-    await this.database.db.transaction(async (tx) => {
+    const wentDown = await this.database.db.transaction(async (tx) => {
       const [before] = await tx
         .select({ healthy: tenantDatabases.healthy })
         .from(tenantDatabases)
@@ -174,6 +200,10 @@ export class TenantDatabasesService {
           latencyMs: healthy ? latencyMs : null,
           lastHealthError: error,
           lastHealthCheckAt: new Date(),
+          ...(sizeBytes !== null && {
+            sizeBytes,
+            sizeCheckedAt: new Date(),
+          }),
         })
         .where(eq(tenantDatabases.tenantId, tenantId));
       // Audit transitions only, so a periodic check doesn't flood the log;
@@ -190,8 +220,29 @@ export class TenantDatabasesService {
           metadata: error ? { error } : undefined,
         });
       }
+      return !healthy && known !== false;
     });
-    return { tenantId, healthy, latencyMs, error };
+    if (wentDown) {
+      const [tenant] = await this.database.db
+        .select({ name: tenants.name })
+        .from(tenants)
+        .where(eq(tenants.id, tenantId));
+      await this.notifications.notify({
+        kind: 'technical.database.unreachable',
+        severity: 'critical',
+        title: 'Base de cabinet injoignable',
+        body: `${tenant?.name ?? tenantId} — ${error ?? 'erreur inconnue'}`,
+        href: `/tenants/${tenantId}?tab=technical`,
+        tenantId,
+        permission: 'technical:read',
+      });
+      await this.alerts.send('databaseUnreachable', {
+        subject: `Base injoignable — ${tenant?.name ?? tenantId}`,
+        lines: [error ?? 'Erreur inconnue'],
+        path: `/tenants/${tenantId}?tab=technical`,
+      });
+    }
+    return { tenantId, healthy, latencyMs, error, sizeBytes };
   }
 
   /** Periodic sweep over every maintained clinic. */

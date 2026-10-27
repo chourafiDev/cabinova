@@ -1,6 +1,6 @@
 "use client";
 
-import { FileText, RefreshCw } from "lucide-react";
+import { FileText, RefreshCw, TicketPercent, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
@@ -20,7 +20,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { api } from "@/lib/api-client";
-import type { TenantBilling } from "@/lib/billing";
+import { CREDIT_NOTE_KIND_LABELS, type TenantBilling } from "@/lib/billing";
 import { formatDate } from "@/lib/format";
 import { BILLING_PERIOD_LABELS, type BillingPeriod, formatPrice, type Plan } from "@/lib/plans";
 import { SUBSCRIPTION_STATUS_LABELS } from "@/lib/tenants";
@@ -63,6 +63,8 @@ export function TenantSubscription({
 	const [pending, startTransition] = useTransition();
 	const sub = billing.subscription;
 	const [dialog, setDialog] = useState<"change" | "attach" | null>(null);
+	const [promoInput, setPromoInput] = useState("");
+	const promo = billing.promo;
 	const [form, setForm] = useState<Form>({
 		planKey: sub?.plan.key ?? plans[0]?.key ?? "",
 		billingPeriod: sub?.billingPeriod ?? "monthly",
@@ -108,7 +110,7 @@ export function TenantSubscription({
 	const row = (label: string, value: React.ReactNode) => (
 		<div className="grid grid-cols-[150px_1fr] gap-4 py-2 text-sm">
 			<dt className="text-muted-foreground">{label}</dt>
-			<dd>{value}</dd>
+			<dd className="min-w-0">{value}</dd>
 		</div>
 	);
 
@@ -150,7 +152,76 @@ export function TenantSubscription({
 						<dl className="divide-y">
 							{row("Facturation", `${BILLING_PERIOD_LABELS[sub.billingPeriod]} — ${formatPrice(sub.price)}`)}
 							{row("Remise", sub.discountPercent ? `${sub.discountPercent} %` : "Aucune")}
-							{row("Prochaine facture", <span className="font-medium">{formatPrice(sub.nextAmount)}</span>)}
+							{row(
+								"Code promo",
+								promo ? (
+									<span className="flex flex-wrap items-center gap-2">
+										<Badge variant="outline" className="border-transparent bg-violet-50 font-mono text-violet-700">
+											<TicketPercent /> {promo.code}
+										</Badge>
+										<span className="text-xs text-muted-foreground">
+											−{promo.discountPercent} %
+											{promo.invoicesLeft === null
+												? ", toute la durée"
+												: promo.invoicesLeft > 0
+													? `, encore ${promo.invoicesLeft} facture${promo.invoicesLeft > 1 ? "s" : ""}`
+													: ", terminé"}
+											{promo.discountPercent <= sub.discountPercent && " (remise actuelle plus avantageuse)"}
+										</span>
+										{canManage && (
+											<Button
+												size="icon-sm"
+												variant="ghost"
+												aria-label="Retirer le code"
+												disabled={pending}
+												onClick={() => run(() => api(`/tenants/${tenantId}/promo-code`, { method: "DELETE" }), "Code promo retiré")}
+											>
+												<X />
+											</Button>
+										)}
+									</span>
+								) : canManage ? (
+									<form
+										className="flex min-w-0 flex-wrap gap-2"
+										onSubmit={(e) => {
+											e.preventDefault();
+											if (!promoInput.trim()) return;
+											run(
+												() =>
+													api(`/tenants/${tenantId}/promo-code`, {
+														method: "POST",
+														body: JSON.stringify({ code: promoInput }),
+													}).then(() => setPromoInput("")),
+												"Code promo appliqué aux prochaines factures",
+											);
+										}}
+									>
+										<Input
+											value={promoInput}
+											onChange={(e) => setPromoInput(e.target.value.toUpperCase())}
+											placeholder="CODE"
+											className="h-8 w-32 font-mono"
+											aria-label="Code promo"
+										/>
+										<Button size="sm" variant="outline" disabled={pending || !promoInput.trim()}>
+											Appliquer
+										</Button>
+									</form>
+								) : (
+									"Aucun"
+								),
+							)}
+							{billing.creditBalance > 0 &&
+								row("Crédit (avoirs)", <span className="text-emerald-700">{formatPrice(billing.creditBalance)} à déduire</span>)}
+							{row(
+								"Prochaine facture",
+								<span className="font-medium">
+									{formatPrice(sub.nextAmount)}
+									{sub.nextAmount !== sub.listAmount && (
+										<span className="ms-1.5 text-xs font-normal text-muted-foreground line-through">{formatPrice(sub.listAmount)}</span>
+									)}
+								</span>,
+							)}
 						</dl>
 						<dl className="divide-y">
 							{row("Depuis le", formatDate(sub.startedAt))}
@@ -185,8 +256,10 @@ export function TenantSubscription({
 					</div>
 					{sub.status === "past_due" && (
 						<p className="mt-3 rounded-md bg-amber-50 px-3 py-2 text-xs text-amber-900">
-							Une facture attend son virement. Enregistrez-le ci-dessous dès qu’il apparaît sur votre relevé. Le cabinet
-							n’est pas suspendu automatiquement.
+							Une facture attend son virement. Enregistrez-le ci-dessous dès qu’il apparaît sur votre relevé.{" "}
+							{billing.suspendAfterDays
+								? `Sans paiement, le cabinet est suspendu automatiquement ${billing.suspendAfterDays} jours après l’échéance (prévenu 3 jours avant), puis réactivé dès le virement enregistré.`
+								: "Le cabinet n’est pas suspendu automatiquement (réglage dans Paiements)."}
 						</p>
 					)}
 				</FormCard>
@@ -208,6 +281,40 @@ export function TenantSubscription({
 			<FormCard title="Factures" contentClassName="p-0">
 				<InvoicesTable invoices={billing.invoices} canWrite={canBill} showTenant={false} />
 			</FormCard>
+
+			{billing.creditNotes.length > 0 && (
+				<FormCard title="Avoirs" contentClassName="p-0">
+					<ul className="divide-y text-sm">
+						{billing.creditNotes.map((n) => (
+							<li key={n.id} className="flex flex-wrap items-center gap-x-4 gap-y-1 px-3 py-2.5">
+								<span className="grid leading-tight">
+									<span className="font-mono text-xs">{n.number}</span>
+									<span className="text-xs text-muted-foreground">sur {n.invoiceNumber}</span>
+								</span>
+								<span className="grid min-w-0 flex-1 leading-tight">
+									<span>{CREDIT_NOTE_KIND_LABELS[n.kind]}</span>
+									<span className="truncate text-xs text-muted-foreground">
+										{n.reason} · {formatDate(n.createdAt)}
+										{n.issuedBy && ` · ${n.issuedBy}`}
+									</span>
+								</span>
+								<span className="grid text-end leading-tight">
+									<span className="font-medium tabular-nums">{formatPrice(n.amount)}</span>
+									<span className="text-xs text-muted-foreground">
+										{n.kind === "refund"
+											? n.refundedAt
+												? `remboursé le ${formatDate(n.refundedAt)}`
+												: "remboursé"
+											: n.remaining > 0
+												? `${formatPrice(n.remaining)} restant`
+												: "entièrement déduit"}
+									</span>
+								</span>
+							</li>
+						))}
+					</ul>
+				</FormCard>
+			)}
 
 			<Dialog open={!!dialog} onOpenChange={(o) => !o && setDialog(null)}>
 				<DialogContent className="sm:max-w-md">

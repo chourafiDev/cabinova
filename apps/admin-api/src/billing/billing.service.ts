@@ -5,21 +5,41 @@ import {
   Logger,
   NotFoundException,
 } from '@nestjs/common';
-import { and, desc, eq, ilike, inArray, lte, ne, or, sql } from 'drizzle-orm';
+import {
+  and,
+  asc,
+  desc,
+  eq,
+  gt,
+  ilike,
+  inArray,
+  isNull,
+  lte,
+  ne,
+  or,
+  sql,
+} from 'drizzle-orm';
 import { type AuditActor, diff, writeAudit } from '../audit/audit.js';
 import {
   DatabaseService,
   type Transaction,
 } from '../database/database.module.js';
 import {
+  creditNotes,
   invoicePayments,
   invoices,
   platformUsers,
+  promoCodes,
   subscriptionPlans,
   subscriptions,
+  tenantStatusChanges,
   tenants,
 } from '../database/schema/index.js';
 import { EmailService } from '../email/email.service.js';
+import { NotificationsService } from '../notifications/notifications.service.js';
+import { PlatformConfigService } from '../settings/platform-config.service.js';
+import { TeamAlertsService } from '../settings/team-alerts.service.js';
+import { TenantLifecycleService } from '../tenants/tenant-lifecycle.service.js';
 import { BillingSettingsService } from './billing-settings.service.js';
 import type {
   AttachSubscriptionDto,
@@ -34,13 +54,26 @@ import {
   invoiceAmount,
   invoiceDescription,
   invoiceNumber,
+  unpaidStep,
 } from './periods.js';
 
 type Subscription = typeof subscriptions.$inferSelect;
 type Invoice = typeof invoices.$inferSelect;
-type Notice = { invoiceId: string; kind: 'invoice' | 'overdue' | 'receipt' };
+type Notice =
+  | {
+      invoiceId: string;
+      kind:
+        'invoice' | 'overdue' | 'receipt' | 'suspension_warning' | 'suspended';
+      /** suspension_warning: the day access will be cut. */
+      suspendOn?: Date;
+    }
+  | { subscriptionId: string; kind: 'trial_ending' };
 
 const SYSTEM: AuditActor = { userId: null };
+const formatMad = (centimes: number) =>
+  new Intl.NumberFormat('fr-MA', { style: 'currency', currency: 'MAD' }).format(
+    centimes / 100,
+  );
 const OPEN = ['billed', 'overdue'] as const;
 
 /**
@@ -50,9 +83,12 @@ const OPEN = ['billed', 'overdue'] as const;
  * renewal, moves unpaid subscriptions to past_due when their period ends,
  * marks invoices overdue after the grace period, and ends subscriptions
  * cancelled at term. An admin records each transfer seen on the bank
- * statement, which pays the invoice and extends the paid period. Access is
- * never cut automatically: suspending a cabinet for non-payment stays a
- * deliberate decision (Module 2), as the spec leaves it "à voir".
+ * statement, which pays the invoice and extends the paid period.
+ *
+ * Non-payment: when "suspendAfterDays" is set (Paiements), a cabinet whose
+ * invoice stays overdue that long is suspended (reason "unpaid"), after a
+ * warning e-mail; recording the payment reactivates it — only if it was
+ * suspended for non-payment. 0 keeps suspension manual.
  */
 @Injectable()
 export class BillingService {
@@ -62,14 +98,31 @@ export class BillingService {
     private readonly database: DatabaseService,
     private readonly settings: BillingSettingsService,
     private readonly email: EmailService,
+    private readonly platform: PlatformConfigService,
+    private readonly alerts: TeamAlertsService,
+    private readonly lifecycle: TenantLifecycleService,
+    private readonly notifications: NotificationsService,
   ) {}
 
   // ── Sweep ──────────────────────────────────────────────────────────────
 
   async sweep(now = new Date()) {
-    const { graceDays, invoiceDaysBefore } = await this.settings.get();
+    const {
+      graceDays,
+      invoiceDaysBefore,
+      trialReminderDays,
+      suspendAfterDays,
+    } = await this.settings.get();
     const notices: Notice[] = [];
-    const counts = { issued: 0, pastDue: 0, overdue: 0, cancelled: 0 };
+    const counts = {
+      issued: 0,
+      pastDue: 0,
+      overdue: 0,
+      cancelled: 0,
+      trialReminders: 0,
+      suspensionWarnings: 0,
+      suspended: 0,
+    };
 
     await this.database.db.transaction(async (tx) => {
       // 1. Trials that ended, and paid periods that ended: invoice the next
@@ -93,7 +146,15 @@ export class BillingService {
         const issued = await this.issueNext(tx, sub, now, graceDays, SYSTEM);
         if (issued) {
           counts.issued++;
-          notices.push({ invoiceId: issued.id, kind: 'invoice' });
+          notices.push({
+            invoiceId: issued.id,
+            kind: issued.status === 'paid' ? 'receipt' : 'invoice',
+          });
+          // Fully covered by credit: the new period is already paid.
+          if (issued.status === 'paid') {
+            await this.extendSubscription(tx, issued);
+            continue;
+          }
         }
         await tx
           .update(subscriptions)
@@ -131,7 +192,12 @@ export class BillingService {
         const issued = await this.issueNext(tx, sub, now, graceDays, SYSTEM);
         if (issued) {
           counts.issued++;
-          notices.push({ invoiceId: issued.id, kind: 'invoice' });
+          notices.push({
+            invoiceId: issued.id,
+            kind: issued.status === 'paid' ? 'receipt' : 'invoice',
+          });
+          if (issued.status === 'paid')
+            await this.extendSubscription(tx, issued);
         }
       }
 
@@ -155,6 +221,71 @@ export class BillingService {
         notices.push({ invoiceId: invoice.id, kind: 'overdue' });
       }
       counts.overdue = late.length;
+
+      // 4. Trials ending soon: one reminder per trial.
+      if (trialReminderDays > 0) {
+        const ending = await tx
+          .update(subscriptions)
+          .set({ trialReminderSentAt: now })
+          .where(
+            and(
+              eq(subscriptions.status, 'trialing'),
+              isNull(subscriptions.trialReminderSentAt),
+              gt(subscriptions.currentPeriodEnd, now),
+              lte(
+                subscriptions.currentPeriodEnd,
+                addDays(now, trialReminderDays),
+              ),
+            ),
+          )
+          .returning({ id: subscriptions.id });
+        for (const { id } of ending) {
+          notices.push({ subscriptionId: id, kind: 'trial_ending' });
+        }
+        counts.trialReminders = ending.length;
+      }
+
+      // 5–6. Unpaid long enough: warn, then suspend (active cabinets only).
+      if (suspendAfterDays > 0) {
+        const overdue = await tx
+          .select({ invoice: invoices })
+          .from(invoices)
+          .innerJoin(tenants, eq(tenants.id, invoices.tenantId))
+          .where(
+            and(eq(invoices.status, 'overdue'), eq(tenants.status, 'active')),
+          )
+          .orderBy(asc(invoices.dueAt))
+          .for('update', { of: invoices, skipLocked: true });
+        const suspended = new Set<string>();
+        for (const { invoice } of overdue) {
+          const step = unpaidStep(invoice, suspendAfterDays, now);
+          if (step.action === 'suspend') {
+            if (suspended.has(invoice.tenantId)) continue;
+            await this.lifecycle.applySystem(
+              tx,
+              invoice.tenantId,
+              'suspend',
+              SYSTEM,
+              `Suspension automatique : facture ${invoice.number} impayée ${suspendAfterDays} jours après son échéance.`,
+              'unpaid',
+            );
+            suspended.add(invoice.tenantId);
+            notices.push({ invoiceId: invoice.id, kind: 'suspended' });
+            counts.suspended++;
+          } else if (step.action === 'warn') {
+            await tx
+              .update(invoices)
+              .set({ suspensionWarningSentAt: now })
+              .where(eq(invoices.id, invoice.id));
+            notices.push({
+              invoiceId: invoice.id,
+              kind: 'suspension_warning',
+              suspendOn: step.suspendOn!,
+            });
+            counts.suspensionWarnings++;
+          }
+        }
+      }
     });
 
     await this.notify(notices);
@@ -204,46 +335,49 @@ export class BillingService {
         .set({ status: 'paid', paidAt: receivedAt })
         .where(eq(invoices.id, invoiceId));
 
-      let tenantStatus: string | null = null;
-      if (invoice.subscriptionId) {
-        const [sub] = await tx
-          .select()
-          .from(subscriptions)
-          .where(eq(subscriptions.id, invoice.subscriptionId))
-          .for('update');
-        if (sub && sub.status !== 'cancelled') {
-          const paidUntil =
-            sub.currentPeriodEnd && sub.currentPeriodEnd > invoice.periodEnd
-              ? sub.currentPeriodEnd
-              : invoice.periodEnd;
-          await tx
-            .update(subscriptions)
-            .set({
-              currentPeriodEnd: paidUntil,
-              // If paidUntil is already past, the sweep invoices the
-              // following period and moves it back to past_due.
-              status: 'active',
-            })
-            .where(eq(subscriptions.id, sub.id));
-        }
-        const [tenant] = await tx
-          .select({ status: tenants.status })
-          .from(tenants)
-          .where(eq(tenants.id, invoice.tenantId));
-        tenantStatus = tenant?.status ?? null;
-      }
+      await this.extendSubscription(tx, invoice);
+      const reactivated = await this.reactivateIfUnpaidOnly(
+        tx,
+        invoice.tenantId,
+        actor,
+        invoice.number,
+      );
+      const [tenant] = await tx
+        .select({ status: tenants.status })
+        .from(tenants)
+        .where(eq(tenants.id, invoice.tenantId));
+      const tenantStatus = tenant?.status ?? null;
       await this.audit(tx, actor, invoice.tenantId, 'billing.payment.record', {
         invoice: invoice.number,
         amount: dto.amount,
         receivedAt: dto.receivedAt,
         reference: dto.reference ?? null,
       });
-      return { invoice, tenantStatus };
+      return { invoice, tenantStatus, reactivated };
     });
     await this.notify([{ invoiceId, kind: 'receipt' }]);
+    if (result.reactivated) {
+      const [tenant] = await this.database.db
+        .select({ name: tenants.name })
+        .from(tenants)
+        .where(eq(tenants.id, result.invoice.tenantId));
+      await this.notifications.notify({
+        kind: 'billing.tenant.reactivated',
+        severity: 'success',
+        title: 'Cabinet réactivé après paiement',
+        body: `${tenant?.name ?? ''} — facture ${result.invoice.number} réglée.`,
+        href: `/tenants/${result.invoice.tenantId}?tab=subscription`,
+        tenantId: result.invoice.tenantId,
+        permission: 'tenants:read',
+        exceptUserId: actor.userId,
+      });
+    }
     return {
       ok: true,
-      // The UI suggests reactivating a cabinet suspended for non-payment.
+      /** Suspended for non-payment and nothing else overdue: reactivated. */
+      reactivated: result.reactivated,
+      // Still suspended (another reason, or other unpaid invoices): the UI
+      // suggests reviewing the cabinet's status.
       tenantSuspended: result.tenantStatus === 'suspended',
     };
   }
@@ -612,6 +746,29 @@ export class BillingService {
       .from(subscriptionPlans)
       .where(eq(subscriptionPlans.id, sub.planId));
     const periodEnd = addPeriod(periodStart, sub.billingPeriod);
+
+    // Promo code still running: the better of it and the commercial discount.
+    const [promo] =
+      sub.promoCodeId && (sub.promoInvoicesLeft ?? 1) > 0
+        ? await tx
+            .select({
+              code: promoCodes.code,
+              percent: promoCodes.discountPercent,
+            })
+            .from(promoCodes)
+            .where(eq(promoCodes.id, sub.promoCodeId))
+        : [];
+    const usePromo = !!promo && promo.percent > sub.discountPercent;
+    const discount = usePromo ? promo.percent : sub.discountPercent;
+    if (promo && sub.promoInvoicesLeft !== null) {
+      await tx
+        .update(subscriptions)
+        .set({ promoInvoicesLeft: sub.promoInvoicesLeft - 1 })
+        .where(eq(subscriptions.id, sub.id));
+    }
+    const gross = invoiceAmount(sub.price, discount);
+    const credit = await this.consumeCredit(tx, sub.tenantId, gross);
+    const amount = gross - credit;
     const [{ n }] = await tx
       .execute<{ n: string }>(sql`select nextval('invoice_number_seq') as n`)
       .then((r) => r.rows);
@@ -621,18 +778,24 @@ export class BillingService {
         number: invoiceNumber(now.getUTCFullYear(), Number(n)),
         tenantId: sub.tenantId,
         subscriptionId: sub.id,
-        description: invoiceDescription(
-          plan.name,
-          sub.billingPeriod,
-          periodStart,
-          periodEnd,
-          sub.discountPercent,
-        ),
-        amount: invoiceAmount(sub.price, sub.discountPercent),
+        description:
+          invoiceDescription(
+            plan.name,
+            sub.billingPeriod,
+            periodStart,
+            periodEnd,
+            discount,
+          ) +
+          (usePromo ? ` — code ${promo.code}` : '') +
+          (credit ? ` — avoir déduit : ${formatMad(credit)}` : ''),
+        amount,
+        creditApplied: credit,
         periodStart,
         periodEnd,
         issuedAt: now,
         dueAt: dueDate(periodStart, now, graceDays),
+        // Entirely covered by credit: nothing to transfer.
+        ...(amount === 0 && { status: 'paid' as const, paidAt: now }),
       })
       .returning();
     await this.audit(tx, actor, sub.tenantId, 'billing.invoice.issue', {
@@ -642,6 +805,107 @@ export class BillingService {
       periodEnd: periodEnd.toISOString(),
     });
     return invoice;
+  }
+
+  /** A paid invoice extends its subscription to the end of the invoiced period. */
+  private async extendSubscription(tx: Transaction, invoice: Invoice) {
+    if (!invoice.subscriptionId) return;
+    const [sub] = await tx
+      .select()
+      .from(subscriptions)
+      .where(eq(subscriptions.id, invoice.subscriptionId))
+      .for('update');
+    if (!sub || sub.status === 'cancelled') return;
+    const paidUntil =
+      sub.currentPeriodEnd && sub.currentPeriodEnd > invoice.periodEnd
+        ? sub.currentPeriodEnd
+        : invoice.periodEnd;
+    await tx
+      .update(subscriptions)
+      // If paidUntil is already past, the sweep invoices the following
+      // period and moves it back to past_due.
+      .set({ currentPeriodEnd: paidUntil, status: 'active' })
+      .where(eq(subscriptions.id, sub.id));
+  }
+
+  /**
+   * After a payment: reactivates a cabinet whose current suspension is for
+   * non-payment, once nothing is overdue any more. Never lifts a suspension
+   * made for another reason (fraud, security…).
+   */
+  private async reactivateIfUnpaidOnly(
+    tx: Transaction,
+    tenantId: string,
+    actor: AuditActor,
+    invoiceNumber: string,
+  ) {
+    const [tenant] = await tx
+      .select({ status: tenants.status })
+      .from(tenants)
+      .where(eq(tenants.id, tenantId));
+    if (tenant?.status !== 'suspended') return false;
+    const [last] = await tx
+      .select({ reason: tenantStatusChanges.reason })
+      .from(tenantStatusChanges)
+      .where(
+        and(
+          eq(tenantStatusChanges.tenantId, tenantId),
+          eq(tenantStatusChanges.toStatus, 'suspended'),
+          eq(tenantStatusChanges.state, 'applied'),
+        ),
+      )
+      .orderBy(desc(tenantStatusChanges.appliedAt))
+      .limit(1);
+    if (last?.reason !== 'unpaid') return false;
+    const [stillOverdue] = await tx
+      .select({ id: invoices.id })
+      .from(invoices)
+      .where(
+        and(eq(invoices.tenantId, tenantId), eq(invoices.status, 'overdue')),
+      )
+      .limit(1);
+    if (stillOverdue) return false;
+    await this.lifecycle.applySystem(
+      tx,
+      tenantId,
+      'reactivate',
+      actor,
+      `Réactivation automatique : paiement de la facture ${invoiceNumber} enregistré.`,
+      'payment_regularized',
+    );
+    return true;
+  }
+
+  /** Deducts the cabinet's credit (oldest avoir first) from an amount; returns what was used. */
+  private async consumeCredit(
+    tx: Transaction,
+    tenantId: string,
+    amount: number,
+  ) {
+    if (amount <= 0) return 0;
+    const notes = await tx
+      .select({ id: creditNotes.id, remaining: creditNotes.remaining })
+      .from(creditNotes)
+      .where(
+        and(
+          eq(creditNotes.tenantId, tenantId),
+          eq(creditNotes.kind, 'credit'),
+          gt(creditNotes.remaining, 0),
+        ),
+      )
+      .orderBy(asc(creditNotes.createdAt))
+      .for('update');
+    let used = 0;
+    for (const note of notes) {
+      if (used >= amount) break;
+      const take = Math.min(note.remaining, amount - used);
+      await tx
+        .update(creditNotes)
+        .set({ remaining: note.remaining - take })
+        .where(eq(creditNotes.id, note.id));
+      used += take;
+    }
+    return used;
   }
 
   private async cancel(
@@ -753,27 +1017,102 @@ export class BillingService {
           swift: settings.swift,
         }
       : null;
-    for (const { invoiceId, kind } of notices) {
+    const { cabinets } = await this.platform.get('notifications');
+    // Suspension notices always go out: they're about access.
+    const enabled: Record<Notice['kind'], boolean> = {
+      invoice: cabinets.invoiceIssued,
+      overdue: cabinets.invoiceOverdue,
+      receipt: cabinets.paymentReceipt,
+      trial_ending: cabinets.trialEnding,
+      suspension_warning: true,
+      suspended: true,
+    };
+    for (const notice of notices) {
       try {
+        if (notice.kind === 'trial_ending') {
+          if (!enabled.trial_ending) continue;
+          const [row] = await this.database.db
+            .select({
+              sub: subscriptions,
+              tenant: tenants,
+              plan: subscriptionPlans,
+            })
+            .from(subscriptions)
+            .innerJoin(tenants, eq(tenants.id, subscriptions.tenantId))
+            .innerJoin(
+              subscriptionPlans,
+              eq(subscriptionPlans.id, subscriptions.planId),
+            )
+            .where(eq(subscriptions.id, notice.subscriptionId));
+          if (!row?.sub.currentPeriodEnd) continue;
+          await this.email.sendTrialEnding({
+            email: row.tenant.email,
+            name: row.tenant.responsibleName,
+            tenantName: row.tenant.name,
+            planName: row.plan.name,
+            endsAt: row.sub.currentPeriodEnd,
+            amount: invoiceAmount(row.sub.price, row.sub.discountPercent),
+            period: row.sub.billingPeriod,
+          });
+          continue;
+        }
         const [row] = await this.database.db
           .select({ invoice: invoices, tenant: tenants })
           .from(invoices)
           .innerJoin(tenants, eq(tenants.id, invoices.tenantId))
-          .where(eq(invoices.id, invoiceId));
+          .where(eq(invoices.id, notice.invoiceId));
         if (!row) continue;
+        if (notice.kind === 'overdue') {
+          await this.alerts.send('invoiceOverdue', {
+            subject: `Facture ${row.invoice.number} en retard — ${row.tenant.name}`,
+            lines: [
+              `Montant : ${formatMad(row.invoice.amount)}`,
+              `Échéance : ${row.invoice.dueAt.toISOString().slice(0, 10)}`,
+            ],
+            path: `/tenants/${row.tenant.id}?tab=subscription`,
+          });
+        }
+        if (notice.kind === 'overdue') {
+          await this.notifications.notify({
+            kind: 'billing.invoice.overdue',
+            severity: 'warning',
+            title: `Facture ${row.invoice.number} en retard`,
+            body: `${row.tenant.name} — ${formatMad(row.invoice.amount)}`,
+            href: `/tenants/${row.tenant.id}?tab=subscription`,
+            tenantId: row.tenant.id,
+            permission: 'billing:read',
+          });
+        }
+        if (notice.kind === 'suspended') {
+          await this.notifications.notify({
+            kind: 'billing.tenant.suspended',
+            severity: 'critical',
+            title: 'Cabinet suspendu pour impayé',
+            body: `${row.tenant.name} — facture ${row.invoice.number}, ${formatMad(row.invoice.amount)}`,
+            href: `/tenants/${row.tenant.id}?tab=subscription`,
+            tenantId: row.tenant.id,
+            permission: 'tenants:read',
+          });
+          await this.alerts.send('invoiceOverdue', {
+            subject: `Cabinet suspendu pour impayé — ${row.tenant.name}`,
+            lines: [
+              `Facture ${row.invoice.number} : ${formatMad(row.invoice.amount)}`,
+            ],
+            path: `/tenants/${row.tenant.id}?tab=subscription`,
+          });
+        }
+        if (!enabled[notice.kind]) continue;
         await this.email.sendBillingNotice({
           email: row.tenant.email,
           name: row.tenant.responsibleName,
           tenantName: row.tenant.name,
-          kind,
+          kind: notice.kind,
           invoice: row.invoice,
           bank,
+          suspendOn: notice.suspendOn,
         });
       } catch (err) {
-        this.logger.error(
-          `Billing notice ${kind} for ${invoiceId} failed`,
-          err,
-        );
+        this.logger.error(`Billing notice ${notice.kind} failed`, err);
       }
     }
   }

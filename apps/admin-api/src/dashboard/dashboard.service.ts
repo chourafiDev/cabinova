@@ -21,6 +21,7 @@ import {
   invoices,
   subscriptionPlans,
   subscriptions,
+  supportTickets,
   tenantDatabases,
   tenantProvisioningRuns,
   tenants,
@@ -45,7 +46,13 @@ const TOP = 8;
 
 type TenantStatus = (typeof tenants.$inferSelect)['status'];
 
-export type AlertItem = { tenantId: string; name: string; detail?: string };
+export type AlertItem = {
+  tenantId: string | null;
+  name: string;
+  detail?: string;
+  /** Where the item links; defaults to the cabinet page. */
+  href?: string;
+};
 export type Alert = {
   key: string;
   severity: 'critical' | 'warning' | 'info';
@@ -76,13 +83,21 @@ const monthOf = (column: Parameters<typeof sql>[1]) =>
 export class DashboardService {
   constructor(private readonly database: DatabaseService) {}
 
-  async overview(query: DashboardQuery) {
+  /**
+   * `viewer`: ticket alerts follow the support rules — none without
+   * support:read, and only their own and unassigned tickets without
+   * support:all.
+   */
+  async overview(
+    query: DashboardQuery,
+    viewer: { id: string; permissions: readonly string[] },
+  ) {
     const scope = this.scope(query);
     const [kpis, series, breakdowns, alerts, filters] = await Promise.all([
       this.kpis(scope),
       this.series(scope),
       this.breakdowns(scope),
-      this.alerts(),
+      this.alerts(viewer),
       this.filterOptions(),
     ]);
     return {
@@ -369,7 +384,12 @@ export class DashboardService {
   }
 
   /** Platform-wide, unaffected by filters: an incident is never filtered out. */
-  private async alerts(): Promise<Alert[]> {
+  private async alerts(viewer: {
+    id: string;
+    permissions: readonly string[];
+  }): Promise<Alert[]> {
+    const seesTickets = viewer.permissions.includes('support:read');
+    const seesAllTickets = viewer.permissions.includes('support:all');
     const db = this.database.db;
     const now = new Date();
     const latest = latestSchemaVersion();
@@ -381,6 +401,8 @@ export class DashboardService {
       scheduled,
       trials,
       overdue,
+      tickets,
+      storage,
     ] = await Promise.all([
       db
         .select({
@@ -485,13 +507,69 @@ export class DashboardService {
         .from(invoices)
         .innerJoin(tenants, eq(tenants.id, invoices.tenantId))
         .where(eq(invoices.status, 'overdue')),
+      // Open incidents and tickets past their first-answer deadline.
+      db
+        .select({
+          id: supportTickets.id,
+          number: supportTickets.number,
+          subject: supportTickets.subject,
+          type: supportTickets.type,
+          firstResponseAt: supportTickets.firstResponseAt,
+          firstResponseDueAt: supportTickets.firstResponseDueAt,
+          tenantId: tenants.id,
+          name: tenants.name,
+        })
+        .from(supportTickets)
+        .leftJoin(tenants, eq(tenants.id, supportTickets.tenantId))
+        .where(
+          and(
+            inArray(supportTickets.status, ['open', 'in_progress', 'waiting']),
+            seesTickets ? undefined : sql`false`,
+            seesAllTickets
+              ? undefined
+              : or(
+                  isNull(supportTickets.assigneeId),
+                  eq(supportTickets.assigneeId, viewer.id),
+                ),
+          ),
+        )
+        .orderBy(desc(supportTickets.createdAt)),
+      // Databases at 90 % or more of the cabinet's storage quota.
+      db
+        .select({
+          tenantId: tenants.id,
+          name: tenants.name,
+          sizeBytes: tenantDatabases.sizeBytes,
+          quotaMb: tenants.storageQuotaMb,
+        })
+        .from(tenantDatabases)
+        .innerJoin(tenants, eq(tenants.id, tenantDatabases.tenantId))
+        .where(
+          and(
+            ne(tenants.status, 'closed'),
+            isNotNull(tenantDatabases.sizeBytes),
+            isNotNull(tenants.storageQuotaMb),
+            sql`${tenantDatabases.sizeBytes} >= ${tenants.storageQuotaMb}::bigint * 1048576 * 0.9`,
+          ),
+        ),
     ]);
+    const ticketItem = (t: (typeof tickets)[number]) => ({
+      tenantId: t.tenantId,
+      name: t.name ?? 'Toute la plateforme',
+      detail: `${t.number} · ${t.subject}`,
+      href: `/support/${t.id}`,
+    });
 
     const alert = (
       key: string,
       severity: Alert['severity'],
       title: string,
-      rows: { tenantId: string; name: string; detail?: string | null }[],
+      rows: {
+        tenantId: string | null;
+        name: string;
+        detail?: string | null;
+        href?: string;
+      }[],
       href: (first?: string) => string,
     ): Alert => ({
       key,
@@ -502,8 +580,9 @@ export class DashboardService {
         tenantId: r.tenantId,
         name: r.name,
         ...(r.detail && { detail: r.detail }),
+        ...(r.href && { href: r.href }),
       })),
-      href: href(rows[0]?.tenantId),
+      href: href(rows[0]?.tenantId ?? undefined),
     });
 
     return [
@@ -533,6 +612,34 @@ export class DashboardService {
         'warning',
         'Bases en retard de migration',
         lagging,
+        () => '/technical',
+      ),
+      alert(
+        'incidents_open',
+        'critical',
+        'Incidents ouverts',
+        tickets.filter((t) => t.type === 'incident').map(ticketItem),
+        () => '/support?type=incident',
+      ),
+      alert(
+        'support_overdue',
+        'warning',
+        'Tickets sans réponse hors délai',
+        tickets
+          .filter((t) => !t.firstResponseAt && t.firstResponseDueAt < now)
+          .map(ticketItem),
+        () => '/support?view=overdue',
+      ),
+      alert(
+        'storage_quota',
+        'warning',
+        'Stockage proche du quota (≥ 90 %)',
+        storage.map((r) => ({
+          tenantId: r.tenantId,
+          name: r.name,
+          detail: `${Math.round((r.sizeBytes! / 1048576) * 10) / 10} Mo / ${r.quotaMb} Mo`,
+          href: `/tenants/${r.tenantId}?tab=technical`,
+        })),
         () => '/technical',
       ),
       alert(

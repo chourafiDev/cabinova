@@ -27,13 +27,14 @@
     "billing:sweep": "node dist/billing/scripts/run-sweep.js"
   },
   "dependencies": {
+    "@cabinova/features": "workspace:*",
     "@cabinova/tenant-db": "workspace:*",
     "@neondatabase/serverless": "^1.2.0",
-    "@nestjs/common": "^12.0.1",
+    "@nestjs/common": "^12.3.2",
     "@nestjs/config": "^12.0.1",
-    "@nestjs/core": "^12.0.1",
+    "@nestjs/core": "^12.3.2",
     "@nestjs/passport": "^12.0.0",
-    "@nestjs/platform-express": "^12.0.1",
+    "@nestjs/platform-express": "^12.3.2",
     "@nestjs/throttler": "^6.7.1",
     "argon2": "^0.45.1",
     "class-transformer": "^0.5.1",
@@ -51,17 +52,16 @@
     "zod": "^4.6.7"
   },
   "devDependencies": {
-    "@nestjs/cli": "^12.0.0",
-    "@nestjs/mau": "^0.2.6",
+    "@nestjs/cli": "^12.0.11",
     "@nestjs/schematics": "^12.0.0",
-    "@nestjs/testing": "^12.0.1",
+    "@nestjs/testing": "^12.3.2",
     "@types/cookie-parser": "^1.4.10",
     "@types/express": "^5.0.0",
     "@types/node": "^24.0.0",
     "@types/passport-local": "^1.0.38",
     "@types/supertest": "^7.0.0",
     "@types/ws": "^8.18.2",
-    "@vitest/coverage-v8": "^4.1.2",
+    "@vitest/coverage-v8": "^4.1.12",
     "dotenv": "^18.0.7",
     "drizzle-kit": "^0.31.11",
     "oxlint": "^1.58.0",
@@ -72,6 +72,6 @@
     "tsx": "^4.23.15",
     "typescript": "^6.0.2",
     "vite": "^8.0.0",
-    "vitest": "^4.1.2"
+    "vitest": "^4.1.12"
   }
 }

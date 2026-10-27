@@ -16,3 +16,12 @@ export function UserStatusBadge({ status, inviteExpired }: { status: PlatformUse
 		</Badge>
 	);
 }
+
+/** Whether the account has two-factor authentication on. */
+export function TwoFactorBadge({ enabled }: { enabled: boolean }) {
+	return (
+		<Badge variant="outline" className={cn("border-transparent", enabled ? "bg-violet-50 text-violet-700" : "bg-amber-50 text-amber-800")}>
+			{enabled ? "2FA" : "Sans 2FA"}
+		</Badge>
+	);
+}

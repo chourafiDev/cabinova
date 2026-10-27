@@ -64,6 +64,34 @@
       "when": 1792852079326,
       "tag": "0008_feature_catalog",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1792865486572,
+      "tag": "0009_security_compliance",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1792867896345,
+      "tag": "0010_support_tickets",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1792871846197,
+      "tag": "0011_billing_gaps",
+      "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1793026084452,
+      "tag": "0012_notifications",
+      "breakpoints": true
     }
   ]
 }

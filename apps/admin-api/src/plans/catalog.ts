@@ -1,62 +1,11 @@
+import type { FeatureKey } from '@cabinova/features';
+
 // Module 3 + "Fonctionnalités et options" — the features a plan can include
 // and the three default plans seeded by `pnpm db:seed` (the matrix of
 // "Partie super admin"). Prices and limits are illustrative; edit them from
-// the Offres page. The feature catalog itself lives in the `features` table
-// (created, put in beta or switched off from the Fonctionnalités page);
-// DEFAULT_FEATURES only seeds it. Keep FEATURE_LEVELS in sync with
-// apps/admin-web/src/lib/features.ts.
-
-/** Clinic-side modules, seeded once; the catalog is then managed in the UI. */
-export const DEFAULT_FEATURES = [
-  {
-    key: 'appointments',
-    name: 'Gestion des rendez-vous',
-    category: 'Agenda',
-    sortOrder: 1,
-  },
-  {
-    key: 'medical_records',
-    name: 'Dossiers médicaux',
-    category: 'Dossier patient',
-    sortOrder: 2,
-  },
-  {
-    key: 'prescriptions',
-    name: 'Ordonnances',
-    category: 'Dossier patient',
-    sortOrder: 3,
-  },
-  {
-    key: 'advanced_stats',
-    name: 'Statistiques avancées',
-    category: 'Pilotage',
-    sortOrder: 4,
-  },
-  {
-    key: 'sms_reminders',
-    name: 'Rappels SMS ou WhatsApp',
-    category: 'Communication',
-    sortOrder: 5,
-  },
-  {
-    key: 'multi_doctor',
-    name: 'Gestion de plusieurs médecins',
-    category: 'Organisation',
-    sortOrder: 6,
-  },
-  {
-    key: 'multi_site',
-    name: 'Multi-sites',
-    category: 'Organisation',
-    sortOrder: 7,
-  },
-  {
-    key: 'priority_support',
-    name: 'Support prioritaire',
-    category: 'Service',
-    sortOrder: 8,
-  },
-] as const;
+// the Offres page. The features themselves come from the code registry
+// (@cabinova/features), synced into the `features` table at startup. Keep
+// FEATURE_LEVELS in sync with apps/admin-web/src/lib/features.ts.
 
 /**
  * included — available without limit
@@ -160,5 +109,6 @@ export const DEFAULT_PLANS = [
   maxUsers: number | null;
   storageQuotaMb: number | null;
   sortOrder: number;
-  features: PlanFeatures;
+  /** Every feature the code implements gets a level in each default plan. */
+  features: Record<FeatureKey, FeatureLevel>;
 }[];

@@ -6,13 +6,21 @@ import {
   Param,
   ParseUUIDPipe,
   Post,
+  Put,
   Req,
+  Res,
+  StreamableFile,
 } from '@nestjs/common';
-import type { Request } from 'express';
+import type { Request, Response } from 'express';
 import type { AuditActor } from '../audit/audit.js';
 import type { AuthUser } from '../auth/auth.types.js';
 import { CurrentUser, RequirePermissions } from '../auth/decorators.js';
-import { ProvisionTenantDto } from './dto.js';
+import { DataLifecycleService } from './data-lifecycle.service.js';
+import {
+  ComplianceSettingsDto,
+  DeleteTenantDataDto,
+  ProvisionTenantDto,
+} from './dto.js';
 import { ProvisioningService } from './provisioning.service.js';
 import { TenantDatabasesService } from './tenant-databases.service.js';
 
@@ -27,7 +35,66 @@ export class TenantDatabasesController {
   constructor(
     private readonly databases: TenantDatabasesService,
     private readonly provisioning: ProvisioningService,
+    private readonly lifecycle: DataLifecycleService,
   ) {}
+
+  /** End of life: closure, retention end, exports, what blocks deletion. */
+  @RequirePermissions('tenants:data')
+  @Get('tenants/:id/data')
+  dataStatus(@Param('id', ParseUUIDPipe) id: string) {
+    return this.lifecycle.status(id);
+  }
+
+  /** The clinic's data as .json.gz; the fingerprint is recorded as proof. */
+  @RequirePermissions('tenants:data')
+  @Post('tenants/:id/data/export')
+  @HttpCode(200)
+  async exportData(
+    @Param('id', ParseUUIDPipe) id: string,
+    @CurrentUser() user: AuthUser,
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const { file, filename, sha256 } = await this.lifecycle.export(
+      id,
+      actorOf(user, req),
+    );
+    res.setHeader('Content-Type', 'application/gzip');
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    res.setHeader('X-Export-Sha256', sha256);
+    return new StreamableFile(file);
+  }
+
+  @RequirePermissions('tenants:data')
+  @Post('tenants/:id/data/delete')
+  @HttpCode(200)
+  deleteData(
+    @Param('id', ParseUUIDPipe) id: string,
+    @CurrentUser() user: AuthUser,
+    @Req() req: Request,
+    @Body() dto: DeleteTenantDataDto,
+  ) {
+    return this.lifecycle.delete(id, actorOf(user, req), dto.confirmName);
+  }
+
+  @RequirePermissions('security:read')
+  @Get('security/compliance')
+  async compliance() {
+    return { retentionYears: await this.lifecycle.retentionYears() };
+  }
+
+  @RequirePermissions('settings:write')
+  @Put('security/compliance')
+  setCompliance(
+    @CurrentUser() user: AuthUser,
+    @Req() req: Request,
+    @Body() dto: ComplianceSettingsDto,
+  ) {
+    return this.lifecycle.setRetentionYears(
+      actorOf(user, req),
+      dto.retentionYears,
+    );
+  }
 
   @RequirePermissions('technical:read')
   @Get('tenant-databases')

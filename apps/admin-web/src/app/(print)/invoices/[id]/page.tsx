@@ -3,6 +3,8 @@ import { formatRib, INVOICE_STATUS_LABELS, type InvoiceDetail } from "@/lib/bill
 import { formatDate } from "@/lib/format";
 import { can } from "@/lib/permissions";
 import { formatPrice } from "@/lib/plans";
+import { BrandMark } from "@/components/brand-mark";
+import { getBranding } from "@/lib/branding";
 import { apiGet } from "@/lib/server-api";
 import { getSession } from "@/lib/session";
 import { cn } from "@/lib/utils";
@@ -24,7 +26,7 @@ export default async function InvoicePrintPage({ params }: PageProps<"/invoices/
 	const { id } = await params;
 	const session = await getSession();
 	if (!session || !can(session.user.permissions, "billing:read")) notFound();
-	const invoice = await apiGet<InvoiceDetail>(`/billing/invoices/${id}`);
+	const [invoice, branding] = await Promise.all([apiGet<InvoiceDetail>(`/billing/invoices/${id}`), getBranding()]);
 	const issuer = invoice.issuer.configured ? invoice.issuer : null;
 	const t = invoice.tenant;
 
@@ -49,8 +51,8 @@ export default async function InvoicePrintPage({ params }: PageProps<"/invoices/
 
 				<header className="mb-10 grid gap-1">
 					<div className="flex items-center gap-2">
-						<span className="flex size-8 items-center justify-center rounded-lg bg-[#613f75] font-bold text-white">C</span>
-						<span className="text-lg font-bold">{issuer?.companyName ?? "Cabinova"}</span>
+						<BrandMark branding={branding} className="font-bold" />
+						<span className="text-lg font-bold">{issuer?.companyName ?? branding.platformName}</span>
 					</div>
 					{issuer?.address && <p className="text-zinc-600">{issuer.address}</p>}
 					{issuer?.email && <p className="text-zinc-600">{issuer.email}</p>}
@@ -94,8 +96,14 @@ export default async function InvoicePrintPage({ params }: PageProps<"/invoices/
 					<tbody>
 						<tr className="border-b">
 							<td className="py-3 pe-6">{invoice.description}</td>
-							<td className="py-3 text-end tabular-nums">{formatPrice(invoice.amount)}</td>
+							<td className="py-3 text-end tabular-nums">{formatPrice(invoice.amount + invoice.creditApplied)}</td>
 						</tr>
+						{invoice.creditApplied > 0 && (
+							<tr className="border-b">
+								<td className="py-3 pe-6 text-zinc-600">Avoir déduit</td>
+								<td className="py-3 text-end tabular-nums text-zinc-600">−{formatPrice(invoice.creditApplied)}</td>
+							</tr>
+						)}
 					</tbody>
 					<tfoot>
 						<tr>
@@ -125,7 +133,7 @@ export default async function InvoicePrintPage({ params }: PageProps<"/invoices/
 							<dd className="font-semibold">{invoice.number}</dd>
 						</dl>
 					) : (
-						<p className="text-zinc-600">Les coordonnées bancaires seront communiquées par le support Cabinova.</p>
+						<p className="text-zinc-600">Les coordonnées bancaires seront communiquées par le support {branding.platformName}.</p>
 					)}
 					<p className="mt-3 text-xs text-zinc-500">
 						Merci d’indiquer la référence <strong>{invoice.number}</strong> dans le libellé du virement.
@@ -143,9 +151,26 @@ export default async function InvoicePrintPage({ params }: PageProps<"/invoices/
 								</li>
 							))}
 						</ul>
-					</section>
-				)}
-			</article>
+							</section>
+						)}
+
+						{invoice.creditNotes.length > 0 && (
+							<section className="mt-6">
+								<p className="mb-2 font-semibold">Avoirs</p>
+								<ul className="grid gap-1 text-zinc-600">
+									{invoice.creditNotes.map((n) => (
+										<li key={n.id}>
+											{n.number} du {long(n.createdAt)} — {formatPrice(n.amount)},{" "}
+											{n.kind === "refund"
+												? `remboursé${n.refundedAt ? ` le ${long(n.refundedAt)}` : ""}${n.refundReference ? ` (réf. ${n.refundReference})` : ""}`
+												: "crédité sur les prochaines factures"}{" "}
+											— {n.reason}
+										</li>
+									))}
+								</ul>
+							</section>
+						)}
+						</article>
 		</div>
 	);
 }

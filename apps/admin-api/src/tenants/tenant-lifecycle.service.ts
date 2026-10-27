@@ -145,10 +145,12 @@ export class TenantLifecycleService {
     tenantId: string,
     action: Extract<
       TenantTransition,
-      'provision' | 'activate' | 'provision_failed'
+      'provision' | 'activate' | 'provision_failed' | 'suspend' | 'reactivate'
     >,
     actor: AuditActor,
     comment: string,
+    /** Billing: suspend for 'unpaid', reactivate on 'payment_regularized'. */
+    reason?: string,
   ) {
     const tenant = await this.lockTenant(tx, tenantId);
     if (!canTransition(tenant.status, action)) {
@@ -165,6 +167,7 @@ export class TenantLifecycleService {
         action,
         fromStatus: tenant.status,
         toStatus: TENANT_TRANSITIONS[action].to,
+        reason: reason ?? null,
         comment,
         effectiveAt: now,
         state: 'applied',

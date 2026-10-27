@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import argon2 from 'argon2';
+import { writeAudit } from '../audit/audit.js';
 import { and, eq, gt } from 'drizzle-orm';
 import {
   type Database,
@@ -34,6 +35,7 @@ export class AuthService {
         id: platformUsers.id,
         passwordHash: platformUsers.passwordHash,
         active: platformUsers.active,
+        totpEnabledAt: platformUsers.totpEnabledAt,
       })
       .from(platformUsers)
       .where(eq(platformUsers.email, email.trim().toLowerCase()))
@@ -42,13 +44,39 @@ export class AuthService {
       user?.passwordHash ?? DUMMY_HASH,
       password,
     );
-    return valid && user?.active ? { id: user.id } : null;
+    return valid && user?.active
+      ? { id: user.id, twoFactor: !!user.totpEnabledAt }
+      : null;
+  }
+
+  /** Security journal: wrong e-mail or password (the e-mail is kept, not the password). */
+  async auditFailedLogin(email: string, ip?: string) {
+    const [user] = await this.database.db
+      .select({ id: platformUsers.id })
+      .from(platformUsers)
+      .where(eq(platformUsers.email, email.trim().toLowerCase()));
+    await writeAudit(
+      this.database.db,
+      { userId: null, ip },
+      {
+        action: 'auth.login_failed',
+        entity: 'platform_user',
+        entityId: user?.id ?? null,
+        metadata: { email: email.trim().toLowerCase().slice(0, 200) },
+      },
+    );
   }
 
   /** New session; returns the raw token to put in the cookie. */
   async createSession(
     userId: string,
-    opts: { remember: boolean; userAgent?: string; ip?: string },
+    opts: {
+      remember: boolean;
+      userAgent?: string;
+      ip?: string;
+      /** How the second factor was satisfied, for the security journal. */
+      method?: 'password' | 'totp' | 'recovery';
+    },
   ) {
     const token = newToken();
     const expiresAt = new Date(
@@ -66,6 +94,16 @@ export class AuthService {
         .update(platformUsers)
         .set({ lastLoginAt: new Date() })
         .where(eq(platformUsers.id, userId));
+      await writeAudit(
+        tx,
+        { userId, ip: opts.ip },
+        {
+          action: 'auth.login',
+          entity: 'platform_user',
+          entityId: userId,
+          metadata: { method: opts.method ?? 'password' },
+        },
+      );
     });
     return { token, expiresAt };
   }

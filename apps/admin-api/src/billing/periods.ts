@@ -56,3 +56,27 @@ export function invoiceDescription(
 /** "F-2026-000042" */
 export const invoiceNumber = (year: number, sequence: number) =>
   `F-${year}-${String(sequence).padStart(6, '0')}`;
+
+/** The suspension warning goes out this many days before access is cut. */
+export const SUSPENSION_WARNING_DAYS = 3;
+
+/**
+ * Non-payment for one overdue invoice: suspend once `suspendAfterDays` have
+ * passed since its due date, warn (once) in the 3 days before, else wait.
+ * 0 days = automatic suspension off.
+ */
+export function unpaidStep(
+  invoice: { dueAt: Date; suspensionWarningSentAt: Date | null },
+  suspendAfterDays: number,
+  now: Date,
+): { action: 'suspend' | 'warn' | 'wait'; suspendOn: Date | null } {
+  if (suspendAfterDays <= 0) return { action: 'wait', suspendOn: null };
+  const suspendOn = addDays(invoice.dueAt, suspendAfterDays);
+  if (suspendOn <= now) return { action: 'suspend', suspendOn };
+  const warnFrom = addDays(suspendOn, -SUSPENSION_WARNING_DAYS);
+  return {
+    action:
+      !invoice.suspensionWarningSentAt && warnFrom <= now ? 'warn' : 'wait',
+    suspendOn,
+  };
+}

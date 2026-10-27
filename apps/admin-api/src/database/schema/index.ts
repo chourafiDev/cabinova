@@ -5,3 +5,5 @@ export * from './platform-access.js';
 export * from './platform-users.js';
 export * from './settings.js';
 export * from './tenants.js';
+export * from './support.js';
+export * from './notifications.js';

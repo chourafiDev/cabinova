@@ -1,7 +1,8 @@
-import { ChevronRight, Power } from "lucide-react";
+import { ChevronRight, CodeXml, Power } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { HiPuzzlePiece } from "react-icons/hi2";
+import { Badge } from "@/components/ui/badge";
 import type { FeatureRow } from "@/lib/features";
 import { can } from "@/lib/permissions";
 import { apiGet } from "@/lib/server-api";
@@ -10,7 +11,6 @@ import { cn } from "@/lib/utils";
 import { FormCard } from "../_components/shared/form-card";
 import { ListHeader } from "../_components/shared/list-header";
 import { ListTransitionProvider } from "../_components/shared/list-transition";
-import { CreateFeatureDialog } from "./_components/create-feature-dialog";
 import { FeatureStatusBadge, LevelBadge } from "./_components/feature-badges";
 
 export const metadata = { title: "Fonctionnalités" };
@@ -36,8 +36,31 @@ export default async function FeaturesPage() {
 				icon={<HiPuzzlePiece />}
 				total={features.length}
 				label={{ singular: "Fonctionnalité", plural: "Fonctionnalités" }}
-				action={can(session.user.permissions, "subscriptions:write") ? <CreateFeatureDialog /> : undefined}
 			/>
+
+			<p className="-mt-2 mb-3 text-xs text-muted-foreground">
+				La liste vient du code (registre <code>@cabinova/features</code>) : une nouvelle fonctionnalité apparaît ici au
+				déploiement, incluse dans aucune offre. Ici, vous choisissez ses offres (depuis Offres), ses exceptions par cabinet,
+				la bêta ou la désactivation.
+			</p>
+
+			{features.some((f) => !f.implemented) && (
+				<div className="mb-3 grid gap-1 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900">
+					{features
+						.filter((f) => !f.implemented)
+						.map((f) => (
+							<p key={f.key} className="flex items-center gap-2">
+								<CodeXml className="size-4 shrink-0" />
+								<span>
+									<Link href={`/features/${f.key}`} className="font-medium hover:underline">
+										{f.name}
+									</Link>{" "}
+									n’existe pas dans le code : indisponible pour tous les cabinets. Supprimez-la ou ajoutez-la au registre.
+								</span>
+							</p>
+						))}
+				</div>
+			)}
 
 			{disabled.length > 0 && (
 				<div className="mb-3 grid gap-1 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-900">
@@ -70,7 +93,13 @@ export default async function FeaturesPage() {
 											<div className="grid min-w-0 gap-0.5">
 												<span className="flex flex-wrap items-center gap-2 text-sm font-medium">
 													{f.name}
-													{f.status !== "active" && <FeatureStatusBadge status={f.status} />}
+													{!f.implemented ? (
+														<Badge variant="outline" className="border-transparent bg-amber-50 text-amber-800">
+															Absente du code
+														</Badge>
+													) : (
+														f.status !== "active" && <FeatureStatusBadge status={f.status} />
+													)}
 												</span>
 												<code className="truncate text-xs text-muted-foreground">{f.key}</code>
 											</div>

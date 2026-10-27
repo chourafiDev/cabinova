@@ -80,11 +80,7 @@ export function AccessForm({
 	const effective = effectivePermissions(roles, roleKeys, active);
 	const exceptionCount = Object.keys(active).length;
 
-	const groups = groupPermissions(catalog).map((g) => ({
-		...g,
-		read: g.permissions.find((p) => p.action === "read"),
-		write: g.permissions.find((p) => p.action === "write"),
-	}));
+	const groups = groupPermissions(catalog);
 
 	/** Sets one permission's effective state, recording an exception only if it differs from the roles. */
 	const setPermission = (next: Record<string, OverrideEffect>, key: string, on: boolean) => {
@@ -103,7 +99,17 @@ export function AccessForm({
 		if (action === "read" && read) {
 			setPermission(next, read.key, on);
 			if (!on && write && effective.has(write.key)) setPermission(next, write.key, false);
+			if (!on) for (const extra of group.extras) if (effective.has(extra.key)) setPermission(next, extra.key, false);
 		}
+		form.setValue("overrides", next, { shouldDirty: true });
+	};
+
+	/** An extra permission (e.g. "Voir tous les tickets") implies Consulter. */
+	const toggleExtra = (group: (typeof groups)[number], key: string, on: boolean) => {
+		const next = { ...active };
+		setPermission(next, key, on);
+		const read = group.read;
+		if (on && read && !effective.has(read.key) && myPermissions.includes(read.key)) setPermission(next, read.key, true);
 		form.setValue("overrides", next, { shouldDirty: true });
 	};
 
@@ -243,7 +249,42 @@ export function AccessForm({
 									</div>
 									<div className="flex justify-center">{cell(group, "read")}</div>
 									<div className="flex justify-center">{cell(group, "write")}</div>
-								</li>
+									{group.extras.map((extra) => {
+										const effect = active[extra.key];
+										const locked = readOnly || (!myPermissions.includes(extra.key) && !effective.has(extra.key));
+										return (
+											<label
+												key={extra.key}
+												className="col-span-3 mt-1.5 flex items-center justify-between gap-3 rounded-md bg-muted/50 px-2.5 py-1.5"
+											>
+												<span className="flex flex-wrap items-center gap-1.5 text-xs">
+													{extra.description}
+													{effect && (
+														<span
+															className={cn(
+																"rounded px-1 text-[10px] font-medium leading-4",
+																effect === "grant" ? "bg-emerald-50 text-emerald-700" : "bg-red-50 text-red-700",
+															)}
+														>
+															{effect === "grant" ? "Ajoutée" : "Retirée"}
+														</span>
+													)}
+												</span>
+												<span className="inline-flex items-center gap-1.5">
+													{!readOnly && !myPermissions.includes(extra.key) && (
+														<Lock className="size-3 text-muted-foreground" aria-label="Vous n’avez pas cette permission" />
+													)}
+													<Switch
+														checked={effective.has(extra.key)}
+														disabled={locked}
+														onCheckedChange={(on) => toggleExtra(group, extra.key, on)}
+														aria-label={`${extra.description} (${group.label})`}
+													/>
+												</span>
+											</label>
+										);
+									})}
+									</li>
 							);
 						})}
 					</ul>

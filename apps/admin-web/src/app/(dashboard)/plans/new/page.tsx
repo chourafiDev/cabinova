@@ -15,7 +15,7 @@ export default async function NewPlanPage() {
 	const session = await getSession();
 	if (!session || !can(session.user.permissions, "subscriptions:write")) notFound();
 	const [catalog, templates] = await Promise.all([
-		apiGet<FeatureRow[]>("/features"),
+		apiGet<FeatureRow[]>("/features").then((all) => all.filter((f) => f.implemented)),
 		apiGet<PlanRow[]>("/plans?active=true"),
 	]);
 

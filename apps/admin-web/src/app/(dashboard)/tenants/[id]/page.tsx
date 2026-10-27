@@ -27,7 +27,9 @@ import { getSession } from "@/lib/session";
 import type { TenantBilling } from "@/lib/billing";
 import type { TenantFeatures } from "@/lib/features";
 import type { Plan } from "@/lib/plans";
-import type { TenantDatabaseInfo } from "@/lib/tenant-databases";
+import type { TenantDataStatus } from "@/lib/security";
+import type { SupportAgent, TicketPage } from "@/lib/support";
+import { formatBytes, type TenantDatabaseInfo } from "@/lib/tenant-databases";
 import { SUBSCRIPTION_STATUS_LABELS, type Tenant, type TenantAuditPage } from "@/lib/tenants";
 import { cn } from "@/lib/utils";
 import { FormCard } from "../../_components/shared/form-card";
@@ -35,6 +37,8 @@ import { TenantStatusBadge } from "../_components/tenant-status-badge";
 import { ScheduledChangeBanner } from "./_components/scheduled-change-banner";
 import { StatusActions } from "./_components/status-change-dialog";
 import { TenantAuditLog } from "./_components/tenant-audit-log";
+import { TenantDataTab } from "./_components/tenant-data";
+import { TenantSupportTab } from "./_components/tenant-support";
 import { TenantTabs } from "./_components/tenant-tabs";
 import { TenantFeaturesTab } from "./_components/tenant-features";
 import { TenantSubscription } from "./_components/tenant-subscription";
@@ -59,13 +63,18 @@ export default async function TenantPage({ params, searchParams }: PageProps<"/t
 	const canWrite = can(session.user.permissions, "tenants:write");
 	const canReadTechnical = can(session.user.permissions, "technical:read");
 	const canReadPlans = can(session.user.permissions, "subscriptions:read");
-	const [tenant, audit, database, billing, plans, features] = await Promise.all([
+	const canData = can(session.user.permissions, "tenants:data");
+	const canSupport = can(session.user.permissions, "support:read");
+	const [tenant, audit, database, billing, plans, features, data, tickets, agents] = await Promise.all([
 		apiGet<Tenant>(`/tenants/${id}`),
 		apiGet<TenantAuditPage>(`/tenants/${id}/audit?page=${auditPage}&perPage=20`),
 		canReadTechnical ? apiGet<TenantDatabaseInfo>(`/tenants/${id}/database`) : null,
 		apiGet<TenantBilling>(`/tenants/${id}/billing`),
 		canReadPlans ? apiGet<Plan[]>("/plans?active=true") : [],
 		apiGet<TenantFeatures>(`/tenants/${id}/features`),
+		canData ? apiGet<TenantDataStatus>(`/tenants/${id}/data`) : null,
+		canSupport ? apiGet<TicketPage>(`/support/tickets?view=all&tenantId=${id}&perPage=10`) : null,
+		canSupport ? apiGet<SupportAgent[]>("/support/agents") : [],
 	]);
 
 	const sub = billing.subscription;
@@ -234,7 +243,7 @@ export default async function TenantPage({ params, searchParams }: PageProps<"/t
 								? "À provisionner"
 								: "—"
 							: db.schemaVersion === database.latestSchemaVersion
-								? `Schéma à jour${db.latencyMs ? ` · ${db.latencyMs} ms` : ""}`
+								? `Schéma à jour${db.sizeBytes !== null ? ` · ${formatBytes(db.sizeBytes)}${tenant.storageQuotaMb ? ` / ${formatStorage(tenant.storageQuotaMb)}` : ""}` : db.latencyMs ? ` · ${db.latencyMs} ms` : ""}`
 								: "Schéma en retard",
 					"?tab=technical",
 					!database ? undefined : !db ? "warn" : db.healthy === false ? "bad" : db.healthy ? "good" : undefined,
@@ -278,9 +287,22 @@ export default async function TenantPage({ params, searchParams }: PageProps<"/t
 							status={tenant.status}
 							info={database}
 							canWrite={can(session.user.permissions, "technical:write")}
+							storageQuotaMb={tenant.storageQuotaMb}
 						/>
 					)
 				}
+				support={
+					tickets && (
+						<TenantSupportTab
+							cabinet={{ id: tenant.id, name: tenant.name, responsibleName: tenant.responsibleName, email: tenant.email, city: tenant.city }}
+							tickets={tickets}
+							agents={agents}
+							meId={session.user.id}
+							canWrite={can(session.user.permissions, "support:write")}
+						/>
+					)
+				}
+				data={data && <TenantDataTab tenantId={tenant.id} tenantName={tenant.name} data={data} />}
 				audit={
 					<FormCard>
 						<TenantAuditLog tenantId={tenant.id} audit={audit} page={auditPage} />

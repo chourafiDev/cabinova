@@ -1,6 +1,6 @@
 "use client";
 
-import { Download, X } from "lucide-react";
+import { Download, FileText, X } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useTransition } from "react";
 import { Button } from "@/components/ui/button";
@@ -97,11 +97,18 @@ export function DashboardFilters({
 						<X /> Réinitialiser
 					</Button>
 				)}
-				<Button asChild variant="outline" size="sm" className="ms-auto">
-					<a href={exportHref} download>
-						<Download /> Exporter (Excel)
-					</a>
-				</Button>
+				<div className="ms-auto flex gap-2">
+					<Button asChild variant="outline" size="sm">
+						<a href={exportHref} download>
+							<Download /> Excel
+						</a>
+					</Button>
+					<Button asChild variant="outline" size="sm">
+						<a href={`/reports/dashboard${params.size ? `?${params}` : ""}`} target="_blank" rel="noreferrer">
+							<FileText /> PDF
+						</a>
+					</Button>
+				</div>
 			</div>
 			<div className={cn("transition-opacity", pending && "opacity-60")}>{children}</div>
 		</>

@@ -96,6 +96,23 @@ export class BillingSettingsDto {
   @Min(0)
   @Max(60)
   invoiceDaysBefore: number;
+
+  /** "Your trial ends in N days" e-mail; 0 = not sent. */
+  @Type(() => Number)
+  @IsInt()
+  @Min(0)
+  @Max(30)
+  trialReminderDays: number = 3;
+
+  /**
+   * Suspend a cabinet automatically this many days after its invoice became
+   * overdue; 0 = never (manual only). A warning is e-mailed 3 days before.
+   */
+  @Type(() => Number)
+  @IsInt()
+  @Min(0)
+  @Max(120)
+  suspendAfterDays: number = 0;
 }
 
 /** A bank transfer seen on the statement, recorded against an invoice. */
@@ -180,4 +197,100 @@ export class AttachSubscriptionDto extends ChangeSubscriptionDto {
 export class CancelAtTermDto {
   @IsBoolean()
   cancelAtPeriodEnd: boolean;
+}
+
+/** Avoir on a paid invoice: money sent back, or credit for the next invoices. */
+export class IssueCreditNoteDto {
+  @IsIn(['refund', 'credit'])
+  kind: 'refund' | 'credit';
+
+  /** Centimes; at most what was paid and not yet credited. */
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  amount: number;
+
+  @clean()
+  @IsString()
+  @MinLength(3)
+  @MaxLength(300)
+  reason: string;
+
+  /** Refund: the day the transfer back was sent. */
+  @IsOptional()
+  @IsISO8601({ strict: true })
+  refundedAt?: string;
+
+  @clean()
+  @IsOptional()
+  @IsString()
+  @MaxLength(120)
+  refundReference?: string;
+}
+
+const upper = () =>
+  Transform(({ value }: { value: unknown }) =>
+    typeof value === 'string' ? value.trim().toUpperCase() : value,
+  );
+
+export class CreatePromoCodeDto {
+  @upper()
+  @Matches(/^[A-Z0-9][A-Z0-9_-]{2,29}$/, {
+    message: 'Code : 3 à 30 lettres, chiffres, - ou _.',
+  })
+  code: string;
+
+  @clean()
+  @IsOptional()
+  @IsString()
+  @MaxLength(200)
+  description?: string;
+
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  @Max(100)
+  discountPercent: number;
+
+  /** Invoices discounted; omitted = the whole subscription. */
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  @Max(36)
+  durationInvoices?: number;
+
+  /** Empty = every plan. */
+  @IsOptional()
+  @IsString({ each: true })
+  planKeys?: string[];
+
+  @IsOptional()
+  @IsISO8601({ strict: true })
+  validUntil?: string;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  maxRedemptions?: number;
+}
+
+export class UpdatePromoCodeDto {
+  @IsOptional()
+  @IsBoolean()
+  active?: boolean;
+
+  @clean()
+  @IsOptional()
+  @IsString()
+  @MaxLength(200)
+  description?: string;
+}
+
+export class ApplyPromoCodeDto {
+  @upper()
+  @IsString()
+  @MaxLength(30)
+  code: string;
 }

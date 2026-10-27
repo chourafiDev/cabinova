@@ -1,6 +1,6 @@
 "use client";
 
-import { X, MoreHorizontal, Printer } from "lucide-react";
+import { MoreHorizontal, Printer, ReceiptText, X } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -28,6 +28,7 @@ import { formatDate } from "@/lib/format";
 import { formatPrice } from "@/lib/plans";
 import { cn } from "@/lib/utils";
 import { InvoiceStatusBadge } from "./invoice-status-badge";
+import { CreditNoteDialog } from "./credit-note-dialog";
 import { RecordPaymentDialog } from "./record-payment-dialog";
 
 const day = (v: string) => formatDate(v, { month: "short" });
@@ -48,6 +49,7 @@ export function InvoicesTable({
 	const router = useRouter();
 	const [paying, setPaying] = useState<Invoice | null>(null);
 	const [voiding, setVoiding] = useState<Invoice | null>(null);
+	const [crediting, setCrediting] = useState<Invoice | null>(null);
 	const [reason, setReason] = useState("");
 
 	if (!invoices.length) {
@@ -146,7 +148,7 @@ export function InvoicesTable({
 														<MoreHorizontal />
 													</Button>
 												</DropdownMenuTrigger>
-												<DropdownMenuContent align="end" className="w-44">
+												<DropdownMenuContent align="end" className="w-48">
 													<DropdownMenuItem asChild>
 														<a
 															href={`/invoices/${inv.id}`}
@@ -156,6 +158,11 @@ export function InvoicesTable({
 															<Printer /> Voir / imprimer
 														</a>
 													</DropdownMenuItem>
+													{inv.status === "paid" && canWrite && (
+														<DropdownMenuItem onSelect={() => setCrediting(inv)}>
+															<ReceiptText /> Émettre un avoir
+														</DropdownMenuItem>
+													)}
 													{open && canWrite && (
 														<DropdownMenuItem
 															variant="destructive"
@@ -177,6 +184,8 @@ export function InvoicesTable({
 					</tbody>
 				</table>
 			</div>
+
+			{crediting && <CreditNoteDialog invoice={crediting} onOpenChange={(o) => !o && setCrediting(null)} />}
 
 			{paying && (
 				<RecordPaymentDialog

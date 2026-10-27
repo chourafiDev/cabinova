@@ -1,5 +1,6 @@
 import { sql } from 'drizzle-orm';
 import {
+  bigint,
   boolean,
   date,
   index,
@@ -120,8 +121,40 @@ export const tenantDatabases = pgTable('tenant_databases', {
   lastHealthError: text('last_health_error'),
   /** Response time of the last health check. */
   latencyMs: integer('latency_ms'),
+  /** pg_database_size at the last check, compared to the storage quota. */
+  sizeBytes: bigint('size_bytes', { mode: 'number' }),
+  sizeCheckedAt: timestamp('size_checked_at', { withTimezone: true }),
+  /** Set when the database was permanently deleted after the retention period. */
+  deletedAt: timestamp('deleted_at', { withTimezone: true }),
   ...timestamps,
 });
+
+/**
+ * Proof of each export of a clinic's data (Scenario D: "préparer une
+ * exportation… conserver une preuve"). The archive itself is downloaded by
+ * the admin; the catalog keeps who, when, what and its SHA-256 fingerprint.
+ */
+export const tenantDataExports = pgTable(
+  'tenant_data_exports',
+  {
+    id: id(),
+    tenantId: uuid('tenant_id')
+      .notNull()
+      .references(() => tenants.id, { onDelete: 'cascade' }),
+    requestedBy: uuid('requested_by').references(() => platformUsers.id, {
+      onDelete: 'set null',
+    }),
+    sha256: text('sha256').notNull(),
+    sizeBytes: integer('size_bytes').notNull(),
+    /** Rows per table, e.g. { users: 3, clinic_settings: 1 }. */
+    tables: jsonb('tables').$type<Record<string, number>>().notNull(),
+    schemaVersion: text('schema_version'),
+    createdAt: timestamp('created_at', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [index('tenant_data_exports_tenant_idx').on(t.tenantId, t.createdAt)],
+);
 
 /** Envelope-encrypted secrets (tenant DB credentials). Never plaintext. */
 export const tenantSecrets = pgTable('tenant_secrets', {

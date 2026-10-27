@@ -17,6 +17,7 @@ import {
   type SQL,
 } from 'drizzle-orm';
 import { diff } from '../audit/audit.js';
+import { PlatformConfigService } from '../settings/platform-config.service.js';
 import {
   DatabaseService,
   type Transaction,
@@ -84,7 +85,10 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 
 @Injectable()
 export class TenantsService {
-  constructor(private readonly database: DatabaseService) {}
+  constructor(
+    private readonly database: DatabaseService,
+    private readonly platform: PlatformConfigService,
+  ) {}
 
   list(query: ListTenantsQuery) {
     const term = query.search?.trim();
@@ -283,7 +287,8 @@ export class TenantsService {
     };
   }
 
-  create(actor: AuditActor, dto: CreateTenantDto) {
+  async create(actor: AuditActor, dto: CreateTenantDto) {
+    const { general, languages } = await this.platform.all();
     return this.database.db.transaction(async (tx) => {
       await this.assertUnique(tx, dto);
       const [plan] = await tx
@@ -337,6 +342,9 @@ export class TenantsService {
           maxSecretaries: quota('maxSecretaries'),
           maxUsers: quota('maxUsers'),
           storageQuotaMb: quota('storageQuotaMb'),
+          // Configuration globale → Langues / Général.
+          locale: languages.defaultLanguage,
+          timezone: general.defaultTimezone,
         })
         .returning();
 

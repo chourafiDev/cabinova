@@ -44,11 +44,7 @@ export function RoleDialog({
 	const [selected, setSelected] = useState<Set<string>>(new Set(role.permissions));
 	const [saving, setSaving] = useState(false);
 
-	const groups = groupPermissions(catalog).map((g) => ({
-		...g,
-		read: g.permissions.find((p) => p.action === "read"),
-		write: g.permissions.find((p) => p.action === "write"),
-	}));
+	const groups = groupPermissions(catalog);
 	const initial = new Set(role.permissions);
 	const changes = catalog.filter((p) => selected.has(p.key) !== initial.has(p.key)).length;
 
@@ -67,8 +63,20 @@ export function RoleDialog({
 				else {
 					next.delete(read.key);
 					if (write) next.delete(write.key);
+					for (const extra of group.extras) next.delete(extra.key);
 				}
 			}
+			return next;
+		});
+
+	/** An extra permission (e.g. "Voir tous les tickets") implies Consulter. */
+	const toggleExtra = (group: (typeof groups)[number], key: string, on: boolean) =>
+		setSelected((current) => {
+			const next = new Set(current);
+			if (on) {
+				next.add(key);
+				if (group.read && myPermissions.includes(group.read.key)) next.add(group.read.key);
+			} else next.delete(key);
 			return next;
 		});
 
@@ -151,7 +159,27 @@ export function RoleDialog({
 									</div>
 									<div className="flex justify-center">{cell(group, "read")}</div>
 									<div className="flex justify-center">{cell(group, "write")}</div>
-								</li>
+									{group.extras.map((extra) => {
+										const locked = !myPermissions.includes(extra.key);
+										return (
+											<label
+												key={extra.key}
+												className="col-span-3 mt-1.5 flex items-center justify-between gap-3 rounded-md bg-muted/50 px-2.5 py-1.5"
+											>
+												<span className="text-xs">{extra.description}</span>
+												<span className="inline-flex items-center gap-1.5">
+													{locked && <Lock className="size-3 text-muted-foreground" aria-hidden />}
+													<Switch
+														checked={selected.has(extra.key)}
+														disabled={locked}
+														onCheckedChange={(on) => toggleExtra(group, extra.key, on)}
+														aria-label={`${extra.description} (${group.label})`}
+													/>
+												</span>
+											</label>
+										);
+									})}
+									</li>
 							);
 						})}
 					</ul>

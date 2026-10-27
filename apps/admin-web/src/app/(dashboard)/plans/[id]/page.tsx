@@ -19,7 +19,7 @@ export default async function EditPlanPage({ params }: PageProps<"/plans/[id]">)
 	const { id } = await params;
 	const session = await getSession();
 	if (!session || !can(session.user.permissions, "subscriptions:write")) notFound();
-	const [plan, catalog] = await Promise.all([apiGet<Plan>(`/plans/${id}`), apiGet<FeatureRow[]>("/features")]);
+	const [plan, catalog] = await Promise.all([apiGet<Plan>(`/plans/${id}`), apiGet<FeatureRow[]>("/features").then((all) => all.filter((f) => f.implemented))]);
 
 	return (
 		<>

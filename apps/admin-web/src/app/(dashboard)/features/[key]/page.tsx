@@ -80,7 +80,7 @@ export default async function FeaturePage({ params }: PageProps<"/features/[key]
 				<FeatureOverrides
 					feature={feature}
 					tenants={tenants.data.map((t) => ({ id: t.id, name: t.name }))}
-					canWrite={canWrite}
+					canWrite={canWrite && feature.implemented}
 				/>
 			</div>
 		</>

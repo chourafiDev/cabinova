@@ -20,6 +20,7 @@ import {
   tenantSecrets,
 } from '../database/schema/index.js';
 import { EmailService } from '../email/email.service.js';
+import { NotificationsService } from '../notifications/notifications.service.js';
 import { canTransition } from '../tenants/lifecycle.js';
 import { TenantLifecycleService } from '../tenants/tenant-lifecycle.service.js';
 import { TENANT_DB_PROVIDER, type TenantDatabaseProvider } from './provider.js';
@@ -49,6 +50,7 @@ export class ProvisioningService {
     private readonly databases: TenantDatabasesService,
     private readonly lifecycle: TenantLifecycleService,
     private readonly email: EmailService,
+    private readonly notifications: NotificationsService,
     private readonly config: ConfigService<Env, true>,
     @Inject(TENANT_DB_PROVIDER)
     private readonly provider: TenantDatabaseProvider | null,
@@ -206,6 +208,15 @@ export class ProvisioningService {
           metadata: { runId },
         });
       });
+      await this.notifications.notify({
+        kind: 'tenant.provision.succeeded',
+        severity: 'success',
+        title: 'Cabinet prêt',
+        body: `${tenant.name} est actif : base créée et médecin invité.`,
+        href: `/tenants/${tenant.id}`,
+        tenantId: tenant.id,
+        permission: 'tenants:read',
+      });
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
       this.logger.error(
@@ -256,50 +267,68 @@ export class ProvisioningService {
     error: string,
     step?: string,
   ) {
-    await this.database.db.transaction(async (tx) => {
-      const [run] = await tx
-        .update(tenantProvisioningRuns)
-        .set({
-          state: 'failed',
-          error,
-          finishedAt: new Date(),
-          ...(step && {
-            steps: this.appendStep({
-              key: step,
-              status: 'failed',
-              detail: error,
+    await this.database.db
+      .transaction(async (tx) => {
+        const [run] = await tx
+          .update(tenantProvisioningRuns)
+          .set({
+            state: 'failed',
+            error,
+            finishedAt: new Date(),
+            ...(step && {
+              steps: this.appendStep({
+                key: step,
+                status: 'failed',
+                detail: error,
+              }),
             }),
-          }),
-        })
-        .where(
-          and(
-            eq(tenantProvisioningRuns.id, runId),
-            eq(tenantProvisioningRuns.state, 'running'),
-          ),
-        )
-        .returning();
-      if (!run) return;
-      const [tenant] = await tx
-        .select({ status: tenants.status })
-        .from(tenants)
-        .where(eq(tenants.id, run.tenantId));
-      if (tenant && canTransition(tenant.status, 'provision_failed')) {
-        await this.lifecycle.applySystem(
-          tx,
-          run.tenantId,
-          'provision_failed',
-          actor,
-          `Échec du provisionnement${step ? ` (${step})` : ''} : ${error}`,
-        );
-      }
-      await writeAudit(tx, actor, {
-        action: 'tenant.provision.fail',
-        entity: 'tenant',
-        entityId: run.tenantId,
-        tenantId: run.tenantId,
-        metadata: { runId, step, error },
+          })
+          .where(
+            and(
+              eq(tenantProvisioningRuns.id, runId),
+              eq(tenantProvisioningRuns.state, 'running'),
+            ),
+          )
+          .returning();
+        if (!run) return;
+        const [tenant] = await tx
+          .select({ status: tenants.status })
+          .from(tenants)
+          .where(eq(tenants.id, run.tenantId));
+        if (tenant && canTransition(tenant.status, 'provision_failed')) {
+          await this.lifecycle.applySystem(
+            tx,
+            run.tenantId,
+            'provision_failed',
+            actor,
+            `Échec du provisionnement${step ? ` (${step})` : ''} : ${error}`,
+          );
+        }
+        await writeAudit(tx, actor, {
+          action: 'tenant.provision.fail',
+          entity: 'tenant',
+          entityId: run.tenantId,
+          tenantId: run.tenantId,
+          metadata: { runId, step, error },
+        });
+        return run;
+      })
+      .then(async (run) => {
+        if (!run) return;
+        const [tenant] = await this.database.db
+          .select({ name: tenants.name })
+          .from(tenants)
+          .where(eq(tenants.id, run.tenantId));
+        await this.notifications.notify({
+          kind: 'tenant.provision.failed',
+          severity: 'critical',
+          title: 'Provisionnement échoué',
+          body: `${tenant?.name ?? run.tenantId}${step ? ` (étape ${step})` : ''} — ${error.slice(0, 200)}`,
+          href: `/tenants/${run.tenantId}?tab=technical`,
+          tenantId: run.tenantId,
+          permission: 'technical:read',
+        });
       });
-    });
   }
 
   /** Creates the database and role once; a later run reuses them. */

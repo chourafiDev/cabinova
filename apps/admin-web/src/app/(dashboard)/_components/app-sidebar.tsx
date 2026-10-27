@@ -13,12 +13,14 @@ import {
 	SidebarMenuButton,
 	SidebarMenuItem,
 } from "@/components/ui/sidebar";
+import { BrandMark } from "@/components/brand-mark";
 import { can } from "@/lib/permissions";
+import type { Branding } from "@/lib/settings";
 import { useSessionStore } from "@/stores/session-store";
 import { HelpCard } from "./help-card";
 import { findNavItem, navGroups } from "./nav";
 
-export function AppSidebar() {
+export function AppSidebar({ branding }: { branding: Branding }) {
 	const pathname = usePathname();
 	const active = findNavItem(pathname);
 	const session = useSessionStore((s) => s.session);
@@ -37,11 +39,9 @@ export function AppSidebar() {
 				<SidebarMenu>
 					<SidebarMenuItem>
 						<SidebarMenuButton size="lg" asChild>
-							<Link href="/" aria-label="Cabinova — tableau de bord">
-								<div className="flex aspect-square size-8 shrink-0 items-center justify-center rounded-lg bg-sidebar-primary font-semibold text-sidebar-primary-foreground">
-									C
-								</div>
-								<span className="truncate font-semibold">Cabinova</span>
+							<Link href="/" aria-label={`${branding.platformName} — tableau de bord`}>
+								<BrandMark branding={branding} />
+								<span className="truncate font-semibold">{branding.platformName}</span>
 							</Link>
 						</SidebarMenuButton>
 					</SidebarMenuItem>

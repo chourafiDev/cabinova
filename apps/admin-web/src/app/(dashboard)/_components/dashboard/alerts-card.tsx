@@ -62,8 +62,8 @@ export function AlertsCard({ alerts }: { alerts: DashboardAlert[] }) {
 								</Link>
 								<ul className="ms-8.5 grid gap-0.5 text-xs text-muted-foreground">
 									{alert.items.map((item) => (
-										<li key={item.tenantId} className="truncate">
-											<Link href={`/tenants/${item.tenantId}`} className="text-foreground hover:underline">
+										<li key={item.href ?? item.tenantId} className="truncate">
+											<Link href={item.href ?? `/tenants/${item.tenantId}`} className="text-foreground hover:underline">
 												{item.name}
 											</Link>
 											{item.detail && ` — ${item.detail}`}

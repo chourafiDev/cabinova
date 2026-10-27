@@ -12,7 +12,8 @@ import {
   DEFAULT_PLATFORM_ROLES,
   PLATFORM_PERMISSIONS,
 } from '../../auth/permissions.js';
-import { DEFAULT_FEATURES, DEFAULT_PLANS } from '../../plans/catalog.js';
+import { syncFeatureCatalog } from '../../features/sync.js';
+import { DEFAULT_PLANS } from '../../plans/catalog.js';
 import * as schema from '../schema/index.js';
 
 const {
@@ -22,7 +23,6 @@ const {
   platformUserRoles,
   platformUsers,
   subscriptionPlans,
-  features,
 } = schema;
 
 neonConfig.webSocketConstructor = ws;
@@ -100,14 +100,15 @@ for (const role of obsolete) {
 }
 console.log(`✓ ${DEFAULT_PLATFORM_ROLES.length} roles`);
 
-// 3a. Feature catalog. Existing features keep what was edited in the UI.
-const createdFeatures = await db
-  .insert(features)
-  .values(DEFAULT_FEATURES.map((f) => ({ ...f })))
-  .onConflictDoNothing({ target: features.key })
-  .returning({ key: features.key });
+// 3a. Feature catalog, from the code registry (@cabinova/features) — the
+//     same sync the API runs at every start.
+const synced = await syncFeatureCatalog(db);
 console.log(
-  `✓ ${DEFAULT_FEATURES.length} features (${createdFeatures.length} created)`,
+  `✓ ${synced.total} features (${synced.added.length} added)${
+    synced.notInCode.length
+      ? ` — absentes du code : ${synced.notInCode.join(', ')}`
+      : ''
+  }`,
 );
 
 // 3b. Default plans. Existing plans keep their prices and limits (edited from

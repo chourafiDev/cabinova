@@ -1,4 +1,4 @@
-import type { Transaction } from '../database/database.module.js';
+import type { Database, Transaction } from '../database/database.module.js';
 import { platformAuditLogs } from '../database/schema/index.js';
 
 /** Who triggered an audited change: a platform user, or the platform itself. */
@@ -6,13 +6,14 @@ export type AuditActor = { userId: string | null; ip?: string | null };
 
 /** Writes one platform audit entry inside the caller's transaction. */
 export async function writeAudit(
-  tx: Transaction,
+  tx: Database | Transaction,
   actor: AuditActor,
   entry: {
     /** e.g. "plan.update" */
     action: string;
     entity: string;
-    entityId: string;
+    /** null when there's no row to point at (e.g. a sign-in with an unknown e-mail). */
+    entityId: string | null;
     /** The cabinet affected, if any. */
     tenantId?: string;
     metadata?: Record<string, unknown>;

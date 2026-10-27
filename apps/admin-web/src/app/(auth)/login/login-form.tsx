@@ -1,6 +1,6 @@
 "use client";
 
-import { Loader } from "lucide-react";
+import { ArrowLeft, Loader, ShieldCheck } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { PasswordInput } from "@/components/password-input";
@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { ApiError, api } from "@/lib/api-client";
+import { cn } from "@/lib/utils";
 import { AuthLabel, authButtonClass, authInputClass } from "../_components/auth-fields";
 
 export function LoginForm({ next }: { next: string }) {
@@ -15,6 +16,10 @@ export function LoginForm({ next }: { next: string }) {
 	const [error, setError] = useState<string | null>(null);
 	const [pending, setPending] = useState(false);
 	const [remember, setRemember] = useState(true);
+	/** Set when the password was right and the account has 2FA. */
+	const [challenge, setChallenge] = useState<string | null>(null);
+	const [useBackup, setUseBackup] = useState(false);
+	const [code, setCode] = useState("");
 
 	async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
 		e.preventDefault();
@@ -23,7 +28,7 @@ export function LoginForm({ next }: { next: string }) {
 		setError(null);
 
 		try {
-			await api("/auth/login", {
+			const result = await api<{ ok?: true; twoFactorRequired?: true; challenge?: string }>("/auth/login", {
 				method: "POST",
 				body: JSON.stringify({
 					email: String(form.get("email")),
@@ -32,6 +37,11 @@ export function LoginForm({ next }: { next: string }) {
 					rememberMe: remember,
 				}),
 			});
+			if (result.twoFactorRequired && result.challenge) {
+				setChallenge(result.challenge);
+				setPending(false);
+				return;
+			}
 		} catch (err) {
 			setPending(false);
 			setError(
@@ -43,6 +53,96 @@ export function LoginForm({ next }: { next: string }) {
 		}
 		router.replace(next);
 		router.refresh();
+	}
+
+	async function onVerify(e: React.FormEvent<HTMLFormElement>) {
+		e.preventDefault();
+		setPending(true);
+		setError(null);
+		try {
+			await api("/auth/2fa/verify", { method: "POST", body: JSON.stringify({ challenge, code }) });
+		} catch (err) {
+			setPending(false);
+			setCode("");
+			if (err instanceof ApiError && err.code === "CHALLENGE_EXPIRED") {
+				setChallenge(null);
+				setError(err.message);
+				return;
+			}
+			const left = err instanceof ApiError ? (err.details.attemptsLeft as number | undefined) : undefined;
+			setError(
+				err instanceof ApiError && err.status === 429
+					? "Trop de tentatives. Patientez une minute."
+					: `Code incorrect.${left ? ` ${left} essai${left > 1 ? "s" : ""} restant${left > 1 ? "s" : ""}.` : ""}`,
+			);
+			return;
+		}
+		router.replace(next);
+		router.refresh();
+	}
+
+	if (challenge) {
+		return (
+			<form onSubmit={onVerify} className="mt-10 grid gap-6">
+				<div className="flex items-start gap-3 rounded-xl border bg-muted/40 p-4 text-sm">
+					<ShieldCheck className="mt-0.5 size-5 shrink-0 text-primary" />
+					<p>
+						{useBackup
+							? "Saisissez l’un de vos codes de secours. Chaque code ne fonctionne qu’une fois."
+							: "Ouvrez votre application d’authentification et saisissez le code à 6 chiffres affiché pour Cabinova."}
+					</p>
+				</div>
+				<div className="grid gap-2">
+					<AuthLabel htmlFor="code">{useBackup ? "Code de secours" : "Code de vérification"}</AuthLabel>
+					<Input
+						id="code"
+						name="code"
+						autoFocus
+						required
+						autoComplete="one-time-code"
+						inputMode={useBackup ? "text" : "numeric"}
+						maxLength={useBackup ? 11 : 6}
+						placeholder={useBackup ? "xxxxx-xxxxx" : "123456"}
+						value={code}
+						onChange={(e) => setCode(useBackup ? e.target.value : e.target.value.replace(/\D/g, ""))}
+						className={cn(authInputClass, "text-center font-mono text-lg tracking-[0.3em]")}
+					/>
+				</div>
+				{error && (
+					<p role="alert" className="text-destructive -mt-2 text-sm">
+						{error}
+					</p>
+				)}
+				<Button type="submit" disabled={pending || (!useBackup && code.length !== 6)} className={authButtonClass}>
+					{pending && <Loader className="size-4 animate-spin" />}
+					{pending ? "Vérification…" : "Valider"}
+				</Button>
+				<div className="flex items-center justify-between text-sm">
+					<button
+						type="button"
+						className="text-muted-foreground inline-flex items-center gap-1 hover:text-foreground"
+						onClick={() => {
+							setChallenge(null);
+							setCode("");
+							setError(null);
+						}}
+					>
+						<ArrowLeft className="size-3.5" /> Retour
+					</button>
+					<button
+						type="button"
+						className="font-medium hover:underline"
+						onClick={() => {
+							setUseBackup((b) => !b);
+							setCode("");
+							setError(null);
+						}}
+					>
+						{useBackup ? "Utiliser l’application" : "Utiliser un code de secours"}
+					</button>
+				</div>
+			</form>
+		);
 	}
 
 	return (

@@ -71,6 +71,58 @@ export const subscriptionPlans = pgTable('subscription_plans', {
   ...timestamps,
 });
 
+/**
+ * Codes promo: a percentage off for a number of invoices (or all), limited
+ * in time and uses, optionally to some plans. One use per cabinet.
+ */
+export const promoCodes = pgTable('promo_codes', {
+  id: id(),
+  /** Upper-case, e.g. "LANCEMENT2026". */
+  code: text('code').notNull().unique(),
+  description: text('description'),
+  discountPercent: integer('discount_percent').notNull(),
+  /** Invoices discounted per cabinet; NULL = for the whole subscription. */
+  durationInvoices: integer('duration_invoices'),
+  /** Plan keys it applies to; empty = all plans. */
+  planKeys: jsonb('plan_keys').$type<string[]>().notNull().default([]),
+  validUntil: timestamp('valid_until', { withTimezone: true }),
+  /** NULL = unlimited. */
+  maxRedemptions: integer('max_redemptions'),
+  active: boolean('active').notNull().default(true),
+  createdBy: uuid('created_by').references(() => platformUsers.id, {
+    onDelete: 'set null',
+  }),
+  ...timestamps,
+});
+
+export const promoRedemptions = pgTable(
+  'promo_redemptions',
+  {
+    id: id(),
+    promoCodeId: uuid('promo_code_id')
+      .notNull()
+      .references(() => promoCodes.id, { onDelete: 'cascade' }),
+    tenantId: uuid('tenant_id')
+      .notNull()
+      .references(() => tenants.id, { onDelete: 'cascade' }),
+    subscriptionId: uuid('subscription_id').references(() => subscriptions.id, {
+      onDelete: 'set null',
+    }),
+    redeemedBy: uuid('redeemed_by').references(() => platformUsers.id, {
+      onDelete: 'set null',
+    }),
+    createdAt: timestamp('created_at', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [
+    uniqueIndex('promo_redemptions_one_per_tenant_idx').on(
+      t.promoCodeId,
+      t.tenantId,
+    ),
+  ],
+);
+
 export const subscriptions = pgTable(
   'subscriptions',
   {
@@ -97,6 +149,15 @@ export const subscriptions = pgTable(
       .defaultNow(),
     currentPeriodEnd: timestamp('current_period_end', { withTimezone: true }),
     cancelledAt: timestamp('cancelled_at', { withTimezone: true }),
+    /** "Your trial ends in N days" e-mail, sent once per trial. */
+    trialReminderSentAt: timestamp('trial_reminder_sent_at', {
+      withTimezone: true,
+    }),
+    /** Promo code applied, and how many more invoices it discounts (NULL = all). */
+    promoCodeId: uuid('promo_code_id').references(() => promoCodes.id, {
+      onDelete: 'set null',
+    }),
+    promoInvoicesLeft: integer('promo_invoices_left'),
     ...timestamps,
   },
   (t) => [
@@ -137,6 +198,12 @@ export const invoices = pgTable(
     /** Unpaid after this date → overdue. */
     dueAt: timestamp('due_at', { withTimezone: true }).notNull(),
     paidAt: timestamp('paid_at', { withTimezone: true }),
+    /** Credit (avoirs) deducted from this invoice, centimes; `amount` is after it. */
+    creditApplied: integer('credit_applied').notNull().default(0),
+    /** "Access will be suspended on …" e-mail, sent once per invoice. */
+    suspensionWarningSentAt: timestamp('suspension_warning_sent_at', {
+      withTimezone: true,
+    }),
     ...timestamps,
   },
   (t) => [
@@ -166,3 +233,47 @@ export const invoicePayments = pgTable('invoice_payments', {
     .notNull()
     .defaultNow(),
 });
+
+/** Avoirs: A-<year>-<6 digits>, never reused. */
+export const creditNoteNumberSeq = pgSequence('credit_note_number_seq');
+
+/**
+ * refund — money sent back to the cabinet (bank transfer, recorded)
+ * credit — kept as a balance, deducted from the cabinet's next invoices
+ */
+export const creditNoteKind = pgEnum('credit_note_kind', ['refund', 'credit']);
+
+/**
+ * Avoir on a paid invoice: a full or partial refund, or a credit for the
+ * next invoices. The invoice keeps its number and amount.
+ */
+export const creditNotes = pgTable(
+  'credit_notes',
+  {
+    id: id(),
+    /** "A-2026-000001" */
+    number: text('number').notNull().unique(),
+    invoiceId: uuid('invoice_id')
+      .notNull()
+      .references(() => invoices.id, { onDelete: 'restrict' }),
+    tenantId: uuid('tenant_id')
+      .notNull()
+      .references(() => tenants.id, { onDelete: 'cascade' }),
+    kind: creditNoteKind('kind').notNull(),
+    /** Centimes. */
+    amount: integer('amount').notNull(),
+    /** For a credit: what's left to deduct from future invoices. */
+    remaining: integer('remaining').notNull().default(0),
+    reason: text('reason').notNull(),
+    /** For a refund: when the transfer was sent, and its reference. */
+    refundedAt: timestamp('refunded_at', { withTimezone: true }),
+    refundReference: text('refund_reference'),
+    issuedBy: uuid('issued_by').references(() => platformUsers.id, {
+      onDelete: 'set null',
+    }),
+    createdAt: timestamp('created_at', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [index('credit_notes_tenant_idx').on(t.tenantId, t.createdAt)],
+);

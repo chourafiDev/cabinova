@@ -1,0 +1,15 @@
+{
+  "name": "@cabinova/features",
+  "version": "0.0.1",
+  "private": true,
+  "description": "The feature registry: every feature the code implements, by key. The admin catalog is synced from it.",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./src/index.d.ts",
+      "default": "./src/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": ["src"]
+}

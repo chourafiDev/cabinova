@@ -8,5 +8,12 @@
     "dev:web": "pnpm --filter admin-web dev",
     "build": "pnpm -r build",
     "lint": "pnpm -r lint"
+  },
+  "pnpm": {
+    "overrides": {
+      "body-parser@>=2.0.0 <2.4.0": "^2.4.0",
+      "fast-uri@>=3.0.0 <3.1.9": "^3.1.9",
+      "@esbuild-kit/core-utils>esbuild": "^0.25.0"
+    }
   }
 }

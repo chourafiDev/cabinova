@@ -286,11 +286,12 @@ export function PlanForm(
 						))}
 					</ul>
 					<p className="text-xs text-muted-foreground">
-						Le catalogue se gère dans{" "}
+						Les fonctionnalités viennent du code ; leur statut (bêta, désactivation) et les exceptions par cabinet se
+						gèrent dans{" "}
 						<Link href="/features" className="underline">
 							Fonctionnalités
-						</Link>{" "}
-						(bêta, désactivation, exceptions par cabinet).
+						</Link>
+						.
 					</p>
 				</FormSection>
 			</div>

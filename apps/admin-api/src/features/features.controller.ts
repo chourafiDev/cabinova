@@ -7,7 +7,6 @@ import {
   Param,
   ParseUUIDPipe,
   Patch,
-  Post,
   Put,
   Req,
 } from '@nestjs/common';
@@ -15,7 +14,7 @@ import type { Request } from 'express';
 import type { AuditActor } from '../audit/audit.js';
 import type { AuthUser } from '../auth/auth.types.js';
 import { CurrentUser, RequirePermissions } from '../auth/decorators.js';
-import { CreateFeatureDto, SetOverrideDto, UpdateFeatureDto } from './dto.js';
+import { SetOverrideDto, UpdateFeatureDto } from './dto.js';
 import { FeaturesService } from './features.service.js';
 
 const actorOf = (user: AuthUser, req: Request): AuditActor => ({
@@ -23,7 +22,7 @@ const actorOf = (user: AuthUser, req: Request): AuditActor => ({
   ip: req.ip,
 });
 
-/** "Fonctionnalités et options" — catalog, kill switch, beta, per-cabinet exceptions. */
+/** "Fonctionnalités et options" — catalog (from the code), kill switch, beta, per-cabinet exceptions. */
 @Controller()
 export class FeaturesController {
   constructor(private readonly features: FeaturesService) {}
@@ -40,14 +39,15 @@ export class FeaturesController {
     return this.features.get(key);
   }
 
+  /** Only for a feature the code no longer implements ("Absente du code"). */
   @RequirePermissions('subscriptions:write')
-  @Post('features')
-  create(
+  @Delete('features/:key')
+  remove(
+    @Param('key') key: string,
     @CurrentUser() user: AuthUser,
     @Req() req: Request,
-    @Body() dto: CreateFeatureDto,
   ) {
-    return this.features.create(actorOf(user, req), dto);
+    return this.features.remove(actorOf(user, req), key);
   }
 
   @RequirePermissions('subscriptions:write')

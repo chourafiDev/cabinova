@@ -107,6 +107,17 @@ export class PlatformUsersController {
   }
 
   @RequirePermissions('users:write')
+  @Post('platform-users/:id/2fa/reset')
+  @HttpCode(200)
+  resetTwoFactor(
+    @Param('id', ParseUUIDPipe) id: string,
+    @CurrentUser() user: AuthUser,
+    @Req() req: Request,
+  ) {
+    return this.users.resetTwoFactor(actorOf(user, req), id);
+  }
+
+  @RequirePermissions('users:write')
   @Delete('platform-users/:id/sessions')
   revokeSessions(
     @Param('id', ParseUUIDPipe) id: string,

@@ -1,4 +1,10 @@
-import { addPeriod, dueDate, invoiceAmount, invoiceNumber } from './periods.js';
+import {
+  addPeriod,
+  dueDate,
+  invoiceAmount,
+  invoiceNumber,
+  unpaidStep,
+} from './periods.js';
 
 const d = (iso: string) => new Date(`${iso}T00:00:00Z`);
 const iso = (date: Date) => date.toISOString().slice(0, 10);
@@ -34,5 +40,39 @@ describe('billing periods', () => {
 
   it('numbers invoices per year with 6 digits', () => {
     expect(invoiceNumber(2026, 42)).toBe('F-2026-000042');
+  });
+});
+
+describe('unpaidStep', () => {
+  const dueAt = new Date('2026-10-01T00:00:00Z');
+  const at = (iso: string) => new Date(iso);
+  const fresh = { dueAt, suspensionWarningSentAt: null };
+
+  it('does nothing when automatic suspension is off', () => {
+    expect(unpaidStep(fresh, 0, at('2027-01-01T00:00:00Z')).action).toBe(
+      'wait',
+    );
+  });
+
+  it('waits, then warns 3 days before, then suspends', () => {
+    expect(unpaidStep(fresh, 15, at('2026-10-10T00:00:00Z')).action).toBe(
+      'wait',
+    );
+    const warn = unpaidStep(fresh, 15, at('2026-10-13T00:00:00Z'));
+    expect(warn.action).toBe('warn');
+    expect(warn.suspendOn?.toISOString()).toBe('2026-10-16T00:00:00.000Z');
+    expect(unpaidStep(fresh, 15, at('2026-10-16T00:00:00Z')).action).toBe(
+      'suspend',
+    );
+  });
+
+  it('warns only once', () => {
+    const warned = {
+      dueAt,
+      suspensionWarningSentAt: at('2026-10-13T00:00:00Z'),
+    };
+    expect(unpaidStep(warned, 15, at('2026-10-14T00:00:00Z')).action).toBe(
+      'wait',
+    );
   });
 });

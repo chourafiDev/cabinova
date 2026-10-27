@@ -17,8 +17,17 @@ export type TenantDatabase = {
 	healthy: boolean | null;
 	lastHealthError: string | null;
 	latencyMs: number | null;
+	/** pg_database_size at the last check. */
+	sizeBytes: number | null;
+	sizeCheckedAt: string | null;
 	createdAt: string;
 };
+
+/** "12,4 Mo" / "1,2 Go" */
+export const formatBytes = (bytes: number) =>
+	bytes >= 1024 ** 3
+		? `${(bytes / 1024 ** 3).toFixed(1).replace(".", ",")} Go`
+		: `${(bytes / 1024 ** 2).toFixed(1).replace(".", ",")} Mo`;
 
 export type ProvisioningStep = {
 	key: string;

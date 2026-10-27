@@ -10,7 +10,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Field, FieldLabel } from "@/components/ui/field";
 import { api } from "@/lib/api-client";
 import { formatDate } from "@/lib/format";
-import { PROVISIONING_STEPS, type ProvisioningRun, type TenantDatabaseInfo } from "@/lib/tenant-databases";
+import { formatStorage } from "@/lib/plans";
+import { formatBytes, PROVISIONING_STEPS, type ProvisioningRun, type TenantDatabaseInfo } from "@/lib/tenant-databases";
 import type { TenantStatus } from "@/lib/tenants";
 import { cn } from "@/lib/utils";
 import { FormCard } from "../../../_components/shared/form-card";
@@ -27,11 +28,14 @@ export function TenantTechnical({
 	status,
 	info,
 	canWrite,
+	storageQuotaMb,
 }: {
 	tenantId: string;
 	status: TenantStatus;
 	info: TenantDatabaseInfo;
 	canWrite: boolean;
+	/** The cabinet's storage quota (NULL = unlimited). */
+	storageQuotaMb: number | null;
 }) {
 	const router = useRouter();
 	const [pending, startTransition] = useTransition();
@@ -164,6 +168,14 @@ export function TenantTechnical({
 							)}
 							{db.lastHealthError && row("Erreur", <span className="text-destructive">{db.lastHealthError}</span>)}
 							{row(
+								"Stockage",
+								db.sizeBytes === null ? (
+									"Mesuré au prochain test de connexion"
+								) : (
+									<StorageMeter bytes={db.sizeBytes} quotaMb={storageQuotaMb} />
+								),
+							)}
+							{row(
 								"Schéma",
 								<span className="flex flex-wrap items-center gap-2">
 									<code className="text-xs">{db.schemaVersion ?? "aucun"}</code>
@@ -288,5 +300,34 @@ function RunTimeline({ run }: { run: ProvisioningRun }) {
 				</p>
 			)}
 		</FormCard>
+	);
+}
+
+/** Database size against the quota; amber from 75 %, red from 90 %. Files (uploads) will add to it later. */
+function StorageMeter({ bytes, quotaMb }: { bytes: number; quotaMb: number | null }) {
+	const ratio = quotaMb ? bytes / (quotaMb * 1024 * 1024) : null;
+	return (
+		<span className="grid max-w-xs gap-1">
+			<span className="text-xs">
+				<span className="font-medium tabular-nums">{formatBytes(bytes)}</span>
+				<span className="text-muted-foreground">
+					{" "}
+					/ {formatStorage(quotaMb)}
+					{ratio !== null && ` · ${Math.round(ratio * 100)} %`}
+				</span>
+			</span>
+			{ratio !== null && (
+				<span className="h-1.5 overflow-hidden rounded-full bg-muted" aria-hidden>
+					<span
+						className={cn(
+							"block h-full rounded-full",
+							ratio >= 0.9 ? "bg-red-600" : ratio >= 0.75 ? "bg-amber-500" : "bg-emerald-600",
+						)}
+						style={{ width: `${Math.min(100, Math.max(2, ratio * 100))}%` }}
+					/>
+				</span>
+			)}
+			<span className="text-[11px] text-muted-foreground">Base de données seule ; les fichiers s’y ajouteront avec l’application des cabinets.</span>
+		</span>
 	);
 }
