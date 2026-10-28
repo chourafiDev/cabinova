@@ -2,6 +2,7 @@ import Link from "next/link";
 import { LuCalendarPlus, LuUserPlus } from "react-icons/lu";
 import { Button } from "@/components/ui/button";
 import { formatDate } from "@/lib/format";
+import { NEW_PATIENT_HREF } from "@/lib/patients";
 import type { ClinicSession } from "@/lib/session";
 
 /** Greeting, today's date and the two most frequent actions. */
@@ -28,12 +29,12 @@ export function WelcomeBanner({
 				</p>
 				<div className="mt-4 flex flex-wrap gap-2">
 					<Button asChild size="sm" className="bg-white text-black hover:bg-white/90">
-						<Link href="/appointments">
+						<Link href="/appointments?view=day">
 							<LuCalendarPlus /> Nouveau rendez-vous
 						</Link>
 					</Button>
 					<Button asChild size="sm" variant="outline" className="border-white/30 bg-transparent text-white hover:bg-white/10 hover:text-white">
-						<Link href="/patients">
+						<Link href={NEW_PATIENT_HREF}>
 							<LuUserPlus /> Nouveau patient
 						</Link>
 					</Button>

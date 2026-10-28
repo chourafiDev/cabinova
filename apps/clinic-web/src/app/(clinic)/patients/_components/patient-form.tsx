@@ -1,12 +1,14 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useRouter } from "next/navigation";
-import { Controller, useForm, useWatch } from "react-hook-form";
+import { ChevronDown, ContactRound, Loader, MapPin, Phone, Plus, ShieldCheck, StickyNote } from "lucide-react";
+import { useState } from "react";
+import { Controller, type FieldErrors, useForm, useWatch } from "react-hook-form";
 import { toast } from "sonner";
-import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
+import { useModifierLabel } from "@/components/keyboard-shortcuts";
+import { Button } from "@/components/ui/button";
+import { Field, FieldError, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { ApiError, api } from "@/lib/api-client";
 import {
@@ -20,192 +22,357 @@ import {
 	type Sex,
 } from "@/lib/patients";
 import { cn } from "@/lib/utils";
-import { FormCard } from "../../_components/form-card";
-import { UnsavedChangesBar } from "../../_components/unsaved-changes-bar";
 
-const FORM_ID = "patient-form";
+/** "Today" for the birth date picker (outside render: React Compiler purity). */
+const today = () => new Date().toISOString().slice(0, 10);
 
-/** Identity, contact, coverage and emergency contact. Create (no `patientId`) or edit. */
+/** The optional groups, folded until needed. */
+const OPTIONAL = {
+	address: ["address", "city", "email"],
+	coverage: ["coverage", "coverageNumber", "insurer"],
+	emergency: ["emergencyContactName", "emergencyContactPhone"],
+	notes: ["notes"],
+} as const satisfies Record<string, readonly (keyof PatientInput)[]>;
+type Group = keyof typeof OPTIONAL;
+
+const hasValue = (values: PatientInput, group: Group) =>
+	OPTIONAL[group].some((k) => (k === "coverage" ? values.coverage !== "none" : Boolean(values[k])));
+const hasError = (errors: FieldErrors<PatientInput>, group: Group) => OPTIONAL[group].some((k) => errors[k]);
+
+function Label({ htmlFor, required, children }: { htmlFor?: string; required?: boolean; children: React.ReactNode }) {
+	return (
+		<FieldLabel htmlFor={htmlFor}>
+			{children}
+			{required && <span className="text-primary">*</span>}
+		</FieldLabel>
+	);
+}
+
+/** A folded group of optional fields: a one-line summary until opened. */
+function OptionalSection({
+	icon: Icon,
+	title,
+	summary,
+	open,
+	onToggle,
+	children,
+}: {
+	icon: React.ComponentType<{ className?: string }>;
+	title: string;
+	summary?: string;
+	open: boolean;
+	onToggle: () => void;
+	children: React.ReactNode;
+}) {
+	return (
+		<section className={cn("rounded-xl border transition-colors", open && "bg-muted/30")}>
+			<button
+				type="button"
+				onClick={onToggle}
+				aria-expanded={open}
+				className="flex w-full items-center gap-3 px-4 py-3 text-start"
+			>
+				<span className="bg-muted text-muted-foreground flex size-8 shrink-0 items-center justify-center rounded-lg">
+					<Icon className="size-4" />
+				</span>
+				<span className="grid min-w-0 flex-1">
+					<span className="text-sm font-medium">{title}</span>
+					{!open && <span className="text-muted-foreground truncate text-xs">{summary ?? "Facultatif"}</span>}
+				</span>
+				{open ? (
+					<ChevronDown className="text-muted-foreground size-4 rotate-180 transition-transform" />
+				) : summary ? (
+					<ChevronDown className="text-muted-foreground size-4 transition-transform" />
+				) : (
+					<Plus className="text-muted-foreground size-4" />
+				)}
+			</button>
+			{open && <div className="grid gap-4 px-4 pb-4">{children}</div>}
+		</section>
+	);
+}
+
+/**
+ * The patient form in the sheet. What the front desk needs at check-in
+ * comes first; address, coverage, emergency contact and note stay folded
+ * until needed (opened when they hold data or an error). New patient:
+ * "Créer et prendre RDV" goes straight to booking.
+ */
 export function PatientForm({
 	patientId,
 	defaultValues,
-	readOnly = false,
+	onSaved,
+	onCancel,
 }: {
 	patientId?: string;
 	defaultValues: PatientInput;
-	readOnly?: boolean;
+	onSaved: (patient: Patient, next: "file" | "book") => void;
+	onCancel: () => void;
 }) {
-	const router = useRouter();
 	const form = useForm<PatientInput>({
 		resolver: zodResolver(patientSchema),
 		defaultValues,
 		mode: "onTouched",
 	});
 	const { errors, isDirty, isSubmitting } = form.formState;
-	const [coverage, birthDate] = useWatch({ control: form.control, name: ["coverage", "birthDate"] });
-	const age = birthDate && !errors.birthDate ? ageOf(birthDate) : null;
+	const modifier = useModifierLabel();
+	const values = useWatch({ control: form.control }) as PatientInput;
+	const age = values.birthDate && !errors.birthDate ? ageOf(values.birthDate) : null;
+	const [opened, setOpened] = useState<Record<Group, boolean>>(() => ({
+		address: hasValue(defaultValues, "address"),
+		coverage: hasValue(defaultValues, "coverage"),
+		emergency: hasValue(defaultValues, "emergency"),
+		notes: hasValue(defaultValues, "notes"),
+	}));
+	const isOpen = (g: Group) => opened[g] || hasError(errors, g);
+	const toggle = (g: Group) => setOpened((o) => ({ ...o, [g]: !isOpen(g) }));
 
-	const onSubmit = form.handleSubmit(async (values) => {
-		try {
-			const patient = await api<Patient>(patientId ? `/patients/${patientId}` : "/patients", {
-				method: patientId ? "PUT" : "POST",
-				body: JSON.stringify(values),
-			});
-			if (patientId) {
-				form.reset(values);
-				toast.success("Dossier enregistré");
-				router.refresh();
-			} else {
-				toast.success("Patient créé");
-				router.push(`/patients/${patient.id}`);
+	const submit = (next: "file" | "book") =>
+		form.handleSubmit(async (input) => {
+			try {
+				const patient = await api<Patient>(patientId ? `/patients/${patientId}` : "/patients", {
+					method: patientId ? "PUT" : "POST",
+					body: JSON.stringify(input),
+				});
+				toast.success(patientId ? "Dossier enregistré" : `Dossier n° ${patient.fileNumber} créé`);
+				onSaved(patient, next);
+			} catch (err) {
+				if (err instanceof ApiError && err.code === "CIN_TAKEN") {
+					form.setError("cin", { message: err.message });
+					return;
+				}
+				toast.error(err instanceof Error ? err.message : "Enregistrement impossible");
 			}
-		} catch (err) {
-			if (err instanceof ApiError && err.code === "CIN_TAKEN") {
-				form.setError("cin", { message: err.message });
-				return;
-			}
-			toast.error(err instanceof Error ? err.message : "Enregistrement impossible");
-		}
-	});
+		});
 
-	const text = (name: keyof PatientInput, label: string, props: React.ComponentProps<typeof Input> = {}) => (
-		<Field data-invalid={!!errors[name]}>
-			<FieldLabel htmlFor={name}>{label}</FieldLabel>
-			<Input id={name} aria-invalid={!!errors[name]} {...props} {...form.register(name)} />
-			<FieldError errors={[errors[name]]} />
-		</Field>
-	);
+	const input = (
+		name: keyof PatientInput,
+		label: string,
+		props: React.ComponentProps<typeof Input> & { required?: boolean } = {},
+	) => {
+		const { required, ...rest } = props;
+		return (
+			<Field data-invalid={!!errors[name]}>
+				<Label htmlFor={name} required={required}>
+					{label}
+				</Label>
+				<Input id={name} aria-invalid={!!errors[name]} {...rest} {...form.register(name)} />
+				<FieldError errors={[errors[name]]} />
+			</Field>
+		);
+	};
+
+	const coverageSummary =
+		values.coverage && values.coverage !== "none"
+			? [COVERAGE_LABELS[values.coverage], values.insurer, values.coverageNumber].filter(Boolean).join(" · ")
+			: undefined;
 
 	return (
-		<form id={FORM_ID} onSubmit={onSubmit} noValidate>
-			<fieldset disabled={readOnly} className="grid gap-3 lg:grid-cols-[2fr_1fr] lg:items-start">
-				<div className="grid gap-3">
-					<FormCard title="Identité">
-						<FieldGroup className="gap-4">
-							<div className="grid gap-4 sm:grid-cols-2">
-								{text("lastName", "Nom", { autoComplete: "off", autoFocus: !patientId })}
-								{text("firstName", "Prénom", { autoComplete: "off" })}
-							</div>
-							<div className="grid gap-4 sm:grid-cols-3">
-								<Controller
-									control={form.control}
-									name="sex"
-									render={({ field }) => (
-										<Field data-invalid={!!errors.sex}>
-											<FieldLabel>Sexe</FieldLabel>
-											<div role="radiogroup" aria-label="Sexe" className="bg-muted grid h-9 grid-cols-2 rounded-lg p-0.5">
-												{(Object.keys(SEX_LABELS) as Sex[]).map((value) => (
-													<button
-														key={value}
-														type="button"
-														role="radio"
-														aria-checked={field.value === value}
-														onClick={() => field.onChange(value)}
-														onBlur={field.onBlur}
-														className={cn(
-															"rounded-md text-sm font-medium transition-colors",
-															field.value === value
-																? "bg-background shadow-sm"
-																: "text-muted-foreground hover:text-foreground",
-														)}
-													>
-														{SEX_LABELS[value]}
-													</button>
-												))}
-											</div>
-											<FieldError errors={[errors.sex]} />
-										</Field>
-									)}
-								/>
-								<Field data-invalid={!!errors.birthDate}>
-									<FieldLabel htmlFor="birthDate">Date de naissance</FieldLabel>
-									<Input
-										id="birthDate"
-										type="date"
-										max={new Date().toISOString().slice(0, 10)}
-										aria-invalid={!!errors.birthDate}
-										{...form.register("birthDate")}
-									/>
-									{age !== null && <FieldDescription>{age} ans</FieldDescription>}
-									<FieldError errors={[errors.birthDate]} />
+		<form
+			onSubmit={submit("file")}
+			onKeyDown={(e) => {
+				// ⌘↵ / Ctrl+↵ saves from any field.
+				if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
+					e.preventDefault();
+					void submit("file")();
+				}
+			}}
+			noValidate
+			className="flex min-h-0 flex-1 flex-col"
+		>
+			<div className="grid min-h-0 flex-1 content-start gap-6 overflow-y-auto p-5">
+				<section className="grid gap-4">
+					<div className="grid gap-4 sm:grid-cols-2">
+						{input("lastName", "Nom", { required: true, autoComplete: "off", autoFocus: !patientId })}
+						{input("firstName", "Prénom", { required: true, autoComplete: "off" })}
+					</div>
+					<div className="grid gap-4 sm:grid-cols-2">
+						<Controller
+							control={form.control}
+							name="sex"
+							render={({ field }) => (
+								<Field data-invalid={!!errors.sex}>
+									<Label required>Sexe</Label>
+									<div role="radiogroup" aria-label="Sexe" className="bg-muted grid h-9 grid-cols-2 rounded-lg p-0.5">
+										{(Object.keys(SEX_LABELS) as Sex[]).map((value) => (
+											<button
+												key={value}
+												type="button"
+												role="radio"
+												aria-checked={field.value === value}
+												onClick={() => field.onChange(value)}
+												onBlur={field.onBlur}
+												className={cn(
+													"rounded-md text-sm font-medium transition-colors",
+													field.value === value ? "bg-background shadow-sm" : "text-muted-foreground hover:text-foreground",
+												)}
+											>
+												{SEX_LABELS[value]}
+											</button>
+										))}
+									</div>
+									<FieldError errors={[errors.sex]} />
 								</Field>
-								{text("cin", "CIN", { placeholder: "BK123456", className: "uppercase" })}
+							)}
+						/>
+						<Field data-invalid={!!errors.birthDate}>
+							<div className="flex items-center justify-between gap-2">
+								<Label htmlFor="birthDate">Date de naissance</Label>
+								{age !== null && (
+									<span className="bg-muted text-muted-foreground rounded-full px-2 text-xs tabular-nums">{age} ans</span>
+								)}
 							</div>
-						</FieldGroup>
-					</FormCard>
+							<Input
+								id="birthDate"
+								type="date"
+								max={today()}
+								aria-invalid={!!errors.birthDate}
+								{...form.register("birthDate")}
+							/>
+							<FieldError errors={[errors.birthDate]} />
+						</Field>
+					</div>
+					<div className="grid gap-4 sm:grid-cols-2">
+						<Field data-invalid={!!errors.phone}>
+							<Label htmlFor="phone">Téléphone</Label>
+							<div className="relative">
+								<Phone className="text-muted-foreground pointer-events-none absolute start-3 top-1/2 size-4 -translate-y-1/2" />
+								<Input
+									id="phone"
+									type="tel"
+									inputMode="tel"
+									placeholder="06 12 34 56 78"
+									className="ps-9"
+									aria-invalid={!!errors.phone}
+									{...form.register("phone")}
+								/>
+							</div>
+							<FieldError errors={[errors.phone]} />
+						</Field>
+						{input("cin", "CIN", { placeholder: "BK123456", className: "uppercase" })}
+					</div>
+				</section>
 
-					<FormCard title="Coordonnées">
-						<FieldGroup className="gap-4">
+				<div className="grid gap-2">
+					<p className="text-muted-foreground text-xs font-medium">Informations complémentaires</p>
+
+					<OptionalSection
+						icon={MapPin}
+						title="Adresse et e-mail"
+						summary={[values.address, values.city, values.email].filter(Boolean).join(" · ") || undefined}
+						open={isOpen("address")}
+						onToggle={() => toggle("address")}
+					>
+						<div className="grid gap-4 sm:grid-cols-[2fr_1fr]">
+							{input("address", "Adresse")}
+							{input("city", "Ville")}
+						</div>
+						{input("email", "E-mail", { type: "email", placeholder: "nom@exemple.ma" })}
+					</OptionalSection>
+
+					<OptionalSection
+						icon={ShieldCheck}
+						title="Couverture médicale"
+						summary={coverageSummary}
+						open={isOpen("coverage")}
+						onToggle={() => toggle("coverage")}
+					>
+						<Controller
+							control={form.control}
+							name="coverage"
+							render={({ field }) => (
+								<Field>
+									<Label>Régime</Label>
+									<div role="radiogroup" aria-label="Régime" className="flex flex-wrap gap-1.5">
+										{(Object.keys(COVERAGE_LABELS) as Coverage[]).map((value) => (
+											<button
+												key={value}
+												type="button"
+												role="radio"
+												aria-checked={field.value === value}
+												onClick={() => field.onChange(value)}
+												className={cn(
+													"h-8 rounded-lg border px-3 text-sm transition-colors",
+													field.value === value
+														? "border-primary bg-primary text-primary-foreground font-medium"
+														: "bg-background text-muted-foreground hover:text-foreground",
+												)}
+											>
+												{COVERAGE_LABELS[value]}
+											</button>
+										))}
+									</div>
+								</Field>
+							)}
+						/>
+						{values.coverage !== "none" && (
 							<div className="grid gap-4 sm:grid-cols-2">
-								{text("phone", "Téléphone", { type: "tel", inputMode: "tel", placeholder: "06 12 34 56 78" })}
-								{text("email", "E-mail", { type: "email", placeholder: "Facultatif" })}
+								{values.coverage === "private" &&
+									input("insurer", "Assureur", { placeholder: "Saham, Wafa, AXA…" })}
+								{input("coverageNumber", "N° d’immatriculation")}
 							</div>
-							<div className="grid gap-4 sm:grid-cols-[2fr_1fr]">
-								{text("address", "Adresse")}
-								{text("city", "Ville")}
-							</div>
-						</FieldGroup>
-					</FormCard>
+						)}
+					</OptionalSection>
 
-					<FormCard title="Note administrative">
+					<OptionalSection
+						icon={ContactRound}
+						title="Contact d’urgence"
+						summary={[values.emergencyContactName, values.emergencyContactPhone].filter(Boolean).join(" · ") || undefined}
+						open={isOpen("emergency")}
+						onToggle={() => toggle("emergency")}
+					>
+						<div className="grid gap-4 sm:grid-cols-2">
+							{input("emergencyContactName", "Nom et lien", { placeholder: "Ahmed (époux)" })}
+							{input("emergencyContactPhone", "Téléphone", { type: "tel", inputMode: "tel" })}
+						</div>
+					</OptionalSection>
+
+					<OptionalSection
+						icon={StickyNote}
+						title="Note administrative"
+						summary={values.notes || undefined}
+						open={isOpen("notes")}
+						onToggle={() => toggle("notes")}
+					>
 						<Field data-invalid={!!errors.notes}>
 							<Textarea
 								id="notes"
 								rows={3}
-								placeholder="Informations pratiques (jamais médicales : elles vont dans le dossier médical)."
+								placeholder="Informations pratiques pour l’accueil. Jamais médicales : elles vont dans les antécédents."
 								aria-invalid={!!errors.notes}
 								{...form.register("notes")}
 							/>
 							<FieldError errors={[errors.notes]} />
 						</Field>
-					</FormCard>
+					</OptionalSection>
 				</div>
+			</div>
 
-				<div className="grid gap-3">
-					<FormCard title="Couverture">
-						<FieldGroup className="gap-4">
-							<Controller
-								control={form.control}
-								name="coverage"
-								render={({ field }) => (
-									<Field>
-										<FieldLabel htmlFor="coverage">Régime</FieldLabel>
-										<Select value={field.value} onValueChange={(v) => field.onChange(v as Coverage)} disabled={readOnly}>
-											<SelectTrigger id="coverage" className="w-full">
-												<SelectValue />
-											</SelectTrigger>
-											<SelectContent>
-												{(Object.keys(COVERAGE_LABELS) as Coverage[]).map((value) => (
-													<SelectItem key={value} value={value}>
-														{COVERAGE_LABELS[value]}
-													</SelectItem>
-												))}
-											</SelectContent>
-										</Select>
-									</Field>
-								)}
-							/>
-							{coverage === "private" && text("insurer", "Assureur", { placeholder: "Ex. Saham, Wafa, AXA…" })}
-							{coverage !== "none" && text("coverageNumber", "N° d'immatriculation")}
-						</FieldGroup>
-					</FormCard>
-
-					<FormCard title="Contact d'urgence">
-						<FieldGroup className="gap-4">
-							{text("emergencyContactName", "Nom et lien", { placeholder: "Ex. Ahmed (époux)" })}
-							{text("emergencyContactPhone", "Téléphone", { type: "tel", inputMode: "tel" })}
-						</FieldGroup>
-					</FormCard>
-				</div>
-			</fieldset>
-
-			<UnsavedChangesBar
-				visible={isDirty && !readOnly}
-				label={patientId ? "Modifications non enregistrées" : "Nouveau patient non enregistré"}
-				isSubmitting={isSubmitting}
-				onDiscard={() => (patientId ? form.reset() : router.push("/patients"))}
-				formId={FORM_ID}
-			/>
+			<div className="flex items-center gap-2 border-t px-5 py-3">
+				<p className="text-muted-foreground me-auto hidden text-xs sm:block">
+					<span className="text-primary">*</span> obligatoire ·{" "}
+					<kbd className="font-mono">{modifier}+↵</kbd> pour enregistrer
+				</p>
+				<Button type="button" variant="ghost" onClick={onCancel}>
+					Annuler
+				</Button>
+				{patientId ? (
+					<Button type="submit" disabled={isSubmitting || !isDirty}>
+						{isSubmitting && <Loader className="animate-spin" />}
+						Enregistrer
+					</Button>
+				) : (
+					<>
+						<Button type="button" variant="outline" disabled={isSubmitting} onClick={submit("book")}>
+							Créer et prendre RDV
+						</Button>
+						<Button type="submit" disabled={isSubmitting}>
+							{isSubmitting && <Loader className="animate-spin" />}
+							Créer le dossier
+						</Button>
+					</>
+				)}
+			</div>
 		</form>
 	);
 }

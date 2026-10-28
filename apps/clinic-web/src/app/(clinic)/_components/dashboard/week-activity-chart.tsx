@@ -10,7 +10,7 @@ import {
 	ChartTooltipContent,
 } from "@/components/ui/chart";
 import { formatDate } from "@/lib/format";
-import type { DashboardData } from "@/lib/sample-data";
+import type { DashboardData } from "@/lib/dashboard";
 import { ChartCard } from "./chart-card";
 
 // Violet + aqua: the pair validated for the Super Admin charts (palette.ts there).

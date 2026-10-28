@@ -36,6 +36,13 @@
       "when": 1793201104607,
       "tag": "0004_spaces",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1793201588030,
+      "tag": "0005_appointments",
+      "breakpoints": true
     }
   ]
 }

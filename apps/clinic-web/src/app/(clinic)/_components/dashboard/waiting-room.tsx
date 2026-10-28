@@ -1,10 +1,11 @@
 import { LuArmchair, LuStethoscope } from "react-icons/lu";
-import type { Appointment } from "@/lib/sample-data";
+import { type DashboardData, clock } from "@/lib/dashboard";
+import { fullName } from "@/lib/patients";
 import { ChartCard } from "./chart-card";
 
 /** Who is with the doctor now, and who is waiting (in arrival order). */
-export function WaitingRoom({ appointments }: { appointments: Appointment[] }) {
-	const current = appointments.find((a) => a.status === "in_consultation");
+export function WaitingRoom({ appointments }: { appointments: NonNullable<DashboardData["appointments"]> }) {
+	const current = appointments.filter((a) => a.status === "in_consultation");
 	const waiting = appointments
 		.filter((a) => a.status === "arrived")
 		.sort((a, b) => (a.arrivedAt ?? "").localeCompare(b.arrivedAt ?? ""));
@@ -16,13 +17,15 @@ export function WaitingRoom({ appointments }: { appointments: Appointment[] }) {
 					<p className="mb-1 flex items-center gap-1.5 text-xs text-primary">
 						<LuStethoscope className="size-3.5" /> En consultation
 					</p>
-					{current ? (
-						<>
-							<p className="text-sm font-semibold">{current.patient.name}</p>
-							<p className="text-xs text-muted-foreground">
-								RDV {current.time} · {current.reason}
-							</p>
-						</>
+					{current.length > 0 ? (
+						current.map((a) => (
+							<div key={a.id}>
+								<p className="text-sm font-semibold">{fullName(a.patient)}</p>
+								<p className="text-xs text-muted-foreground">
+									RDV {clock(a.startsAt)} · {a.practitioner.name}
+								</p>
+							</div>
+						))
 					) : (
 						<p className="text-sm text-muted-foreground">Personne pour le moment.</p>
 					)}
@@ -42,9 +45,9 @@ export function WaitingRoom({ appointments }: { appointments: Appointment[] }) {
 										{i + 1}
 									</span>
 									<div className="min-w-0 flex-1">
-										<p className="truncate text-sm font-medium">{a.patient.name}</p>
+										<p className="truncate text-sm font-medium">{fullName(a.patient)}</p>
 										<p className="truncate text-xs text-muted-foreground">
-											Arrivé(e) à {a.arrivedAt} · RDV {a.time}
+											Arrivé(e) à {a.arrivedAt ? clock(a.arrivedAt) : "—"} · RDV {clock(a.startsAt)}
 										</p>
 									</div>
 								</li>

@@ -26,9 +26,6 @@ export function SiteHeader({ user, spaces }: { user: ClinicSession["user"]; spac
         </BreadcrumbList>
       </Breadcrumb>
       <div className="ms-auto flex flex-1 items-center justify-end gap-2">
-        <span className="hidden rounded-full border border-dashed px-2 py-0.5 text-xs text-muted-foreground sm:inline">
-          Activité : données de démonstration
-        </span>
         <CommandPalette spaces={spaces} />
         <span data-tour="account" className="flex items-center gap-2">
           <ThemeToggle />

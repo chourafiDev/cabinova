@@ -27,7 +27,7 @@ export const navGroups: { label: string; items: NavItem[] }[] = [
     label: "Cabinet",
     items: [
       { title: "Tableau de bord", href: "/", icon: HiSquares2X2, shortcut: "d" },
-      { title: "Agenda", href: "/appointments", icon: HiCalendarDays, shortcut: "a", soon: true },
+      { title: "Agenda", href: "/appointments", icon: HiCalendarDays, shortcut: "a" },
       { title: "Patients", href: "/patients", icon: HiUsers, shortcut: "p" },
       { title: "Consultations", href: "/consultations", icon: HiClipboardDocumentList, shortcut: "c", soon: true },
       { title: "Ordonnances", href: "/prescriptions", icon: HiDocumentText, shortcut: "o", soon: true },

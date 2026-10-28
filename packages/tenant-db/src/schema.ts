@@ -226,3 +226,58 @@ export const medicalProfiles = pgTable('medical_profiles', {
     .notNull()
     .defaultNow(),
 });
+
+// ── Agenda ────────────────────────────────────────────────────────────────
+
+export const appointmentStatus = pgEnum('appointment_status', [
+  'scheduled', // planifié
+  'confirmed', // confirmé par le patient
+  'arrived', // en salle d'attente
+  'in_consultation', // avec le médecin
+  'completed', // vu
+  'no_show', // absent
+  'cancelled', // annulé
+]);
+
+/**
+ * Appointments of a space's agenda. The patient belongs to the same space;
+ * a practitioner can't be booked twice at the same time, in any space.
+ */
+export const appointments = pgTable(
+  'appointments',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    spaceId: uuid('space_id')
+      .notNull()
+      .references(() => spaces.id, { onDelete: 'restrict' }),
+    patientId: uuid('patient_id')
+      .notNull()
+      .references(() => patients.id, { onDelete: 'restrict' }),
+    /** The doctor seeing the patient. */
+    practitionerId: uuid('practitioner_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'restrict' }),
+    startsAt: timestamp('starts_at', { withTimezone: true }).notNull(),
+    endsAt: timestamp('ends_at', { withTimezone: true }).notNull(),
+    status: appointmentStatus('status').notNull().default('scheduled'),
+    /** Motif (short, shown on the agenda). */
+    reason: text('reason'),
+    /** Front-desk note (never medical). */
+    notes: text('notes'),
+    /** Checked in at the front desk (waiting room order). */
+    arrivedAt: timestamp('arrived_at', { withTimezone: true }),
+    createdBy: uuid('created_by').references(() => users.id, {
+      onDelete: 'set null',
+    }),
+    ...timestamps,
+  },
+  (t) => [
+    check('appointments_time_order', sql`${t.endsAt} > ${t.startsAt}`),
+    index('appointments_space_starts_idx').on(t.spaceId, t.startsAt),
+    index('appointments_practitioner_starts_idx').on(
+      t.practitionerId,
+      t.startsAt,
+    ),
+    index('appointments_patient_idx').on(t.patientId),
+  ],
+);

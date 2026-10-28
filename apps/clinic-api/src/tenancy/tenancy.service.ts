@@ -5,12 +5,14 @@ import {
   Injectable,
   NotFoundException,
   type OnApplicationShutdown,
+  ServiceUnavailableException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import type { SecretBox } from '@cabinova/secret-box';
 import type { Env } from '../config/env.js';
 import { CatalogService, SECRET_BOX } from '../database/catalog.module.js';
 import { subdomainOf } from './host.js';
+import { isBehind } from './schema-version.js';
 
 export type ClinicTenant = {
   id: string;
@@ -27,6 +29,7 @@ type Row = ClinicTenant & {
   role_name: string | null;
   ciphertext: string | null;
   key_version: number | null;
+  schema_version: string | null;
 };
 
 /** The cabinet this request is for, and a pool on its own database. */
@@ -78,6 +81,15 @@ export class TenancyService implements OnApplicationShutdown {
         message: 'Ce cabinet est en cours de préparation.',
       });
     }
+    // Deploys migrate every cabinet (admin-api, at startup); until this one
+    // is done, its database lacks what this code uses.
+    if (isBehind(row.schema_version)) {
+      throw new ServiceUnavailableException({
+        code: 'TENANT_OUTDATED',
+        message:
+          'Votre espace est en cours de mise à jour. Réessayez dans quelques instants.',
+      });
+    }
     const { id, name, specialty, city, status } = row;
     return {
       tenant: { id, name, specialty, city, status, subdomain: row.subdomain },
@@ -94,7 +106,7 @@ export class TenancyService implements OnApplicationShutdown {
     if (hit && Date.now() - hit.at < CACHE_MS) return hit.row;
     const { rows } = await this.catalog.pool.query<Row>(
       `select t.id, t.name, t.specialty, t.city, t.status, d.subdomain,
-              db.host, db.database_name, db.role_name,
+              db.host, db.database_name, db.role_name, db.schema_version,
               s.ciphertext, s.key_version
          from tenant_domains d
          join tenants t on t.id = d.tenant_id

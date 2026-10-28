@@ -13,9 +13,12 @@ const RECOVERY_INTERVAL_MS = 60_000;
 const HEALTH_INTERVAL_MS = 10 * 60_000;
 
 /**
- * Background upkeep: fails provisioning runs interrupted by a restart, and
- * tests every clinic database's connection (an unreachable one is audited
- * and flagged on the Technique page). Disabled under tests.
+ * Background upkeep: at startup, brings every clinic database to the
+ * latest schema (a deploy ships new tenant-db migrations; the clinic app
+ * refuses to run on an outdated database). Then fails provisioning runs
+ * interrupted by a restart, and tests every clinic database's connection
+ * (an unreachable one is audited and flagged on the Technique page).
+ * Disabled under tests.
  */
 @Injectable()
 export class TenantDatabasesScheduler
@@ -33,6 +36,18 @@ export class TenantDatabasesScheduler
 
   onApplicationBootstrap() {
     if (this.config.get('NODE_ENV') === 'test') return;
+    // In the background: the API answers while cabinets are migrated one by
+    // one (each failure is audited and notified, like a manual "Migrer").
+    void this.databases
+      .migrateBehind({ userId: null })
+      .then(({ migrated, failed, latestSchemaVersion }) => {
+        if (migrated || failed.length) {
+          this.logger.log(
+            `Clinic databases → ${latestSchemaVersion}: ${migrated} migrated, ${failed.length} failed`,
+          );
+        }
+      })
+      .catch((err) => this.logger.error('Startup migrations failed', err));
     this.every(RECOVERY_INTERVAL_MS, () => this.provisioning.recoverStale());
     this.every(HEALTH_INTERVAL_MS, async () => {
       if (this.checking) return;

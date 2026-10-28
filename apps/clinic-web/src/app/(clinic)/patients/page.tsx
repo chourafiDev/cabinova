@@ -8,6 +8,7 @@ import { formatDate } from "@/lib/format";
 import {
 	ageOf,
 	COVERAGE_LABELS,
+	isMedicalRole,
 	formatFileNumber,
 	formatPhone,
 	fullName,
@@ -18,6 +19,7 @@ import { apiGet } from "@/lib/server-api";
 import { getClinicState } from "@/lib/session";
 import { spaceLabel } from "@/lib/spaces";
 import { cn } from "@/lib/utils";
+import { PatientSheet } from "./_components/patient-sheet";
 import { PatientsSearch } from "./_components/patients-search";
 
 export const metadata: Metadata = { title: "Patients" };
@@ -26,7 +28,7 @@ const PER_PAGE = 20;
 const STATUSES = { active: "Actifs", archived: "Archivés" } as const;
 type Status = keyof typeof STATUSES;
 
-/** The cabinet's patients: search, active / archived, 20 per page. */
+/** The space's patients: search, active / archived, 20 per page. A patient opens in a sheet over the list. */
 export default async function PatientsPage({ searchParams }: PageProps<"/patients">) {
 	const params = await searchParams;
 	const one = (v: string | string[] | undefined) => (typeof v === "string" ? v : undefined);
@@ -41,9 +43,11 @@ export default async function PatientsPage({ searchParams }: PageProps<"/patient
 		getClinicState(),
 	]);
 	const space = state.status === "signed-in" ? state.session.spaces?.current : undefined;
+	const medical = state.status === "signed-in" && isMedicalRole(state.session.user.role);
 
 	const href = (changes: Record<string, string | null>) => {
 		const next = new URLSearchParams({ ...(status !== "active" && { status }), ...(search && { search }), page: String(page) });
+		next.delete("patient");
 		for (const [k, v] of Object.entries(changes)) {
 			if (v === null) next.delete(k);
 			else next.set(k, v);
@@ -71,7 +75,7 @@ export default async function PatientsPage({ searchParams }: PageProps<"/patient
 					</div>
 				</div>
 				<Button asChild>
-					<Link href="/patients/new">
+					<Link href={href({ nouveau: "1" })} scroll={false}>
 						<Plus /> Nouveau patient
 					</Link>
 				</Button>
@@ -114,7 +118,7 @@ export default async function PatientsPage({ searchParams }: PageProps<"/patient
 						</p>
 						{!search && status === "active" && (
 							<Button asChild size="sm" className="mt-2">
-								<Link href="/patients/new">
+								<Link href={href({ nouveau: "1" })} scroll={false}>
 									<Plus /> Nouveau patient
 								</Link>
 							</Button>
@@ -142,7 +146,11 @@ export default async function PatientsPage({ searchParams }: PageProps<"/patient
 										</TableCell>
 										<TableCell>
 											{/* The whole row opens the file. */}
-											<Link href={`/patients/${p.id}`} className="font-medium after:absolute after:inset-0">
+											<Link
+												href={href({ patient: p.id })}
+												scroll={false}
+												className="font-medium after:absolute after:inset-0"
+											>
 												{fullName(p)}
 											</Link>
 											<p className="text-muted-foreground text-xs">
@@ -180,6 +188,9 @@ export default async function PatientsPage({ searchParams }: PageProps<"/patient
 					</Button>
 				</nav>
 			)}
+			<Suspense>
+				<PatientSheet medical={medical} />
+			</Suspense>
 		</div>
 	);
 }

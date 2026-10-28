@@ -6,12 +6,16 @@ import {
 import { ConfigModule } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
+import { AppointmentsController } from './appointments/appointments.controller.js';
+import { AppointmentsService } from './appointments/appointments.service.js';
 import { AuthController } from './auth/auth.controller.js';
 import { SessionGuard } from './auth/auth.guard.js';
 import { BillingController } from './billing/billing.controller.js';
 import { AuthService } from './auth/auth.service.js';
 import { ClinicController } from './clinic/clinic.controller.js';
 import { ClinicService } from './clinic/clinic.service.js';
+import { DashboardController } from './dashboard/dashboard.controller.js';
+import { DashboardService } from './dashboard/dashboard.service.js';
 import { validateEnv } from './config/env.js';
 import { CatalogModule } from './database/catalog.module.js';
 import { HealthController } from './health/health.controller.js';
@@ -48,6 +52,8 @@ import { TenancyService } from './tenancy/tenancy.service.js';
     OnboardingController,
     PatientsController,
     SpacesController,
+    AppointmentsController,
+    DashboardController,
   ],
   providers: [
     TenancyService,
@@ -57,6 +63,8 @@ import { TenancyService } from './tenancy/tenancy.service.js';
     PatientsService,
     SpacesService,
     SpaceGuard,
+    AppointmentsService,
+    DashboardService,
     { provide: APP_GUARD, useClass: ThrottlerGuard },
     { provide: APP_GUARD, useClass: SessionGuard },
   ],

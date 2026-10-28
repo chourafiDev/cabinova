@@ -158,3 +158,7 @@ export type PatientFile = Patient & { medicalProfile?: MedicalProfile | null };
 
 /** Roles that see medical data, as in clinic-api auth/roles.ts. */
 export const isMedicalRole = (role: string) => role === "owner" || role === "doctor";
+
+/** The patient sheet on the Patients list (file, edit, new): links from anywhere. */
+export const patientHref = (id: string) => `/patients?patient=${id}`;
+export const NEW_PATIENT_HREF = "/patients?nouveau=1";

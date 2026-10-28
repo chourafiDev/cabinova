@@ -1,16 +1,18 @@
-import { LuBuilding2, LuClock, LuLock, LuPlugZap } from "react-icons/lu";
+import { LuBuilding2, LuClock, LuLock, LuPlugZap, LuRefreshCw } from "react-icons/lu";
 import type { Unavailable } from "@/lib/server-api";
 
 const ICONS: Record<string, typeof LuBuilding2> = {
 	TENANT_NOT_READY: LuClock,
 	TENANT_SUSPENDED: LuLock,
 	SERVICE_UNAVAILABLE: LuPlugZap,
+	TENANT_OUTDATED: LuRefreshCw,
 };
 
 const TITLES: Record<string, string> = {
 	TENANT_SUSPENDED: "Accès suspendu",
 	TENANT_NOT_READY: "Cabinet en préparation",
 	SERVICE_UNAVAILABLE: "Service indisponible",
+	TENANT_OUTDATED: "Mise à jour en cours",
 };
 
 /** Full page when this address can't be used: unknown cabinet, not ready, suspended, API down. */
