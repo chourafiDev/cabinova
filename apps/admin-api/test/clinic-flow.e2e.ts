@@ -169,9 +169,11 @@ describe('clinic sign-in: from provisioning to the dashboard', () => {
 
   it('re-sends the invitation until the doctor has chosen a password', async () => {
     const before = invitations.get('voisin@e2e.test')!;
-    await adminAgent
+    const { body: resent } = await adminAgent
       .post(`/tenants/${ids.get('voisin')}/database/invitation`)
       .expect(200);
+    // The link itself is shown to the admin in development only.
+    expect(resent).toEqual({ email: 'voisin@e2e.test' });
     const after = invitations.get('voisin@e2e.test')!;
     expect(after).not.toBe(before);
     await on('voisin').get(`/auth/invitations/${before}`).expect(404);

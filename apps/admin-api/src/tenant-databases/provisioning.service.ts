@@ -152,11 +152,12 @@ export class ProvisioningService {
           'Le médecin a déjà choisi son mot de passe : il se connecte directement.',
       });
     }
+    const url = await this.inviteUrl(tenant.id, invitation.token);
     await this.email.sendInvitation({
       email: tenant.email,
       name: tenant.responsibleName,
       tenantName: tenant.name,
-      url: await this.inviteUrl(tenant.id, invitation.token),
+      url,
     });
     await writeAudit(this.database.db, actor, {
       action: 'tenant.invitation.resend',
@@ -165,7 +166,12 @@ export class ProvisioningService {
       tenantId: tenant.id,
       metadata: { email: tenant.email },
     });
-    return { email: tenant.email };
+    // Development without an e-mail provider: nobody would receive it, so
+    // the admin gets the link. Never in production — the link opens a
+    // cabinet's account and its medical data.
+    const showLink =
+      this.config.get('NODE_ENV') === 'development' && !this.email.delivers;
+    return { email: tenant.email, ...(showLink && { devUrl: url }) };
   }
 
   /** Fails runs whose process died mid-way and puts their cabinet back to pending. */

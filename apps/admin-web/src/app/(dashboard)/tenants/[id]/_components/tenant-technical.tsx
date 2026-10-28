@@ -1,13 +1,22 @@
 "use client";
 
-import { CircleCheck, CircleDashed, CircleX, Loader, MinusCircle } from "lucide-react";
+import { CircleCheck, CircleDashed, CircleX, Copy, ExternalLink, Loader, MinusCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, useTransition } from "react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import {
+	Dialog,
+	DialogContent,
+	DialogDescription,
+	DialogFooter,
+	DialogHeader,
+	DialogTitle,
+} from "@/components/ui/dialog";
 import { Field, FieldLabel } from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
 import { api } from "@/lib/api-client";
 import { formatDate } from "@/lib/format";
 import { formatStorage } from "@/lib/plans";
@@ -40,6 +49,8 @@ export function TenantTechnical({
 	const router = useRouter();
 	const [pending, startTransition] = useTransition();
 	const [sendInvitation, setSendInvitation] = useState(true);
+	/** Development without e-mail: the invitation link to hand over. */
+	const [devInvite, setDevInvite] = useState<{ email: string; url: string } | null>(null);
 	const latestRun = info.runs[0];
 	const running = latestRun?.state === "running";
 	const db = info.database;
@@ -149,7 +160,10 @@ export function TenantTechnical({
 											act(
 												`/tenants/${tenantId}/database/invitation`,
 												{},
-												(r: { email: string }) => `Invitation envoyée à ${r.email}`,
+												(r: { email: string; devUrl?: string }) => {
+													if (r.devUrl) setDevInvite({ email: r.email, url: r.devUrl });
+													return `Invitation envoyée à ${r.email}`;
+												},
 											)
 										}
 									>
@@ -234,6 +248,37 @@ export function TenantTechnical({
 					</FormCard>
 				)}
 			</div>
+			<Dialog open={devInvite !== null} onOpenChange={(open) => !open && setDevInvite(null)}>
+				<DialogContent className="sm:max-w-lg">
+					<DialogHeader>
+						<DialogTitle>Lien d’invitation</DialogTitle>
+						<DialogDescription>
+							Aucun service d’e-mail n’est configuré : rien n’a été envoyé à {devInvite?.email}. En
+							développement, ouvrez ce lien vous-même pour choisir le mot de passe du médecin. Il est
+							valable 7 jours et ne sert qu’une fois.
+						</DialogDescription>
+					</DialogHeader>
+					<Input readOnly value={devInvite?.url ?? ""} onFocus={(e) => e.currentTarget.select()} className="font-mono text-xs" />
+					<DialogFooter>
+						<Button
+							variant="outline"
+							onClick={() =>
+								navigator.clipboard
+									.writeText(devInvite?.url ?? "")
+									.then(() => toast.success("Lien copié"))
+									.catch(() => toast.error("Copie impossible : sélectionnez le lien."))
+							}
+						>
+							<Copy /> Copier
+						</Button>
+						<Button asChild>
+							<a href={devInvite?.url} target="_blank" rel="noreferrer">
+								<ExternalLink /> Ouvrir
+							</a>
+						</Button>
+					</DialogFooter>
+				</DialogContent>
+			</Dialog>
 		</div>
 	);
 }
