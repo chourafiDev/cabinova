@@ -140,6 +140,20 @@ describe('clinic sign-in: from provisioning to the dashboard', () => {
     });
     expect(me.subscription.trialEndsAt).toEqual(expect.any(String));
 
+    // The responsible doctor's billing view: price after the trial, nothing due yet.
+    const { body: billing } = await on('flow', doctor)
+      .get('/billing/summary')
+      .expect(200);
+    expect(billing).toMatchObject({
+      plan: 'Pro',
+      billingPeriod: 'monthly',
+      status: 'trialing',
+      nextAmount: 59_900,
+      openInvoice: null,
+    });
+    expect(billing.trialEndsAt).toEqual(expect.any(String));
+    await on('flow').get('/billing/summary').expect(401);
+
     // Single use.
     await on('flow').get(`/auth/invitations/${token}`).expect(404);
 

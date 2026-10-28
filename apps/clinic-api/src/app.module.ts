@@ -8,6 +8,7 @@ import { APP_GUARD } from '@nestjs/core';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { AuthController } from './auth/auth.controller.js';
 import { SessionGuard } from './auth/auth.guard.js';
+import { BillingController } from './billing/billing.controller.js';
 import { AuthService } from './auth/auth.service.js';
 import { ClinicController } from './clinic/clinic.controller.js';
 import { ClinicService } from './clinic/clinic.service.js';
@@ -32,7 +33,12 @@ import { TenancyService } from './tenancy/tenancy.service.js';
     ThrottlerModule.forRoot([{ ttl: 60_000, limit: 600 }]),
     CatalogModule,
   ],
-  controllers: [HealthController, ClinicController, AuthController],
+  controllers: [
+    HealthController,
+    ClinicController,
+    AuthController,
+    BillingController,
+  ],
   providers: [
     TenancyService,
     AuthService,
