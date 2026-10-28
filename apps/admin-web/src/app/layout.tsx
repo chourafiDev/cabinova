@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { Geist_Mono, Instrument_Sans } from "next/font/google";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
 import { QueryProvider } from "@/components/query-provider";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { NavigationProgress } from "@/components/navigation-progress";
 import "./globals.css";
 
 const instrumentSans = Instrument_Sans({
@@ -29,6 +31,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       className={`${instrumentSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
+        {/* useSearchParams: rendered on the client only. */}
+        <Suspense fallback={null}>
+          <NavigationProgress />
+        </Suspense>
         <NuqsAdapter>
           <QueryProvider>
             <TooltipProvider>{children}</TooltipProvider>
