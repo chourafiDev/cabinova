@@ -4,7 +4,9 @@ import { CabinetUnavailable } from "@/components/cabinet-unavailable";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { BANNER_COOKIE, bannerDismissKey, billingNotice } from "@/lib/billing-notice";
 import { getClinicState } from "@/lib/session";
+import { Suspense } from "react";
 import { BillingBanner } from "./_components/billing/billing-banner";
+import { ProductTour } from "./_components/tour/product-tour";
 import { AppSidebar } from "./_components/app-sidebar";
 import { SiteFooter } from "./_components/site-footer";
 import { SiteHeader } from "./_components/site-header";
@@ -33,6 +35,10 @@ export default async function ClinicLayout({ children }: LayoutProps<"/">) {
         {showBanner && <BillingBanner notice={notice} dismissKey={dismissKey} />}
         <div className="flex min-w-0 flex-1 flex-col p-4">{children}</div>
         <SiteFooter />
+        {/* useSearchParams (replay link): client-only. */}
+        <Suspense fallback={null}>
+          <ProductTour autoStart={!session.onboarding.tourCompleted} firstName={session.user.name} />
+        </Suspense>
       </SidebarInset>
     </SidebarProvider>
   );

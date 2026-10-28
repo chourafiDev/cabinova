@@ -1,6 +1,7 @@
 "use client";
 
-import { ChevronDown, LogOut, UserRound } from "lucide-react";
+import { ChevronDown, Compass, LogOut, UserRound } from "lucide-react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
@@ -14,6 +15,7 @@ import {
 import { api } from "@/lib/api-client";
 import { initials } from "@/lib/format";
 import type { ClinicSession } from "@/lib/session";
+import { TOUR_REPLAY_HREF } from "./tour/product-tour";
 
 /** Avatar + name in the header, with the account menu. */
 export function UserMenu({ user }: { user: ClinicSession["user"] }) {
@@ -55,6 +57,12 @@ export function UserMenu({ user }: { user: ClinicSession["user"] }) {
 				<DropdownMenuItem disabled>
 					<UserRound />
 					Mon profil
+				</DropdownMenuItem>
+				<DropdownMenuItem asChild>
+					<Link href={TOUR_REPLAY_HREF}>
+						<Compass />
+						Revoir la visite
+					</Link>
 				</DropdownMenuItem>
 				<DropdownMenuSeparator />
 				<DropdownMenuItem variant="destructive" onSelect={signOut}>

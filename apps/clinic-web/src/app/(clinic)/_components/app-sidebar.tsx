@@ -44,7 +44,7 @@ export function AppSidebar({ cabinet }: { cabinet: ClinicSession["cabinet"] }) {
 				</SidebarMenu>
 			</SidebarHeader>
 
-			<SidebarContent>
+			<SidebarContent data-tour="nav">
 				{navGroups.map((group) => (
 					<SidebarGroup key={group.label}>
 						<SidebarGroupLabel>{group.label}</SidebarGroupLabel>

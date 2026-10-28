@@ -14,6 +14,8 @@ export type ClinicSession = {
 		secretaries: { used: number; max: number | null };
 		storage: { usedMb: number | null; quotaMb: number | null };
 	};
+	/** First-sign-in product tour finished or skipped (saved per account). */
+	onboarding: { tourCompleted: boolean };
 };
 
 export type ClinicState =

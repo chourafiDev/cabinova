@@ -28,8 +28,10 @@ export function SiteHeader({ user }: { user: ClinicSession["user"] }) {
         <span className="hidden rounded-full border border-dashed px-2 py-0.5 text-xs text-muted-foreground sm:inline">
           Activité : données de démonstration
         </span>
-        <ThemeToggle />
-        <UserMenu user={user} />
+        <span data-tour="account" className="flex items-center gap-2">
+          <ThemeToggle />
+          <UserMenu user={user} />
+        </span>
       </div>
     </header>
   );

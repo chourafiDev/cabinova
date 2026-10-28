@@ -61,6 +61,8 @@ export const users = pgTable(
     inviteTokenHash: text('invite_token_hash').unique(),
     inviteExpiresAt: timestamp('invite_expires_at', { withTimezone: true }),
     lastLoginAt: timestamp('last_login_at', { withTimezone: true }),
+    /** First-sign-in product tour finished or skipped (clinic app). */
+    tourCompletedAt: timestamp('tour_completed_at', { withTimezone: true }),
     ...timestamps,
   },
   (t) => [uniqueIndex('users_email_idx').on(t.email)],

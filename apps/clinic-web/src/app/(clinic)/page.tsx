@@ -27,7 +27,7 @@ export default async function DashboardPage() {
 		<>
 			<WelcomeBanner session={session} date={date} upcoming={kpis.upcomingToday} />
 
-			<section className="mb-3 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+			<section data-tour="kpis" className="mb-3 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
 				<KpiCard
 					icon={LuCalendarCheck}
 					title="Rendez-vous"
@@ -66,7 +66,7 @@ export default async function DashboardPage() {
 				/>
 			</section>
 
-			<section className="mb-3 grid grid-cols-1 gap-3 xl:grid-cols-3">
+			<section data-tour="appointments" className="mb-3 grid grid-cols-1 gap-3 xl:grid-cols-3">
 				<div className="xl:col-span-2">
 					<TodayAppointments appointments={appointments} />
 				</div>
@@ -77,7 +77,9 @@ export default async function DashboardPage() {
 				<div className="xl:col-span-2">
 					<WeekActivityChart week={week} />
 				</div>
-				<SubscriptionCard subscription={session.subscription} />
+				<div data-tour="subscription" className="h-full">
+					<SubscriptionCard subscription={session.subscription} />
+				</div>
 			</section>
 		</>
 	);

@@ -14,6 +14,7 @@ import { ConfigService } from '@nestjs/config';
 import { Throttle } from '@nestjs/throttler';
 import type { Request, Response } from 'express';
 import { ClinicService } from '../clinic/clinic.service.js';
+import { OnboardingService } from '../onboarding/onboarding.service.js';
 import type { Env } from '../config/env.js';
 import { Clinic } from '../tenancy/decorators.js';
 import type { ClinicContext } from '../tenancy/tenancy.service.js';
@@ -36,6 +37,7 @@ export class AuthController {
   constructor(
     private readonly auth: AuthService,
     private readonly clinic: ClinicService,
+    private readonly onboarding: OnboardingService,
     config: ConfigService<Env, true>,
   ) {
     this.secure = config.get('NODE_ENV') === 'production';
@@ -128,6 +130,9 @@ export class AuthController {
         subdomain: tenant.subdomain,
       },
       subscription: await this.clinic.subscription(tenant.id, db),
+      onboarding: {
+        tourCompleted: await this.onboarding.tourCompleted(db, user.id),
+      },
     };
   }
 

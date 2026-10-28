@@ -140,6 +140,16 @@ describe('clinic sign-in: from provisioning to the dashboard', () => {
     });
     expect(me.subscription.trialEndsAt).toEqual(expect.any(String));
 
+    // First sign-in: the product tour starts once, then is remembered.
+    expect(me.onboarding).toEqual({ tourCompleted: false });
+    await on('flow', doctor).post('/onboarding/tour').expect(204);
+    await on('flow', doctor).post('/onboarding/tour').expect(204);
+    const { body: after } = await on('flow', doctor)
+      .get('/auth/me')
+      .expect(200);
+    expect(after.onboarding).toEqual({ tourCompleted: true });
+    await on('flow').post('/onboarding/tour').expect(401);
+
     // The responsible doctor's billing view: price after the trial, nothing due yet.
     const { body: billing } = await on('flow', doctor)
       .get('/billing/summary')

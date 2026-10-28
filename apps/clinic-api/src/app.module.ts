@@ -15,6 +15,8 @@ import { ClinicService } from './clinic/clinic.service.js';
 import { validateEnv } from './config/env.js';
 import { CatalogModule } from './database/catalog.module.js';
 import { HealthController } from './health/health.controller.js';
+import { OnboardingController } from './onboarding/onboarding.controller.js';
+import { OnboardingService } from './onboarding/onboarding.service.js';
 import { TenancyMiddleware } from './tenancy/tenancy.middleware.js';
 import { TenancyService } from './tenancy/tenancy.service.js';
 
@@ -38,11 +40,13 @@ import { TenancyService } from './tenancy/tenancy.service.js';
     ClinicController,
     AuthController,
     BillingController,
+    OnboardingController,
   ],
   providers: [
     TenancyService,
     AuthService,
     ClinicService,
+    OnboardingService,
     { provide: APP_GUARD, useClass: ThrottlerGuard },
     { provide: APP_GUARD, useClass: SessionGuard },
   ],
