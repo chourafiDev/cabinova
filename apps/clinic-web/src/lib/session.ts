@@ -16,7 +16,12 @@ export type ClinicSession = {
 	};
 	/** First-sign-in product tour finished or skipped (saved per account). */
 	onboarding: { tourCompleted: boolean };
+	/** The spaces (branches) this person may enter; null before migration 0004. */
+	spaces: { current: Space; spaces: Space[] } | null;
 };
+
+/** A branch of the cabinet (Fès, Marrakech…), isolated from the others. */
+export type Space = { id: string; name: string; city: string | null; address: string | null; phone: string | null };
 
 export type ClinicState =
 	| { status: "signed-in"; session: ClinicSession }

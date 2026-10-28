@@ -1,32 +1,11 @@
-import type { INestApplication, Type } from '@nestjs/common';
-import type { NestExpressApplication } from '@nestjs/platform-express';
-import { Test } from '@nestjs/testing';
+import type { INestApplication } from '@nestjs/common';
 import request from 'supertest';
-import { EmailService } from '../src/email/email.service.js';
-import { type Agent, createApp, signInAdmin, waitFor } from './app.js';
-
-// clinic-api is another app (its own package and tsconfig): loaded at
-// runtime only, against the same test catalog and master key.
-const clinicSrc = (file: string) =>
-  new URL(`../../clinic-api/src/${file}`, import.meta.url).href;
-
-async function createClinicApp() {
-  const { AppModule } = (await import(clinicSrc('app.module.ts'))) as {
-    AppModule: Type;
-  };
-  const { configureApp } = (await import(clinicSrc('app.setup.ts'))) as {
-    configureApp: (app: NestExpressApplication) => unknown;
-  };
-  const moduleRef = await Test.createTestingModule({
-    imports: [AppModule],
-  }).compile();
-  const app = moduleRef.createNestApplication<NestExpressApplication>({
-    logger: ['error'],
-  });
-  configureApp(app);
-  await app.init();
-  return app;
-}
+import { type Agent, createApp, signInAdmin } from './app.js';
+import {
+  captureInvitations,
+  createClinicApp,
+  provisionCabinet,
+} from './clinic.js';
 
 /**
  * The path from the Super Admin to a doctor working in their own space:
@@ -38,7 +17,7 @@ describe('clinic sign-in: from provisioning to the dashboard', () => {
   let admin: INestApplication;
   let adminAgent: Agent;
   let clinic: INestApplication;
-  const invitations = new Map<string, string>();
+  let invitations: Map<string, string>;
   const ids = new Map<string, string>();
 
   /** A request to the clinic API on a cabinet's subdomain, as the Next proxy sends it. */
@@ -49,39 +28,16 @@ describe('clinic sign-in: from provisioning to the dashboard', () => {
       agent.post(path).set('Host', `${subdomain}.localhost:3002`),
   });
 
-  async function provisionCabinet(subdomain: string, email: string) {
-    const { body } = await adminAgent
-      .post('/tenants')
-      .send({
-        name: `Cabinet ${subdomain}`,
-        responsibleName: `Dr ${subdomain}`,
-        email,
-        specialty: 'Médecine générale',
-        subdomain,
-        planKey: 'pro',
-      })
-      .expect(201);
-    ids.set(subdomain, body.id);
-    await adminAgent.post(`/tenants/${body.id}/provision`).expect(202);
-    await waitFor(async () => {
-      const { body: db } = await adminAgent.get(`/tenants/${body.id}/database`);
-      if (db.runs[0]?.state === 'failed')
-        throw new Error(JSON.stringify(db.runs[0]));
-      return db.runs[0]?.state === 'succeeded';
-    });
-  }
+  const provision = async (subdomain: string, email: string) => {
+    ids.set(subdomain, await provisionCabinet(adminAgent, subdomain, email));
+  };
 
   beforeAll(async () => {
     admin = await createApp();
     adminAgent = await signInAdmin(admin);
-    // No e-mail provider in tests: keep the links the doctors would receive.
-    vi.spyOn(admin.get(EmailService), 'sendInvitation').mockImplementation(
-      async ({ email, url }) => {
-        invitations.set(email, new URL(url).pathname.split('/').pop()!);
-      },
-    );
-    await provisionCabinet('flow', 'flow@e2e.test');
-    await provisionCabinet('voisin', 'voisin@e2e.test');
+    invitations = captureInvitations(admin);
+    await provision('flow', 'flow@e2e.test');
+    await provision('voisin', 'voisin@e2e.test');
     clinic = await createClinicApp();
   });
   afterAll(async () => {

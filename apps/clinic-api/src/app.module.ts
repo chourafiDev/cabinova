@@ -17,6 +17,11 @@ import { CatalogModule } from './database/catalog.module.js';
 import { HealthController } from './health/health.controller.js';
 import { OnboardingController } from './onboarding/onboarding.controller.js';
 import { OnboardingService } from './onboarding/onboarding.service.js';
+import { PatientsController } from './patients/patients.controller.js';
+import { PatientsService } from './patients/patients.service.js';
+import { SpaceGuard } from './spaces/space.guard.js';
+import { SpacesController } from './spaces/spaces.controller.js';
+import { SpacesService } from './spaces/spaces.service.js';
 import { TenancyMiddleware } from './tenancy/tenancy.middleware.js';
 import { TenancyService } from './tenancy/tenancy.service.js';
 
@@ -41,12 +46,17 @@ import { TenancyService } from './tenancy/tenancy.service.js';
     AuthController,
     BillingController,
     OnboardingController,
+    PatientsController,
+    SpacesController,
   ],
   providers: [
     TenancyService,
     AuthService,
     ClinicService,
     OnboardingService,
+    PatientsService,
+    SpacesService,
+    SpaceGuard,
     { provide: APP_GUARD, useClass: ThrottlerGuard },
     { provide: APP_GUARD, useClass: SessionGuard },
   ],

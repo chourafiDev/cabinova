@@ -16,32 +16,45 @@ import {
 } from "@/components/ui/sidebar";
 import type { ClinicSession } from "@/lib/session";
 import { HelpCard } from "./help-card";
+import { SpaceSwitcher } from "./space-switcher";
 import { findNavItem, navGroups } from "./nav";
 
-export function AppSidebar({ cabinet }: { cabinet: ClinicSession["cabinet"] }) {
+export function AppSidebar({
+	cabinet,
+	spaces,
+	isOwner,
+}: {
+	cabinet: ClinicSession["cabinet"];
+	spaces: ClinicSession["spaces"];
+	isOwner: boolean;
+}) {
 	const pathname = usePathname();
 	const active = findNavItem(pathname);
 
 	return (
 		<Sidebar collapsible="icon" variant="inset">
 			<SidebarHeader>
-				<SidebarMenu>
-					<SidebarMenuItem>
-						<SidebarMenuButton size="lg" asChild>
-							<Link href="/" aria-label={`${cabinet.name} — tableau de bord`}>
-								<span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary text-sm font-semibold text-primary-foreground">
-									{cabinet.name.replace(/^cabinet\s+/i, "").charAt(0).toUpperCase()}
-								</span>
-								<span className="grid min-w-0 leading-tight">
-									<span className="truncate font-semibold">{cabinet.name}</span>
-									<span className="truncate text-xs text-muted-foreground">
-										{cabinet.specialty ?? cabinet.city ?? `${cabinet.subdomain}.cabinova.ma`}
+				{spaces ? (
+					<SpaceSwitcher cabinet={cabinet} spaces={spaces} isOwner={isOwner} />
+				) : (
+					<SidebarMenu>
+						<SidebarMenuItem>
+							<SidebarMenuButton size="lg" asChild>
+								<Link href="/" aria-label={`${cabinet.name} — tableau de bord`}>
+									<span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary text-sm font-semibold text-primary-foreground">
+										{cabinet.name.replace(/^cabinet\s+/i, "").charAt(0).toUpperCase()}
 									</span>
-								</span>
-							</Link>
-						</SidebarMenuButton>
-					</SidebarMenuItem>
-				</SidebarMenu>
+									<span className="grid min-w-0 leading-tight">
+										<span className="truncate font-semibold">{cabinet.name}</span>
+										<span className="truncate text-xs text-muted-foreground">
+											{cabinet.specialty ?? cabinet.city ?? `${cabinet.subdomain}.cabinova.ma`}
+										</span>
+									</span>
+								</Link>
+							</SidebarMenuButton>
+						</SidebarMenuItem>
+					</SidebarMenu>
+				)}
 			</SidebarHeader>
 
 			<SidebarContent data-tour="nav">

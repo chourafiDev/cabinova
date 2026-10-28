@@ -1,5 +1,6 @@
 import "server-only";
 import { headers } from "next/headers";
+import { notFound, redirect } from "next/navigation";
 
 const CLINIC_API_URL = process.env.CLINIC_API_URL ?? "http://localhost:4100";
 
@@ -49,4 +50,13 @@ export async function unavailableFrom(res: Response): Promise<Unavailable | null
 		(body.code.startsWith("TENANT_") || body.code === "SERVICE_UNAVAILABLE")
 		? { code: body.code, message: body.message }
 		: null;
+}
+
+/** GET for server pages: signed out → login, forbidden or missing → 404 page. */
+export async function apiGet<T>(path: string): Promise<T> {
+	const res = await serverApi(path);
+	if (res.status === 401) redirect("/login");
+	if (res.status === 403 || res.status === 404) notFound();
+	if (!res.ok) throw new Error(`GET ${path} failed: ${res.status}`);
+	return res.json();
 }

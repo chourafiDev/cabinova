@@ -30,10 +30,10 @@ export default async function ClinicLayout({ children }: LayoutProps<"/">) {
 
   return (
     <SidebarProvider defaultOpen={defaultOpen}>
-      <AppSidebar cabinet={session.cabinet} />
+      <AppSidebar cabinet={session.cabinet} spaces={session.spaces} isOwner={session.user.role === "owner"} />
       {/* Inset panel: fixed frame on desktop, the page scrolls inside it. */}
       <SidebarInset className="min-w-0 md:h-[calc(100svh-1rem)] md:overflow-y-auto md:border md:border-black/5 dark:md:border-white/5">
-        <SiteHeader user={session.user} />
+        <SiteHeader user={session.user} spaces={session.spaces} />
         {showBanner && <BillingBanner notice={notice} dismissKey={dismissKey} />}
         <div className="flex min-w-0 flex-1 flex-col p-4">{children}</div>
         <SiteFooter />

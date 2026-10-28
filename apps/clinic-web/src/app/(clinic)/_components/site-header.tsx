@@ -10,7 +10,7 @@ import { findNavItem } from "./nav";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { UserMenu } from "./user-menu";
 
-export function SiteHeader({ user }: { user: ClinicSession["user"] }) {
+export function SiteHeader({ user, spaces }: { user: ClinicSession["user"]; spaces: ClinicSession["spaces"] }) {
   const pathname = usePathname();
   const title = findNavItem(pathname)?.title ?? "Tableau de bord";
 
@@ -29,7 +29,7 @@ export function SiteHeader({ user }: { user: ClinicSession["user"] }) {
         <span className="hidden rounded-full border border-dashed px-2 py-0.5 text-xs text-muted-foreground sm:inline">
           Activité : données de démonstration
         </span>
-        <CommandPalette />
+        <CommandPalette spaces={spaces} />
         <span data-tour="account" className="flex items-center gap-2">
           <ThemeToggle />
           <UserMenu user={user} />

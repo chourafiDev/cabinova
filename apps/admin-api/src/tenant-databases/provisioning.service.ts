@@ -436,6 +436,13 @@ export class ProvisioningService {
           tenant.timezone,
         ],
       );
+      // The first space takes the cabinet's address (migration 0004 creates it).
+      await pool.query(
+        `update spaces set city = coalesce(city, $1), address = coalesce(address, $2),
+           phone = coalesce(phone, $3), updated_at = now()
+         where name = 'Espace principal'`,
+        [tenant.city, tenant.address, tenant.phone],
+      );
       const { rows } = await pool.query<{ password_hash: string | null }>(
         'select password_hash from users where email = $1',
         [tenant.email],

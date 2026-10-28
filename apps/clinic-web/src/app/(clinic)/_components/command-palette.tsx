@@ -1,8 +1,8 @@
 "use client";
 
-import { Compass, Keyboard, LifeBuoy, LogOut, Monitor, Moon, Search, Sun } from "lucide-react";
+import { Compass, Keyboard, LifeBuoy, LogOut, MapPin, Monitor, Moon, Search, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import type { IconType } from "react-icons";
 import { Kbd, SHORTCUTS_HELP_EVENT, useModifierLabel } from "@/components/keyboard-shortcuts";
@@ -17,6 +17,8 @@ import {
 	CommandShortcut,
 } from "@/components/ui/command";
 import { api } from "@/lib/api-client";
+import type { ClinicSession } from "@/lib/session";
+import { spaceLabel, switchSpace } from "@/lib/spaces";
 import { allNavItems } from "./nav";
 import { TOUR_REPLAY_HREF } from "./tour/product-tour";
 
@@ -34,8 +36,9 @@ const fold = (text: string) =>
  * or run an action — theme, product tour, shortcuts, support, sign out.
  * Patient and appointment search join it with the agenda and patients.
  */
-export function CommandPalette() {
+export function CommandPalette({ spaces }: { spaces: ClinicSession["spaces"] }) {
 	const router = useRouter();
+	const pathname = usePathname();
 	const { setTheme } = useTheme();
 	const modifier = useModifierLabel();
 	const [open, setOpen] = useState(false);
@@ -73,7 +76,22 @@ export function CommandPalette() {
 		router.refresh();
 	}
 
+	const spaceActions: Action[] = (spaces?.spaces ?? [])
+		.filter((s) => s.id !== spaces?.current.id)
+		.map((s) => ({
+			id: `space-${s.id}`,
+			label: `Aller à l’espace ${spaceLabel(s)}`,
+			icon: MapPin,
+			keywords: "changer espace site succursale",
+			run: () =>
+				pick(async () => {
+					const href = await switchSpace(s.id, pathname);
+					router.push(href);
+					router.refresh();
+				}),
+		}));
 	const actions: Action[] = [
+		...spaceActions,
 		{ id: "tour", label: "Revoir la visite guidée", icon: Compass, keywords: "aide découvrir tutoriel", run: () => go(TOUR_REPLAY_HREF) },
 		{ id: "theme-light", label: "Thème clair", icon: Sun, keywords: "apparence mode jour", run: () => pick(() => setTheme("light")) },
 		{ id: "theme-dark", label: "Thème sombre", icon: Moon, keywords: "apparence mode nuit dark", run: () => pick(() => setTheme("dark")) },
