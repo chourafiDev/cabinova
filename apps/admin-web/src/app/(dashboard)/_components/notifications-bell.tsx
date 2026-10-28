@@ -125,7 +125,7 @@ export function NotificationsBell() {
 										type="button"
 										onClick={() => openItem(n)}
 										className={cn(
-											"flex w-full gap-3 px-3 py-2.5 text-start rounded-md hover:bg-muted",
+											"flex w-full gap-3 my-1 px-3 py-2.5 text-start rounded-md hover:bg-muted",
 											!n.readAt && "bg-primary/[0.03]",
 										)}
 									>
