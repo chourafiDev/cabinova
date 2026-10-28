@@ -1,0 +1,15 @@
+{
+  "name": "@cabinova/secret-box",
+  "version": "0.0.1",
+  "private": true,
+  "description": "AES-256-GCM for secrets at rest (clinic database credentials, 2FA secrets). Shared by admin-api, which encrypts, and clinic-api, which decrypts.",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./src/index.d.ts",
+      "default": "./src/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": ["src"]
+}

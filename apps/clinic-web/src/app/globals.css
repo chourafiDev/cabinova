@@ -1,0 +1,153 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  /* Agenda (big-calendar) */
+  --text-xxs: 0.625rem;
+  --text-xxs--line-height: 1rem;
+  /* Dashboard extras */
+  --color-green: var(--success);
+  --color-gray: var(--gray);
+  --shadow-dark: 0 20px 25px -5px rgb(0 0 0 / 0.5);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-geist-mono);
+  --font-heading: var(--font-sans);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-test-foreground: var(--primary-foreground);
+  --color-test: var(--test);
+  --color-brand-light: var(--brand-light);
+  --color-grey: var(--grey);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+/* Cabinova palette
+ *   Brand Plum #613F75  → primary, ring, active states
+ *   Ink        #111111  → text, sidebar
+ *   White      #ffffff  → background
+ *   Grey       #EFEFED  → sidebar, muted states
+ *   Deep       brand mixed with black → welcome banner, sidebar border
+ * Everything else is a neutral tint derived from these.
+ */
+:root {
+  --brand: #613F75;
+  --ink: #111111;
+  --grey: #EFEFED;
+  --test: color-mix(in oklab, var(--brand) 45%, black);
+  /* Brand on dark surfaces (welcome banner) */
+  --brand-light: color-mix(in oklab, var(--brand) 35%, white);
+
+  --background: #ffffff;
+  --foreground: var(--ink);
+  --card: #ffffff;
+  --card-foreground: var(--ink);
+  --popover: #ffffff;
+  --popover-foreground: var(--ink);
+  --primary: var(--brand);
+  --primary-foreground: #ffffff;
+  --secondary: color-mix(in oklab, var(--ink) 5%, white);
+  --secondary-foreground: var(--ink);
+  --muted: color-mix(in oklab, var(--ink) 4%, white);
+  --muted-foreground: color-mix(in oklab, var(--ink) 55%, white);
+  --accent: color-mix(in oklab, var(--brand) 8%, white);
+  --accent-foreground: var(--ink);
+  --destructive: #b42318;
+  --success: #22c55e;
+  --gray: color-mix(in oklab, white 18%, var(--ink));
+  --border: color-mix(in oklab, var(--ink) 10%, white);
+  --input: color-mix(in oklab, var(--ink) 14%, white);
+  --ring: var(--brand);
+  --chart-1: var(--brand);
+  --chart-2: var(--ink);
+  --chart-3: color-mix(in oklab, var(--brand) 60%, white);
+  --chart-4: color-mix(in oklab, var(--ink) 45%, white);
+  --chart-5: color-mix(in oklab, var(--brand) 30%, white);
+  --radius: 0.625rem;
+
+  /* Sidebar */
+  --sidebar: var(--grey);
+  --sidebar-foreground: var(--ink);
+  --sidebar-primary: var(--brand);
+  --sidebar-primary-foreground: #ffffff;
+  /* Active & hovered items: white pill, dark text (same as normal items). */
+  --sidebar-accent: #ffffff;
+  --sidebar-accent-foreground: var(--ink);
+  --sidebar-border: color-mix(in oklab, white 10%, var(--test));
+  --sidebar-ring: var(--brand);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  button:not(:disabled), [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+  /* Fallback for anything without its own ring (links, custom elements):
+     same look as focusRing in src/lib/focus-ring.ts — 1.5px primary, 2px offset.
+     Components using focusRing set outline-none, so they keep the box-shadow ring. */
+  :focus-visible {
+    outline: 1.5px solid var(--primary);
+    outline-offset: 2px;
+  }
+  html {
+    @apply font-sans;
+  }
+
+}
+/* Agenda: hatched background of closed hours (big-calendar). */
+@utility bg-calendar-disabled-hour {
+  background-image: repeating-linear-gradient(-60deg, var(--border) 0 0.5px, transparent 0.5px 8px);
+}
+
+/* Rich-text content (consultation notes, document templates) */
+@layer components {
+  .rich-text > * + * { margin-top: 0.5em; }
+  .rich-text h2 { font-size: 1.25em; font-weight: 600; line-height: 1.3; }
+  .rich-text h3 { font-size: 1.1em; font-weight: 600; line-height: 1.3; }
+  .rich-text ul { list-style: disc; padding-inline-start: 1.25rem; }
+  .rich-text ol { list-style: decimal; padding-inline-start: 1.25rem; }
+  .rich-text a { color: var(--primary); text-decoration: underline; }
+  .rich-text strong { font-weight: 600; }
+}

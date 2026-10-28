@@ -142,6 +142,18 @@ export class TenantDatabasesController {
     return this.databases.check(id, actorOf(user, req));
   }
 
+  /** New invitation link for the responsible doctor (not yet signed up). */
+  @RequirePermissions('technical:write')
+  @Post('tenants/:id/database/invitation')
+  @HttpCode(200)
+  resendInvitation(
+    @Param('id', ParseUUIDPipe) id: string,
+    @CurrentUser() user: AuthUser,
+    @Req() req: Request,
+  ) {
+    return this.provisioning.resendInvitation(id, actorOf(user, req));
+  }
+
   @RequirePermissions('technical:write')
   @Post('tenants/:id/database/migrate')
   @HttpCode(200)

@@ -11,7 +11,9 @@ const at = (date: string | Date, offsetMs: number) =>
  * The path from creating a cabinet to ready to work: create it, provision its
  * database, run the trial out, invoice, pay, then miss a payment until the
  * automatic suspension — and the reactivation when the transfer arrives.
- * Billing time is simulated by running the sweep at chosen dates.
+ * Billing time is simulated by running the sweep at chosen dates. A sweep
+ * covers every cabinet (other test files' too): its counts are only "at
+ * least one", and this cabinet's own invoices and status are checked after.
  */
 describe('cabinet: creation to suspension and back', () => {
   let app: INestApplication;
@@ -108,10 +110,10 @@ describe('cabinet: creation to suspension and back', () => {
     expect(
       (await billing.sweep(at(subscription.currentPeriodEnd, -2 * DAY)))
         .trialReminders,
-    ).toBe(1);
+    ).toBeGreaterThanOrEqual(1);
 
     const counts = await billing.sweep(at(subscription.currentPeriodEnd, HOUR));
-    expect(counts.issued).toBe(1);
+    expect(counts.issued).toBeGreaterThanOrEqual(1);
     const {
       invoices: [first],
       subscription: waiting,
@@ -137,21 +139,21 @@ describe('cabinet: creation to suspension and back', () => {
     // Renewal invoice, 7 days before the period ends.
     expect(
       (await billing.sweep(at(subscription.currentPeriodEnd, -6 * DAY))).issued,
-    ).toBe(1);
+    ).toBeGreaterThanOrEqual(1);
     const renewal = (await invoices()).invoices.find(
       (i: { status: string }) => i.status === 'billed',
     );
     expect(renewal).toBeDefined();
 
-    expect((await billing.sweep(at(renewal.dueAt, HOUR))).overdue).toBe(1);
+    expect((await billing.sweep(at(renewal.dueAt, HOUR))).overdue).toBeGreaterThanOrEqual(1);
     // Warning 3 days before the suspension (due date + 15 days).
     expect(
       (await billing.sweep(at(renewal.dueAt, 13 * DAY))).suspensionWarnings,
-    ).toBe(1);
+    ).toBeGreaterThanOrEqual(1);
     expect((await tenant()).status).toBe('active');
     expect(
       (await billing.sweep(at(renewal.dueAt, 15 * DAY + HOUR))).suspended,
-    ).toBe(1);
+    ).toBeGreaterThanOrEqual(1);
     expect((await tenant()).status).toBe('suspended');
 
     await admin

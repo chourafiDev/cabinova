@@ -65,3 +65,22 @@ export const users = pgTable(
   },
   (t) => [uniqueIndex('users_email_idx').on(t.email)],
 );
+
+/**
+ * Signed-in clinic staff. Only the SHA-256 of the cookie token is stored;
+ * the session lives in the clinic's own database, so a cookie can never
+ * open another cabinet.
+ */
+export const sessions = pgTable('sessions', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  userId: uuid('user_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
+  tokenHash: text('token_hash').notNull().unique(),
+  expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+  userAgent: text('user_agent'),
+  ip: text('ip'),
+  createdAt: timestamp('created_at', { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+});

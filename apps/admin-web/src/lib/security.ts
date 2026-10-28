@@ -39,6 +39,7 @@ export const ACTION_LABELS: Record<string, string> = {
 	"tenant.feature.override": "Exception de fonctionnalité",
 	"tenant.feature.override_removed": "Exception retirée",
 	"tenant.provision.start": "Provisionnement lancé",
+	"tenant.invitation.resend": "Invitation du médecin renvoyée",
 	"tenant.provision.succeed": "Provisionnement terminé",
 	"tenant.provision.fail": "Provisionnement échoué",
 	"tenant.database.migrate": "Base migrée",

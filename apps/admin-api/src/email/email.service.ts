@@ -10,6 +10,8 @@ export class EmailService {
   private readonly resend: Resend | null;
   private readonly from: string;
   private readonly publicOrigin: string;
+  /** Development without Resend: unsent e-mails' links go to the log. */
+  private readonly logLinks: boolean;
 
   constructor(
     config: ConfigService<Env, true>,
@@ -20,6 +22,7 @@ export class EmailService {
     this.from = config.get('EMAIL_FROM');
     // Absolute links (logo) point at the admin app, which proxies /api.
     this.publicOrigin = config.get('WEB_ORIGIN').split(',')[0].trim();
+    this.logLinks = config.get('NODE_ENV') === 'development';
     if (!this.resend) {
       this.logger.warn(
         'RESEND_API_KEY is not set: emails are logged instead of sent.',
@@ -346,6 +349,15 @@ export class EmailService {
       this.logger.log(
         `[dev email] from="${from}" to=${message.to} subject="${subject}"`,
       );
+      // Invitation and reset links carry tokens: logged in development only.
+      if (this.logLinks) {
+        for (const [, href] of html.matchAll(/href="(http[^"]+)"/g)) {
+          if (!href.startsWith('mailto:'))
+            this.logger.log(
+              `[dev email]   link: ${href.replaceAll('&amp;', '&')}`,
+            );
+        }
+      }
       return;
     }
     const { error } = await this.resend.emails.send({

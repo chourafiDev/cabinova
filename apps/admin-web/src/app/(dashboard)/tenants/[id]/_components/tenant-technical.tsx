@@ -141,6 +141,20 @@ export function TenantTechnical({
 									>
 										Migrer
 									</Button>
+									<Button
+										size="sm"
+										variant="outline"
+										disabled={pending}
+										onClick={() =>
+											act(
+												`/tenants/${tenantId}/database/invitation`,
+												{},
+												(r: { email: string }) => `Invitation envoyée à ${r.email}`,
+											)
+										}
+									>
+										Renvoyer l’invitation
+									</Button>
 								</div>
 							)
 						}

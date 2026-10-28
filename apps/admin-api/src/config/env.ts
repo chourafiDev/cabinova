@@ -45,6 +45,17 @@ const envSchema = z
     /** Clinics are served at <subdomain>.<TENANT_BASE_DOMAIN>. */
     TENANT_BASE_DOMAIN: z.string().default('cabinova.ma'),
     /**
+     * Clinic app address in links sent to cabinets, "{subdomain}" replaced,
+     * e.g. "http://{subdomain}.localhost:3002" in development. Defaults to
+     * https://<subdomain>.<TENANT_BASE_DOMAIN>.
+     */
+    CLINIC_APP_URL: z
+      .string()
+      .refine((v) => v.includes('{subdomain}'), {
+        message: 'must contain {subdomain}',
+      })
+      .optional(),
+    /**
      * Tests and CI only: "host:port" of Neon's wsproxy in front of a plain
      * Postgres (test/docker-compose.yml). Refused in production.
      */

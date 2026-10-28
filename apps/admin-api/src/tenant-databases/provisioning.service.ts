@@ -3,6 +3,7 @@ import {
   Inject,
   Injectable,
   Logger,
+  NotFoundException,
   ServiceUnavailableException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
@@ -122,6 +123,49 @@ export class ProvisioningService {
       .where(eq(tenantProvisioningRuns.tenantId, tenantId))
       .orderBy(desc(tenantProvisioningRuns.startedAt))
       .limit(limit);
+  }
+
+  /**
+   * A new invitation link for the responsible doctor of an active cabinet
+   * (lost e-mail, link expired after 7 days). Refused once they've chosen
+   * their password: from then on they sign in.
+   */
+  async resendInvitation(tenantId: string, actor: AuditActor) {
+    const tenant = await this.tenant(tenantId);
+    if (!tenant) {
+      throw new NotFoundException({
+        code: 'TENANT_NOT_FOUND',
+        message: 'Cabinet introuvable.',
+      });
+    }
+    if (tenant.status !== 'active') {
+      throw new ConflictException({
+        code: 'NOT_ACTIVE',
+        message: 'Seul un cabinet actif peut recevoir une invitation.',
+      });
+    }
+    const invitation = await this.seed(tenant);
+    if (!invitation.token) {
+      throw new ConflictException({
+        code: 'ALREADY_ACCEPTED',
+        message:
+          'Le médecin a déjà choisi son mot de passe : il se connecte directement.',
+      });
+    }
+    await this.email.sendInvitation({
+      email: tenant.email,
+      name: tenant.responsibleName,
+      tenantName: tenant.name,
+      url: await this.inviteUrl(tenant.id, invitation.token),
+    });
+    await writeAudit(this.database.db, actor, {
+      action: 'tenant.invitation.resend',
+      entity: 'tenant',
+      entityId: tenant.id,
+      tenantId: tenant.id,
+      metadata: { email: tenant.email },
+    });
+    return { email: tenant.email };
   }
 
   /** Fails runs whose process died mid-way and puts their cabinet back to pending. */
@@ -415,7 +459,10 @@ export class ProvisioningService {
       .select({ subdomain: tenantDomains.subdomain })
       .from(tenantDomains)
       .where(eq(tenantDomains.tenantId, tenantId));
-    return `https://${domain.subdomain}.${this.config.get('TENANT_BASE_DOMAIN')}/invite/${token}`;
+    const base =
+      this.config.get('CLINIC_APP_URL', { infer: true }) ??
+      `https://{subdomain}.${this.config.get('TENANT_BASE_DOMAIN')}`;
+    return `${base.replace('{subdomain}', domain.subdomain)}/invite/${token}`;
   }
 
   private async tenant(id: string) {
