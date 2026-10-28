@@ -36,7 +36,7 @@ export function TodayAppointments({ appointments }: { appointments: Appointment[
 						<li
 							key={a.id}
 							className={cn(
-								"flex items-center gap-3 rounded-lg px-2 py-2.5",
+								"flex items-center gap-3 px-2 py-2.5",
 								FINISHED.has(a.status) && "opacity-60",
 								a.status === "in_consultation" && "bg-accent/60",
 							)}

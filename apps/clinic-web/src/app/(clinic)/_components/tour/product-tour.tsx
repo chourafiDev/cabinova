@@ -22,7 +22,7 @@ function steps(firstName: string): DriveStep[] {
 			popover: {
 				title: `Bienvenue, ${firstName} 👋`,
 				description:
-					"Voici l’espace de votre cabinet sur Cabinova. Une minute pour en faire le tour — vous pourrez la revoir depuis votre menu.",
+					"Voici l’espace de votre cabinet sur Cabinova. Une minute pour en faire le tour, vous pourrez la revoir depuis votre menu.",
 			},
 		},
 		{
