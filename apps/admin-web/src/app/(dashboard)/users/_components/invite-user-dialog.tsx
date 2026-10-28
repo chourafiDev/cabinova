@@ -23,6 +23,7 @@ import { ApiError, api } from "@/lib/api-client";
 import type { PlatformRole } from "@/lib/platform-users";
 import { AccessLink } from "./access-link";
 import { RolePicker } from "./role-picker";
+import { useOpenFromUrl } from "@/hooks/use-open-from-url";
 
 const schema = z.object({
 	name: z.string().trim().min(2, "Nom requis").max(120),
@@ -47,7 +48,7 @@ export function InviteUserDialog({
 	children: React.ReactNode;
 }) {
 	const router = useRouter();
-	const [open, setOpen] = useState(false);
+	const [open, setOpen] = useOpenFromUrl();
 	const [created, setCreated] = useState<{ id: string; name: string; url: string } | null>(null);
 	const form = useForm<InviteInput>({
 		resolver: zodResolver(schema),

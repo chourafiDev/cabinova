@@ -18,23 +18,25 @@ export type NavItem = {
   icon: IconType;
   /** Not built yet: shown with a "Bientôt" placeholder page. */
   soon?: boolean;
+  /** "G" then this letter jumps here (keyboard shortcuts). */
+  shortcut?: string;
 };
 
 export const navGroups: { label: string; items: NavItem[] }[] = [
   {
     label: "Cabinet",
     items: [
-      { title: "Tableau de bord", href: "/", icon: HiSquares2X2 },
-      { title: "Agenda", href: "/appointments", icon: HiCalendarDays, soon: true },
-      { title: "Patients", href: "/patients", icon: HiUsers, soon: true },
-      { title: "Consultations", href: "/consultations", icon: HiClipboardDocumentList, soon: true },
-      { title: "Ordonnances", href: "/prescriptions", icon: HiDocumentText, soon: true },
+      { title: "Tableau de bord", href: "/", icon: HiSquares2X2, shortcut: "d" },
+      { title: "Agenda", href: "/appointments", icon: HiCalendarDays, shortcut: "a", soon: true },
+      { title: "Patients", href: "/patients", icon: HiUsers, shortcut: "p", soon: true },
+      { title: "Consultations", href: "/consultations", icon: HiClipboardDocumentList, shortcut: "c", soon: true },
+      { title: "Ordonnances", href: "/prescriptions", icon: HiDocumentText, shortcut: "o", soon: true },
     ],
   },
   {
     label: "Gestion",
     items: [
-      { title: "Encaissements", href: "/payments", icon: HiBanknotes, soon: true },
+      { title: "Encaissements", href: "/payments", icon: HiBanknotes, shortcut: "e", soon: true },
       { title: "Statistiques", href: "/reports", icon: HiChartBar, soon: true },
     ],
   },

@@ -38,6 +38,7 @@ import {
 } from "@/lib/support";
 import { cn } from "@/lib/utils";
 import { PriorityLabel } from "./ticket-badges";
+import { useOpenFromUrl } from "@/hooks/use-open-from-url";
 
 const PLATFORM = "__platform";
 const UNASSIGNED = "__none";
@@ -83,7 +84,7 @@ export function NewTicketDialog({
 	children: React.ReactNode;
 }) {
 	const router = useRouter();
-	const [open, setOpen] = useState(false);
+	const [open, setOpen] = useOpenFromUrl();
 	const [pickerOpen, setPickerOpen] = useState(false);
 	const empty: TicketInput = {
 		tenantId: fixedCabinet?.id ?? "",

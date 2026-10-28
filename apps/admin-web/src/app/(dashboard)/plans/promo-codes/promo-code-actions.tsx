@@ -19,13 +19,14 @@ import { Field, FieldDescription, FieldError, FieldLabel } from "@/components/ui
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { api } from "@/lib/api-client";
+import { useOpenFromUrl } from "@/hooks/use-open-from-url";
 
 const EMPTY = { code: "", description: "", discountPercent: "20", durationInvoices: "", validUntil: "", maxRedemptions: "" };
 
 /** Create a code: percentage, how many invoices, end date, uses, plans. */
 export function NewPromoCodeDialog({ plans }: { plans: { key: string; name: string }[] }) {
 	const router = useRouter();
-	const [open, setOpen] = useState(false);
+	const [open, setOpen] = useOpenFromUrl();
 	const [v, setV] = useState(EMPTY);
 	const [planKeys, setPlanKeys] = useState<string[]>([]);
 	const [error, setError] = useState<string | null>(null);

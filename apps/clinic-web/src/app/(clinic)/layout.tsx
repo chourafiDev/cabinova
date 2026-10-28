@@ -1,11 +1,13 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { CabinetUnavailable } from "@/components/cabinet-unavailable";
+import { KeyboardShortcuts } from "@/components/keyboard-shortcuts";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { BANNER_COOKIE, bannerDismissKey, billingNotice } from "@/lib/billing-notice";
 import { getClinicState } from "@/lib/session";
 import { Suspense } from "react";
 import { BillingBanner } from "./_components/billing/billing-banner";
+import { allNavItems } from "./_components/nav";
 import { ProductTour } from "./_components/tour/product-tour";
 import { AppSidebar } from "./_components/app-sidebar";
 import { SiteFooter } from "./_components/site-footer";
@@ -35,6 +37,11 @@ export default async function ClinicLayout({ children }: LayoutProps<"/">) {
         {showBanner && <BillingBanner notice={notice} dismissKey={dismissKey} />}
         <div className="flex min-w-0 flex-1 flex-col p-4">{children}</div>
         <SiteFooter />
+        <KeyboardShortcuts
+          navigation={allNavItems
+            .filter((i) => i.shortcut)
+            .map((i) => ({ key: i.shortcut!, label: i.title, href: i.href }))}
+        />
         {/* useSearchParams (replay link): client-only. */}
         <Suspense fallback={null}>
           <ProductTour autoStart={!session.onboarding.tourCompleted} firstName={session.user.name} />

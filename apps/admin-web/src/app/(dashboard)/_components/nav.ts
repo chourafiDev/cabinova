@@ -20,6 +20,8 @@ export type NavItem = {
   icon: IconType;
   /** Hidden from users that lack this permission. */
   permission?: Permission;
+  /** "G" then this letter jumps here (keyboard shortcuts). */
+  shortcut?: string;
 };
 
 // Grouped by what the admin is doing: the overview, the clinics and their
@@ -28,28 +30,28 @@ export type NavItem = {
 export const navGroups: { label: string; items: NavItem[] }[] = [
   {
     label: "Vue d’ensemble",
-    items: [{ title: "Tableau de bord", href: "/", icon: HiSquares2X2, permission: "dashboard:read" }],
+    items: [{ title: "Tableau de bord", href: "/", icon: HiSquares2X2, shortcut: "d", permission: "dashboard:read" }],
   },
   {
     label: "Cabinets",
     items: [
-      { title: "Cabinets", href: "/tenants", icon: HiBuildingOffice2, permission: "tenants:read" },
-      { title: "Support", href: "/support", icon: HiLifebuoy, permission: "support:read" },
+      { title: "Cabinets", href: "/tenants", icon: HiBuildingOffice2, shortcut: "c", permission: "tenants:read" },
+      { title: "Support", href: "/support", icon: HiLifebuoy, shortcut: "s", permission: "support:read" },
     ],
   },
   {
     label: "Offres et facturation",
     items: [
-      { title: "Offres", href: "/plans", icon: HiCreditCard, permission: "subscriptions:read" },
+      { title: "Offres", href: "/plans", icon: HiCreditCard, shortcut: "o", permission: "subscriptions:read" },
       { title: "Fonctionnalités", href: "/features", icon: HiPuzzlePiece, permission: "subscriptions:read" },
-      { title: "Facturation", href: "/billing", icon: HiBanknotes, permission: "billing:read" },
+      { title: "Facturation", href: "/billing", icon: HiBanknotes, shortcut: "f", permission: "billing:read" },
     ],
   },
   {
     label: "Administration",
     items: [
-      { title: "Technique", href: "/technical", icon: HiServerStack, permission: "technical:read" },
-      { title: "Utilisateurs", href: "/users", icon: HiUserGroup, permission: "users:read" },
+      { title: "Technique", href: "/technical", icon: HiServerStack, shortcut: "t", permission: "technical:read" },
+      { title: "Utilisateurs", href: "/users", icon: HiUserGroup, shortcut: "u", permission: "users:read" },
       { title: "Sécurité", href: "/security", icon: HiShieldCheck, permission: "security:read" },
       { title: "Configuration", href: "/settings", icon: HiCog6Tooth, permission: "settings:read" },
     ],

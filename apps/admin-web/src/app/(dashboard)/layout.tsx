@@ -1,10 +1,13 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import { KeyboardShortcuts } from "@/components/keyboard-shortcuts";
 import { SessionProvider } from "@/components/session-provider";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { getBranding } from "@/lib/branding";
+import { can } from "@/lib/permissions";
 import { getSession } from "@/lib/session";
 import { AppSidebar } from "./_components/app-sidebar";
+import { allNavItems } from "./_components/nav";
 import { SiteFooter } from "./_components/site-footer";
 import { SiteHeader } from "./_components/site-header";
 
@@ -24,6 +27,11 @@ export default async function DashboardLayout({ children }: LayoutProps<"/">) {
           <SiteHeader />
           <div className="flex min-w-0 flex-1 flex-col p-4">{children}</div>
           <SiteFooter />
+          <KeyboardShortcuts
+            navigation={allNavItems
+              .filter((i) => i.shortcut && (!i.permission || can(session.user.permissions, i.permission)))
+              .map((i) => ({ key: i.shortcut!, label: i.title, href: i.href }))}
+          />
         </SidebarInset>
       </SidebarProvider>
     </SessionProvider>

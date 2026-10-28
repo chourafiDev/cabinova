@@ -1,9 +1,11 @@
 "use client";
 
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
-import { Loader, Search } from "lucide-react";
+import { Keyboard, LogOut, Monitor, Moon, Plus, Search, Settings2, ShieldCheck, Sun, Loader } from "lucide-react";
+import { useTheme } from "next-themes";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { Kbd, SHORTCUTS_HELP_EVENT, useModifierLabel } from "@/components/keyboard-shortcuts";
 import type { IconType } from "react-icons";
 import { HiBuildingOffice2, HiLifebuoy, HiReceiptPercent, HiUser } from "react-icons/hi2";
 import { LuFileText } from "react-icons/lu";
@@ -15,10 +17,11 @@ import {
 	CommandInput,
 	CommandItem,
 	CommandList,
+	CommandShortcut,
 } from "@/components/ui/command";
 import { api } from "@/lib/api-client";
 import { INVOICE_STATUS_LABELS, type InvoiceStatus } from "@/lib/billing";
-import { can } from "@/lib/permissions";
+import { can, type Permission } from "@/lib/permissions";
 import { formatPrice } from "@/lib/plans";
 import { STATUS_LABELS as TICKET_STATUS_LABELS, type TicketStatus } from "@/lib/support";
 import { STATUS_LABELS as TENANT_STATUS_LABELS, type TenantStatus } from "@/lib/tenants";
@@ -107,25 +110,27 @@ function toGroups(data: SearchResults | undefined): { heading: string; items: Re
 	].filter((g) => g.items.length > 0);
 }
 
-/** "⌘" on Apple devices, "Ctrl" elsewhere (decided after hydration). */
-function useModifierLabel() {
-	const [label, setLabel] = useState("Ctrl");
-	useEffect(() => {
-		// eslint-disable-next-line react-hooks/set-state-in-effect -- navigator is browser-only
-		if (/Mac|iPhone|iPad/.test(navigator.platform)) setLabel("⌘");
-	}, []);
-	return label;
-}
+/** A command of the palette; shown only with its permission. */
+type Action = {
+	id: string;
+	label: string;
+	icon: IconType;
+	keywords?: string;
+	permission?: Permission;
+	run: () => void;
+};
 
 /**
- * Header search across the platform (⌘K / Ctrl+K or "/"): pages to jump
- * to, then cabinets, invoices, tickets, users and promo codes from the API —
- * only what the user may open.
+ * Command palette and header search (⌘K / Ctrl+K or "/"): actions (create,
+ * theme, shortcuts, sign out), pages to jump to, then cabinets, invoices,
+ * tickets, users and promo codes from the API — only what the user may
+ * open or do.
  */
 export function GlobalSearch() {
 	const router = useRouter();
 	const permissions = useSessionStore((s) => s.session?.user.permissions);
 	const modifier = useModifierLabel();
+	const { setTheme } = useTheme();
 	const [open, setOpen] = useState(false);
 	const [input, setInput] = useState("");
 	const [term, setTerm] = useState("");
@@ -164,6 +169,26 @@ export function GlobalSearch() {
 		staleTime: 30_000,
 	});
 
+	const actions: Action[] = [
+		{ id: "new-tenant", label: "Nouveau cabinet", icon: Plus, keywords: "créer ajouter clinique", permission: "tenants:write", run: () => go("/tenants/new") },
+		{ id: "new-ticket", label: "Nouveau ticket", icon: Plus, keywords: "support assistance créer", permission: "support:write", run: () => go("/support?nouveau=1") },
+		{ id: "new-plan", label: "Nouvelle offre", icon: Plus, keywords: "plan abonnement créer", permission: "subscriptions:write", run: () => go("/plans/new") },
+		{ id: "new-promo", label: "Nouveau code promo", icon: Plus, keywords: "remise réduction créer", permission: "subscriptions:write", run: () => go("/plans/promo-codes?nouveau=1") },
+		{ id: "invite-user", label: "Inviter un utilisateur", icon: Plus, keywords: "équipe agent ajouter", permission: "users:write", run: () => go("/users?nouveau=1") },
+		{ id: "billing-settings", label: "Paramètres de facturation", icon: Settings2, keywords: "rib banque virement", permission: "billing:read", run: () => go("/billing/settings") },
+		{ id: "theme-light", label: "Thème clair", icon: Sun, keywords: "apparence mode jour", run: () => pick(() => setTheme("light")) },
+		{ id: "theme-dark", label: "Thème sombre", icon: Moon, keywords: "apparence mode nuit dark", run: () => pick(() => setTheme("dark")) },
+		{ id: "theme-system", label: "Thème du système", icon: Monitor, keywords: "apparence automatique", run: () => pick(() => setTheme("system")) },
+		{ id: "shortcuts", label: "Raccourcis clavier", icon: Keyboard, keywords: "aide touches clavier", run: () => pick(() => window.dispatchEvent(new Event(SHORTCUTS_HELP_EVENT))) },
+		{ id: "account-security", label: "Sécurité du compte", icon: ShieldCheck, keywords: "2fa mot de passe double authentification", run: () => go("/account/security") },
+		{ id: "sign-out", label: "Se déconnecter", icon: LogOut, keywords: "déconnexion quitter", run: () => pick(signOut) },
+	];
+	const visibleActions = actions.filter(
+		(a) =>
+			(!a.permission || can(permissions, a.permission)) &&
+			(!input.trim() || fold(`${a.label} ${a.keywords ?? ""}`).includes(fold(input.trim()))),
+	);
+
 	const pages = allNavItems.filter(
 		(item) =>
 			(!item.permission || can(permissions, item.permission)) &&
@@ -172,10 +197,20 @@ export function GlobalSearch() {
 	const groups = searching ? toGroups(data) : [];
 	const pending = searching && (isFetching || term !== input.trim());
 
-	const go = (href: string) => {
+	function go(href: string) {
 		setOpen(false);
 		router.push(href);
-	};
+	}
+	function pick(run: () => void) {
+		setOpen(false);
+		run();
+	}
+	async function signOut() {
+		await api("/auth/logout", { method: "POST" }).catch(() => {});
+		useSessionStore.getState().setSession(null);
+		router.replace("/login");
+		router.refresh();
+	}
 	const onOpenChange = (next: boolean) => {
 		setOpen(next);
 		if (!next) {
@@ -202,8 +237,8 @@ export function GlobalSearch() {
 			<CommandDialog
 				open={open}
 				onOpenChange={onOpenChange}
-				title="Recherche"
-				description="Rechercher un cabinet, une facture, un ticket, un utilisateur ou une page"
+				title="Palette de commandes"
+				description="Rechercher un cabinet, une facture, un ticket, un utilisateur, une page ou une action"
 				className="sm:max-w-xl"
 			>
 				{/* The API already filters: cmdk must not filter again. */}
@@ -212,7 +247,7 @@ export function GlobalSearch() {
 						<CommandInput
 							value={input}
 							onValueChange={setInput}
-							placeholder="Cabinet, facture, ticket, utilisateur, page…"
+							placeholder="Rechercher ou lancer une action…"
 						/>
 						{pending && (
 							<Loader className="text-muted-foreground absolute end-3 top-1/2 size-4 -translate-y-1/2 animate-spin" />
@@ -230,6 +265,22 @@ export function GlobalSearch() {
 									<CommandItem key={item.href} value={`page-${item.href}`} onSelect={() => go(item.href)}>
 										<item.icon className="text-muted-foreground" />
 										{item.title}
+										{item.shortcut && (
+											<CommandShortcut className="flex gap-1">
+												<Kbd>G</Kbd>
+												<Kbd>{item.shortcut.toUpperCase()}</Kbd>
+											</CommandShortcut>
+										)}
+									</CommandItem>
+								))}
+							</CommandGroup>
+						)}
+						{visibleActions.length > 0 && (
+							<CommandGroup heading="Actions">
+								{visibleActions.map((a) => (
+									<CommandItem key={a.id} value={`action-${a.id}`} onSelect={a.run}>
+										<a.icon className="text-muted-foreground" />
+										{a.label}
 									</CommandItem>
 								))}
 							</CommandGroup>
