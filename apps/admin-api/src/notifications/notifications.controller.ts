@@ -8,7 +8,7 @@ import {
   Sse,
 } from '@nestjs/common';
 import { ArrayMaxSize, IsArray, IsUUID } from 'class-validator';
-import { interval, map, merge, type Observable } from 'rxjs';
+import { interval, map, merge, type Observable, takeUntil } from 'rxjs';
 import type { AuthUser } from '../auth/auth.types.js';
 import { CurrentUser } from '../auth/decorators.js';
 import { NotificationsService } from './notifications.service.js';
@@ -39,7 +39,7 @@ export class NotificationsController {
     return merge(
       this.notifications.stream(user.id),
       interval(25_000).pipe(map(() => ({ type: 'ping', data: '' }))),
-    );
+    ).pipe(takeUntil(this.notifications.closing));
   }
 
   @Post('read')

@@ -253,9 +253,9 @@ export function TenantTechnical({
 					<DialogHeader>
 						<DialogTitle>Lien d’invitation</DialogTitle>
 						<DialogDescription>
-							Aucun service d’e-mail n’est configuré : rien n’a été envoyé à {devInvite?.email}. En
-							développement, ouvrez ce lien vous-même pour choisir le mot de passe du médecin. Il est
-							valable 7 jours et ne sert qu’une fois.
+							Développement uniquement : le lien envoyé à {devInvite?.email}, pour ouvrir l’invitation vous-même.
+							C’est le seul lien valable — les invitations précédentes ne marchent plus. Valable 7 jours, une
+							seule fois.
 						</DialogDescription>
 					</DialogHeader>
 					<Input readOnly value={devInvite?.url ?? ""} onFocus={(e) => e.currentTarget.select()} className="font-mono text-xs" />

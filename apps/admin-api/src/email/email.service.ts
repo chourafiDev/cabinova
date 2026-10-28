@@ -8,8 +8,6 @@ import { PlatformConfigService } from '../settings/platform-config.service.js';
 export class EmailService {
   private readonly logger = new Logger(EmailService.name);
   private readonly resend: Resend | null;
-  /** False without RESEND_API_KEY: e-mails are only logged. */
-  readonly delivers: boolean;
   private readonly from: string;
   private readonly publicOrigin: string;
   /** Development without Resend: unsent e-mails' links go to the log. */
@@ -21,7 +19,6 @@ export class EmailService {
   ) {
     const apiKey = config.get('RESEND_API_KEY');
     this.resend = apiKey ? new Resend(apiKey) : null;
-    this.delivers = this.resend !== null;
     this.from = config.get('EMAIL_FROM');
     // Absolute links (logo) point at the admin app, which proxies /api.
     this.publicOrigin = config.get('WEB_ORIGIN').split(',')[0].trim();

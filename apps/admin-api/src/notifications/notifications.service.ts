@@ -1,4 +1,8 @@
-import { Injectable, Logger } from '@nestjs/common';
+import {
+  type BeforeApplicationShutdown,
+  Injectable,
+  Logger,
+} from '@nestjs/common';
 import { and, count, desc, eq, inArray, isNotNull, isNull } from 'drizzle-orm';
 import { filter, map, Subject } from 'rxjs';
 import { AuthService } from '../auth/auth.service.js';
@@ -37,9 +41,11 @@ export type NotifyInput = {
  * channel (Redis pub/sub) is the step up when scaling out.
  */
 @Injectable()
-export class NotificationsService {
+export class NotificationsService implements BeforeApplicationShutdown {
   private readonly logger = new Logger(NotificationsService.name);
   private readonly live = new Subject<Row>();
+  /** Emits once when the API stops: open SSE streams end with it. */
+  readonly closing = new Subject<void>();
 
   constructor(
     private readonly database: DatabaseService,
@@ -69,6 +75,20 @@ export class NotificationsService {
     } catch (err) {
       this.logger.error(`Notification "${input.kind}" failed`, err);
     }
+  }
+
+  /**
+   * Before the HTTP server closes: end every live stream. An open SSE
+   * response never ends by itself, so the server would wait for it forever
+   * (a dev restart hangs while a Super Admin tab is open). Browsers
+   * reconnect to the next server on their own.
+   */
+  async beforeApplicationShutdown() {
+    this.closing.next();
+    this.closing.complete();
+    // Let the ended responses settle into idle connections, which the
+    // server's close() then drops at once (instead of after keep-alive).
+    await new Promise((resolve) => setTimeout(resolve, 50));
   }
 
   /** Live feed for one user (SSE). */

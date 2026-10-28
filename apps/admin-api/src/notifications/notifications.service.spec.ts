@@ -1,4 +1,4 @@
-import { firstValueFrom, take, toArray } from 'rxjs';
+import { firstValueFrom, take, takeUntil, toArray } from 'rxjs';
 import { describe, expect, it } from 'vitest';
 import type { AuthService } from '../auth/auth.service.js';
 import type { DatabaseService } from '../database/database.module.js';
@@ -91,6 +91,16 @@ describe('NotificationsService', () => {
     expect(event.data).toMatchObject({
       title: 'Ticket T-000009 assigné à vous',
     });
+  });
+
+  it('ends live streams when the API shuts down', async () => {
+    const { service } = setup({ admin: ['support:read'] });
+    const events = firstValueFrom(
+      service.stream('admin').pipe(takeUntil(service.closing), toArray()),
+    );
+    await service.beforeApplicationShutdown();
+    // Completes (instead of hanging the server's close) with no events.
+    await expect(events).resolves.toEqual([]);
   });
 
   it('never throws when the database fails', async () => {

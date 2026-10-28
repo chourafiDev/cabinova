@@ -166,11 +166,11 @@ export class ProvisioningService {
       tenantId: tenant.id,
       metadata: { email: tenant.email },
     });
-    // Development without an e-mail provider: nobody would receive it, so
-    // the admin gets the link. Never in production — the link opens a
-    // cabinet's account and its medical data.
-    const showLink =
-      this.config.get('NODE_ENV') === 'development' && !this.email.delivers;
+    // Development: the admin gets the link too — test cabinets use fake or
+    // shared addresses, and Resend's test sender only delivers to its owner.
+    // Never in production: the link opens a cabinet's account and its
+    // medical data.
+    const showLink = this.config.get('NODE_ENV') === 'development';
     return { email: tenant.email, ...(showLink && { devUrl: url }) };
   }
 
