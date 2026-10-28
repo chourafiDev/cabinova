@@ -14,6 +14,7 @@ import { HealthController } from './health/health.controller.js';
 import { PlansModule } from './plans/plans.module.js';
 import { PlatformUsersModule } from './platform-users/platform-users.module.js';
 import { NotificationsModule } from './notifications/notifications.module.js';
+import { SearchModule } from './search/search.module.js';
 import { SecurityModule } from './security/security.module.js';
 import { SettingsModule } from './settings/settings.module.js';
 import { SupportModule } from './support/support.module.js';
@@ -52,6 +53,7 @@ import { TenantsModule } from './tenants/tenants.module.js';
     SupportModule,
     FeaturesModule,
     SecurityModule,
+    SearchModule,
   ],
   controllers: [HealthController],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],

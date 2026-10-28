@@ -32,8 +32,12 @@ describe('support: ticket visibility per agent', () => {
       .expect(201);
     return body.id as string;
   };
+  // This file's cabinet only: other test files leave unassigned tickets too.
   const visibleTo = async (agent: Agent) => {
-    const { body } = await agent.get('/support/tickets?view=all').expect(200);
+    const { body } = await agent
+      .get('/support/tickets')
+      .query({ view: 'all', tenantId })
+      .expect(200);
     return (body.data as { id: string }[]).map((t) => t.id).sort();
   };
 

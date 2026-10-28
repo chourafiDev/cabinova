@@ -4,6 +4,7 @@ import { usePathname } from "next/navigation";
 import { Breadcrumb, BreadcrumbItem, BreadcrumbList, BreadcrumbPage } from "@/components/ui/breadcrumb";
 import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
+import { GlobalSearch } from "./global-search";
 import { findNavItem } from "./nav";
 import { NotificationsBell } from "./notifications-bell";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -26,6 +27,7 @@ export function SiteHeader() {
         </BreadcrumbList>
       </Breadcrumb>
       <div className="ms-auto flex flex-1 items-center justify-end gap-2">
+        <GlobalSearch />
         <ThemeToggle />
         <NotificationsBell />
         <UserMenu />

@@ -25,7 +25,7 @@ export function ThemeToggle() {
 	return (
 		<DropdownMenu>
 			<DropdownMenuTrigger asChild>
-				<Button variant="ghost" size="icon" aria-label="Thème de l’interface">
+				<Button variant="outline" size="icon" aria-label="Thème de l’interface">
 					{/* Both icons rendered, CSS picks one: no flash before the theme is known. */}
 					<Sun className="dark:hidden" />
 					<Moon className="hidden dark:block" />
