@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ChevronDown, ContactRound, Loader, MapPin, Phone, Plus, ShieldCheck, StickyNote } from "lucide-react";
+import { LuChevronDown, LuContactRound, LuLoader, LuMapPin, LuPhone, LuPlus, LuShieldCheck, LuStickyNote } from "react-icons/lu";
 import { useState } from "react";
 import { Controller, type FieldErrors, useForm, useWatch } from "react-hook-form";
 import { toast } from "sonner";
@@ -80,11 +80,11 @@ function OptionalSection({
 					{!open && <span className="text-muted-foreground truncate text-xs">{summary ?? "Facultatif"}</span>}
 				</span>
 				{open ? (
-					<ChevronDown className="text-muted-foreground size-4 rotate-180 transition-transform" />
+					<LuChevronDown className="text-muted-foreground size-4 rotate-180 transition-transform" />
 				) : summary ? (
-					<ChevronDown className="text-muted-foreground size-4 transition-transform" />
+					<LuChevronDown className="text-muted-foreground size-4 transition-transform" />
 				) : (
-					<Plus className="text-muted-foreground size-4" />
+					<LuPlus className="text-muted-foreground size-4" />
 				)}
 			</button>
 			{open && <div className="grid gap-4 px-4 pb-4">{children}</div>}
@@ -236,7 +236,7 @@ export function PatientForm({
 						<Field data-invalid={!!errors.phone}>
 							<Label htmlFor="phone">Téléphone</Label>
 							<div className="relative">
-								<Phone className="text-muted-foreground pointer-events-none absolute start-3 top-1/2 size-4 -translate-y-1/2" />
+								<LuPhone className="text-muted-foreground pointer-events-none absolute start-3 top-1/2 size-4 -translate-y-1/2" />
 								<Input
 									id="phone"
 									type="tel"
@@ -257,7 +257,7 @@ export function PatientForm({
 					<p className="text-muted-foreground text-xs font-medium">Informations complémentaires</p>
 
 					<OptionalSection
-						icon={MapPin}
+						icon={LuMapPin}
 						title="Adresse et e-mail"
 						summary={[values.address, values.city, values.email].filter(Boolean).join(" · ") || undefined}
 						open={isOpen("address")}
@@ -271,7 +271,7 @@ export function PatientForm({
 					</OptionalSection>
 
 					<OptionalSection
-						icon={ShieldCheck}
+						icon={LuShieldCheck}
 						title="Couverture médicale"
 						summary={coverageSummary}
 						open={isOpen("coverage")}
@@ -315,7 +315,7 @@ export function PatientForm({
 					</OptionalSection>
 
 					<OptionalSection
-						icon={ContactRound}
+						icon={LuContactRound}
 						title="Contact d’urgence"
 						summary={[values.emergencyContactName, values.emergencyContactPhone].filter(Boolean).join(" · ") || undefined}
 						open={isOpen("emergency")}
@@ -328,7 +328,7 @@ export function PatientForm({
 					</OptionalSection>
 
 					<OptionalSection
-						icon={StickyNote}
+						icon={LuStickyNote}
 						title="Note administrative"
 						summary={values.notes || undefined}
 						open={isOpen("notes")}
@@ -358,7 +358,7 @@ export function PatientForm({
 				</Button>
 				{patientId ? (
 					<Button type="submit" disabled={isSubmitting || !isDirty}>
-						{isSubmitting && <Loader className="animate-spin" />}
+						{isSubmitting && <LuLoader className="animate-spin" />}
 						Enregistrer
 					</Button>
 				) : (
@@ -367,7 +367,7 @@ export function PatientForm({
 							Créer et prendre RDV
 						</Button>
 						<Button type="submit" disabled={isSubmitting}>
-							{isSubmitting && <Loader className="animate-spin" />}
+							{isSubmitting && <LuLoader className="animate-spin" />}
 							Créer le dossier
 						</Button>
 					</>

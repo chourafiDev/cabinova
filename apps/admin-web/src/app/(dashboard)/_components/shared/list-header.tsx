@@ -1,6 +1,6 @@
 "use client";
 
-import { Loader, Plus } from "lucide-react";
+import { LuLoader, LuPlus } from "react-icons/lu";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { useListTransition } from "./list-transition";
@@ -28,7 +28,7 @@ export function ListHeader({ icon, total, label, create, action }: ListHeaderPro
 				</div>
 				<h1 className="text-foreground text-sm font-medium flex items-center gap-1">
 					{isPending ? (
-						<Loader className="size-4 animate-spin text-primary mr-1" />
+						<LuLoader className="size-4 animate-spin text-primary mr-1" />
 					) : (
 						<span className="text-primary font-semibold text-xl mr-1 tabular-nums">
 							{total}
@@ -41,7 +41,7 @@ export function ListHeader({ icon, total, label, create, action }: ListHeaderPro
 			{create && (
 				<Button asChild className="md:w-auto w-full">
 					<Link href={create.href}>
-						<Plus className="size-4 mr-2" />
+						<LuPlus className="size-4 mr-2" />
 						{create.label}
 					</Link>
 				</Button>

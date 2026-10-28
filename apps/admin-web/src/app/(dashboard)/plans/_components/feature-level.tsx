@@ -1,13 +1,13 @@
-import { Check, Minus, Plus, Settings2, Gauge } from "lucide-react";
+import { LuCheck, LuGauge, LuMinus, LuPlus, LuSettings2 } from "react-icons/lu";
 import { FEATURE_LEVELS, type FeatureLevel } from "@/lib/plans";
 import { cn } from "@/lib/utils";
 
 const ICONS: Record<FeatureLevel, { icon: React.ElementType; className: string }> = {
-	included: { icon: Check, className: "text-emerald-600" },
-	limited: { icon: Gauge, className: "text-amber-600" },
-	addon: { icon: Plus, className: "text-sky-600" },
-	custom: { icon: Settings2, className: "text-violet-600" },
-	none: { icon: Minus, className: "text-muted-foreground/60" },
+	included: { icon: LuCheck, className: "text-emerald-600" },
+	limited: { icon: LuGauge, className: "text-amber-600" },
+	addon: { icon: LuPlus, className: "text-sky-600" },
+	custom: { icon: LuSettings2, className: "text-violet-600" },
+	none: { icon: LuMinus, className: "text-muted-foreground/60" },
 };
 
 /** One cell of the plan matrix: icon + label ("Inclus", "Limité"…). */

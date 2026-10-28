@@ -1,4 +1,4 @@
-import { ArrowRight } from "lucide-react";
+import { LuArrowRight } from "react-icons/lu";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { formatDate } from "@/lib/format";
@@ -71,7 +71,7 @@ function describe(entry: TenantAuditEntry): { title: string; details?: React.Rea
 							<li key={field} className="flex flex-wrap items-center gap-1.5">
 								<span className="text-muted-foreground">{FIELD_LABELS[field] ?? field} :</span>
 								<span className="line-through decoration-muted-foreground/60">{show(field, from)}</span>
-								<ArrowRight className="size-3 text-muted-foreground" />
+								<LuArrowRight className="size-3 text-muted-foreground" />
 								<span>{show(field, to)}</span>
 							</li>
 						))}

@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, ChevronsUpDown, Loader, MapPin, Plus } from "lucide-react";
+import { LuCheck, LuChevronsUpDown, LuLoader, LuMapPin, LuPlus } from "react-icons/lu";
 import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -81,11 +81,11 @@ export function SpaceSwitcher({
 							<span className="grid min-w-0 flex-1 leading-tight">
 								<span className="truncate font-semibold">{cabinet.name}</span>
 								<span className="text-muted-foreground flex items-center gap-1 truncate text-xs">
-									<MapPin className="shrink-0" />
+									<LuMapPin className="shrink-0" />
 									<span className="truncate">{spaceLabel(current)}</span>
 								</span>
 							</span>
-							<ChevronsUpDown className="text-muted-foreground ms-auto size-4" />
+							<LuChevronsUpDown className="text-muted-foreground ms-auto size-4" />
 						</SidebarMenuButton>
 					</DropdownMenuTrigger>
 					<DropdownMenuContent align="start" sideOffset={6} className="w-64">
@@ -100,9 +100,9 @@ export function SpaceSwitcher({
 									{space.city && <span className="text-muted-foreground truncate text-xs">{space.city}</span>}
 								</span>
 								{pending === space.id ? (
-									<Loader className="size-4 animate-spin" />
+									<LuLoader className="size-4 animate-spin" />
 								) : (
-									space.id === current.id && <Check className="size-4" />
+									space.id === current.id && <LuCheck className="size-4" />
 								)}
 							</DropdownMenuItem>
 						))}
@@ -111,7 +111,7 @@ export function SpaceSwitcher({
 								<DropdownMenuSeparator />
 								<DropdownMenuItem onSelect={() => setCreating(true)} className="gap-2">
 									<span className="flex size-6 items-center justify-center rounded-md border border-dashed">
-										<Plus className="size-3.5" />
+										<LuPlus className="size-3.5" />
 									</span>
 									Nouvel espace
 								</DropdownMenuItem>
@@ -203,7 +203,7 @@ function NewSpaceDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (
 							Annuler
 						</Button>
 						<Button type="submit" disabled={saving}>
-							{saving && <Loader className="animate-spin" />} Créer l’espace
+							{saving && <LuLoader className="animate-spin" />} Créer l’espace
 						</Button>
 					</DialogFooter>
 				</form>

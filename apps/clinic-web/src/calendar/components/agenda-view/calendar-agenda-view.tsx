@@ -1,6 +1,6 @@
 import { fmt } from "@/calendar/locale";
 import { useMemo } from "react";
-import { CalendarX2 } from "lucide-react";
+import { LuCalendarX2 } from "react-icons/lu";
 import { parseISO, endOfDay, startOfDay, isSameMonth } from "date-fns";
 
 import { useCalendar } from "@/calendar/contexts/calendar-context";
@@ -70,7 +70,7 @@ export function CalendarAgendaView({ singleDayEvents, multiDayEvents }: IProps) 
 
           {!hasAnyEvents && (
             <div className="flex flex-col items-center justify-center gap-2 py-20 text-muted-foreground">
-              <CalendarX2 className="size-10" />
+              <LuCalendarX2 className="size-10" />
               <p className="text-sm md:text-base">Aucun rendez-vous ce mois-ci</p>
             </div>
           )}

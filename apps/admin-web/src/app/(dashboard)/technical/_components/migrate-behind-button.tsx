@@ -1,6 +1,6 @@
 "use client";
 
-import { Loader } from "lucide-react";
+import { LuLoader } from "react-icons/lu";
 import { useRouter } from "next/navigation";
 import { useTransition } from "react";
 import { toast } from "sonner";
@@ -32,7 +32,7 @@ export function MigrateBehindButton({ behind }: { behind: number }) {
 
 	return (
 		<Button onClick={run} disabled={pending || behind === 0} className="md:w-auto w-full">
-			{pending && <Loader className="animate-spin" />}
+			{pending && <LuLoader className="animate-spin" />}
 			Migrer les bases en retard{behind ? ` (${behind})` : ""}
 		</Button>
 	);

@@ -1,7 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { Check, ChevronsUpDown, Loader } from "lucide-react";
+import { LuCheck, LuChevronsUpDown, LuLoader } from "react-icons/lu";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
@@ -55,7 +55,7 @@ export function PatientPicker({
 					<span className="truncate">
 						{value ? `${fullName(value)} · ${formatFileNumber(value.fileNumber)}` : "Rechercher un patient…"}
 					</span>
-					<ChevronsUpDown className="size-4 shrink-0 opacity-50" />
+					<LuChevronsUpDown className="size-4 shrink-0 opacity-50" />
 				</Button>
 			</PopoverTrigger>
 			<PopoverContent className="w-(--radix-popover-trigger-width) p-0" align="start">
@@ -64,7 +64,7 @@ export function PatientPicker({
 					<CommandInput placeholder="Nom, téléphone, CIN, n° de dossier…" onValueChange={setSearchDebounced} />
 					<CommandList>
 						<CommandEmpty>
-							{isFetching ? <Loader className="mx-auto size-4 animate-spin" /> : "Aucun patient trouvé."}
+							{isFetching ? <LuLoader className="mx-auto size-4 animate-spin" /> : "Aucun patient trouvé."}
 						</CommandEmpty>
 						<CommandGroup>
 							{data?.data.map((p) => (
@@ -83,7 +83,7 @@ export function PatientPicker({
 											{p.phone && ` · ${formatPhone(p.phone)}`}
 										</span>
 									</div>
-									<Check className={cn("size-4", value?.id === p.id ? "opacity-100" : "opacity-0")} />
+									<LuCheck className={cn("size-4", value?.id === p.id ? "opacity-100" : "opacity-0")} />
 								</CommandItem>
 							))}
 						</CommandGroup>

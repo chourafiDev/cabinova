@@ -1,4 +1,4 @@
-import { Plus } from "lucide-react";
+import { LuPlus } from "react-icons/lu";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import type { CabinetOption, SupportAgent, TicketPage } from "@/lib/support";
@@ -36,7 +36,7 @@ export function TenantSupportTab({
 					{canWrite && (
 						<NewTicketDialog cabinets={[]} agents={agents} meId={meId} fixedCabinet={cabinet}>
 							<Button size="sm">
-								<Plus /> Nouveau ticket
+								<LuPlus /> Nouveau ticket
 							</Button>
 						</NewTicketDialog>
 					)}

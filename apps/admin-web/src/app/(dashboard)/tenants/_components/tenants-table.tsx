@@ -1,7 +1,7 @@
 "use client";
 
 import type { ColumnDef } from "@tanstack/react-table";
-import { CircleDot, CreditCard, Search } from "lucide-react";
+import { LuCircleDot, LuCreditCard, LuSearch } from "react-icons/lu";
 import Link from "next/link";
 import { useMemo } from "react";
 import { DataTable } from "@/components/data-table/data-table";
@@ -41,7 +41,7 @@ export function TenantsTable({
 						<span className="text-muted-foreground text-xs">{row.original.responsibleName}</span>
 					</Link>
 				),
-				meta: { label: "Cabinet", placeholder: "Nom, responsable ou e-mail…", variant: "text", icon: Search },
+				meta: { label: "Cabinet", placeholder: "Nom, responsable ou e-mail…", variant: "text", icon: LuSearch },
 				enableColumnFilter: true,
 				enableHiding: false,
 			},
@@ -75,7 +75,7 @@ export function TenantsTable({
 					label: "Statut",
 					variant: "multiSelect",
 					options: STATUS_OPTIONS,
-					icon: CircleDot,
+					icon: LuCircleDot,
 				},
 				enableColumnFilter: true,
 				enableSorting: false,
@@ -85,7 +85,7 @@ export function TenantsTable({
 				accessorFn: (row) => row.plan?.key,
 				header: "Offre",
 				cell: ({ row }) => row.original.plan?.name ?? <span className="text-muted-foreground">—</span>,
-				meta: { label: "Offre", variant: "multiSelect", options: planOptions, icon: CreditCard },
+				meta: { label: "Offre", variant: "multiSelect", options: planOptions, icon: LuCreditCard },
 				enableColumnFilter: planOptions.length > 0,
 				enableSorting: false,
 			},

@@ -1,4 +1,4 @@
-import { ShieldCheck } from "lucide-react";
+import { LuShieldCheck } from "react-icons/lu";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { HiUserGroup } from "react-icons/hi2";
@@ -56,7 +56,7 @@ export default async function UsersPage({ searchParams }: PageProps<"/users">) {
 					<div className="flex w-full gap-2 md:w-auto">
 						<Button asChild variant="outline">
 							<Link href="/users/roles">
-								<ShieldCheck /> Rôles et permissions
+								<LuShieldCheck /> Rôles et permissions
 							</Link>
 						</Button>
 						{canWrite && (

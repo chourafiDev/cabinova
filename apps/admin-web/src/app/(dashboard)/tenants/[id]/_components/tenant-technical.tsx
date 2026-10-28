@@ -1,6 +1,6 @@
 "use client";
 
-import { CircleCheck, CircleDashed, CircleX, Copy, ExternalLink, Loader, MinusCircle } from "lucide-react";
+import { LuCircleCheck, LuCircleDashed, LuCircleMinus, LuCircleX, LuCopy, LuExternalLink, LuLoader } from "react-icons/lu";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, useTransition } from "react";
 import { toast } from "sonner";
@@ -115,7 +115,7 @@ export function TenantTechnical({
 										act(`/tenants/${tenantId}/provision`, { sendInvitation }, () => "Provisionnement lancé")
 									}
 								>
-									{pending && <Loader className="animate-spin" />} Provisionner
+									{pending && <LuLoader className="animate-spin" />} Provisionner
 								</Button>
 							</div>
 						</div>
@@ -269,11 +269,11 @@ export function TenantTechnical({
 									.catch(() => toast.error("Copie impossible : sélectionnez le lien."))
 							}
 						>
-							<Copy /> Copier
+							<LuCopy /> Copier
 						</Button>
 						<Button asChild>
 							<a href={devInvite?.url} target="_blank" rel="noreferrer">
-								<ExternalLink /> Ouvrir
+								<LuExternalLink /> Ouvrir
 							</a>
 						</Button>
 					</DialogFooter>
@@ -310,13 +310,13 @@ function RunTimeline({ run }: { run: ProvisioningRun }) {
 					const isCurrent = run.state === "running" && !step && index === run.steps.length;
 					const Icon = !step
 						? isCurrent
-							? Loader
-							: CircleDashed
+							? LuLoader
+							: LuCircleDashed
 						: step.status === "done"
-							? CircleCheck
+							? LuCircleCheck
 							: step.status === "skipped"
-								? MinusCircle
-								: CircleX;
+								? LuCircleMinus
+								: LuCircleX;
 					return (
 						<li key={key} className="flex gap-2">
 							<Icon

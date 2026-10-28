@@ -1,8 +1,7 @@
-import { Landmark, Settings } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { HiBanknotes } from "react-icons/hi2";
-import { LuBanknote, LuClock, LuTriangleAlert } from "react-icons/lu";
+import { LuBanknote, LuClock, LuLandmark, LuSettings, LuTriangleAlert } from "react-icons/lu";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import type { BillingSettings, InvoicesPage } from "@/lib/billing";
@@ -56,7 +55,7 @@ export default async function BillingPage({ searchParams }: PageProps<"/billing"
 				action={
 					<Button asChild variant="outline">
 						<Link href="/billing/settings">
-							<Settings /> Coordonnées bancaires
+							<LuSettings /> Coordonnées bancaires
 						</Link>
 					</Button>
 				}
@@ -64,7 +63,7 @@ export default async function BillingPage({ searchParams }: PageProps<"/billing"
 
 			{!settings.configured && (
 				<div className="mb-3 flex flex-wrap items-center gap-3 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900">
-					<Landmark className="size-4 shrink-0" />
+					<LuLandmark className="size-4 shrink-0" />
 					<span className="min-w-0 flex-1">
 						Votre RIB n’est pas encore renseigné : les factures sont émises sans coordonnées bancaires.
 					</span>

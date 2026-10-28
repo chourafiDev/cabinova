@@ -1,6 +1,6 @@
 "use client";
 
-import { CircleCheck, Loader, Send, TriangleAlert } from "lucide-react";
+import { LuCircleCheck, LuLoader, LuSend, LuTriangleAlert } from "react-icons/lu";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -65,7 +65,7 @@ export function EmailSection({
 						: "flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900"
 				}
 			>
-				{delivery.provider ? <CircleCheck className="mt-0.5 size-4 shrink-0" /> : <TriangleAlert className="mt-0.5 size-4 shrink-0" />}
+				{delivery.provider ? <LuCircleCheck className="mt-0.5 size-4 shrink-0" /> : <LuTriangleAlert className="mt-0.5 size-4 shrink-0" />}
 				<span>
 					{delivery.provider
 						? "Envoi actif via Resend."
@@ -138,7 +138,7 @@ export function EmailSection({
 			{!readOnly && (
 				<div className="flex flex-wrap items-center gap-3">
 					<Button type="button" variant="outline" size="sm" disabled={testing || s.dirty} onClick={test}>
-						{testing ? <Loader className="animate-spin" /> : <Send />} M’envoyer un e-mail de test
+						{testing ? <LuLoader className="animate-spin" /> : <LuSend />} M’envoyer un e-mail de test
 					</Button>
 					{s.dirty && <span className="text-xs text-muted-foreground">Enregistrez d’abord vos modifications.</span>}
 				</div>

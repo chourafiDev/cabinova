@@ -1,6 +1,6 @@
 "use client";
 
-import { Download, FileText, X } from "lucide-react";
+import { LuDownload, LuFileText, LuX } from "react-icons/lu";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useTransition } from "react";
 import { Button } from "@/components/ui/button";
@@ -94,18 +94,18 @@ export function DashboardFilters({
 						size="sm"
 						onClick={() => startTransition(() => router.replace(pathname, { scroll: false }))}
 					>
-						<X /> Réinitialiser
+						<LuX /> Réinitialiser
 					</Button>
 				)}
 				<div className="ms-auto flex gap-2">
 					<Button asChild variant="outline" size="sm">
 						<a href={exportHref} download>
-							<Download /> Excel
+							<LuDownload /> Excel
 						</a>
 					</Button>
 					<Button asChild variant="outline" size="sm">
 						<a href={`/reports/dashboard${params.size ? `?${params}` : ""}`} target="_blank" rel="noreferrer">
-							<FileText /> PDF
+							<LuFileText /> PDF
 						</a>
 					</Button>
 				</div>

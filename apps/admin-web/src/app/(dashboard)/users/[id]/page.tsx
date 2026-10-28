@@ -1,4 +1,4 @@
-import { ArrowLeft, Monitor, Smartphone } from "lucide-react";
+import { LuArrowLeft, LuMonitor, LuSmartphone } from "react-icons/lu";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -68,7 +68,7 @@ export default async function UserPage({ params }: PageProps<"/users/[id]">) {
 			<div className="mb-4 flex flex-wrap items-center gap-3 border-b border-dashed border-foreground/20 pb-4">
 				<Button asChild variant="outline" size="icon-sm" aria-label="Retour aux utilisateurs">
 					<Link href="/users">
-						<ArrowLeft className="size-4" />
+						<LuArrowLeft className="size-4" />
 					</Link>
 				</Button>
 				<span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-sm font-semibold text-primary">
@@ -121,7 +121,7 @@ export default async function UserPage({ params }: PageProps<"/users/[id]">) {
 								<ul className="grid gap-2.5">
 									{user.sessions.map((s) => {
 										const { label, mobile } = device(s.userAgent);
-										const Icon = mobile ? Smartphone : Monitor;
+										const Icon = mobile ? LuSmartphone : LuMonitor;
 										return (
 											<li key={s.id} className="flex items-start gap-2.5 text-sm">
 												<span className="mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-md bg-muted">

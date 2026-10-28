@@ -1,7 +1,7 @@
 import { fmt } from "@/calendar/locale";
 import { useMemo } from "react";
 
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { LuChevronLeft, LuChevronRight } from "react-icons/lu";
 
 import { useCalendar } from "@/calendar/contexts/calendar-context";
 
@@ -42,13 +42,13 @@ export function DateNavigator({ view, events }: IProps) {
 
       <div className="flex items-center gap-2">
         <Button variant="outline" aria-label="Période précédente" className="size-6.5 px-0 [&_svg]:size-4.5" onClick={handlePrevious}>
-          <ChevronLeft />
+          <LuChevronLeft />
         </Button>
 
         <p className="text-sm text-muted-foreground">{rangeText(view, selectedDate)}</p>
 
         <Button variant="outline" aria-label="Période suivante" className="size-6.5 px-0 [&_svg]:size-4.5" onClick={handleNext}>
-          <ChevronRight />
+          <LuChevronRight />
         </Button>
       </div>
     </div>

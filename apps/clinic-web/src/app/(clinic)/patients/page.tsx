@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ChevronLeft, ChevronRight, Plus, Users } from "lucide-react";
+import { LuChevronLeft, LuChevronRight, LuPlus, LuUsers } from "react-icons/lu";
 import { Suspense } from "react";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -62,7 +62,7 @@ export default async function PatientsPage({ searchParams }: PageProps<"/patient
 			<header className="flex flex-wrap items-center justify-between gap-3">
 				<div className="flex items-center gap-3">
 					<span className="bg-primary/10 text-primary flex size-9 items-center justify-center rounded-lg">
-						<Users className="size-4" />
+						<LuUsers className="size-4" />
 					</span>
 					<div>
 						<h1 className="text-lg font-semibold leading-tight">Patients</h1>
@@ -76,7 +76,7 @@ export default async function PatientsPage({ searchParams }: PageProps<"/patient
 				</div>
 				<Button asChild>
 					<Link href={href({ nouveau: "1" })} scroll={false}>
-						<Plus /> Nouveau patient
+						<LuPlus /> Nouveau patient
 					</Link>
 				</Button>
 			</header>
@@ -105,7 +105,7 @@ export default async function PatientsPage({ searchParams }: PageProps<"/patient
 			<div className="bg-card overflow-hidden rounded-xl border">
 				{data.length === 0 ? (
 					<div className="flex flex-col items-center gap-2 px-6 py-16 text-center">
-						<Users className="text-muted-foreground size-6" />
+						<LuUsers className="text-muted-foreground size-6" />
 						<p className="font-medium">
 							{search ? "Aucun patient trouvé" : status === "archived" ? "Aucun dossier archivé" : "Aucun patient pour l’instant"}
 						</p>
@@ -119,7 +119,7 @@ export default async function PatientsPage({ searchParams }: PageProps<"/patient
 						{!search && status === "active" && (
 							<Button asChild size="sm" className="mt-2">
 								<Link href={href({ nouveau: "1" })} scroll={false}>
-									<Plus /> Nouveau patient
+									<LuPlus /> Nouveau patient
 								</Link>
 							</Button>
 						)}
@@ -178,12 +178,12 @@ export default async function PatientsPage({ searchParams }: PageProps<"/patient
 					</span>
 					<Button asChild variant="outline" size="sm" aria-disabled={page <= 1} className={cn(page <= 1 && "pointer-events-none opacity-50")}>
 						<Link href={href({ page: String(page - 1) })}>
-							<ChevronLeft /> Précédente
+							<LuChevronLeft /> Précédente
 						</Link>
 					</Button>
 					<Button asChild variant="outline" size="sm" aria-disabled={page >= pageCount} className={cn(page >= pageCount && "pointer-events-none opacity-50")}>
 						<Link href={href({ page: String(page + 1) })}>
-							Suivante <ChevronRight />
+							Suivante <LuChevronRight />
 						</Link>
 					</Button>
 				</nav>

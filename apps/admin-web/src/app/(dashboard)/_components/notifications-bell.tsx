@@ -1,6 +1,6 @@
 "use client";
 
-import { Bell, CheckCheck, CircleAlert, CircleCheck, Info, TriangleAlert } from "lucide-react";
+import { LuBell, LuCheckCheck, LuCircleAlert, LuCircleCheck, LuInfo, LuTriangleAlert } from "react-icons/lu";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -10,11 +10,11 @@ import { api } from "@/lib/api-client";
 import { type AppNotification, type NotificationList, type NotificationSeverity, timeAgo } from "@/lib/notifications";
 import { cn } from "@/lib/utils";
 
-const SEVERITY: Record<NotificationSeverity, { icon: typeof Bell; tone: string }> = {
-	critical: { icon: CircleAlert, tone: "bg-red-50 text-red-700" },
-	warning: { icon: TriangleAlert, tone: "bg-amber-50 text-amber-800" },
-	info: { icon: Info, tone: "bg-sky-50 text-sky-700" },
-	success: { icon: CircleCheck, tone: "bg-emerald-50 text-emerald-700" },
+const SEVERITY: Record<NotificationSeverity, { icon: typeof LuBell; tone: string }> = {
+	critical: { icon: LuCircleAlert, tone: "bg-red-50 text-red-700" },
+	warning: { icon: LuTriangleAlert, tone: "bg-amber-50 text-amber-800" },
+	info: { icon: LuInfo, tone: "bg-sky-50 text-sky-700" },
+	success: { icon: LuCircleCheck, tone: "bg-emerald-50 text-emerald-700" },
 };
 
 /**
@@ -93,7 +93,7 @@ export function NotificationsBell() {
 					className="relative"
 					aria-label={unread ? `Notifications, ${unread} non lue${unread > 1 ? "s" : ""}` : "Notifications"}
 				>
-					<Bell />
+					<LuBell />
 					{unread > 0 && (
 						<span className="absolute -end-1.5 -top-1.5 flex min-w-4 items-center justify-center rounded-full bg-red-600 px-1 text-[10px] font-semibold leading-4 text-white tabular-nums">
 							{unread > 99 ? "99+" : unread}
@@ -109,7 +109,7 @@ export function NotificationsBell() {
 					</span>
 					{unread > 0 && (
 						<Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => markRead("all")}>
-							<CheckCheck /> Tout marquer comme lu
+							<LuCheckCheck /> Tout marquer comme lu
 						</Button>
 					)}
 				</div>

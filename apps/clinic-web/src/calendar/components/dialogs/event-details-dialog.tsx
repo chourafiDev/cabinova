@@ -2,7 +2,7 @@
 
 import { useQueryClient } from "@tanstack/react-query";
 import { differenceInMinutes, parseISO } from "date-fns";
-import { CalendarIcon, ChevronDown, Clock, FileText, Loader, Pencil, Phone, Stethoscope, Text } from "lucide-react";
+import { LuCalendar, LuChevronDown, LuClock, LuFileText, LuLoader, LuPencil, LuPhone, LuStethoscope, LuText } from "react-icons/lu";
 import Link from "next/link";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -79,24 +79,24 @@ export function EventDetailsDialog({ event, children }: { event: IEvent; childre
         </DialogHeader>
 
         <div className="grid gap-3 text-sm">
-          <Row icon={Stethoscope}>{event.user.name}</Row>
-          <Row icon={CalendarIcon}>
+          <Row icon={LuStethoscope}>{event.user.name}</Row>
+          <Row icon={LuCalendar}>
             <span className="inline-block first-letter:uppercase">{fmt(start, "EEEE d MMMM yyyy")}</span>
           </Row>
-          <Row icon={Clock}>
+          <Row icon={LuClock}>
             {fmt(start, "HH:mm")} – {fmt(end, "HH:mm")}
             <span className="text-muted-foreground"> · {differenceInMinutes(end, start)} min</span>
           </Row>
           {event.patient.phone && (
-            <Row icon={Phone}>
+            <Row icon={LuPhone}>
               <a href={`tel:${event.patient.phone}`} className="tabular-nums hover:underline">
                 {formatPhone(event.patient.phone)}
               </a>
             </Row>
           )}
-          {event.reason && <Row icon={Text}>{event.reason}</Row>}
+          {event.reason && <Row icon={LuText}>{event.reason}</Row>}
           {event.notes && (
-            <Row icon={FileText}>
+            <Row icon={LuFileText}>
               <span className="whitespace-pre-line">{event.notes}</span>
             </Row>
           )}
@@ -109,7 +109,7 @@ export function EventDetailsDialog({ event, children }: { event: IEvent; childre
                 <DropdownMenuTrigger asChild>
                   <Button type="button" variant="outline" disabled={busy}>
                     Statut
-                    <ChevronDown className="size-4" />
+                    <LuChevronDown className="size-4" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="start">
@@ -132,14 +132,14 @@ export function EventDetailsDialog({ event, children }: { event: IEvent; childre
                     openEdit(event);
                   }}
                 >
-                  <Pencil className="size-4" />
+                  <LuPencil className="size-4" />
                   Modifier
                 </Button>
               )}
             </div>
             {next && (
               <Button type="button" disabled={busy} onClick={() => setStatus(next.status)}>
-                {busy && <Loader className="size-4 animate-spin" />}
+                {busy && <LuLoader className="size-4 animate-spin" />}
                 {next.label}
               </Button>
             )}

@@ -3,7 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQueryClient } from "@tanstack/react-query";
 import { addMinutes, differenceInMinutes, format, parseISO } from "date-fns";
-import { AlertTriangle, Loader } from "lucide-react";
+import { LuLoader, LuTriangleAlert } from "react-icons/lu";
 import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -243,7 +243,7 @@ export function AppointmentFormDialog({
 					)}
 					{overlap && (
 						<div role="alert" className="flex items-start gap-2.5 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
-							<AlertTriangle className="mt-0.5 size-4 shrink-0" />
+							<LuTriangleAlert className="mt-0.5 size-4 shrink-0" />
 							<div className="grid gap-2">
 								<p>{overlap} Réserver ce créneau quand même ?</p>
 								<Button
@@ -265,7 +265,7 @@ export function AppointmentFormDialog({
 							Annuler
 						</Button>
 						<Button type="submit" disabled={isSubmitting || !users.length}>
-							{isSubmitting && <Loader className="size-4 animate-spin" />}
+							{isSubmitting && <LuLoader className="size-4 animate-spin" />}
 							{event ? "Enregistrer" : "Ajouter"}
 						</Button>
 					</DialogFooter>

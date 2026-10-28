@@ -1,8 +1,7 @@
-import { ChevronLeft, ChevronRight, ShieldAlert } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { HiShieldCheck } from "react-icons/hi2";
-import { LuKeyRound, LuShieldAlert, LuUserX } from "react-icons/lu";
+import { LuChevronLeft, LuChevronRight, LuKeyRound, LuShieldAlert, LuUserX } from "react-icons/lu";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { formatDate } from "@/lib/format";
@@ -168,7 +167,7 @@ export default async function SecurityPage({ searchParams }: { searchParams: Pro
 										</td>
 										<td className="px-3 py-2 align-top">
 											<span className="flex flex-wrap items-center gap-1.5">
-												{e.sensitive && <ShieldAlert className="size-3.5 text-amber-600" aria-label="Sensible" />}
+												{e.sensitive && <LuShieldAlert className="size-3.5 text-amber-600" aria-label="Sensible" />}
 												<span className="font-medium">{ACTION_LABELS[e.action] ?? e.action}</span>
 												{e.category && (
 													<Badge variant="outline" className="border-transparent bg-muted text-[10px] font-normal">
@@ -207,22 +206,22 @@ export default async function SecurityPage({ searchParams }: { searchParams: Pro
 						<Button asChild={page > 1} size="icon-sm" variant="outline" disabled={page <= 1} aria-label="Page précédente">
 							{page > 1 ? (
 								<Link href={pageHref(page - 1)} scroll={false}>
-									<ChevronLeft />
+									<LuChevronLeft />
 								</Link>
 							) : (
 								<span>
-									<ChevronLeft />
+									<LuChevronLeft />
 								</span>
 							)}
 						</Button>
 						<Button asChild={page < journal.pageCount} size="icon-sm" variant="outline" disabled={page >= journal.pageCount} aria-label="Page suivante">
 							{page < journal.pageCount ? (
 								<Link href={pageHref(page + 1)} scroll={false}>
-									<ChevronRight />
+									<LuChevronRight />
 								</Link>
 							) : (
 								<span>
-									<ChevronRight />
+									<LuChevronRight />
 								</span>
 							)}
 						</Button>

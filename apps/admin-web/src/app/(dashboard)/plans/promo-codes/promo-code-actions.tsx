@@ -1,6 +1,6 @@
 "use client";
 
-import { Loader, Plus } from "lucide-react";
+import { LuLoader, LuPlus } from "react-icons/lu";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
@@ -67,7 +67,7 @@ export function NewPromoCodeDialog({ plans }: { plans: { key: string; name: stri
 		<Dialog open={open} onOpenChange={setOpen}>
 			<DialogTrigger asChild>
 				<Button>
-					<Plus /> Nouveau code
+					<LuPlus /> Nouveau code
 				</Button>
 			</DialogTrigger>
 			<DialogContent className="sm:max-w-lg">
@@ -164,7 +164,7 @@ export function NewPromoCodeDialog({ plans }: { plans: { key: string; name: stri
 						Annuler
 					</Button>
 					<Button onClick={save} disabled={saving || v.code.length < 3 || !(pct >= 1 && pct <= 100)}>
-						{saving && <Loader className="animate-spin" />} Créer le code
+						{saving && <LuLoader className="animate-spin" />} Créer le code
 					</Button>
 				</DialogFooter>
 			</DialogContent>

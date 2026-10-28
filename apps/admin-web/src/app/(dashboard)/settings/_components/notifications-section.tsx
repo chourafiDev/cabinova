@@ -1,6 +1,6 @@
 "use client";
 
-import { X } from "lucide-react";
+import { LuX } from "react-icons/lu";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
@@ -105,7 +105,7 @@ export function NotificationsSection({ initial, readOnly }: { initial: Notificat
 											onClick={() => setTeam({ recipients: team.recipients.filter((x) => x !== r) })}
 											className="rounded-full p-0.5 text-muted-foreground hover:bg-muted hover:text-foreground"
 										>
-											<X className="size-3.5" />
+											<LuX className="size-3.5" />
 										</button>
 									)}
 								</li>

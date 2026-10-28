@@ -4,7 +4,7 @@ import { fmt } from "@/calendar/locale";
 
 import { parseISO } from "date-fns";
 import { cva } from "class-variance-authority";
-import { Clock, Text, User } from "lucide-react";
+import { LuClock, LuText, LuUser } from "react-icons/lu";
 
 import { useCalendar } from "@/calendar/contexts/calendar-context";
 
@@ -88,19 +88,19 @@ export function AgendaEventCard({ event, eventCurrentDay, eventTotalDays }: IPro
           </div>
 
           <div className="mt-1 flex items-center gap-1">
-            <User className="size-3 shrink-0" />
+            <LuUser className="size-3 shrink-0" />
             <p className="text-xs text-foreground">{event.user.name}</p>
           </div>
 
           <div className="flex items-center gap-1">
-            <Clock className="size-3 shrink-0" />
+            <LuClock className="size-3 shrink-0" />
             <p className="text-xs text-foreground">
               {fmt(startDate, "HH:mm")} - {fmt(endDate, "HH:mm")}
             </p>
           </div>
 
           <div className="flex items-center gap-1">
-            <Text className="size-3 shrink-0" />
+            <LuText className="size-3 shrink-0" />
             <p className="text-xs text-foreground">{event.description}</p>
           </div>
         </div>

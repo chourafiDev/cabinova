@@ -1,6 +1,6 @@
 "use client";
 
-import { FileText, RefreshCw, TicketPercent, X } from "lucide-react";
+import { LuFileText, LuRefreshCw, LuTicketPercent, LuX } from "react-icons/lu";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
@@ -137,12 +137,12 @@ export function TenantSubscription({
 										run(() => api(`/tenants/${tenantId}/billing/invoices`, { method: "POST" }), "Facture émise et envoyée")
 									}
 								>
-									<FileText /> Émettre la facture
+									<LuFileText /> Émettre la facture
 								</Button>
 							)}
 							{canManage && (
 								<Button size="sm" variant="outline" onClick={() => setDialog("change")}>
-									<RefreshCw /> Changer d’offre
+									<LuRefreshCw /> Changer d’offre
 								</Button>
 							)}
 						</div>
@@ -157,7 +157,7 @@ export function TenantSubscription({
 								promo ? (
 									<span className="flex flex-wrap items-center gap-2">
 										<Badge variant="outline" className="border-transparent bg-violet-50 font-mono text-violet-700">
-											<TicketPercent /> {promo.code}
+											<LuTicketPercent /> {promo.code}
 										</Badge>
 										<span className="text-xs text-muted-foreground">
 											−{promo.discountPercent} %
@@ -176,7 +176,7 @@ export function TenantSubscription({
 												disabled={pending}
 												onClick={() => run(() => api(`/tenants/${tenantId}/promo-code`, { method: "DELETE" }), "Code promo retiré")}
 											>
-												<X />
+												<LuX />
 											</Button>
 										)}
 									</span>

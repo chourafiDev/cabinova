@@ -1,4 +1,4 @@
-import { ArrowRight, Landmark } from "lucide-react";
+import { LuArrowRight, LuLandmark } from "react-icons/lu";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { HiCog6Tooth } from "react-icons/hi2";
@@ -94,7 +94,7 @@ export default async function SettingsPage({
 								{billing ? (
 									<>
 										<div className="flex flex-wrap items-center gap-2">
-											<Landmark className="size-4 text-muted-foreground" />
+											<LuLandmark className="size-4 text-muted-foreground" />
 											<span className="font-medium">Virement bancaire</span>
 											<Badge
 												variant="outline"
@@ -124,7 +124,7 @@ export default async function SettingsPage({
 										)}
 										<Button asChild size="sm" className="w-fit">
 											<Link href="/billing/settings">
-												Modifier dans Facturation <ArrowRight />
+												Modifier dans Facturation <LuArrowRight />
 											</Link>
 										</Button>
 									</>

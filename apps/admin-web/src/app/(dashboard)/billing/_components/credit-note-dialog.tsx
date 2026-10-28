@@ -1,7 +1,7 @@
 "use client";
 
 import { format } from "date-fns";
-import { Loader } from "lucide-react";
+import { LuLoader } from "react-icons/lu";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -95,7 +95,7 @@ export function CreditNoteDialog({
 					</DialogDescription>
 				</DialogHeader>
 				{creditable === null ? (
-					<Loader className="mx-auto my-6 size-5 animate-spin text-muted-foreground" />
+					<LuLoader className="mx-auto my-6 size-5 animate-spin text-muted-foreground" />
 				) : creditable === 0 ? (
 					<p className="rounded-md bg-muted px-3 py-2 text-sm text-muted-foreground">
 						Rien à créditer : le montant payé a déjà fait l’objet d’avoirs (ou a été réglé par un avoir).
@@ -162,7 +162,7 @@ export function CreditNoteDialog({
 						Annuler
 					</Button>
 					<Button onClick={save} disabled={saving || !creditable}>
-						{saving && <Loader className="animate-spin" />} Émettre l’avoir
+						{saving && <LuLoader className="animate-spin" />} Émettre l’avoir
 					</Button>
 				</DialogFooter>
 			</DialogContent>

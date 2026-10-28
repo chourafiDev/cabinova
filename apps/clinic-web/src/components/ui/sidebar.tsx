@@ -22,7 +22,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
-import { PanelLeftIcon } from "lucide-react"
+import { LuPanelLeft } from "react-icons/lu";
 import { focusRing } from "@/lib/focus-ring"
 
 const SIDEBAR_COOKIE_NAME = "sidebar_state"
@@ -271,7 +271,7 @@ function SidebarTrigger({
       }}
       {...props}
     >
-      <PanelLeftIcon className="rtl:rotate-180" />
+      <LuPanelLeft className="rtl:rotate-180" />
       <span className="sr-only">Afficher ou masquer le menu</span>
     </Button>
   )

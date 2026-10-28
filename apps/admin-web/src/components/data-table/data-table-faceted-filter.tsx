@@ -24,7 +24,7 @@ import {
   FacetedValue,
 } from "@/components/ui/faceted";
 import { Separator } from "@/components/ui/separator";
-import { XCircle, PlusCircle } from "lucide-react";
+import { LuCirclePlus, LuCircleX } from "react-icons/lu";
 import { focusRing } from "@/lib/focus-ring"
 
 interface DataTableFacetedFilterProps<TData extends RowData, TValue> {
@@ -106,11 +106,11 @@ function DataTableFacetedFilterContent<TData extends RowData, TValue>({
               className={cn(focusRing, "rounded-sm opacity-70 transition-opacity hover:opacity-100")}
               onClick={onReset}
             >
-              <XCircle
+              <LuCircleX
               />
             </div>
           ) : (
-            <PlusCircle
+            <LuCirclePlus
             />
           )}
           {title}

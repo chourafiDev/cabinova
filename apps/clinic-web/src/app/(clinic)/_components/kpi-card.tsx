@@ -1,7 +1,6 @@
-import { EllipsisVertical } from "lucide-react";
 import Link from "next/link";
 import type { IconType } from "react-icons";
-import { LuArrowDown, LuArrowUp, LuInfo } from "react-icons/lu";
+import { LuArrowDown, LuArrowUp, LuEllipsisVertical, LuInfo } from "react-icons/lu";
 import { Button } from "@/components/ui/button";
 import {
 	DropdownMenu,
@@ -83,7 +82,7 @@ export function KpiCard({
 					<DropdownMenu>
 						<DropdownMenuTrigger asChild>
 							<Button type="button" variant="ghost" size="icon-sm" aria-label={`Options : ${title}`}>
-								<EllipsisVertical className="size-4" />
+								<LuEllipsisVertical className="size-4" />
 							</Button>
 						</DropdownMenuTrigger>
 						<DropdownMenuContent align="end" className="w-64">

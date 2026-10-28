@@ -14,7 +14,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { ChevronDown, ChevronUp, ChevronsUpDown, X, EyeOff } from "lucide-react";
+import { LuChevronDown, LuChevronUp, LuChevronsUpDown, LuEyeOff, LuX } from "react-icons/lu";
 
 interface DataTableColumnHeaderProps<
   TData extends RowData,
@@ -83,13 +83,13 @@ function DataTableColumnHeaderMenu<TData extends RowData, TValue>({
         {label}
         {column.getCanSort() &&
           (sorted === "desc" ? (
-            <ChevronDown
+            <LuChevronDown
             />
           ) : sorted === "asc" ? (
-            <ChevronUp
+            <LuChevronUp
             />
           ) : (
-            <ChevronsUpDown
+            <LuChevronsUpDown
             />
           ))}
       </DropdownMenuTrigger>
@@ -101,7 +101,7 @@ function DataTableColumnHeaderMenu<TData extends RowData, TValue>({
               checked={sorted === "asc"}
               onClick={() => column.toggleSorting(false)}
             >
-              <ChevronUp
+              <LuChevronUp
               />
               Croissant
             </DropdownMenuCheckboxItem>
@@ -110,7 +110,7 @@ function DataTableColumnHeaderMenu<TData extends RowData, TValue>({
               checked={sorted === "desc"}
               onClick={() => column.toggleSorting(true)}
             >
-              <ChevronDown
+              <LuChevronDown
               />
               Décroissant
             </DropdownMenuCheckboxItem>
@@ -119,7 +119,7 @@ function DataTableColumnHeaderMenu<TData extends RowData, TValue>({
                 className="ps-2 [&_svg]:text-muted-foreground"
                 onClick={() => column.clearSorting()}
               >
-                <X
+                <LuX
                 />
                 Réinitialiser
               </DropdownMenuItem>
@@ -132,7 +132,7 @@ function DataTableColumnHeaderMenu<TData extends RowData, TValue>({
             checked={!isVisible}
             onClick={() => column.toggleVisibility(false)}
           >
-            <EyeOff
+            <LuEyeOff
             />
             Masquer
           </DropdownMenuCheckboxItem>

@@ -1,6 +1,6 @@
 "use client";
 
-import { MoreHorizontal, Printer, ReceiptText, X } from "lucide-react";
+import { LuEllipsis, LuPrinter, LuReceiptText, LuX } from "react-icons/lu";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -145,7 +145,7 @@ export function InvoicesTable({
 														variant="ghost"
 														aria-label={`Actions ${inv.number}`}
 													>
-														<MoreHorizontal />
+														<LuEllipsis />
 													</Button>
 												</DropdownMenuTrigger>
 												<DropdownMenuContent align="end" className="w-48">
@@ -155,12 +155,12 @@ export function InvoicesTable({
 															target="_blank"
 															rel="noreferrer"
 														>
-															<Printer /> Voir / imprimer
+															<LuPrinter /> Voir / imprimer
 														</a>
 													</DropdownMenuItem>
 													{inv.status === "paid" && canWrite && (
 														<DropdownMenuItem onSelect={() => setCrediting(inv)}>
-															<ReceiptText /> Émettre un avoir
+															<LuReceiptText /> Émettre un avoir
 														</DropdownMenuItem>
 													)}
 													{open && canWrite && (
@@ -171,7 +171,7 @@ export function InvoicesTable({
 																setVoiding(inv);
 															}}
 														>
-															<X /> Annuler la facture
+															<LuX /> Annuler la facture
 														</DropdownMenuItem>
 													)}
 												</DropdownMenuContent>

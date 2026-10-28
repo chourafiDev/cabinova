@@ -1,6 +1,6 @@
 "use client";
 
-import { Loader } from "lucide-react";
+import { LuLoader } from "react-icons/lu";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -62,7 +62,7 @@ export function ArchiveDialog({
 						Annuler
 					</Button>
 					<Button onClick={run} disabled={pending}>
-						{pending && <Loader className="animate-spin" />} {archived ? "Restaurer" : "Archiver"}
+						{pending && <LuLoader className="animate-spin" />} {archived ? "Restaurer" : "Archiver"}
 					</Button>
 				</DialogFooter>
 			</DialogContent>

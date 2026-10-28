@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, Copy, Download, KeyRound, Loader, ShieldCheck, ShieldOff, Smartphone } from "lucide-react";
+import { LuCheck, LuCopy, LuDownload, LuKeyRound, LuLoader, LuShieldCheck, LuShieldOff, LuSmartphone } from "react-icons/lu";
 import { useRouter } from "next/navigation";
 import QRCode from "qrcode";
 import { useEffect, useState } from "react";
@@ -47,7 +47,7 @@ function RecoveryCodes({ codes, onDone }: { codes: string[]; onDone: () => void 
 						toast.success("Codes copiés");
 					}}
 				>
-					<Copy /> Copier
+					<LuCopy /> Copier
 				</Button>
 				<Button
 					type="button"
@@ -60,10 +60,10 @@ function RecoveryCodes({ codes, onDone }: { codes: string[]; onDone: () => void 
 						URL.revokeObjectURL(url);
 					}}
 				>
-					<Download /> Télécharger
+					<LuDownload /> Télécharger
 				</Button>
 				<Button type="button" size="sm" className="ms-auto" onClick={onDone}>
-					<Check /> J’ai enregistré mes codes
+					<LuCheck /> J’ai enregistré mes codes
 				</Button>
 			</div>
 		</div>
@@ -120,7 +120,7 @@ function CodeDialog({
 							Annuler
 						</Button>
 						<Button type="submit" variant={destructive ? "destructive" : "default"} disabled={pending || code.trim().length < 6}>
-							{pending && <Loader className="animate-spin" />} {action}
+							{pending && <LuLoader className="animate-spin" />} {action}
 						</Button>
 					</DialogFooter>
 				</form>
@@ -207,7 +207,7 @@ export function TwoFactorCard({ status }: { status: Status }) {
 							<img src={qr} alt="QR code à scanner avec l’application d’authentification" className="size-[200px] rounded-lg border bg-white p-1" />
 						) : (
 							<span className="flex size-[200px] items-center justify-center rounded-lg border">
-								<Loader className="animate-spin text-muted-foreground" />
+								<LuLoader className="animate-spin text-muted-foreground" />
 							</span>
 						)}
 					</div>
@@ -241,7 +241,7 @@ export function TwoFactorCard({ status }: { status: Status }) {
 						</Field>
 						<div className="flex gap-2">
 							<Button type="submit" disabled={pending || code.length !== 6}>
-								{pending && <Loader className="animate-spin" />} Activer
+								{pending && <LuLoader className="animate-spin" />} Activer
 							</Button>
 							<Button type="button" variant="ghost" onClick={() => setSetup(null)}>
 								Annuler
@@ -252,14 +252,14 @@ export function TwoFactorCard({ status }: { status: Status }) {
 			) : status.enabled ? (
 				<div className="grid gap-4">
 					<div className="flex items-start gap-3 text-sm">
-						<ShieldCheck className="mt-0.5 size-5 shrink-0 text-emerald-600" />
+						<LuShieldCheck className="mt-0.5 size-5 shrink-0 text-emerald-600" />
 						<p>
 							Un code de votre application est demandé à chaque connexion, en plus du mot de passe.
 							{status.enabledAt && ` Activée le ${formatDate(status.enabledAt)}.`}
 						</p>
 					</div>
 					<div className="flex items-center gap-3 rounded-lg bg-muted/50 px-3 py-2 text-sm">
-						<KeyRound className="size-4 text-muted-foreground" />
+						<LuKeyRound className="size-4 text-muted-foreground" />
 						<span className="flex-1">
 							{status.recoveryCodesLeft} code{status.recoveryCodesLeft > 1 ? "s" : ""} de secours restant
 							{status.recoveryCodesLeft > 1 ? "s" : ""}
@@ -268,17 +268,17 @@ export function TwoFactorCard({ status }: { status: Status }) {
 					</div>
 					<div className="flex flex-wrap gap-2">
 						<Button variant="outline" size="sm" onClick={() => setDialog("regenerate")}>
-							<KeyRound /> Nouveaux codes de secours
+							<LuKeyRound /> Nouveaux codes de secours
 						</Button>
 						<Button variant="ghost" size="sm" className="text-destructive" onClick={() => setDialog("disable")}>
-							<ShieldOff /> Désactiver
+							<LuShieldOff /> Désactiver
 						</Button>
 					</div>
 				</div>
 			) : (
 				<div className="grid gap-4">
 					<div className="flex items-start gap-3 text-sm">
-						<Smartphone className="mt-0.5 size-5 shrink-0 text-muted-foreground" />
+						<LuSmartphone className="mt-0.5 size-5 shrink-0 text-muted-foreground" />
 						<p>
 							Protégez votre compte : en plus du mot de passe, un code à 6 chiffres de votre téléphone sera demandé à
 							chaque connexion. Votre compte peut suspendre des cabinets et accéder à leurs données : c’est fortement
@@ -287,8 +287,8 @@ export function TwoFactorCard({ status }: { status: Status }) {
 					</div>
 					<div>
 						<Button onClick={start} disabled={pending}>
-							{pending && <Loader className="animate-spin" />}
-							<ShieldCheck /> Activer la double authentification
+							{pending && <LuLoader className="animate-spin" />}
+							<LuShieldCheck /> Activer la double authentification
 						</Button>
 					</div>
 				</div>

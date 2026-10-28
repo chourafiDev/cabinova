@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Check, Lock, RotateCcw } from "lucide-react";
+import { LuCheck, LuLock, LuRotateCcw } from "react-icons/lu";
 import { useRouter } from "next/navigation";
 import { Controller, useForm, useWatch } from "react-hook-form";
 import { toast } from "sonner";
@@ -134,7 +134,7 @@ export function AccessForm({
 			<span className="inline-flex flex-col items-center gap-1">
 				<span className="inline-flex items-center gap-1.5">
 					{!readOnly && !myPermissions.includes(permission.key) && (
-						<Lock className="size-3 text-muted-foreground" aria-label="Vous n’avez pas cette permission" />
+						<LuLock className="size-3 text-muted-foreground" aria-label="Vous n’avez pas cette permission" />
 					)}
 					<Switch
 						checked={effective.has(permission.key)}
@@ -182,7 +182,7 @@ export function AccessForm({
 												checked ? "border-primary bg-primary/5 ring-1 ring-primary" : "disabled:opacity-50",
 											)}
 										>
-											{checked && <Check className="absolute end-2.5 top-2.5 size-4 text-primary" aria-hidden />}
+											{checked && <LuCheck className="absolute end-2.5 top-2.5 size-4 text-primary" aria-hidden />}
 											<span className="pe-5 font-medium">{role.name}</span>
 											<span className="text-xs text-muted-foreground">{role.permissions.length} permissions</span>
 										</button>
@@ -222,7 +222,7 @@ export function AccessForm({
 								size="sm"
 								onClick={() => form.setValue("overrides", {}, { shouldDirty: true })}
 							>
-								<RotateCcw /> Revenir au rôle
+								<LuRotateCcw /> Revenir au rôle
 							</Button>
 						)
 					}
@@ -272,7 +272,7 @@ export function AccessForm({
 												</span>
 												<span className="inline-flex items-center gap-1.5">
 													{!readOnly && !myPermissions.includes(extra.key) && (
-														<Lock className="size-3 text-muted-foreground" aria-label="Vous n’avez pas cette permission" />
+														<LuLock className="size-3 text-muted-foreground" aria-label="Vous n’avez pas cette permission" />
 													)}
 													<Switch
 														checked={effective.has(extra.key)}

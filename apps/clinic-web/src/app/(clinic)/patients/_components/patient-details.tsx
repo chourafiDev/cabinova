@@ -2,22 +2,7 @@
 
 import Link from "next/link";
 import { differenceInMinutes } from "date-fns";
-import {
-	AlertTriangle,
-	Archive,
-	ArchiveRestore,
-	CalendarClock,
-	CalendarPlus,
-	ContactRound,
-	IdCard,
-	Mail,
-	MapPin,
-	MoreHorizontal,
-	Pencil,
-	Phone,
-	ShieldCheck,
-	StickyNote,
-} from "lucide-react";
+import { LuArchive, LuArchiveRestore, LuCalendarClock, LuCalendarPlus, LuContactRound, LuEllipsis, LuIdCard, LuMail, LuMapPin, LuPencil, LuPhone, LuShieldCheck, LuStickyNote, LuTriangleAlert } from "react-icons/lu";
 import { useState } from "react";
 import { AppointmentStatusBadge } from "@/components/appointment-status-badge";
 import { Badge } from "@/components/ui/badge";
@@ -100,7 +85,7 @@ export function PatientHeader({
 							href={`tel:${patient.phone}`}
 							className="hover:bg-muted inline-flex h-8 items-center gap-1.5 rounded-full border px-3 text-sm tabular-nums transition-colors"
 						>
-							<Phone className="text-muted-foreground size-3.5" />
+							<LuPhone className="text-muted-foreground size-3.5" />
 							{formatPhone(patient.phone)}
 						</a>
 					)}
@@ -109,7 +94,7 @@ export function PatientHeader({
 							href={`mailto:${patient.email}`}
 							className="hover:bg-muted inline-flex h-8 max-w-full items-center gap-1.5 rounded-full border px-3 text-sm transition-colors"
 						>
-							<Mail className="text-muted-foreground size-3.5 shrink-0" />
+							<LuMail className="text-muted-foreground size-3.5 shrink-0" />
 							<span className="truncate">{patient.email}</span>
 						</a>
 					)}
@@ -119,27 +104,27 @@ export function PatientHeader({
 			<div className="flex items-center gap-2">
 				{archived ? (
 					<Button variant="outline" size="sm" onClick={onArchive}>
-						<ArchiveRestore /> Restaurer le dossier
+						<LuArchiveRestore /> Restaurer le dossier
 					</Button>
 				) : (
 					<>
 						<Button asChild size="sm">
 							<Link href={`/appointments?book=${patient.id}`}>
-								<CalendarPlus /> Prendre rendez-vous
+								<LuCalendarPlus /> Prendre rendez-vous
 							</Link>
 						</Button>
 						<Button variant="outline" size="sm" onClick={onEdit}>
-							<Pencil /> Modifier
+							<LuPencil /> Modifier
 						</Button>
 						<DropdownMenu>
 							<DropdownMenuTrigger asChild>
 								<Button variant="ghost" size="icon-sm" aria-label="Plus d’actions" className="ms-auto">
-									<MoreHorizontal />
+									<LuEllipsis />
 								</Button>
 							</DropdownMenuTrigger>
 							<DropdownMenuContent align="end">
 								<DropdownMenuItem onSelect={onArchive}>
-									<Archive /> Archiver le dossier
+									<LuArchive /> Archiver le dossier
 								</DropdownMenuItem>
 							</DropdownMenuContent>
 						</DropdownMenu>
@@ -301,7 +286,7 @@ export function PatientDetails({
 						)}
 						{allergies && (
 							<div className="flex items-start gap-3 rounded-xl border border-red-200 bg-red-50 p-4 text-red-900">
-								<AlertTriangle className="mt-0.5 size-4 shrink-0" />
+								<LuTriangleAlert className="mt-0.5 size-4 shrink-0" />
 								<div className="min-w-0">
 									<p className="text-sm font-semibold">Allergies</p>
 									<p className="text-sm whitespace-pre-line">{allergies}</p>
@@ -311,7 +296,7 @@ export function PatientDetails({
 
 						<section className="rounded-xl border p-4">
 							<h3 className="text-muted-foreground mb-3 flex items-center gap-2 text-xs font-medium">
-								<CalendarClock className="size-3.5" />
+								<LuCalendarClock className="size-3.5" />
 								Prochain rendez-vous
 							</h3>
 							{next ? (
@@ -347,7 +332,7 @@ export function PatientDetails({
 
 						<div className="grid gap-3 sm:grid-cols-2">
 							<InfoCard
-								icon={IdCard}
+								icon={LuIdCard}
 								title="Identité"
 								onComplete={complete}
 								rows={[
@@ -356,7 +341,7 @@ export function PatientDetails({
 								]}
 							/>
 							<InfoCard
-								icon={MapPin}
+								icon={LuMapPin}
 								title="Adresse"
 								onComplete={complete}
 								rows={[
@@ -365,7 +350,7 @@ export function PatientDetails({
 								]}
 							/>
 							<InfoCard
-								icon={ShieldCheck}
+								icon={LuShieldCheck}
 								title="Couverture"
 								onComplete={complete}
 								rows={[
@@ -375,7 +360,7 @@ export function PatientDetails({
 								]}
 							/>
 							<InfoCard
-								icon={ContactRound}
+								icon={LuContactRound}
 								title="Contact d’urgence"
 								onComplete={complete}
 								rows={[
@@ -395,7 +380,7 @@ export function PatientDetails({
 						{patient.notes && (
 							<section className="rounded-xl border p-4">
 								<h3 className="text-muted-foreground mb-2 flex items-center gap-2 text-xs font-medium">
-									<StickyNote className="size-3.5" />
+									<LuStickyNote className="size-3.5" />
 									Note administrative
 								</h3>
 								<p className="text-sm whitespace-pre-line">{patient.notes}</p>
@@ -412,12 +397,12 @@ export function PatientDetails({
 				<TabsContent value="appointments" className="min-h-0 overflow-y-auto p-5">
 					{list.length === 0 ? (
 						<div className="flex flex-col items-center gap-3 py-12 text-center">
-							<CalendarClock className="text-muted-foreground size-6" />
+							<LuCalendarClock className="text-muted-foreground size-6" />
 							<p className="text-muted-foreground text-sm">Aucun rendez-vous pour ce patient.</p>
 							{!archived && (
 								<Button asChild size="sm" variant="outline">
 									<Link href={`/appointments?book=${patient.id}`}>
-										<CalendarPlus /> Prendre rendez-vous
+										<LuCalendarPlus /> Prendre rendez-vous
 									</Link>
 								</Button>
 							)}

@@ -1,6 +1,6 @@
 "use client";
 
-import { Plus, Trash2 } from "lucide-react";
+import { LuPlus, LuTrash2 } from "react-icons/lu";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -52,7 +52,7 @@ export function FeatureOverrides({
 			action={
 				canWrite && (
 					<Button size="sm" variant="outline" onClick={() => setTarget({ featureKey: feature.key, featureName: feature.name })}>
-						<Plus /> {beta ? "Ajouter un testeur" : "Ajouter une exception"}
+						<LuPlus /> {beta ? "Ajouter un testeur" : "Ajouter une exception"}
 					</Button>
 				)
 			}
@@ -97,7 +97,7 @@ export function FeatureOverrides({
 										Modifier
 									</Button>
 									<Button size="icon-sm" variant="ghost" aria-label={`Retirer l’exception de ${o.tenantName}`} onClick={() => remove(o)}>
-										<Trash2 />
+										<LuTrash2 />
 									</Button>
 								</div>
 							)}

@@ -1,6 +1,6 @@
 "use client";
 
-import { Loader } from "lucide-react";
+import { LuLoader } from "react-icons/lu";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -44,7 +44,7 @@ export function UnsavedChangesBar({
 					Ignorer
 				</Button>
 				<Button type="submit" form={formId} size="sm" disabled={isSubmitting}>
-					{isSubmitting && <Loader className="size-4 animate-spin" />}
+					{isSubmitting && <LuLoader className="size-4 animate-spin" />}
 					Enregistrer
 				</Button>
 			</div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { AlertTriangle, HeartPulse, Loader, Lock, Pencil } from "lucide-react";
+import { LuHeartPulse, LuLoader, LuLock, LuPencil, LuTriangleAlert } from "react-icons/lu";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -73,18 +73,18 @@ export function MedicalProfile({
 		<div className="grid gap-4">
 			<div className="flex items-start justify-between gap-3">
 				<p className="text-muted-foreground flex items-center gap-1.5 text-xs">
-					<Lock className="size-3.5" /> Visible uniquement par les médecins du cabinet
+					<LuLock className="size-3.5" /> Visible uniquement par les médecins du cabinet
 				</p>
 				{!readOnly && !empty && (
 					<Button size="sm" variant="outline" onClick={edit}>
-						<Pencil /> Modifier
+						<LuPencil /> Modifier
 					</Button>
 				)}
 			</div>
 
 			{empty ? (
 				<div className="flex flex-col items-center gap-3 rounded-xl border border-dashed py-10 text-center">
-					<HeartPulse className="text-muted-foreground size-6" />
+					<LuHeartPulse className="text-muted-foreground size-6" />
 					<div>
 						<p className="text-sm font-medium">Aucun antécédent renseigné</p>
 						<p className="text-muted-foreground text-sm">Allergies, traitements, maladies chroniques, groupe sanguin…</p>
@@ -116,7 +116,7 @@ export function MedicalProfile({
 											!alert && "text-muted-foreground",
 										)}
 									>
-										{alert && <AlertTriangle className="size-3.5" />}
+										{alert && <LuTriangleAlert className="size-3.5" />}
 										{f.label}
 									</dt>
 									<dd className="text-sm whitespace-pre-line">{profile?.[f.name]}</dd>
@@ -178,7 +178,7 @@ export function MedicalProfile({
 							Annuler
 						</Button>
 						<Button onClick={save} disabled={saving}>
-							{saving && <Loader className="animate-spin" />} Enregistrer
+							{saving && <LuLoader className="animate-spin" />} Enregistrer
 						</Button>
 					</DialogFooter>
 				</DialogContent>

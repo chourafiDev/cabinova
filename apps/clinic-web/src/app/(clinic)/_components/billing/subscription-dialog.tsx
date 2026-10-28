@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, Copy, Loader, Mail } from "lucide-react";
+import { LuCheck, LuCopy, LuLoader, LuMail } from "react-icons/lu";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -50,7 +50,7 @@ function CopyButton({ value, label }: { value: string; label: string }) {
 					.catch(() => toast.error("Copie impossible : sélectionnez le texte."))
 			}
 		>
-			{copied ? <Check /> : <Copy />}
+			{copied ? <LuCheck /> : <LuCopy />}
 		</Button>
 	);
 }
@@ -85,7 +85,7 @@ export function SubscriptionDialog({ open, onOpenChange }: { open: boolean; onOp
 
 				{!s && !error && (
 					<p className="text-muted-foreground flex items-center gap-2 py-6 text-sm">
-						<Loader className="size-4 animate-spin" /> Chargement…
+						<LuLoader className="size-4 animate-spin" /> Chargement…
 					</p>
 				)}
 				{error && <p className="text-destructive py-4 text-sm">{error}</p>}
@@ -173,7 +173,7 @@ export function SubscriptionDialog({ open, onOpenChange }: { open: boolean; onOp
 
 						<Button asChild variant="outline" className="w-full">
 							<a href="mailto:support@cabinova.ma?subject=Changer%20d%E2%80%99offre">
-								<Mail /> Changer d’offre ? Écrivez-nous
+								<LuMail /> Changer d’offre ? Écrivez-nous
 							</a>
 						</Button>
 					</div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { Download, ShieldAlert, X } from "lucide-react";
+import { LuDownload, LuShieldAlert, LuX } from "react-icons/lu";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useTransition } from "react";
 import { Button } from "@/components/ui/button";
@@ -81,7 +81,7 @@ export function JournalFilters({ summary, exportHref }: { summary: SecuritySumma
 					aria-pressed={sensitive}
 					onClick={() => set("sensitive", sensitive ? null : "true")}
 				>
-					<ShieldAlert /> Sensibles uniquement
+					<LuShieldAlert /> Sensibles uniquement
 				</Button>
 				<form
 					className="w-full sm:w-56"
@@ -94,12 +94,12 @@ export function JournalFilters({ summary, exportHref }: { summary: SecuritySumma
 				</form>
 				{active && (
 					<Button type="button" size="sm" variant="ghost" onClick={() => startTransition(() => router.replace(pathname, { scroll: false }))}>
-						<X /> Réinitialiser
+						<LuX /> Réinitialiser
 					</Button>
 				)}
 				<Button asChild size="sm" variant="outline" className="ms-auto">
 					<a href={exportHref} download>
-						<Download /> Exporter (Excel)
+						<LuDownload /> Exporter (Excel)
 					</a>
 				</Button>
 			</div>

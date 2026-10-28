@@ -1,6 +1,6 @@
 "use client";
 
-import { Loader, Search } from "lucide-react";
+import { LuLoader, LuSearch } from "react-icons/lu";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState, useTransition } from "react";
 import { Input } from "@/components/ui/input";
@@ -28,7 +28,7 @@ export function PatientsSearch() {
 
 	return (
 		<div className="relative w-full sm:w-80">
-			<Search className="text-muted-foreground absolute start-2.5 top-1/2 size-4 -translate-y-1/2" />
+			<LuSearch className="text-muted-foreground absolute start-2.5 top-1/2 size-4 -translate-y-1/2" />
 			<Input
 				type="search"
 				value={value}
@@ -38,7 +38,7 @@ export function PatientsSearch() {
 				className="ps-8"
 			/>
 			{pending && (
-				<Loader className="text-muted-foreground absolute end-2.5 top-1/2 size-4 -translate-y-1/2 animate-spin" />
+				<LuLoader className="text-muted-foreground absolute end-2.5 top-1/2 size-4 -translate-y-1/2 animate-spin" />
 			)}
 		</div>
 	);

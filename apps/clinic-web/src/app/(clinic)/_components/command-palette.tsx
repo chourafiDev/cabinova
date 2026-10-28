@@ -1,6 +1,6 @@
 "use client";
 
-import { Compass, Keyboard, LifeBuoy, LogOut, MapPin, Monitor, Moon, Search, Sun } from "lucide-react";
+import { LuCompass, LuKeyboard, LuLifeBuoy, LuLogOut, LuMapPin, LuMonitor, LuMoon, LuSearch, LuSun } from "react-icons/lu";
 import { useTheme } from "next-themes";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -81,7 +81,7 @@ export function CommandPalette({ spaces }: { spaces: ClinicSession["spaces"] }) 
 		.map((s) => ({
 			id: `space-${s.id}`,
 			label: `Aller à l’espace ${spaceLabel(s)}`,
-			icon: MapPin,
+			icon: LuMapPin,
 			keywords: "changer espace site succursale",
 			run: () =>
 				pick(async () => {
@@ -92,13 +92,13 @@ export function CommandPalette({ spaces }: { spaces: ClinicSession["spaces"] }) 
 		}));
 	const actions: Action[] = [
 		...spaceActions,
-		{ id: "tour", label: "Revoir la visite guidée", icon: Compass, keywords: "aide découvrir tutoriel", run: () => go(TOUR_REPLAY_HREF) },
-		{ id: "theme-light", label: "Thème clair", icon: Sun, keywords: "apparence mode jour", run: () => pick(() => setTheme("light")) },
-		{ id: "theme-dark", label: "Thème sombre", icon: Moon, keywords: "apparence mode nuit dark", run: () => pick(() => setTheme("dark")) },
-		{ id: "theme-system", label: "Thème du système", icon: Monitor, keywords: "apparence automatique", run: () => pick(() => setTheme("system")) },
-		{ id: "shortcuts", label: "Raccourcis clavier", icon: Keyboard, keywords: "aide touches clavier", run: () => pick(() => window.dispatchEvent(new Event(SHORTCUTS_HELP_EVENT))) },
-		{ id: "support", label: "Contacter le support Cabinova", icon: LifeBuoy, keywords: "aide question problème", run: () => pick(() => (window.location.href = "mailto:support@cabinova.ma")) },
-		{ id: "sign-out", label: "Se déconnecter", icon: LogOut, keywords: "déconnexion quitter", run: () => pick(signOut) },
+		{ id: "tour", label: "Revoir la visite guidée", icon: LuCompass, keywords: "aide découvrir tutoriel", run: () => go(TOUR_REPLAY_HREF) },
+		{ id: "theme-light", label: "Thème clair", icon: LuSun, keywords: "apparence mode jour", run: () => pick(() => setTheme("light")) },
+		{ id: "theme-dark", label: "Thème sombre", icon: LuMoon, keywords: "apparence mode nuit dark", run: () => pick(() => setTheme("dark")) },
+		{ id: "theme-system", label: "Thème du système", icon: LuMonitor, keywords: "apparence automatique", run: () => pick(() => setTheme("system")) },
+		{ id: "shortcuts", label: "Raccourcis clavier", icon: LuKeyboard, keywords: "aide touches clavier", run: () => pick(() => window.dispatchEvent(new Event(SHORTCUTS_HELP_EVENT))) },
+		{ id: "support", label: "Contacter le support Cabinova", icon: LuLifeBuoy, keywords: "aide question problème", run: () => pick(() => (window.location.href = "mailto:support@cabinova.ma")) },
+		{ id: "sign-out", label: "Se déconnecter", icon: LuLogOut, keywords: "déconnexion quitter", run: () => pick(signOut) },
 	];
 	const term = fold(input.trim());
 	const pages = allNavItems.filter((item) => !term || fold(item.title).includes(term));
@@ -112,7 +112,7 @@ export function CommandPalette({ spaces }: { spaces: ClinicSession["spaces"] }) 
 				className="text-muted-foreground hover:bg-muted flex h-9 items-center gap-2 rounded-lg border bg-background px-2.5 text-sm transition-colors sm:w-56"
 				aria-label="Ouvrir la palette de commandes"
 			>
-				<Search className="size-4 shrink-0" />
+				<LuSearch className="size-4 shrink-0" />
 				<span className="hidden flex-1 text-start sm:inline">Aller à…</span>
 				<kbd className="bg-muted pointer-events-none hidden h-5 items-center rounded px-1.5 font-mono text-[10px] font-medium sm:inline-flex">
 					{modifier} K

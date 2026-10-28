@@ -1,4 +1,4 @@
-import { Pencil, Plus, TicketPercent } from "lucide-react";
+import { LuPencil, LuPlus, LuTicketPercent } from "react-icons/lu";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { HiCreditCard } from "react-icons/hi2";
@@ -50,13 +50,13 @@ export default async function PlansPage() {
 					<div className="flex w-full gap-2 md:w-auto">
 						<Button asChild variant="outline">
 							<Link href="/plans/promo-codes">
-								<TicketPercent /> Codes promo
+								<LuTicketPercent /> Codes promo
 							</Link>
 						</Button>
 						{canWrite && (
 							<Button asChild>
 								<Link href="/plans/new">
-									<Plus /> Nouvelle offre
+									<LuPlus /> Nouvelle offre
 								</Link>
 							</Button>
 						)}
@@ -89,7 +89,7 @@ export default async function PlansPage() {
 											{canWrite && (
 												<Button asChild variant="ghost" size="icon-xs" aria-label={`Modifier ${plan.name}`}>
 													<Link href={`/plans/${plan.id}`}>
-														<Pencil />
+														<LuPencil />
 													</Link>
 												</Button>
 											)}

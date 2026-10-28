@@ -1,6 +1,6 @@
 "use client";
 
-import { ImageUp, TriangleAlert, X } from "lucide-react";
+import { LuImageUp, LuTriangleAlert, LuX } from "react-icons/lu";
 import { useRef } from "react";
 import { toast } from "sonner";
 import { BrandMark } from "@/components/brand-mark";
@@ -98,11 +98,11 @@ export function BrandingSection({
 							/>
 							<div className="flex flex-wrap gap-2">
 								<Button type="button" variant="outline" size="sm" onClick={() => file.current?.click()}>
-									<ImageUp /> {initial.logoUrl || v.logo.kind === "new" ? "Changer le logo" : "Ajouter un logo"}
+									<LuImageUp /> {initial.logoUrl || v.logo.kind === "new" ? "Changer le logo" : "Ajouter un logo"}
 								</Button>
 								{(v.logo.kind === "new" || (initial.logoUrl && v.logo.kind === "keep")) && (
 									<Button type="button" variant="ghost" size="sm" onClick={() => s.set({ logo: { kind: "remove" } })}>
-										<X /> Retirer
+										<LuX /> Retirer
 									</Button>
 								)}
 							</div>
@@ -150,7 +150,7 @@ export function BrandingSection({
 						</Field>
 						{ratio < 4.5 && (
 							<p className="flex items-center gap-1.5 text-xs text-amber-800">
-								<TriangleAlert className="size-3.5" /> Trop claire : le texte blanc des boutons sera difficile à lire
+								<LuTriangleAlert className="size-3.5" /> Trop claire : le texte blanc des boutons sera difficile à lire
 								(contraste {ratio.toFixed(1)}:1, 4,5:1 recommandé).
 							</p>
 						)}

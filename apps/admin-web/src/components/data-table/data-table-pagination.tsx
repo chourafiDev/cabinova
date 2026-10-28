@@ -16,7 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ChevronsLeft, ChevronLeft, ChevronRight, ChevronsRight } from "lucide-react";
+import { LuChevronLeft, LuChevronRight, LuChevronsLeft, LuChevronsRight } from "react-icons/lu";
 
 interface DataTablePaginationProps<
   TData extends RowData,
@@ -126,7 +126,7 @@ function DataTablePaginationContent<TData extends RowData>({
             onClick={() => table.setPageIndex(0)}
             disabled={!canPreviousPage}
           >
-            <ChevronsLeft
+            <LuChevronsLeft
             />
           </Button>
           <Button
@@ -136,7 +136,7 @@ function DataTablePaginationContent<TData extends RowData>({
             onClick={() => table.previousPage()}
             disabled={!canPreviousPage}
           >
-            <ChevronLeft
+            <LuChevronLeft
             />
           </Button>
           <Button
@@ -146,7 +146,7 @@ function DataTablePaginationContent<TData extends RowData>({
             onClick={() => table.nextPage()}
             disabled={!canNextPage}
           >
-            <ChevronRight
+            <LuChevronRight
             />
           </Button>
           <Button
@@ -157,7 +157,7 @@ function DataTablePaginationContent<TData extends RowData>({
             onClick={() => table.setPageIndex(pageCount - 1)}
             disabled={!canNextPage}
           >
-            <ChevronsRight
+            <LuChevronsRight
             />
           </Button>
         </div>

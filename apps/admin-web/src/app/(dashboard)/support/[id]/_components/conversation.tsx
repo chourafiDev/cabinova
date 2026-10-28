@@ -1,4 +1,4 @@
-import { Lock, Mail } from "lucide-react";
+import { LuLock, LuMail } from "react-icons/lu";
 import { formatDate } from "@/lib/format";
 import type { TicketMessage } from "@/lib/support";
 import { cn } from "@/lib/utils";
@@ -58,7 +58,7 @@ export function Conversation({ messages, cabinetName }: { messages: TicketMessag
 								{fromClinic && cabinetName && <span className="text-muted-foreground">{cabinetName}</span>}
 								{m.kind === "note" && (
 									<span className="inline-flex items-center gap-1 text-amber-800">
-										<Lock className="size-3" /> Note interne
+										<LuLock className="size-3" /> Note interne
 									</span>
 								)}
 								<span className="text-muted-foreground">{when(m.createdAt)}</span>
@@ -66,7 +66,7 @@ export function Conversation({ messages, cabinetName }: { messages: TicketMessag
 							<p className="whitespace-pre-line break-words text-sm leading-relaxed">{m.body}</p>
 							{m.kind === "reply" && m.emailedTo && (
 								<span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground">
-									<Mail className="size-3" /> Envoyé à {m.emailedTo}
+									<LuMail className="size-3" /> Envoyé à {m.emailedTo}
 								</span>
 							)}
 						</div>

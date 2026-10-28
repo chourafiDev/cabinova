@@ -18,7 +18,7 @@ import {
   FacetedList,
   FacetedTrigger,
 } from "@/components/ui/faceted";
-import { Settings2 } from "lucide-react";
+import { LuSettings2 } from "react-icons/lu";
 
 interface DataTableViewOptionsProps<
   TData extends RowData,
@@ -61,7 +61,7 @@ export function DataTableViewOptions<TData extends RowData>({
               className="ms-auto hidden lg:flex"
               disabled={disabled}
             >
-              <Settings2 className="text-muted-foreground" />
+              <LuSettings2 className="text-muted-foreground" />
               Colonnes
             </Button>
           </FacetedTrigger>

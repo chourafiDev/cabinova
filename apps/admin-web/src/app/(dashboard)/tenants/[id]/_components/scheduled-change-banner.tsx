@@ -1,6 +1,6 @@
 "use client";
 
-import { CalendarClock } from "lucide-react";
+import { LuCalendarClock } from "react-icons/lu";
 import { useRouter } from "next/navigation";
 import { useTransition } from "react";
 import { toast } from "sonner";
@@ -35,7 +35,7 @@ export function ScheduledChangeBanner({
 
 	return (
 		<div className="mb-3 flex flex-wrap items-center gap-3 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900">
-			<CalendarClock className="size-4 shrink-0" />
+			<LuCalendarClock className="size-4 shrink-0" />
 			<p className="min-w-0 flex-1">
 				Passage à <strong>{STATUS_LABELS[change.toStatus]}</strong> programmé le{" "}
 				<strong>{formatDate(change.effectiveAt)}</strong> — {reasonLabel(change.action, change.reason)}.

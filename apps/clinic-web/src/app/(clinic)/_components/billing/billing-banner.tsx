@@ -1,6 +1,6 @@
 "use client";
 
-import { AlertTriangle, Sparkles, X } from "lucide-react";
+import { LuSparkles, LuTriangleAlert, LuX } from "react-icons/lu";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { BANNER_COOKIE, type BillingNotice } from "@/lib/billing-notice";
@@ -61,7 +61,7 @@ export function BillingBanner({ notice, dismissKey }: { notice: BillingNotice; d
 		document.cookie = `${BANNER_COOKIE}=${encodeURIComponent(dismissKey)}; path=/; max-age=86400; samesite=lax`;
 		setHidden(true);
 	};
-	const Icon = notice.tone === "info" ? Sparkles : AlertTriangle;
+	const Icon = notice.tone === "info" ? LuSparkles : LuTriangleAlert;
 
 	return (
 		<div
@@ -87,7 +87,7 @@ export function BillingBanner({ notice, dismissKey }: { notice: BillingNotice; d
 					aria-label="Masquer pour aujourd’hui"
 					title="Masquer pour aujourd’hui"
 				>
-					<X />
+					<LuX />
 				</Button>
 			)}
 			<SubscriptionDialog open={open} onOpenChange={setOpen} />

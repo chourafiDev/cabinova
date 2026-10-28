@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, Copy, Download, FileArchive, Loader, Lock, Trash2 } from "lucide-react";
+import { LuCheck, LuCopy, LuDownload, LuFileArchive, LuLoader, LuLock, LuTrash2 } from "react-icons/lu";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -37,7 +37,7 @@ function Fingerprint({ sha }: { sha: string }) {
 			}}
 			className="inline-flex items-center gap-1 rounded bg-muted px-1.5 py-0.5 font-mono text-[11px] hover:bg-muted/70"
 		>
-			{sha.slice(0, 16)}…{copied ? <Check className="size-3 text-emerald-600" /> : <Copy className="size-3" />}
+			{sha.slice(0, 16)}…{copied ? <LuCheck className="size-3 text-emerald-600" /> : <LuCopy className="size-3" />}
 		</button>
 	);
 }
@@ -112,7 +112,7 @@ export function TenantDataTab({ tenantId, tenantName, data }: { tenantId: string
 				action={
 					data.canExport && (
 						<Button size="sm" onClick={exportData} disabled={exporting}>
-							{exporting ? <Loader className="animate-spin" /> : <Download />} Exporter
+							{exporting ? <LuLoader className="animate-spin" /> : <LuDownload />} Exporter
 						</Button>
 					)
 				}
@@ -127,7 +127,7 @@ export function TenantDataTab({ tenantId, tenantName, data }: { tenantId: string
 					<ul className="divide-y rounded-lg border">
 						{data.exports.map((e) => (
 							<li key={e.id} className="flex flex-wrap items-center gap-x-3 gap-y-1 px-3 py-2 text-sm">
-								<FileArchive className="size-4 text-muted-foreground" />
+								<LuFileArchive className="size-4 text-muted-foreground" />
 								<span className="grid leading-tight">
 									<span>{formatDate(e.createdAt, { month: "short", hour: "2-digit", minute: "2-digit" })}</span>
 									<span className="text-xs text-muted-foreground">
@@ -148,7 +148,7 @@ export function TenantDataTab({ tenantId, tenantName, data }: { tenantId: string
 				{deleted ? (
 					<div className="grid gap-1 text-sm">
 						<Badge variant="outline" className="w-fit border-transparent bg-zinc-100 text-zinc-700">
-							<Lock /> Base supprimée
+							<LuLock /> Base supprimée
 						</Badge>
 						<p className="text-muted-foreground">
 							Le {day(data.database!.deletedAt!)}. Le cabinet, ses factures et la preuve d’export restent au journal.
@@ -165,7 +165,7 @@ export function TenantDataTab({ tenantId, tenantName, data }: { tenantId: string
 											s.done ? "border-emerald-600 bg-emerald-600 text-white" : "border-muted-foreground/40",
 										)}
 									>
-										{s.done && <Check className="size-3" />}
+										{s.done && <LuCheck className="size-3" />}
 									</span>
 									<span className="grid leading-tight">
 										<span className={cn(!s.done && "text-muted-foreground")}>{s.label}</span>
@@ -175,7 +175,7 @@ export function TenantDataTab({ tenantId, tenantName, data }: { tenantId: string
 							))}
 						</ol>
 						<Button variant="destructive" size="sm" className="w-fit" disabled={!data.canDelete} onClick={() => setConfirmOpen(true)}>
-							<Trash2 /> Supprimer la base
+							<LuTrash2 /> Supprimer la base
 						</Button>
 						{!data.canDelete && <p className="text-xs text-muted-foreground">Jamais automatique : disponible quand les trois conditions sont remplies.</p>}
 					</div>
@@ -200,7 +200,7 @@ export function TenantDataTab({ tenantId, tenantName, data }: { tenantId: string
 							Annuler
 						</Button>
 						<Button variant="destructive" disabled={confirmName.trim() !== tenantName || deleting} onClick={deleteData}>
-							{deleting && <Loader className="animate-spin" />} Supprimer définitivement
+							{deleting && <LuLoader className="animate-spin" />} Supprimer définitivement
 						</Button>
 					</DialogFooter>
 				</DialogContent>

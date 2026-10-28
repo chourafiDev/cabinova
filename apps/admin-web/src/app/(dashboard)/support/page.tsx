@@ -1,4 +1,4 @@
-import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
+import { LuChevronLeft, LuChevronRight, LuPlus } from "react-icons/lu";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { HiLifebuoy } from "react-icons/hi2";
@@ -76,7 +76,7 @@ export default async function SupportPage({
 					canWrite && (
 						<NewTicketDialog cabinets={cabinets} agents={agents} meId={session.user.id}>
 							<Button>
-								<Plus /> Nouveau ticket
+								<LuPlus /> Nouveau ticket
 							</Button>
 						</NewTicketDialog>
 					)
@@ -146,7 +146,7 @@ export default async function SupportPage({
 						</span>
 						<Button asChild size="icon-sm" variant="outline" aria-label="Page précédente" className={cn(page <= 1 && "pointer-events-none opacity-50")}>
 							<Link href={href({ page: page - 1 })} scroll={false}>
-								<ChevronLeft />
+								<LuChevronLeft />
 							</Link>
 						</Button>
 						<Button
@@ -157,7 +157,7 @@ export default async function SupportPage({
 							className={cn(page >= tickets.pageCount && "pointer-events-none opacity-50")}
 						>
 							<Link href={href({ page: page + 1 })} scroll={false}>
-								<ChevronRight />
+								<LuChevronRight />
 							</Link>
 						</Button>
 					</div>

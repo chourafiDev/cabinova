@@ -1,6 +1,6 @@
 "use client";
 
-import { Check } from "lucide-react";
+import { LuCheck } from "react-icons/lu";
 import { Checkbox } from "@/components/ui/checkbox";
 import { type Language, LANGUAGE_LABELS, type PlatformSettings } from "@/lib/settings";
 import { cn } from "@/lib/utils";
@@ -37,7 +37,7 @@ export function LanguagesSection({ initial, readOnly }: { initial: PlatformSetti
 							)}
 						>
 							{LANGUAGE_LABELS[l]}
-							{v.defaultLanguage === l && <Check className="size-4 text-primary" />}
+							{v.defaultLanguage === l && <LuCheck className="size-4 text-primary" />}
 						</button>
 					))}
 				</div>

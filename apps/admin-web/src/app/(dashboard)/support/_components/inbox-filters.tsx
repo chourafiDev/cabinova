@@ -1,6 +1,6 @@
 "use client";
 
-import { X } from "lucide-react";
+import { LuX } from "react-icons/lu";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -72,7 +72,7 @@ export function InboxFilters() {
 						startTransition(() => router.replace(view ? `${pathname}?view=${view}` : pathname, { scroll: false }));
 					}}
 				>
-					<X /> Réinitialiser
+					<LuX /> Réinitialiser
 				</Button>
 			)}
 		</div>

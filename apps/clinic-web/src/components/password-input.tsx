@@ -1,6 +1,6 @@
 "use client";
 
-import { Eye, EyeOff } from "lucide-react";
+import { LuEye, LuEyeOff } from "react-icons/lu";
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { focusRing } from "@/lib/focus-ring";
@@ -21,7 +21,7 @@ export function PasswordInput({ className, ...props }: Omit<React.ComponentProps
 					"text-muted-foreground hover:text-foreground absolute inset-y-1 end-1 flex w-9 items-center justify-center rounded-md",
 				)}
 			>
-				{visible ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+				{visible ? <LuEyeOff className="size-4" /> : <LuEye className="size-4" />}
 			</button>
 		</div>
 	);

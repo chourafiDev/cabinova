@@ -1,6 +1,6 @@
 "use client";
 
-import { CodeXml, Power, Trash2 } from "lucide-react";
+import { LuCodeXml, LuPower, LuTrash2 } from "react-icons/lu";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -79,7 +79,7 @@ export function FeatureSettings({ feature, readOnly }: { feature: Feature; readO
 									status === s && s === "disabled" && "bg-red-600 text-white",
 								)}
 							>
-								{s === "disabled" && <Power className="size-3.5" />}
+								{s === "disabled" && <LuPower className="size-3.5" />}
 								{FEATURE_STATUS_LABELS[s]}
 							</button>
 						))}
@@ -100,7 +100,7 @@ export function FeatureSettings({ feature, readOnly }: { feature: Feature; readO
 					</Field>
 				)}
 				<p className="flex items-start gap-1.5 text-xs text-muted-foreground">
-					<CodeXml className="mt-0.5 size-3.5 shrink-0" />
+					<LuCodeXml className="mt-0.5 size-3.5 shrink-0" />
 					Nom, catégorie et description viennent du code (registre <code>@cabinova/features</code>).
 				</p>
 				{!readOnly && (
@@ -141,7 +141,7 @@ function NotInCode({ feature, readOnly }: { feature: Feature; readOnly: boolean 
 		<FormCard title="Absente du code">
 			<div className="grid gap-3 text-sm">
 				<p className="flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-amber-900">
-					<CodeXml className="mt-0.5 size-4 shrink-0" />
+					<LuCodeXml className="mt-0.5 size-4 shrink-0" />
 					Aucun code n’utilise la clé <code>{feature.key}</code> : elle n’est disponible pour aucun cabinet, quelles que
 					soient les offres et les exceptions.
 				</p>
@@ -153,7 +153,7 @@ function NotInCode({ feature, readOnly }: { feature: Feature; readOnly: boolean 
 					<Dialog>
 						<DialogTrigger asChild>
 							<Button variant="destructive" size="sm" className="w-fit">
-								<Trash2 /> Supprimer
+								<LuTrash2 /> Supprimer
 							</Button>
 						</DialogTrigger>
 						<DialogContent className="sm:max-w-md">

@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronDown, LogOut, ShieldCheck } from "lucide-react";
+import { LuChevronDown, LuLogOut, LuShieldCheck } from "react-icons/lu";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -53,7 +53,7 @@ export function UserMenu() {
 						<span className="max-w-36 truncate text-sm font-medium">{user.name}</span>
 						<span className="text-muted-foreground max-w-36 truncate text-xs">{user.roles.map((r) => r.name).join(", ") || user.email}</span>
 					</span>
-					<ChevronDown className="text-muted-foreground size-4" />
+					<LuChevronDown className="text-muted-foreground size-4" />
 				</button>
 			</DropdownMenuTrigger>
 			<DropdownMenuContent align="end" sideOffset={6} className="min-w-72 rounded-lg">
@@ -66,13 +66,13 @@ export function UserMenu() {
 				<DropdownMenuSeparator />
 				<DropdownMenuItem asChild>
 					<Link href="/account/security">
-						<ShieldCheck />
+						<LuShieldCheck />
 						Sécurité du compte
 					</Link>
 				</DropdownMenuItem>
 				<DropdownMenuSeparator />
 				<DropdownMenuItem variant="destructive" onSelect={signOut}>
-					<LogOut />
+					<LuLogOut />
 					Se déconnecter
 				</DropdownMenuItem>
 			</DropdownMenuContent>

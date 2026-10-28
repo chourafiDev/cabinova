@@ -1,6 +1,6 @@
 "use client";
 
-import { Archive } from "lucide-react";
+import { LuArchive } from "react-icons/lu";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -29,7 +29,7 @@ export function RetentionCard({ years, canEdit }: { years: number; canEdit: bool
 	return (
 		<FormCard title="Conservation des données">
 			<div className="flex items-start gap-3 text-sm">
-				<Archive className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
+				<LuArchive className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
 				<div className="grid flex-1 gap-2">
 					{editing ? (
 						<div className="flex flex-wrap items-center gap-2">

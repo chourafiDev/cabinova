@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/popover";
 import { Separator } from "@/components/ui/separator";
 import { Slider } from "@/components/ui/slider";
-import { XCircle, PlusCircle } from "lucide-react";
+import { LuCirclePlus, LuCircleX } from "react-icons/lu";
 import { focusRing } from "@/lib/focus-ring"
 
 interface Range {
@@ -179,11 +179,11 @@ function DataTableSliderFilterContent<TData extends RowData>({
               className={cn(focusRing, "rounded-sm opacity-70 transition-opacity hover:opacity-100")}
               onClick={onReset}
             >
-              <XCircle
+              <LuCircleX
               />
             </div>
           ) : (
-            <PlusCircle
+            <LuCirclePlus
             />
           )}
           <span>{title}</span>

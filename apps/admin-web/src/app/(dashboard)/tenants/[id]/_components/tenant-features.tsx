@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, Minus } from "lucide-react";
+import { LuCheck, LuMinus } from "react-icons/lu";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -102,9 +102,9 @@ export function TenantFeaturesTab({
 								<td className={td}>
 									<span className="flex items-center gap-1.5">
 										{f.effective.enabled ? (
-											<Check className="size-4 text-emerald-600" aria-label="Active" />
+											<LuCheck className="size-4 text-emerald-600" aria-label="Active" />
 										) : (
-											<Minus className="size-4 text-muted-foreground" aria-label="Inactive" />
+											<LuMinus className="size-4 text-muted-foreground" aria-label="Inactive" />
 										)}
 										<span className={cn("text-xs", f.effective.source === "kill_switch" ? "text-red-700" : "text-muted-foreground")}>
 											{SOURCE_LABELS[f.effective.source]}

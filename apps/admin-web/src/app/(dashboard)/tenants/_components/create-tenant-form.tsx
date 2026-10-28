@@ -3,7 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { addDays, format } from "date-fns";
 import { fr } from "date-fns/locale";
-import { Building2, Check, CreditCard, Globe, Loader, SlidersHorizontal, UserRound } from "lucide-react";
+import { LuBuilding2, LuCheck, LuCreditCard, LuGlobe, LuLoader, LuSlidersHorizontal, LuUserRound } from "react-icons/lu";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -113,7 +113,7 @@ export function CreateTenantForm({ plans, defaultValues }: { plans: Plan[]; defa
 	return (
 		<form onSubmit={onSubmit} noValidate className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_300px] lg:items-start">
 			<div className="grid gap-4">
-				<FormSection step={1} icon={Building2} title="Le cabinet" description="Comment il apparaîtra dans Cabinova et sur ses factures.">
+				<FormSection step={1} icon={LuBuilding2} title="Le cabinet" description="Comment il apparaîtra dans Cabinova et sur ses factures.">
 					<div className="grid gap-4 sm:grid-cols-2">
 						<Field data-invalid={!!errors.name}>
 							<FieldLabel htmlFor="name">Nom du cabinet</FieldLabel>
@@ -137,7 +137,7 @@ export function CreateTenantForm({ plans, defaultValues }: { plans: Plan[]; defa
 
 				<FormSection
 					step={2}
-					icon={UserRound}
+					icon={LuUserRound}
 					title="Responsable et coordonnées"
 					description="Le médecin responsable reçoit l’invitation à son adresse e-mail."
 				>
@@ -152,12 +152,12 @@ export function CreateTenantForm({ plans, defaultValues }: { plans: Plan[]; defa
 					{text("address", "Adresse", { placeholder: "Facultatif" })}
 				</FormSection>
 
-				<FormSection step={3} icon={Globe} title="Adresse web" description="Le cabinet se connectera à son propre sous-domaine.">
+				<FormSection step={3} icon={LuGlobe} title="Adresse web" description="Le cabinet se connectera à son propre sous-domaine.">
 					<Field data-invalid={!!errors.subdomain}>
 						<FieldLabel htmlFor="subdomain">Sous-domaine</FieldLabel>
 						<InputGroup>
 							<InputGroupAddon>
-								<Globe />
+								<LuGlobe />
 							</InputGroupAddon>
 							<InputGroupInput
 								id="subdomain"
@@ -178,7 +178,7 @@ export function CreateTenantForm({ plans, defaultValues }: { plans: Plan[]; defa
 
 				<FormSection
 					step={4}
-					icon={CreditCard}
+					icon={LuCreditCard}
 					title="Offre"
 					description="L’offre fixe l’essai et les quotas ; la facturation commence à la fin de l’essai."
 					action={
@@ -230,7 +230,7 @@ export function CreateTenantForm({ plans, defaultValues }: { plans: Plan[]; defa
 									>
 										{selected && (
 											<span className="absolute end-3 top-3 flex size-5 items-center justify-center rounded-full bg-primary text-primary-foreground">
-												<Check className="size-3" />
+												<LuCheck className="size-3" />
 											</span>
 										)}
 										<span className="pe-6 font-semibold">{p.name}</span>
@@ -264,7 +264,7 @@ export function CreateTenantForm({ plans, defaultValues }: { plans: Plan[]; defa
 								{customQuotas ? "Quotas personnalisés pour ce cabinet" : "Essai et quotas de l’offre"}
 							</span>
 							<Button type="button" size="sm" variant="ghost" onClick={() => setCustomQuotas((c) => !c)}>
-								<SlidersHorizontal /> {customQuotas ? "Masquer" : "Personnaliser"}
+								<LuSlidersHorizontal /> {customQuotas ? "Masquer" : "Personnaliser"}
 							</Button>
 						</div>
 						{customQuotas ? (
@@ -322,7 +322,7 @@ export function CreateTenantForm({ plans, defaultValues }: { plans: Plan[]; defa
 					</span>
 				</div>
 				<Button type="submit" className="w-full" disabled={isSubmitting || !plans.length}>
-					{isSubmitting && <Loader className="animate-spin" />} Créer le cabinet
+					{isSubmitting && <LuLoader className="animate-spin" />} Créer le cabinet
 				</Button>
 				<Button asChild variant="ghost" className="mt-2 w-full">
 					<Link href="/tenants">Annuler</Link>

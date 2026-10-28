@@ -17,7 +17,7 @@ import { DataTableSliderFilter } from "@/components/data-table/data-table-slider
 import { DataTableViewOptions } from "@/components/data-table/data-table-view-options";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { X } from "lucide-react";
+import { LuX } from "react-icons/lu";
 
 interface DataTableToolbarProps<
   TData extends RowData,
@@ -66,7 +66,7 @@ export function DataTableToolbar<TData extends RowData>({
                 variant="outline"
                 onClick={onReset}
               >
-                <X
+                <LuX
                 />
                 Réinitialiser
               </Button>

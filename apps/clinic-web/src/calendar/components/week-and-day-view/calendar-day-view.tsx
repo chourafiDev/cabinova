@@ -1,6 +1,6 @@
 import { fmt } from "@/calendar/locale";
 import { useEffect, useState } from "react";
-import { CalendarIcon, Clock, User } from "lucide-react";
+import { LuCalendar, LuClock, LuUser } from "react-icons/lu";
 import { parseISO, areIntervalsOverlapping } from "date-fns";
 
 import { useCalendar } from "@/calendar/contexts/calendar-context";
@@ -175,18 +175,18 @@ export function CalendarDayView({ singleDayEvents, multiDayEvents }: IProps) {
 
                       {user && (
                         <div className="flex items-center gap-1.5 text-muted-foreground">
-                          <User className="size-3.5" />
+                          <LuUser className="size-3.5" />
                           <span className="text-sm">{user.name}</span>
                         </div>
                       )}
 
                       <div className="flex items-center gap-1.5 text-muted-foreground">
-                        <CalendarIcon className="size-3.5" />
+                        <LuCalendar className="size-3.5" />
                         <span className="text-sm">{fmt(new Date(), "d MMM yyyy")}</span>
                       </div>
 
                       <div className="flex items-center gap-1.5 text-muted-foreground">
-                        <Clock className="size-3.5" />
+                        <LuClock className="size-3.5" />
                         <span className="text-sm">
                           {fmt(parseISO(event.startDate), "HH:mm")} - {fmt(parseISO(event.endDate), "HH:mm")}
                         </span>

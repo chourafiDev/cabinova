@@ -1,4 +1,4 @@
-import { ArrowLeft } from "lucide-react";
+import { LuArrowLeft } from "react-icons/lu";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -26,7 +26,7 @@ export default async function EditPlanPage({ params }: PageProps<"/plans/[id]">)
 			<div className="mb-4 flex items-center gap-3 border-b border-dashed border-foreground/20 pb-4">
 				<Button asChild variant="outline" size="icon-sm" aria-label="Retour aux offres">
 					<Link href="/plans">
-						<ArrowLeft className="size-4" />
+						<LuArrowLeft className="size-4" />
 					</Link>
 				</Button>
 				<h1 className="font-semibold">Modifier l’offre {plan.name}</h1>

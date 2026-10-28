@@ -5,6 +5,15 @@ import nextTs from "eslint-config-next/typescript";
 const eslintConfig = defineConfig([
   ...nextVitals,
   ...nextTs,
+  // Icons come from react-icons only (Lucide set: "react-icons/lu").
+  {
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        { paths: [{ name: "lucide-react", message: "Use react-icons instead (e.g. LuX from \"react-icons/lu\")." }] },
+      ],
+    },
+  },
   // Vendored from tablecn (https://tablecn.com). It intentionally uses the
   // "latest ref" pattern, which React Compiler's refs rule flags. Kept as-is
   // so the files can be updated from the registry.

@@ -1,4 +1,4 @@
-import { ArrowLeft, Building2, Clock, Mail, MapPin, Phone, Star } from "lucide-react";
+import { LuArrowLeft, LuBuilding2, LuClock, LuMail, LuMapPin, LuPhone, LuStar } from "react-icons/lu";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
@@ -39,7 +39,7 @@ export default async function TicketPage({ params }: { params: Promise<{ id: str
 			<div className="mb-4 flex items-start gap-3 border-b border-dashed border-foreground/20 pb-4">
 				<Button asChild size="icon-sm" variant="ghost" aria-label="Retour au support" className="mt-0.5">
 					<Link href="/support">
-						<ArrowLeft />
+						<LuArrowLeft />
 					</Link>
 				</Button>
 				<div className="grid min-w-0 gap-1">
@@ -77,7 +77,7 @@ export default async function TicketPage({ params }: { params: Promise<{ id: str
 					<FormCard title="Délai de première réponse">
 						<div className="grid gap-1 text-sm">
 							<div className="flex items-center gap-2">
-								<Clock className="size-4 text-muted-foreground" />
+								<LuClock className="size-4 text-muted-foreground" />
 								{ticket.firstResponseAt ? (
 									<span>Répondu le {when(ticket.firstResponseAt)}</span>
 								) : (
@@ -104,11 +104,11 @@ export default async function TicketPage({ params }: { params: Promise<{ id: str
 						{cabinet ? (
 							<div className="grid gap-2 text-sm">
 								<div className="flex flex-wrap items-center gap-2">
-									<Building2 className="size-4 text-muted-foreground" />
+									<LuBuilding2 className="size-4 text-muted-foreground" />
 									<span className="font-medium">{cabinet.name}</span>
 									{cabinet.prioritySupport && (
 										<Badge variant="outline" className="border-transparent bg-amber-50 text-amber-800">
-											<Star className="fill-amber-400 text-amber-500" /> Support prioritaire
+											<LuStar className="fill-amber-400 text-amber-500" /> Support prioritaire
 										</Badge>
 									)}
 								</div>
@@ -120,16 +120,16 @@ export default async function TicketPage({ params }: { params: Promise<{ id: str
 								</dl>
 								<div className="grid gap-1 text-xs text-muted-foreground">
 									<a href={`mailto:${cabinet.email}`} className="inline-flex items-center gap-1.5 hover:text-foreground">
-										<Mail className="size-3.5" /> {cabinet.email}
+										<LuMail className="size-3.5" /> {cabinet.email}
 									</a>
 									{cabinet.phone && (
 										<a href={`tel:${cabinet.phone}`} className="inline-flex items-center gap-1.5 hover:text-foreground">
-											<Phone className="size-3.5" /> {cabinet.phone}
+											<LuPhone className="size-3.5" /> {cabinet.phone}
 										</a>
 									)}
 									{cabinet.city && (
 										<span className="inline-flex items-center gap-1.5">
-											<MapPin className="size-3.5" /> {cabinet.city}
+											<LuMapPin className="size-3.5" /> {cabinet.city}
 										</span>
 									)}
 								</div>

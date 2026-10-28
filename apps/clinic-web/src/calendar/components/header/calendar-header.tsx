@@ -1,4 +1,4 @@
-import { CalendarRange, Columns, Grid2x2, Grid3x3, List, Plus } from "lucide-react";
+import { LuCalendarRange, LuColumns2, LuGrid2X2, LuGrid3X3, LuList, LuPlus } from "react-icons/lu";
 
 import { Button } from "@/components/ui/button";
 
@@ -19,11 +19,11 @@ interface IProps {
 }
 
 const VIEWS: { view: TCalendarView; label: string; icon: React.ComponentType<{ strokeWidth?: number }> }[] = [
-  { view: "day", label: "Jour", icon: List },
-  { view: "week", label: "Semaine", icon: Columns },
-  { view: "month", label: "Mois", icon: Grid2x2 },
-  { view: "year", label: "Année", icon: Grid3x3 },
-  { view: "agenda", label: "Liste", icon: CalendarRange },
+  { view: "day", label: "Jour", icon: LuList },
+  { view: "week", label: "Semaine", icon: LuColumns2 },
+  { view: "month", label: "Mois", icon: LuGrid2X2 },
+  { view: "year", label: "Année", icon: LuGrid3X3 },
+  { view: "agenda", label: "Liste", icon: LuCalendarRange },
 ];
 
 export function CalendarHeader({ view, events }: IProps) {
@@ -67,7 +67,7 @@ export function CalendarHeader({ view, events }: IProps) {
 
         {canWrite && (
           <Button type="button" className="w-full sm:w-auto" onClick={() => openCreate()}>
-            <Plus />
+            <LuPlus />
             Nouveau rendez-vous
           </Button>
         )}

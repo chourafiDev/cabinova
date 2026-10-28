@@ -1,6 +1,6 @@
 "use client";
 
-import { Loader, Lock, Mail, PhoneIncoming, Send } from "lucide-react";
+import { LuLoader, LuLock, LuMail, LuPhoneIncoming, LuSend } from "react-icons/lu";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -14,12 +14,12 @@ import { cn } from "@/lib/utils";
 type Kind = "reply" | "note" | "clinic";
 const KEEP = "__keep";
 
-const MODES: Record<Kind, { label: string; icon: typeof Mail; placeholder: string; submit: string }> = {
-	reply: { label: "Répondre", icon: Mail, placeholder: "Votre réponse au cabinet…", submit: "Envoyer" },
-	note: { label: "Note interne", icon: Lock, placeholder: "Visible uniquement par l’équipe…", submit: "Ajouter la note" },
+const MODES: Record<Kind, { label: string; icon: typeof LuMail; placeholder: string; submit: string }> = {
+	reply: { label: "Répondre", icon: LuMail, placeholder: "Votre réponse au cabinet…", submit: "Envoyer" },
+	note: { label: "Note interne", icon: LuLock, placeholder: "Visible uniquement par l’équipe…", submit: "Ajouter la note" },
 	clinic: {
 		label: "Réponse du cabinet",
-		icon: PhoneIncoming,
+		icon: LuPhoneIncoming,
 		placeholder: "Ce que le cabinet a répondu (téléphone, e-mail)…",
 		submit: "Enregistrer",
 	},
@@ -142,7 +142,7 @@ export function Composer({
 				</Select>
 				<span className="ms-auto hidden text-[11px] text-muted-foreground sm:inline">⌘ + Entrée</span>
 				<Button size="sm" onClick={send} disabled={sending || !body.trim()} className="ms-auto sm:ms-0">
-					{sending ? <Loader className="animate-spin" /> : <Send />} {mode.submit}
+					{sending ? <LuLoader className="animate-spin" /> : <LuSend />} {mode.submit}
 				</Button>
 			</div>
 		</div>

@@ -1,4 +1,4 @@
-import { ArrowLeft, Check, Lock, Pencil } from "lucide-react";
+import { LuArrowLeft, LuCheck, LuLock, LuPencil } from "react-icons/lu";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -32,7 +32,7 @@ export default async function RolesPage() {
 			<div className="mb-4 flex flex-wrap items-center gap-3 border-b border-dashed border-foreground/20 pb-4">
 				<Button asChild variant="outline" size="icon-sm" aria-label="Retour aux utilisateurs">
 					<Link href="/users">
-						<ArrowLeft className="size-4" />
+						<LuArrowLeft className="size-4" />
 					</Link>
 				</Button>
 				<h1 className="font-semibold">Rôles et permissions</h1>
@@ -47,12 +47,12 @@ export default async function RolesPage() {
 								<th key={role.id} className="px-2 py-3 text-center align-top font-normal">
 									{/* Name, lock and edit icon on one line so every column lines up. */}
 									<div className="flex h-7 items-center justify-center gap-1">
-										{role.locked && <Lock className="size-3 text-muted-foreground" aria-label="Verrouillé" />}
+										{role.locked && <LuLock className="size-3 text-muted-foreground" aria-label="Verrouillé" />}
 										<span className="font-semibold">{role.name}</span>
 										{canWrite && !role.locked && (
 											<RoleDialog role={role} catalog={catalog} myPermissions={mine}>
 												<Button variant="ghost" size="icon-xs" aria-label={`Modifier ${role.name}`}>
-													<Pencil />
+													<LuPencil />
 												</Button>
 											</RoleDialog>
 										)}
@@ -81,7 +81,7 @@ export default async function RolesPage() {
 									{roles.map((role) => (
 										<td key={role.id} className="px-2 py-1.5 text-center">
 											{role.permissions.includes(p.key) ? (
-												<Check className="mx-auto size-4 text-emerald-600" aria-label="Oui" />
+												<LuCheck className="mx-auto size-4 text-emerald-600" aria-label="Oui" />
 											) : (
 												<span className="text-muted-foreground/40" aria-label="Non">
 													·
