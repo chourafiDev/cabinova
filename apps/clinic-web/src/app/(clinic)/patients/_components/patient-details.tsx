@@ -122,7 +122,7 @@ export function PatientHeader({
 									<LuEllipsis />
 								</Button>
 							</DropdownMenuTrigger>
-							<DropdownMenuContent align="end">
+							<DropdownMenuContent align="end" className="min-w-44">
 								<DropdownMenuItem onSelect={onArchive}>
 									<LuArchive /> Archiver le dossier
 								</DropdownMenuItem>

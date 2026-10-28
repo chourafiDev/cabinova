@@ -80,10 +80,10 @@ export function SpaceSwitcher({
 							</span>
 							<span className="grid min-w-0 flex-1 leading-tight">
 								<span className="truncate font-semibold">{cabinet.name}</span>
-								<span className="text-muted-foreground flex items-center gap-1 truncate text-xs">
-									<LuMapPin className="shrink-0" />
+								<p className="text-muted-foreground flex items-center gap-1 truncate text-xs">
+									<LuMapPin className="!size-3 shrink-0" />
 									<span className="truncate">{spaceLabel(current)}</span>
-								</span>
+								</p>
 							</span>
 							<LuChevronsUpDown className="text-muted-foreground ms-auto size-4" />
 						</SidebarMenuButton>
@@ -92,7 +92,7 @@ export function SpaceSwitcher({
 						<DropdownMenuLabel className="text-muted-foreground text-xs font-normal">Espaces</DropdownMenuLabel>
 						{spaces.spaces.map((space) => (
 							<DropdownMenuItem key={space.id} onSelect={() => choose(space)} className="gap-2">
-								<p className="focus:**:text-brand text-brand bg-muted flex size-6 shrink-0 items-center justify-center rounded-md text-xs font-medium">
+								<p className="!text-brand text-brand bg-muted flex size-6 shrink-0 items-center justify-center rounded-md text-xs font-medium">
 									{initial(space.name)}
 								</p>
 								<span className="grid min-w-0 flex-1 leading-tight">
