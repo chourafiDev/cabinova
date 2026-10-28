@@ -16,7 +16,7 @@ export function WelcomeBanner({
 }) {
 	const day = new Date(`${date}T12:00:00`);
 	return (
-		<section className="mb-4 flex flex-col gap-5 rounded-2xl bg-test px-8 py-6 md:flex-row md:items-center md:gap-10 md:py-8">
+		<section className="mb-4 flex flex-col gap-5 rounded-2xl bg-brand px-8 dark:bg-brand/10 py-6 md:flex-row md:items-center md:gap-10 md:py-8">
 			<div className="min-w-0 flex-1">
 				<h1 className="mb-0.5 text-xl font-medium tracking-[0.015rem] text-white">
 					Bonjour, <span className="font-semibold text-brand-light">{session.user.name}</span>

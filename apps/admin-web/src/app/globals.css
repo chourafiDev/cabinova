@@ -50,8 +50,7 @@
   --color-secondary: var(--secondary);
   --color-primary-foreground: var(--primary-foreground);
   --color-primary: var(--primary);
-  --color-test-foreground: var(--primary-foreground);
-  --color-test: var(--test);
+  --color-brand: var(--brand);
   --color-brand-light: var(--brand-light);
   --color-grey: var(--grey);
   --color-popover-foreground: var(--popover-foreground);
@@ -68,11 +67,10 @@
 }
 
 /* Cabinova palette
- *   Brand Plum #613F75  → primary, ring, active states
+ *   Brand Plum #613F75  → primary, ring, active states, welcome banner, help card
  *   Ink        #111111  → text, sidebar
  *   White      #ffffff  → background
  *   Grey       #EFEFED  → sidebar, muted states
- *   Deep       brand mixed with black → welcome banner, sidebar border
  * Everything else is a neutral tint derived from these.
  */
 /* .paper: invoices, printable reports and e-mail previews stay light in dark mode. */
@@ -81,8 +79,7 @@
   --brand: #613F75;
   --ink: #111111;
   --grey: #EFEFED;
-  --test: color-mix(in oklab, var(--brand) 45%, black);
-  /* Brand on dark surfaces (welcome banner) */
+  /* Brand text on brand surfaces (welcome banner) */
   --brand-light: color-mix(in oklab, var(--brand) 35%, white);
 
   --background: #ffffff;
@@ -120,12 +117,12 @@
   /* Active & hovered items: white pill, dark text (same as normal items). */
   --sidebar-accent: #ffffff;
   --sidebar-accent-foreground: var(--ink);
-  --sidebar-border: color-mix(in oklab, white 10%, var(--test));
+  --sidebar-border: color-mix(in oklab, white 10%, var(--brand));
   --sidebar-ring: var(--brand);
 }
 
 /* Dark palette: same brand, ink surfaces. The plum is lifted so it keeps
-   its contrast on dark backgrounds; the welcome banner stays deep plum. */
+   its contrast on dark backgrounds. */
 @media screen {
   .dark {
     --background: #121214;
@@ -148,7 +145,6 @@
     --border: #2b2b31;
     --input: #36363d;
     --ring: color-mix(in oklab, var(--brand) 55%, white);
-    --test: color-mix(in oklab, var(--brand) 40%, black);
     --chart-1: color-mix(in oklab, var(--brand) 55%, white);
     --chart-2: #ececee;
     --chart-3: color-mix(in oklab, var(--brand) 75%, white);

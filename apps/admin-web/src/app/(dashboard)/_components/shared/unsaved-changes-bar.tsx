@@ -27,7 +27,7 @@ export function UnsavedChangesBar({
 			aria-live="polite"
 			inert={!visible}
 			className={cn(
-				"bg-test fixed top-3 text-white/90 left-1/2 z-50 flex w-[calc(100%-2rem)] max-w-md -translate-x-1/2 items-center justify-between gap-4 rounded-xl py-2 ps-4 pe-2 shadow-lg ring-1 ring-white/10",
+				"bg-brand fixed top-3 text-white/90 left-1/2 z-50 flex w-[calc(100%-2rem)] max-w-md -translate-x-1/2 items-center justify-between gap-4 rounded-xl py-2 ps-4 pe-2 shadow-lg ring-1 ring-white/10",
 				"transition-[translate,opacity] duration-300 ease-out",
 				visible ? "translate-y-0 opacity-100" : "pointer-events-none -translate-y-[calc(100%+1rem)] opacity-0",
 			)}
