@@ -35,7 +35,7 @@ export default async function InvoicePrintPage({ params }: PageProps<"/invoices/
 			<div className="mb-4 flex justify-end print:hidden">
 				<PrintButton />
 			</div>
-			<article className="relative overflow-hidden rounded-xl border bg-white p-10 text-sm text-zinc-900 shadow-sm print:rounded-none print:border-0 print:shadow-none">
+			<article className="paper relative overflow-hidden rounded-xl border bg-white p-10 text-sm text-zinc-900 shadow-sm print:rounded-none print:border-0 print:shadow-none">
 				{invoice.status !== "billed" && (
 					<span
 						className={cn(

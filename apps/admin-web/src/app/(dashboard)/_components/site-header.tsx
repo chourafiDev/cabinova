@@ -6,6 +6,7 @@ import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { findNavItem } from "./nav";
 import { NotificationsBell } from "./notifications-bell";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { UserMenu } from "./user-menu";
 
 export function SiteHeader() {
@@ -25,6 +26,7 @@ export function SiteHeader() {
         </BreadcrumbList>
       </Breadcrumb>
       <div className="ms-auto flex flex-1 items-center justify-end gap-2">
+        <ThemeToggle />
         <NotificationsBell />
         <UserMenu />
       </div>

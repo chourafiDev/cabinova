@@ -1,12 +1,13 @@
 "use client"
 
+import { useTheme } from "next-themes"
 import { Toaster as Sonner, type ToasterProps } from "sonner"
 import { CircleCheck, Info, Loader2, OctagonX, TriangleAlert } from "lucide-react"
 import { cn } from "cn"
 
 // Toasts for the admin and the storefront. Sonner keeps the positioning,
 // stacking and swipe-to-dismiss; the card itself is fully styled here
-// (`unstyled`): white card, coloured icon badge per type, title + description,
+// (`unstyled`): card in the theme's popover colour, coloured icon badge per type, title + description,
 // small dark action button, close button on hover.
 
 /** Round icon badge, tinted by toast type. */
@@ -17,11 +18,10 @@ function Badge({ className, children }: { className: string; children: React.Rea
 }
 
 const Toaster = ({ ...props }: ToasterProps) => {
+  const { resolvedTheme } = useTheme()
   return (
     <Sonner
-      // The app is light-only: don't follow the OS dark mode (it would turn
-      // descriptions light grey on our white cards).
-      theme="light"
+      theme={resolvedTheme === "dark" ? "dark" : "light"}
       className="toaster group"
       closeButton
       gap={10}
@@ -57,14 +57,14 @@ const Toaster = ({ ...props }: ToasterProps) => {
         unstyled: true,
         classNames: {
           toast: cn(
-            "group/toast flex w-[var(--width)] items-center gap-3 rounded-2xl border border-black/[0.06] bg-white p-3.5 pe-10 font-sans",
+            "group/toast flex w-[var(--width)] items-center gap-3 rounded-2xl border border-black/[0.06] bg-popover p-3.5 dark:border-white/10 pe-10 font-sans",
             "shadow-[0_12px_32px_-12px_rgb(0_0_0/0.22),0_2px_6px_-2px_rgb(0_0_0/0.06)]",
           ),
           // Fixed size: the loading spinner is positioned absolutely inside this slot.
           icon: "relative size-8 shrink-0 self-start",
           content: "grid min-w-0 flex-1 gap-0.5",
           title: "text-foreground text-sm leading-5 font-semibold",
-          description: "text-[13px] leading-[18px] text-neutral-500",
+          description: "text-[13px] leading-[18px] text-muted-foreground",
           actionButton: cn(
             "bg-foreground text-background hover:bg-foreground/85 shrink-0 cursor-pointer rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors",
           ),

@@ -33,7 +33,7 @@ const LEVELS: { value: FeatureLevel; label: string; tone: string }[] = [
 	{ value: "limited", label: "Limité", tone: "bg-amber-500 text-white" },
 	{ value: "addon", label: "Option", tone: "bg-sky-600 text-white" },
 	{ value: "custom", label: "Sur mesure", tone: "bg-violet-600 text-white" },
-	{ value: "none", label: "Non", tone: "bg-zinc-700 text-white" },
+	{ value: "none", label: "Non", tone: "bg-muted-foreground text-background" },
 ];
 
 const toCentimes = (v: string | undefined) => Math.round(Number((v ?? "").replace(",", ".")) * 100) || 0;

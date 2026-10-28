@@ -70,7 +70,7 @@ export function SubscriptionsChart({ series }: { series: DashboardOverview["seri
 								onClick={() => setRange(r)}
 								className={cn(
 									"rounded-md px-2.5 py-1 text-muted-foreground transition-colors",
-									range === r && "bg-zinc-900 text-white",
+									range === r && "bg-foreground text-background",
 								)}
 							>
 								{RANGES[r]}

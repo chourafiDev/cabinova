@@ -77,7 +77,7 @@ export default async function DashboardReportPage({
 			<div className="mb-4 flex justify-end print:hidden">
 				<PrintButton />
 			</div>
-			<article className="rounded-xl border bg-white p-10 text-sm text-zinc-900 shadow-sm print:rounded-none print:border-0 print:p-0 print:shadow-none">
+			<article className="paper rounded-xl border bg-white p-10 text-sm text-zinc-900 shadow-sm print:rounded-none print:border-0 print:p-0 print:shadow-none">
 				<header className="mb-8 flex flex-wrap items-start justify-between gap-4 border-b pb-6">
 					<div className="flex items-center gap-2">
 						<BrandMark branding={branding} className="font-bold" />

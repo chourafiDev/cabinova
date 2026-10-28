@@ -265,7 +265,7 @@ export function BillingSettingsForm({ settings, readOnly }: { settings: BillingS
 							{settings.configured ? "Configuré" : "À configurer"}
 						</Badge>
 					</div>
-					<div className="grid gap-3 rounded-lg border bg-white p-4 text-xs text-zinc-900">
+					<div className="paper grid gap-3 rounded-lg border bg-white p-4 text-xs text-zinc-900">
 						<div className="grid gap-0.5">
 							<span className="flex items-center gap-1.5 font-semibold">
 								<span className="flex size-5 items-center justify-center rounded bg-[#613f75] text-[10px] font-bold text-white">

@@ -6,6 +6,7 @@ import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import type { ClinicSession } from "@/lib/session";
 import { findNavItem } from "./nav";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { UserMenu } from "./user-menu";
 
 export function SiteHeader({ user }: { user: ClinicSession["user"] }) {
@@ -27,6 +28,7 @@ export function SiteHeader({ user }: { user: ClinicSession["user"] }) {
         <span className="hidden rounded-full border border-dashed px-2 py-0.5 text-xs text-muted-foreground sm:inline">
           Activité : données de démonstration
         </span>
+        <ThemeToggle />
         <UserMenu user={user} />
       </div>
     </header>

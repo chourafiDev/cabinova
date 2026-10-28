@@ -20,7 +20,7 @@ export default async function DashboardLayout({ children }: LayoutProps<"/">) {
         <AppSidebar branding={branding} />
         {/* min-w-0 lets wide content (tables) scroll inside instead of widening the page */}
         {/* Inset panel: fixed frame on desktop, the page scrolls inside it. */}
-        <SidebarInset className="min-w-0 md:h-[calc(100svh-1rem)] md:overflow-y-auto md:border md:border-black/5">
+        <SidebarInset className="min-w-0 md:h-[calc(100svh-1rem)] md:overflow-y-auto md:border md:border-black/5 dark:md:border-white/5">
           <SiteHeader />
           <div className="flex min-w-0 flex-1 flex-col p-4">{children}</div>
           <SiteFooter />

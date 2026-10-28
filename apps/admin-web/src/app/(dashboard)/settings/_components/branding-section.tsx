@@ -167,7 +167,7 @@ export function BrandingSection({
 					</div>
 					<div className="grid gap-2 rounded-xl border bg-card p-4">
 						<span className="text-xs text-muted-foreground">Aperçu — e-mail</span>
-						<div className="overflow-hidden rounded-lg border bg-white text-zinc-900" style={{ borderTop: `4px solid ${preview.primaryColor}` }}>
+						<div className="paper overflow-hidden rounded-lg border bg-white text-zinc-900" style={{ borderTop: `4px solid ${preview.primaryColor}` }}>
 							<div className="flex items-center gap-2 px-4 pt-4">
 								{mark()}
 								<span className="text-sm font-bold">{platformName}</span>

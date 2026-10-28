@@ -27,7 +27,7 @@ export function WelcomeBanner({
 						: `Plus de rendez-vous prévus aujourd’hui au ${session.cabinet.name}.`}
 				</p>
 				<div className="mt-4 flex flex-wrap gap-2">
-					<Button asChild size="sm" className="bg-white text-foreground hover:bg-white/90">
+					<Button asChild size="sm" className="bg-white text-black hover:bg-white/90">
 						<Link href="/appointments">
 							<LuCalendarPlus /> Nouveau rendez-vous
 						</Link>
