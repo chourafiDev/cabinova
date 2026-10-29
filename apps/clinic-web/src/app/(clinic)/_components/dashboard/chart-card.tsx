@@ -22,7 +22,7 @@ export function ChartCard({
 	children: React.ReactNode;
 }) {
 	return (
-		<section className={cn("flex flex-col rounded-xl border bg-card p-5", className)}>
+		<section className={cn("flex min-w-0 flex-col rounded-xl border bg-card p-5", className)}>
 			<header className="mb-4 flex flex-wrap items-start justify-between gap-3 border-b pb-4">
 				<div className="grid gap-0.5">
 					<span className="text-xs text-muted-foreground">{eyebrow}</span>

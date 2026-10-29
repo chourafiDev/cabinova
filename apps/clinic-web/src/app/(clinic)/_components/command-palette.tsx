@@ -36,7 +36,7 @@ const fold = (text: string) =>
  * or run an action — theme, product tour, shortcuts, support, sign out.
  * Patient and appointment search join it with the agenda and patients.
  */
-export function CommandPalette({ spaces, isOwner }: { spaces: ClinicSession["spaces"]; isOwner: boolean }) {
+export function CommandPalette({ spaces, role }: { spaces: ClinicSession["spaces"]; role: string }) {
 	const router = useRouter();
 	const pathname = usePathname();
 	const { setTheme } = useTheme();
@@ -101,7 +101,7 @@ export function CommandPalette({ spaces, isOwner }: { spaces: ClinicSession["spa
 		{ id: "sign-out", label: "Se déconnecter", icon: LuLogOut, keywords: "déconnexion quitter", run: () => pick(signOut) },
 	];
 	const term = fold(input.trim());
-	const pages = visibleNavItems(allNavItems, isOwner).filter((item) => !term || fold(item.title).includes(term));
+	const pages = visibleNavItems(allNavItems, role).filter((item) => !term || fold(item.title).includes(term));
 	const visibleActions = actions.filter((a) => !term || fold(`${a.label} ${a.keywords ?? ""}`).includes(term));
 
 	return (

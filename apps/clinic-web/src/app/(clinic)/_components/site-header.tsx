@@ -26,7 +26,7 @@ export function SiteHeader({ user, spaces }: { user: ClinicSession["user"]; spac
         </BreadcrumbList>
       </Breadcrumb>
       <div className="ms-auto flex flex-1 items-center justify-end gap-2">
-        <CommandPalette spaces={spaces} isOwner={user.role === "owner"} />
+        <CommandPalette spaces={spaces} role={user.role} />
         <span data-tour="account" className="flex items-center gap-2">
           <ThemeToggle />
           <UserMenu user={user} />

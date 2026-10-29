@@ -20,8 +20,8 @@ export type NavItem = {
   soon?: boolean;
   /** "G" then this letter jumps here (keyboard shortcuts). */
   shortcut?: string;
-  /** The responsible doctor's only (hidden from the rest of the staff). */
-  ownerOnly?: boolean;
+  /** Only these roles see it (everyone when absent). */
+  roles?: string[];
 };
 
 export const navGroups: { label: string; items: NavItem[] }[] = [
@@ -39,13 +39,13 @@ export const navGroups: { label: string; items: NavItem[] }[] = [
     label: "Gestion",
     items: [
       { title: "Encaissements", href: "/payments", icon: HiBanknotes, shortcut: "e", soon: true },
-      { title: "Statistiques", href: "/reports", icon: HiChartBar, soon: true },
+      { title: "Statistiques", href: "/reports", icon: HiChartBar, roles: ["owner", "doctor"] },
     ],
   },
   {
     label: "Administration",
     items: [
-      { title: "Équipe", href: "/staff", icon: HiIdentification, ownerOnly: true },
+      { title: "Équipe", href: "/staff", icon: HiIdentification, roles: ["owner"] },
       { title: "Paramètres", href: "/settings", icon: HiCog6Tooth },
     ],
   },
@@ -54,8 +54,8 @@ export const navGroups: { label: string; items: NavItem[] }[] = [
 export const allNavItems = navGroups.flatMap((g) => g.items);
 
 /** What this person sees in the sidebar and the command palette. */
-export const visibleNavItems = (items: NavItem[], isOwner: boolean) =>
-  items.filter((i) => isOwner || !i.ownerOnly);
+export const visibleNavItems = (items: NavItem[], role: string) =>
+  items.filter((i) => !i.roles || i.roles.includes(role));
 
 /** The nav item matching the current path (longest href wins). */
 export function findNavItem(pathname: string) {

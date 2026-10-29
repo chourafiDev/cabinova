@@ -22,12 +22,13 @@ import { findNavItem, navGroups, visibleNavItems } from "./nav";
 export function AppSidebar({
 	cabinet,
 	spaces,
-	isOwner,
+	role,
 }: {
 	cabinet: ClinicSession["cabinet"];
 	spaces: ClinicSession["spaces"];
-	isOwner: boolean;
+	role: string;
 }) {
+	const isOwner = role === "owner";
 	const pathname = usePathname();
 	const active = findNavItem(pathname);
 
@@ -62,7 +63,7 @@ export function AppSidebar({
 					<SidebarGroup key={group.label}>
 						<SidebarGroupLabel>{group.label}</SidebarGroupLabel>
 						<SidebarMenu>
-							{visibleNavItems(group.items, isOwner).map((item) => (
+							{visibleNavItems(group.items, role).map((item) => (
 								<SidebarMenuItem key={item.href}>
 									<SidebarMenuButton asChild isActive={active?.href === item.href} tooltip={item.title}>
 										<Link href={item.href}>
