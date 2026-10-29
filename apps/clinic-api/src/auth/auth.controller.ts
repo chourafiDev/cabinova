@@ -24,12 +24,7 @@ import { AuthService } from './auth.service.js';
 import type { ClinicUser } from './auth.types.js';
 import { CurrentUser, Public } from './decorators.js';
 import { AcceptInvitationDto, LoginDto } from './dto.js';
-
-const ROLE_LABELS: Record<string, string> = {
-  owner: 'Médecin responsable',
-  doctor: 'Médecin',
-  secretary: 'Secrétaire',
-};
+import { ROLE_LABELS } from './roles.js';
 
 @Controller('auth')
 export class AuthController {
@@ -165,7 +160,7 @@ export class AuthController {
     return new NotFoundException({
       code: 'INVALID_LINK',
       message:
-        'Ce lien est invalide ou a expiré. Demandez-en un nouveau au support Cabinova.',
+        'Ce lien est invalide ou a expiré. Demandez-en un nouveau au médecin responsable du cabinet, ou au support Cabinova.',
     });
   }
 }

@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { addressOf, button, escapeHtml, layout } from '@cabinova/mail';
 import { Resend } from 'resend';
 import type { Env } from '../config/env.js';
 import { PlatformConfigService } from '../settings/platform-config.service.js';
@@ -379,60 +380,8 @@ export class EmailService {
   }
 }
 
-/** "Name <a@b>" → "a@b". */
-const addressOf = (from: string) => /<([^>]+)>/.exec(from)?.[1] ?? from.trim();
-
 const fmtDate = (d: Date) =>
   new Intl.DateTimeFormat('fr-MA', {
     dateStyle: 'long',
     timeZone: 'Africa/Casablanca',
   }).format(d);
-
-function escapeHtml(value: string) {
-  return value.replace(
-    /[&<>"']/g,
-    (c) =>
-      ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[
-        c
-      ]!,
-  );
-}
-
-function button(url: string, label: string) {
-  return `<a href="${url}" style="display:inline-block;background:{{BRAND}};color:#fff;text-decoration:none;padding:12px 24px;border-radius:8px;font-weight:600;margin:16px 0">${escapeHtml(label)}</a>`;
-}
-
-function layout(
-  body: string,
-  brand: {
-    name: string;
-    color: string;
-    logoUrl: string | null;
-    /** Lines under the message (signature, support contact); null for internal alerts. */
-    footer: (string | null)[] | null;
-  },
-) {
-  const mark = brand.logoUrl
-    ? `<img src="${brand.logoUrl}" alt="" height="36" style="height:36px;max-width:160px;vertical-align:middle;border-radius:8px">`
-    : `<span style="display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:8px;background:${brand.color};color:#fff;font-weight:700;font-size:16px">${escapeHtml(brand.name.charAt(0).toUpperCase())}</span>`;
-  const footer = (brand.footer ?? []).filter(Boolean) as string[];
-  return `<!doctype html>
-<html lang="fr">
-  <body style="margin:0;background:#f4f3f6;padding:32px 16px;font-family:-apple-system,Segoe UI,Roboto,sans-serif">
-    <table role="presentation" width="100%" style="max-width:480px;margin:0 auto;background:#fff;border-radius:12px;overflow:hidden;border-top:4px solid ${brand.color}">
-      <tr><td style="padding:24px 32px 0">
-        ${mark}
-        <span style="font-weight:700;font-size:16px;margin-inline-start:10px;vertical-align:middle">${escapeHtml(brand.name)}</span>
-      </td></tr>
-      <tr><td style="padding:24px 32px ${footer.length ? '16px' : '32px'};color:#111;font-size:14px;line-height:1.6">
-        ${body}
-      </td></tr>
-      ${
-        footer.length
-          ? `<tr><td style="padding:16px 32px 24px;border-top:1px solid #f0eef3;color:#6b7280;font-size:12px;line-height:1.5;white-space:pre-line">${footer.map(escapeHtml).join('<br>')}</td></tr>`
-          : ''
-      }
-    </table>
-  </body>
-</html>`;
-}

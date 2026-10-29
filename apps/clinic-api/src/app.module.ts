@@ -18,6 +18,7 @@ import { DashboardController } from './dashboard/dashboard.controller.js';
 import { DashboardService } from './dashboard/dashboard.service.js';
 import { validateEnv } from './config/env.js';
 import { CatalogModule } from './database/catalog.module.js';
+import { MailService } from './mail/mail.service.js';
 import { HealthController } from './health/health.controller.js';
 import { OnboardingController } from './onboarding/onboarding.controller.js';
 import { OnboardingService } from './onboarding/onboarding.service.js';
@@ -28,6 +29,8 @@ import { SettingsController } from './settings/settings.controller.js';
 import { SpaceGuard } from './spaces/space.guard.js';
 import { SpacesController } from './spaces/spaces.controller.js';
 import { SpacesService } from './spaces/spaces.service.js';
+import { TeamController } from './team/team.controller.js';
+import { TeamService } from './team/team.service.js';
 import { TenancyMiddleware } from './tenancy/tenancy.middleware.js';
 import { TenancyService } from './tenancy/tenancy.service.js';
 
@@ -57,6 +60,7 @@ import { TenancyService } from './tenancy/tenancy.service.js';
     AppointmentsController,
     DashboardController,
     SettingsController,
+    TeamController,
   ],
   providers: [
     TenancyService,
@@ -69,6 +73,8 @@ import { TenancyService } from './tenancy/tenancy.service.js';
     AppointmentsService,
     DashboardService,
     CabinetService,
+    MailService,
+    TeamService,
     { provide: APP_GUARD, useClass: ThrottlerGuard },
     { provide: APP_GUARD, useClass: SessionGuard },
   ],

@@ -20,6 +20,8 @@ export type NavItem = {
   soon?: boolean;
   /** "G" then this letter jumps here (keyboard shortcuts). */
   shortcut?: string;
+  /** The responsible doctor's only (hidden from the rest of the staff). */
+  ownerOnly?: boolean;
 };
 
 export const navGroups: { label: string; items: NavItem[] }[] = [
@@ -43,13 +45,17 @@ export const navGroups: { label: string; items: NavItem[] }[] = [
   {
     label: "Administration",
     items: [
-      { title: "Équipe", href: "/staff", icon: HiIdentification, soon: true },
+      { title: "Équipe", href: "/staff", icon: HiIdentification, ownerOnly: true },
       { title: "Paramètres", href: "/settings", icon: HiCog6Tooth },
     ],
   },
 ];
 
 export const allNavItems = navGroups.flatMap((g) => g.items);
+
+/** What this person sees in the sidebar and the command palette. */
+export const visibleNavItems = (items: NavItem[], isOwner: boolean) =>
+  items.filter((i) => isOwner || !i.ownerOnly);
 
 /** The nav item matching the current path (longest href wins). */
 export function findNavItem(pathname: string) {

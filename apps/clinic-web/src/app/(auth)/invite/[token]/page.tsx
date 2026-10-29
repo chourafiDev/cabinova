@@ -21,7 +21,7 @@ export default async function InvitePage({ params }: PageProps<"/invite/[token]"
 			<AuthCard
 				cabinet={found.cabinet}
 				title="Lien invalide ou expiré"
-				description="Ce lien a déjà servi ou n’est plus valable. Demandez-en un nouveau au support Cabinova."
+				description="Ce lien a déjà servi ou n’est plus valable. Demandez-en un nouveau au médecin responsable du cabinet, ou au support Cabinova."
 			>
 				<p className="mt-8 text-center text-sm">
 					<Link href="/login" className="font-medium hover:underline">

@@ -17,7 +17,7 @@ import {
 import type { ClinicSession } from "@/lib/session";
 import { HelpCard } from "./help-card";
 import { SpaceSwitcher } from "./space-switcher";
-import { findNavItem, navGroups } from "./nav";
+import { findNavItem, navGroups, visibleNavItems } from "./nav";
 
 export function AppSidebar({
 	cabinet,
@@ -62,7 +62,7 @@ export function AppSidebar({
 					<SidebarGroup key={group.label}>
 						<SidebarGroupLabel>{group.label}</SidebarGroupLabel>
 						<SidebarMenu>
-							{group.items.map((item) => (
+							{visibleNavItems(group.items, isOwner).map((item) => (
 								<SidebarMenuItem key={item.href}>
 									<SidebarMenuButton asChild isActive={active?.href === item.href} tooltip={item.title}>
 										<Link href={item.href}>

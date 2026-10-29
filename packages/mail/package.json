@@ -1,0 +1,15 @@
+{
+  "name": "@cabinova/mail",
+  "version": "0.0.1",
+  "private": true,
+  "description": "The platform's e-mail layout (logo, brand colour, footer), shared by admin-api and clinic-api so every e-mail looks the same.",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./src/index.d.ts",
+      "default": "./src/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": ["src"]
+}

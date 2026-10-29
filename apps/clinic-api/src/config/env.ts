@@ -29,6 +29,29 @@ const envSchema = z
     TENANT_SECRETS_PREVIOUS_KEYS: z.string().optional(),
     /** Cabinets answer at <subdomain>.<TENANT_BASE_DOMAIN> (and <subdomain>.localhost outside production). */
     TENANT_BASE_DOMAIN: z.string().default('cabinova.ma'),
+    /**
+     * Clinic app address in invitation links, "{subdomain}" replaced.
+     * Defaults to https://<subdomain>.<TENANT_BASE_DOMAIN> in production and
+     * http://<subdomain>.localhost:3002 otherwise.
+     */
+    CLINIC_APP_URL: z
+      .string()
+      .refine((v) => v.includes('{subdomain}'), {
+        message: 'must contain {subdomain}',
+      })
+      .optional(),
+    /**
+     * Same Resend key as admin-api (Équipe invitations). Optional: without
+     * it, e-mails are logged and the owner copies the link instead.
+     */
+    RESEND_API_KEY: z.string().optional(),
+    /** "from" address when the platform configuration sets none. */
+    EMAIL_FROM: z.string().default('Cabinova <onboarding@resend.dev>'),
+    /**
+     * Super Admin app origin (it serves the platform logo at
+     * /api/branding/logo). Without it, e-mails show the letter mark.
+     */
+    PLATFORM_WEB_ORIGIN: z.url().optional(),
     /** Tests and CI only, see admin-api/test/docker-compose.yml. */
     NEON_WS_PROXY: z.string().optional(),
   })

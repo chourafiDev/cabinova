@@ -4,7 +4,7 @@ export type ClinicUser = {
   id: string;
   name: string;
   email: string;
-  /** "owner" (responsible doctor) for now; staff roles come with Équipe. */
+  /** "owner" (responsible doctor), "doctor" or "secretary" (roles.ts). */
   role: string;
 };
 

@@ -19,7 +19,7 @@ import {
 import { api } from "@/lib/api-client";
 import type { ClinicSession } from "@/lib/session";
 import { spaceLabel, switchSpace } from "@/lib/spaces";
-import { allNavItems } from "./nav";
+import { allNavItems, visibleNavItems } from "./nav";
 import { TOUR_REPLAY_HREF } from "./tour/product-tour";
 
 type Action = { id: string; label: string; icon: IconType; keywords?: string; run: () => void };
@@ -36,7 +36,7 @@ const fold = (text: string) =>
  * or run an action — theme, product tour, shortcuts, support, sign out.
  * Patient and appointment search join it with the agenda and patients.
  */
-export function CommandPalette({ spaces }: { spaces: ClinicSession["spaces"] }) {
+export function CommandPalette({ spaces, isOwner }: { spaces: ClinicSession["spaces"]; isOwner: boolean }) {
 	const router = useRouter();
 	const pathname = usePathname();
 	const { setTheme } = useTheme();
@@ -101,7 +101,7 @@ export function CommandPalette({ spaces }: { spaces: ClinicSession["spaces"] }) 
 		{ id: "sign-out", label: "Se déconnecter", icon: LuLogOut, keywords: "déconnexion quitter", run: () => pick(signOut) },
 	];
 	const term = fold(input.trim());
-	const pages = allNavItems.filter((item) => !term || fold(item.title).includes(term));
+	const pages = visibleNavItems(allNavItems, isOwner).filter((item) => !term || fold(item.title).includes(term));
 	const visibleActions = actions.filter((a) => !term || fold(`${a.label} ${a.keywords ?? ""}`).includes(term));
 
 	return (

@@ -103,8 +103,8 @@ export async function signInDoctor(
 }
 
 /**
- * A staff member written straight into the cabinet's database (there's no
- * Équipe module yet), member of its first space, signed in.
+ * A staff member written straight into the cabinet's database (quicker
+ * than an Équipe invitation), member of its first space, signed in.
  */
 export async function addStaff(
   clinic: INestApplication,
