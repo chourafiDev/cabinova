@@ -97,6 +97,13 @@ export class TenancyService implements OnApplicationShutdown {
     };
   }
 
+  /** The cabinet's identity changed: the next request reads it again. */
+  forget(tenantId: string) {
+    for (const [subdomain, { row }] of this.hosts) {
+      if (row?.id === tenantId) this.hosts.delete(subdomain);
+    }
+  }
+
   async onApplicationShutdown() {
     await Promise.all([...this.pools.values()].map(({ pool }) => pool.end()));
   }

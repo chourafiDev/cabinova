@@ -44,7 +44,7 @@ export const navGroups: { label: string; items: NavItem[] }[] = [
     label: "Administration",
     items: [
       { title: "Équipe", href: "/staff", icon: HiIdentification, soon: true },
-      { title: "Paramètres", href: "/settings", icon: HiCog6Tooth, soon: true },
+      { title: "Paramètres", href: "/settings", icon: HiCog6Tooth },
     ],
   },
 ];

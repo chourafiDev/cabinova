@@ -6,6 +6,7 @@ import {
   date,
   index,
   integer,
+  jsonb,
   pgEnum,
   pgTable,
   primaryKey,
@@ -47,6 +48,10 @@ export const clinicSettings = pgTable(
     email: text('email').notNull(),
     locale: text('locale').notNull().default('fr'),
     timezone: text('timezone').notNull().default('Africa/Casablanca'),
+    /** Pre-selected duration when booking (Paramètres › Horaires & agenda). */
+    defaultAppointmentMinutes: smallint('default_appointment_minutes')
+      .notNull()
+      .default(30),
     ...timestamps,
   },
   (t) => [check('clinic_settings_single_row', sql`${t.id} = 1`)],
@@ -97,6 +102,26 @@ export const sessions = pgTable('sessions', {
     .defaultNow(),
 });
 
+/**
+ * Weekly opening hours, keyed by day (Date.getDay(): "0" = Sunday). Each
+ * day lists its opening periods ("HH:MM", local time), e.g. a lunch break
+ * splits it in two; an empty list means closed.
+ */
+export type OpeningHours = Record<
+  '0' | '1' | '2' | '3' | '4' | '5' | '6',
+  { from: string; to: string }[]
+>;
+
+const DEFAULT_OPENING_HOURS: OpeningHours = {
+  '0': [],
+  '1': [{ from: '08:00', to: '18:00' }],
+  '2': [{ from: '08:00', to: '18:00' }],
+  '3': [{ from: '08:00', to: '18:00' }],
+  '4': [{ from: '08:00', to: '18:00' }],
+  '5': [{ from: '08:00', to: '18:00' }],
+  '6': [{ from: '08:00', to: '13:00' }],
+};
+
 // ── Spaces ────────────────────────────────────────────────────────────────
 
 /**
@@ -111,6 +136,11 @@ export const spaces = pgTable('spaces', {
   city: text('city'),
   address: text('address'),
   phone: text('phone'),
+  /** Shown on the agenda; booking outside them only gets a warning. */
+  openingHours: jsonb('opening_hours')
+    .$type<OpeningHours>()
+    .notNull()
+    .default(DEFAULT_OPENING_HOURS),
   /** Closed spaces keep their data, read by nobody but the owner. */
   active: boolean('active').notNull().default(true),
   ...timestamps,

@@ -116,10 +116,16 @@ export function getEventBlockStyle(event: IEvent, day: Date, groupIndex: number,
   return { top: `${top}%`, width: `${width}%`, left: `${left}%` };
 }
 
+/** The hour row is (at least partly) within opening hours. */
 export function isWorkingHour(day: Date, hour: number, workingHours: TWorkingHours) {
-  const dayIndex = day.getDay() as keyof typeof workingHours;
-  const dayHours = workingHours[dayIndex];
-  return hour >= dayHours.from && hour < dayHours.to;
+  return (workingHours[day.getDay()] ?? []).some((p) => p.from < (hour + 1) * 60 && p.to > hour * 60);
+}
+
+/** The whole appointment falls inside one opening period of its day. */
+export function isWithinWorkingHours(start: Date, end: Date, workingHours: TWorkingHours) {
+  const from = start.getHours() * 60 + start.getMinutes();
+  const to = from + Math.round((end.getTime() - start.getTime()) / 60_000);
+  return (workingHours[start.getDay()] ?? []).some((p) => p.from <= from && p.to >= to);
 }
 
 export function getVisibleHours(visibleHours: TVisibleHours, singleDayEvents: IEvent[]) {

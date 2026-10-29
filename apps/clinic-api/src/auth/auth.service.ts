@@ -74,6 +74,67 @@ export class AuthService {
     await db.query('delete from sessions where id = $1', [sessionId]);
   }
 
+  /** This person's signed-in devices, the current one first. */
+  async listSessions(db: Pool, user: ClinicUser) {
+    const { rows } = await db.query<{
+      id: string;
+      userAgent: string | null;
+      ip: string | null;
+      createdAt: Date;
+      expiresAt: Date;
+    }>(
+      `select id, user_agent as "userAgent", ip, created_at as "createdAt",
+              expires_at as "expiresAt"
+         from sessions where user_id = $1 and expires_at > now()
+        order by id = $2 desc, created_at desc`,
+      [user.id, user.sessionId],
+    );
+    return rows.map((s) => ({ ...s, current: s.id === user.sessionId }));
+  }
+
+  /** Signs out one of this person's other devices (false if not theirs). */
+  async revokeOwnSession(db: Pool, user: ClinicUser, sessionId: string) {
+    const { rowCount } = await db.query(
+      'delete from sessions where id = $1 and user_id = $2 and id <> $3',
+      [sessionId, user.id, user.sessionId],
+    );
+    return Boolean(rowCount);
+  }
+
+  /** Signs out every device of this person but the current one. */
+  async revokeOtherSessions(db: Pool, user: ClinicUser) {
+    const { rowCount } = await db.query(
+      'delete from sessions where user_id = $1 and id <> $2',
+      [user.id, user.sessionId],
+    );
+    return rowCount ?? 0;
+  }
+
+  /**
+   * New password, after checking the current one; other devices are signed
+   * out (a stolen session doesn't survive the change). False if the current
+   * password is wrong.
+   */
+  async changePassword(
+    db: Pool,
+    user: ClinicUser,
+    currentPassword: string,
+    newPassword: string,
+  ) {
+    const { rows } = await db.query<{ password_hash: string | null }>(
+      'select password_hash from users where id = $1',
+      [user.id],
+    );
+    const hash = rows[0]?.password_hash;
+    if (!hash || !(await argon2.verify(hash, currentPassword))) return false;
+    await db.query(
+      'update users set password_hash = $2, updated_at = now() where id = $1',
+      [user.id, await argon2.hash(newPassword)],
+    );
+    await this.revokeOtherSessions(db, user);
+    return true;
+  }
+
   /** Who the invitation link is for; null if unknown, used or expired. */
   async findInvitation(db: Pool, token: string) {
     const { rows } = await db.query<{

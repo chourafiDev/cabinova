@@ -105,3 +105,7 @@ export function visibleRange(view: TCalendarView, date: Date) {
 }
 
 export const DURATIONS = [10, 15, 20, 30, 45, 60, 90, 120];
+
+/** 30 → "30 min", 90 → "1 h 30". */
+export const durationLabel = (min: number) =>
+	min < 60 ? `${min} min` : `${Math.floor(min / 60)} h${min % 60 ? ` ${String(min % 60).padStart(2, "0")}` : ""}`;

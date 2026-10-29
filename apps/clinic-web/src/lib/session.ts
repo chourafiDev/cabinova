@@ -21,7 +21,20 @@ export type ClinicSession = {
 };
 
 /** A branch of the cabinet (Fès, Marrakech…), isolated from the others. */
-export type Space = { id: string; name: string; city: string | null; address: string | null; phone: string | null };
+export type Space = {
+	id: string;
+	name: string;
+	city: string | null;
+	address: string | null;
+	phone: string | null;
+	openingHours: OpeningHours;
+};
+
+/**
+ * Weekly opening hours by day (Date.getDay(): "0" = Sunday), each day's
+ * periods in "HH:MM"; an empty list means closed.
+ */
+export type OpeningHours = Record<"0" | "1" | "2" | "3" | "4" | "5" | "6", { from: string; to: string }[]>;
 
 export type ClinicState =
 	| { status: "signed-in"; session: ClinicSession }

@@ -14,3 +14,13 @@ export function assertMedical(user: ClinicUser) {
     });
   }
 }
+
+/** Cabinet-wide settings: the responsible doctor only. */
+export function assertOwner(user: ClinicUser) {
+  if (user.role !== 'owner') {
+    throw new ForbiddenException({
+      code: 'OWNER_ONLY',
+      message: 'Réservé au médecin responsable du cabinet.',
+    });
+  }
+}

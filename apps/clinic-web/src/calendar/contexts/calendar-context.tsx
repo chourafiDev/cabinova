@@ -1,10 +1,11 @@
 "use client";
 
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useMemo, useState } from "react";
 
-import type { Dispatch, SetStateAction } from "react";
 import type { IEvent, IUser } from "@/calendar/interfaces";
 import type { TBadgeVariant, TCalendarView, TVisibleHours, TWorkingHours } from "@/calendar/types";
+import type { OpeningHours } from "@/lib/session";
+import { toMinutes } from "@/lib/settings";
 
 interface ICalendarContext {
   view: TCalendarView;
@@ -17,10 +18,14 @@ interface ICalendarContext {
   setBadgeVariant: (variant: TBadgeVariant) => void;
   /** Practitioners */
   users: IUser[];
+  /** The current space's opening hours (Paramètres › Horaires & agenda), as set… */
+  openingHours: OpeningHours;
+  /** …and in minutes, for the views. */
   workingHours: TWorkingHours;
-  setWorkingHours: Dispatch<SetStateAction<TWorkingHours>>;
+  /** Rows shown on the day/week views: opening hours, widened by events outside them. */
   visibleHours: TVisibleHours;
-  setVisibleHours: Dispatch<SetStateAction<TVisibleHours>>;
+  /** Pre-selected when booking (minutes). */
+  defaultDuration: number;
   events: IEvent[];
   /** appointments:write — booking, drag & drop, status changes. */
   canWrite: boolean;
@@ -28,18 +33,27 @@ interface ICalendarContext {
 
 const CalendarContext = createContext<ICalendarContext | null>(null);
 
-// TODO(settings): per-clinic opening hours from Réglages. Keys are Date.getDay() (0 = dimanche).
-const WORKING_HOURS: TWorkingHours = {
-  0: { from: 0, to: 0 },
-  1: { from: 8, to: 18 },
-  2: { from: 8, to: 18 },
-  3: { from: 8, to: 18 },
-  4: { from: 8, to: 18 },
-  5: { from: 8, to: 18 },
-  6: { from: 8, to: 13 },
-};
+// Before a space has hours (or when it's closed all week).
+const DEFAULT_VISIBLE_HOURS: TVisibleHours = { from: 8, to: 19 };
 
-const VISIBLE_HOURS: TVisibleHours = { from: 8, to: 19 };
+function workingHoursOf(openingHours: OpeningHours): TWorkingHours {
+  return Object.fromEntries(
+    Object.entries(openingHours).map(([day, periods]) => [
+      Number(day),
+      periods.map((p) => ({ from: toMinutes(p.from), to: toMinutes(p.to) })),
+    ]),
+  );
+}
+
+/** From the earliest opening to the latest closing of the week, in whole hours. */
+function visibleHoursOf(workingHours: TWorkingHours): TVisibleHours {
+  const periods = Object.values(workingHours).flat();
+  if (!periods.length) return DEFAULT_VISIBLE_HOURS;
+  return {
+    from: Math.floor(Math.min(...periods.map((p) => p.from)) / 60),
+    to: Math.min(24, Math.ceil(Math.max(...periods.map((p) => p.to)) / 60)),
+  };
+}
 
 /**
  * Calendar state. Date, view and practitioner live in the URL (owned by the
@@ -56,6 +70,8 @@ export function CalendarProvider({
   selectedUserId,
   setSelectedUserId,
   canWrite,
+  openingHours,
+  defaultDuration,
 }: {
   children: React.ReactNode;
   users: IUser[];
@@ -67,10 +83,12 @@ export function CalendarProvider({
   selectedUserId: IUser["id"] | "all";
   setSelectedUserId: (userId: IUser["id"] | "all") => void;
   canWrite: boolean;
+  openingHours: OpeningHours;
+  defaultDuration: number;
 }) {
   const [badgeVariant, setBadgeVariant] = useState<TBadgeVariant>("colored");
-  const [visibleHours, setVisibleHours] = useState<TVisibleHours>(VISIBLE_HOURS);
-  const [workingHours, setWorkingHours] = useState<TWorkingHours>(WORKING_HOURS);
+  const workingHours = useMemo(() => workingHoursOf(openingHours), [openingHours]);
+  const visibleHours = useMemo(() => visibleHoursOf(workingHours), [workingHours]);
 
   return (
     <CalendarContext.Provider
@@ -85,9 +103,9 @@ export function CalendarProvider({
         setBadgeVariant,
         users,
         visibleHours,
-        setVisibleHours,
+        openingHours,
         workingHours,
-        setWorkingHours,
+        defaultDuration,
         events,
         canWrite,
       }}

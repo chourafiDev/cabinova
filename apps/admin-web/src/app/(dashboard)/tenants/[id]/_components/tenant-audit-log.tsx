@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { formatDate } from "@/lib/format";
 import { BILLING_PERIOD_LABELS, type BillingPeriod, formatStorage } from "@/lib/plans";
+import { auditActorName } from "@/lib/security";
 import {
 	reasonLabel,
 	STATUS_LABELS,
@@ -150,7 +151,7 @@ export function TenantAuditLog({
 								<time dateTime={entry.createdAt}>
 									{formatDate(entry.createdAt, { month: "short", hour: "2-digit", minute: "2-digit" })}
 								</time>
-								<div>{entry.actor?.name ?? "Système"}</div>
+								<div>{auditActorName(entry) ?? "Système"}</div>
 							</div>
 							<div className="grid gap-1">
 								<p className="font-medium">{title}</p>

@@ -144,3 +144,16 @@ export type TenantDataStatus = {
 
 export const formatBytes = (n: number) =>
 	n < 1024 ? `${n} o` : n < 1024 ** 2 ? `${(n / 1024).toFixed(1)} Ko` : `${(n / 1024 ** 2).toFixed(1)} Mo`;
+
+/**
+ * Who made an audited change: a platform user, or someone in a cabinet
+ * (changes made from the clinic app's Paramètres carry them in metadata).
+ */
+export function auditActorName(entry: {
+	actor: { name: string } | null;
+	metadata: Record<string, unknown> | null;
+}) {
+	if (entry.actor) return entry.actor.name;
+	const by = entry.metadata?.source === "clinic" ? (entry.metadata.by as { name?: string } | undefined) : undefined;
+	return by?.name ? `${by.name} (cabinet)` : null;
+}

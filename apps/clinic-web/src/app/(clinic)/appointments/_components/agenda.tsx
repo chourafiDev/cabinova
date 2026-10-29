@@ -11,6 +11,7 @@ import { CalendarProvider } from "@/calendar/contexts/calendar-context";
 import type { TCalendarView } from "@/calendar/types";
 import { api } from "@/lib/api-client";
 import { type Appointment, APPOINTMENTS_KEY, type Practitioner, toEvent, visibleRange } from "@/lib/appointments";
+import type { OpeningHours } from "@/lib/session";
 import { cn } from "@/lib/utils";
 import { BookFromUrl } from "./book-from-url";
 
@@ -25,7 +26,17 @@ const searchParams = {
 };
 
 /** Agenda page: big-calendar views on the appointments API. View, date and practitioner live in the URL. */
-export function Agenda({ practitioners, canWrite }: { practitioners: Practitioner[]; canWrite: boolean }) {
+export function Agenda({
+	practitioners,
+	canWrite,
+	openingHours,
+	defaultDuration,
+}: {
+	practitioners: Practitioner[];
+	canWrite: boolean;
+	openingHours: OpeningHours;
+	defaultDuration: number;
+}) {
 	const [{ view, date, practitioner, book }, setParams] = useQueryStates(searchParams, { history: "replace" });
 	const selectedDate = useMemo(() => date ?? new Date(), [date]);
 	const range = visibleRange(view, selectedDate);
@@ -56,6 +67,8 @@ export function Agenda({ practitioners, canWrite }: { practitioners: Practitione
 			selectedUserId={practitioner}
 			setSelectedUserId={(id) => setParams({ practitioner: id === "all" ? null : id })}
 			canWrite={canWrite}
+			openingHours={openingHours}
+			defaultDuration={defaultDuration}
 		>
 			<AppointmentDialogsProvider>
 				{book && canWrite && <BookFromUrl patientId={book} onDone={() => setParams({ book: null })} />}

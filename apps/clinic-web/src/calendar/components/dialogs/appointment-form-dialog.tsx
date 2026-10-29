@@ -3,13 +3,15 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQueryClient } from "@tanstack/react-query";
 import { addMinutes, differenceInMinutes, format, parseISO } from "date-fns";
-import { LuLoader, LuTriangleAlert } from "react-icons/lu";
+import { fr } from "date-fns/locale";
+import { LuClock, LuLoader, LuTriangleAlert } from "react-icons/lu";
 import { useState } from "react";
-import { Controller, useForm } from "react-hook-form";
+import { Controller, useForm, useWatch } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
 
 import { useCalendar } from "@/calendar/contexts/calendar-context";
+import { isWithinWorkingHours } from "@/calendar/helpers";
 import type { IEvent } from "@/calendar/interfaces";
 import { type PickedPatient, PatientPicker } from "@/components/patient-picker";
 import { Button } from "@/components/ui/button";
@@ -26,7 +28,8 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { ApiError, api } from "@/lib/api-client";
-import { APPOINTMENTS_KEY, DURATIONS } from "@/lib/appointments";
+import { APPOINTMENTS_KEY, DURATIONS, durationLabel } from "@/lib/appointments";
+import { formatPeriods } from "@/lib/settings";
 
 const schema = z.object({
 	patient: z
@@ -41,9 +44,6 @@ const schema = z.object({
 	notes: z.string().trim().max(2000),
 });
 type Values = z.infer<typeof schema>;
-
-const durationLabel = (min: number) =>
-	min < 60 ? `${min} min` : `${Math.floor(min / 60)} h${min % 60 ? ` ${String(min % 60).padStart(2, "0")}` : ""}`;
 
 /**
  * Book (no `event`) or edit an appointment. Mounted by AppointmentDialogsProvider
@@ -65,7 +65,7 @@ export function AppointmentFormDialog({
 	open: boolean;
 	onOpenChange: (open: boolean) => void;
 }) {
-	const { users, selectedDate, selectedUserId } = useCalendar();
+	const { users, selectedDate, selectedUserId, defaultDuration, workingHours, openingHours } = useCalendar();
 	const queryClient = useQueryClient();
 
 	const defaults = (): Values => {
@@ -88,7 +88,7 @@ export function AppointmentFormDialog({
 			practitionerId: selectedUserId !== "all" ? selectedUserId : (users[0]?.id ?? ""),
 			date: format(startDate ?? selectedDate, "yyyy-MM-dd"),
 			time: `${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}`,
-			duration: 30,
+			duration: defaultDuration,
 			reason: "",
 			notes: "",
 		};
@@ -99,6 +99,13 @@ export function AppointmentFormDialog({
 	const [overlap, setOverlap] = useState<string | null>(null);
 	const { errors, isSubmitting } = form.formState;
 	const durations = [...new Set([...DURATIONS, form.getValues("duration")])].sort((a, b) => a - b);
+	const [date, time, duration] = useWatch({ control: form.control, name: ["date", "time", "duration"] });
+	const slotStart = date && /^\d{2}:\d{2}$/.test(time) ? new Date(`${date}T${time}`) : null;
+	// Allowed, but worth a second look (the agenda greys these hours out).
+	const outsideHours =
+		slotStart && !Number.isNaN(slotStart.getTime()) && !isWithinWorkingHours(slotStart, addMinutes(slotStart, duration), workingHours)
+			? slotStart
+			: null;
 
 	const save = async (values: Values, allowOverlap: boolean) => {
 		const startsAt = new Date(`${values.date}T${values.time}`);
@@ -218,6 +225,16 @@ export function AppointmentFormDialog({
 								)}
 							/>
 						</div>
+
+						{outsideHours && (
+							<p className="-mt-2 flex items-start gap-1.5 text-xs text-amber-700 dark:text-amber-400">
+								<LuClock className="mt-px size-3.5 shrink-0" />
+								<span>
+									En dehors des horaires d’ouverture ({format(outsideHours, "EEEE", { locale: fr })} :{" "}
+									{formatPeriods(openingHours[String(outsideHours.getDay()) as keyof typeof openingHours]).toLowerCase()}).
+								</span>
+							</p>
+						)}
 
 						<Field data-invalid={!!errors.reason}>
 							<FieldLabel htmlFor="appointment-reason">Motif</FieldLabel>

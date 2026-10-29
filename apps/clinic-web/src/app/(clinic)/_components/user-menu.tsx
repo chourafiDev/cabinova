@@ -54,9 +54,11 @@ export function UserMenu({ user }: { user: ClinicSession["user"] }) {
 					</div>
 				</DropdownMenuLabel>
 				<DropdownMenuSeparator />
-				<DropdownMenuItem disabled>
-					<LuUserRound />
-					Mon profil
+				<DropdownMenuItem asChild>
+					<Link href="/settings/profile">
+						<LuUserRound />
+						Mon profil
+					</Link>
 				</DropdownMenuItem>
 				<DropdownMenuItem asChild>
 					<Link href={TOUR_REPLAY_HREF}>

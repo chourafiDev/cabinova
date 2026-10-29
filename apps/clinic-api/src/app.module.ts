@@ -23,6 +23,8 @@ import { OnboardingController } from './onboarding/onboarding.controller.js';
 import { OnboardingService } from './onboarding/onboarding.service.js';
 import { PatientsController } from './patients/patients.controller.js';
 import { PatientsService } from './patients/patients.service.js';
+import { CabinetService } from './settings/cabinet.service.js';
+import { SettingsController } from './settings/settings.controller.js';
 import { SpaceGuard } from './spaces/space.guard.js';
 import { SpacesController } from './spaces/spaces.controller.js';
 import { SpacesService } from './spaces/spaces.service.js';
@@ -54,6 +56,7 @@ import { TenancyService } from './tenancy/tenancy.service.js';
     SpacesController,
     AppointmentsController,
     DashboardController,
+    SettingsController,
   ],
   providers: [
     TenancyService,
@@ -65,6 +68,7 @@ import { TenancyService } from './tenancy/tenancy.service.js';
     SpaceGuard,
     AppointmentsService,
     DashboardService,
+    CabinetService,
     { provide: APP_GUARD, useClass: ThrottlerGuard },
     { provide: APP_GUARD, useClass: SessionGuard },
   ],

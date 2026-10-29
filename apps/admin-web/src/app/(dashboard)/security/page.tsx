@@ -10,6 +10,7 @@ import {
 	ACTION_LABELS,
 	AUDIT_CATEGORY_LABELS,
 	AUDIT_PERIODS,
+	auditActorName,
 	type AuditEntry,
 	type AuditPage,
 	type SecuritySummary,
@@ -178,7 +179,7 @@ export default async function SecurityPage({ searchParams }: { searchParams: Pro
 										</td>
 										<td className="px-3 py-2 align-top">
 											<span className="grid leading-tight">
-												<span>{e.actor?.name ?? <span className="text-muted-foreground">Système / inconnu</span>}</span>
+												<span>{auditActorName(e) ?? <span className="text-muted-foreground">Système / inconnu</span>}</span>
 												{e.ip && <span className="font-mono text-[11px] text-muted-foreground">{e.ip}</span>}
 											</span>
 										</td>

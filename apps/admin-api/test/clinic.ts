@@ -1,6 +1,8 @@
+import { Pool } from '@neondatabase/serverless';
 import type { INestApplication, Type } from '@nestjs/common';
 import type { NestExpressApplication } from '@nestjs/platform-express';
 import { Test } from '@nestjs/testing';
+import argon2 from 'argon2';
 import request from 'supertest';
 import { EmailService } from '../src/email/email.service.js';
 import { type Agent, waitFor } from './app.js';
@@ -39,6 +41,7 @@ export function onCabinet(
     get: (path: string) => agent.get(path).set('Host', host),
     post: (path: string) => agent.post(path).set('Host', host),
     put: (path: string) => agent.put(path).set('Host', host),
+    delete: (path: string) => agent.delete(path).set('Host', host),
   };
 }
 
@@ -95,6 +98,59 @@ export async function signInDoctor(
   await onCabinet(clinic, subdomain, agent)
     .post(`/auth/invitations/${token}/accept`)
     .send({ password })
+    .expect(200);
+  return agent;
+}
+
+/**
+ * A staff member written straight into the cabinet's database (there's no
+ * Équipe module yet), member of its first space, signed in.
+ */
+export async function addStaff(
+  clinic: INestApplication,
+  adminAgent: Agent,
+  tenantId: string,
+  subdomain: string,
+  user: { name: string; email: string; role: string },
+  password = 'mot-de-passe-equipe',
+) {
+  const { body } = await adminAgent
+    .get(`/tenants/${tenantId}/database`)
+    .expect(200);
+  const url = new URL(process.env.TENANT_DB_ADMIN_URL!);
+  url.pathname = `/${body.database.databaseName}`;
+  const pool = new Pool({ connectionString: url.toString() });
+  try {
+    await pool.query(
+      `with u as (
+         insert into users (name, email, role, password_hash)
+         values ($1, $2, $3, $4) returning id)
+       insert into space_members (space_id, user_id)
+       select (select id from spaces order by created_at limit 1), id from u`,
+      [user.name, user.email, user.role, await argon2.hash(password)],
+    );
+  } finally {
+    await pool.end();
+  }
+  const agent = request.agent(clinic.getHttpServer());
+  await onCabinet(clinic, subdomain, agent)
+    .post('/auth/login')
+    .send({ email: user.email, password })
+    .expect(200);
+  return agent;
+}
+
+/** Another device of the same person: a new session from the login form. */
+export async function signInAgain(
+  clinic: INestApplication,
+  subdomain: string,
+  email: string,
+  password = 'mot-de-passe-docteur',
+) {
+  const agent = request.agent(clinic.getHttpServer());
+  await onCabinet(clinic, subdomain, agent)
+    .post('/auth/login')
+    .send({ email, password })
     .expect(200);
   return agent;
 }
