@@ -1,9 +1,9 @@
 "use client";
 
-import { LuSparkles, LuTriangleAlert, LuX } from "react-icons/lu";
+import { LuSparkles, LuTriangleAlert } from "react-icons/lu";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { BANNER_COOKIE, type BillingNotice } from "@/lib/billing-notice";
+import type { BillingNotice } from "@/lib/billing-notice";
 import { formatDate } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { SubscriptionDialog } from "./subscription-dialog";
@@ -48,19 +48,10 @@ function message(notice: BillingNotice) {
 /**
  * Subscription banner under the header, for the responsible doctor: trial
  * countdown or unpaid invoice, with the offer and payment details one click
- * away. The trial banner can be hidden for the day; the unpaid one can't.
+ * away. It can't be closed: it stays up for the whole trial.
  */
-export function BillingBanner({ notice, dismissKey }: { notice: BillingNotice; dismissKey: string }) {
-	const [hidden, setHidden] = useState(false);
+export function BillingBanner({ notice }: { notice: BillingNotice }) {
 	const [open, setOpen] = useState(false);
-	if (hidden) return null;
-
-	const dismissible = notice.kind !== "past-due";
-	const dismiss = () => {
-		// Until the end of the day; the next day's banner is a new key.
-		document.cookie = `${BANNER_COOKIE}=${encodeURIComponent(dismissKey)}; path=/; max-age=86400; samesite=lax`;
-		setHidden(true);
-	};
 	const Icon = notice.tone === "info" ? LuSparkles : LuTriangleAlert;
 
 	return (
@@ -78,18 +69,6 @@ export function BillingBanner({ notice, dismissKey }: { notice: BillingNotice; d
 			>
 				{notice.kind === "past-due" ? "Voir comment payer" : "Choisir mon offre"}
 			</Button>
-			{dismissible && (
-				<Button
-					size="icon"
-					variant="ghost"
-					className="size-7 shrink-0"
-					onClick={dismiss}
-					aria-label="Masquer pour aujourd’hui"
-					title="Masquer pour aujourd’hui"
-				>
-					<LuX />
-				</Button>
-			)}
 			<SubscriptionDialog open={open} onOpenChange={setOpen} />
 		</div>
 	);

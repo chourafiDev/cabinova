@@ -26,10 +26,3 @@ export function billingNotice(session: ClinicSession, now: Date): BillingNotice 
 	if (daysLeft === 1) return { kind: "trial-last-day", tone: "warning", endsAt: trialEndsAt };
 	return { kind: "trial", tone: daysLeft <= URGENT_DAYS ? "warning" : "info", daysLeft, endsAt: trialEndsAt };
 }
-
-/** Cookie remembering "Masquer pour aujourd'hui" (read on the server: no flash). */
-export const BANNER_COOKIE = "cabinova_billing_banner";
-
-/** The value stored when hidden: hides this kind of banner, today only. */
-export const bannerDismissKey = (notice: BillingNotice, now: Date) =>
-	`${notice.kind}:${new Intl.DateTimeFormat("en-CA", { timeZone: "Africa/Casablanca" }).format(now)}`;

@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { CabinetUnavailable } from "@/components/cabinet-unavailable";
 import { KeyboardShortcuts } from "@/components/keyboard-shortcuts";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
-import { BANNER_COOKIE, bannerDismissKey, billingNotice } from "@/lib/billing-notice";
+import { billingNotice } from "@/lib/billing-notice";
 import { getClinicState } from "@/lib/session";
 import { Suspense } from "react";
 import { BillingBanner } from "./_components/billing/billing-banner";
@@ -22,11 +22,8 @@ export default async function ClinicLayout({ children }: LayoutProps<"/">) {
   const cookieStore = await cookies();
   // Remember whether the sidebar was collapsed (cookie set by the sidebar).
   const defaultOpen = cookieStore.get("sidebar_state")?.value !== "false";
-  const now = new Date();
-  const notice = billingNotice(session, now);
-  const dismissKey = notice && bannerDismissKey(notice, now);
-  const showBanner =
-    notice && dismissKey && (notice.kind === "past-due" || cookieStore.get(BANNER_COOKIE)?.value !== dismissKey);
+  // Stays up for the whole trial (and while an invoice is unpaid): no close button.
+  const notice = billingNotice(session, new Date());
 
   return (
     <SidebarProvider defaultOpen={defaultOpen}>
@@ -34,7 +31,7 @@ export default async function ClinicLayout({ children }: LayoutProps<"/">) {
       {/* Inset panel: fixed frame on desktop, the page scrolls inside it. */}
       <SidebarInset className="min-w-0 md:h-[calc(100svh-1rem)] md:overflow-y-auto md:border md:border-black/5 dark:md:border-white/5">
         <SiteHeader user={session.user} spaces={session.spaces} />
-        {showBanner && <BillingBanner notice={notice} dismissKey={dismissKey} />}
+        {notice && <BillingBanner notice={notice} />}
         <div className="flex min-w-0 flex-1 flex-col p-4">{children}</div>
         <SiteFooter />
         <KeyboardShortcuts
