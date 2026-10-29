@@ -38,7 +38,7 @@ export const navGroups: { label: string; items: NavItem[] }[] = [
   {
     label: "Gestion",
     items: [
-      { title: "Encaissements", href: "/payments", icon: HiBanknotes, shortcut: "e", soon: true },
+      { title: "Encaissements", href: "/payments", icon: HiBanknotes, shortcut: "e" },
       { title: "Statistiques", href: "/reports", icon: HiChartBar, roles: ["owner", "doctor"] },
     ],
   },

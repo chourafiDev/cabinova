@@ -20,6 +20,8 @@ import { Bars, withShare } from "./_components/bars";
 import { ReportsFilters } from "./_components/reports-filters";
 import { ReportsShell } from "./_components/reports-shell";
 import { SeriesChart } from "./_components/series-chart";
+import { RevenueChart } from "./_components/revenue-chart";
+import { mad, METHOD_LABELS } from "@/lib/payments";
 import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = { title: "Statistiques" };
@@ -150,6 +152,65 @@ export default async function ReportsPage({ searchParams }: PageProps<"/reports"
 								tableLabel={bucketName}
 							/>
 						</ChartCard>
+
+						{report.revenue && (
+							<div className="grid items-start gap-4 lg:grid-cols-3">
+								<ChartCard
+									title="Encaissements"
+									className="lg:col-span-2"
+									headline={
+										<p className="flex flex-wrap items-baseline gap-x-3">
+											<span className="text-2xl font-semibold">{mad(report.revenue.totals.net)}</span>
+											<span className="text-muted-foreground text-xs">
+												{report.revenue.change === null
+													? "nouveau sur la période"
+													: `${report.revenue.change > 0 ? "+" : ""}${report.revenue.change} % ${vsPrevious}`}
+												{report.revenue.totals.refunded > 0 && ` · ${mad(report.revenue.totals.refunded)} remboursés`}
+												{report.revenue.outstanding.amount > 0 &&
+													` · ${mad(report.revenue.outstanding.amount)} restent dus`}
+											</span>
+										</p>
+									}
+								>
+									<RevenueChart series={report.revenue.series} bucket={period.bucket} />
+								</ChartCard>
+								<ChartCard title="Répartition" eyebrow="Encaissements">
+									<div className="grid gap-5">
+										<Bars
+											rows={report.revenue.byMethod.map((m) => ({ key: m.method, label: METHOD_LABELS[m.method], value: m.net }))}
+											format={mad}
+											empty="Aucun paiement sur la période."
+										/>
+										{report.revenue.byAct.length > 0 && (
+											<div className="grid gap-2">
+												<h3 className="text-muted-foreground text-xs font-medium">Actes facturés</h3>
+												<Bars
+													rows={report.revenue.byAct.map((a) => ({
+														key: a.label,
+														label: (
+															<>
+																{a.label} <span className="text-muted-foreground">× {a.count}</span>
+															</>
+														),
+														value: a.amount,
+													}))}
+													format={mad}
+												/>
+											</div>
+										)}
+										{report.revenue.byPractitioner.length > 1 && (
+											<div className="grid gap-2">
+												<h3 className="text-muted-foreground text-xs font-medium">Par médecin</h3>
+												<Bars
+													rows={report.revenue.byPractitioner.map((p) => ({ key: p.id, label: p.name, value: p.net }))}
+													format={mad}
+												/>
+											</div>
+										)}
+									</div>
+								</ChartCard>
+							</div>
+						)}
 
 						<div className="grid items-start gap-4 lg:grid-cols-5">
 							<ChartCard

@@ -8,6 +8,7 @@ import {
   integer,
   jsonb,
   pgEnum,
+  pgSequence,
   pgTable,
   primaryKey,
   smallint,
@@ -310,4 +311,168 @@ export const appointments = pgTable(
     ),
     index('appointments_patient_idx').on(t.patientId),
   ],
+);
+
+// ── Encaissements ─────────────────────────────────────────────────────────
+// Amounts are integers in centimes of MAD, like the platform's invoices.
+
+/** The cabinet's price list (Paramètres › Tarifs), used when checking out a visit. */
+export const acts = pgTable(
+  'acts',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    name: text('name').notNull(),
+    price: integer('price').notNull(),
+    /** Archived acts stay on past visits but are no longer offered. */
+    active: boolean('active').notNull().default(true),
+    ...timestamps,
+  },
+  (t) => [
+    check('acts_price_positive', sql`${t.price} >= 0`),
+    uniqueIndex('acts_name_idx').on(sql`lower(${t.name})`),
+  ],
+);
+
+/**
+ * What a visit costs (honoraires): one per appointment, its acts in
+ * charge_items. The balance is the total minus what was paid.
+ */
+export const charges = pgTable(
+  'charges',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    spaceId: uuid('space_id')
+      .notNull()
+      .references(() => spaces.id, { onDelete: 'restrict' }),
+    patientId: uuid('patient_id')
+      .notNull()
+      .references(() => patients.id, { onDelete: 'restrict' }),
+    appointmentId: uuid('appointment_id')
+      .notNull()
+      .unique()
+      .references(() => appointments.id, { onDelete: 'restrict' }),
+    /** The doctor of the visit (revenue per doctor). */
+    practitionerId: uuid('practitioner_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'restrict' }),
+    total: integer('total').notNull(),
+    createdBy: uuid('created_by').references(() => users.id, {
+      onDelete: 'set null',
+    }),
+    ...timestamps,
+  },
+  (t) => [
+    check('charges_total_positive', sql`${t.total} >= 0`),
+    index('charges_patient_idx').on(t.patientId),
+    index('charges_space_idx').on(t.spaceId),
+  ],
+);
+
+/** The acts of a visit, label and price copied so later price changes don't rewrite history. */
+export const chargeItems = pgTable(
+  'charge_items',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    chargeId: uuid('charge_id')
+      .notNull()
+      .references(() => charges.id, { onDelete: 'cascade' }),
+    actId: uuid('act_id').references(() => acts.id, { onDelete: 'set null' }),
+    label: text('label').notNull(),
+    unitPrice: integer('unit_price').notNull(),
+    quantity: smallint('quantity').notNull().default(1),
+    position: smallint('position').notNull().default(0),
+  },
+  (t) => [
+    check('charge_items_price_positive', sql`${t.unitPrice} >= 0`),
+    check('charge_items_quantity_positive', sql`${t.quantity} > 0`),
+    index('charge_items_charge_idx').on(t.chargeId),
+  ],
+);
+
+export const paymentMethod = pgEnum('payment_method', [
+  'cash', // espèces
+  'card', // carte bancaire
+  'cheque',
+  'transfer', // virement
+]);
+
+export const paymentKind = pgEnum('payment_kind', ['payment', 'refund']);
+
+/** Receipt numbers ("R-2026-000042"), one series for the cabinet. */
+export const receiptNumberSeq = pgSequence('receipt_number_seq');
+
+/**
+ * Money received for a visit, or given back (refund). Never deleted: a
+ * mistake is cancelled with a reason; a closed day can't change.
+ */
+export const payments = pgTable(
+  'payments',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    spaceId: uuid('space_id')
+      .notNull()
+      .references(() => spaces.id, { onDelete: 'restrict' }),
+    patientId: uuid('patient_id')
+      .notNull()
+      .references(() => patients.id, { onDelete: 'restrict' }),
+    chargeId: uuid('charge_id')
+      .notNull()
+      .references(() => charges.id, { onDelete: 'restrict' }),
+    kind: paymentKind('kind').notNull().default('payment'),
+    method: paymentMethod('method').notNull(),
+    /** Always positive; a refund takes money out. */
+    amount: integer('amount').notNull(),
+    /** Cheque number, transfer reference… */
+    reference: text('reference'),
+    /** Payments only (refunds have none). */
+    receiptNumber: text('receipt_number').unique(),
+    /** Refunds: why. */
+    reason: text('reason'),
+    receivedAt: timestamp('received_at', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    receivedBy: uuid('received_by').references(() => users.id, {
+      onDelete: 'set null',
+    }),
+    cancelledAt: timestamp('cancelled_at', { withTimezone: true }),
+    cancelledBy: uuid('cancelled_by').references(() => users.id, {
+      onDelete: 'set null',
+    }),
+    cancelReason: text('cancel_reason'),
+  },
+  (t) => [
+    check('payments_amount_positive', sql`${t.amount} > 0`),
+    index('payments_space_received_idx').on(t.spaceId, t.receivedAt),
+    index('payments_charge_idx').on(t.chargeId),
+    index('payments_patient_idx').on(t.patientId),
+  ],
+);
+
+/**
+ * Clôture de caisse: a space's day, closed once. The desk counts the cash
+ * without seeing what's expected; the owner sees the difference.
+ */
+export const cashCloses = pgTable(
+  'cash_closes',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    spaceId: uuid('space_id')
+      .notNull()
+      .references(() => spaces.id, { onDelete: 'restrict' }),
+    /** The Moroccan day closed. */
+    day: date('day').notNull(),
+    /** Net received per method that day (payments minus refunds). */
+    expected: jsonb('expected')
+      .$type<Record<'cash' | 'card' | 'cheque' | 'transfer', number>>()
+      .notNull(),
+    countedCash: integer('counted_cash').notNull(),
+    note: text('note'),
+    closedBy: uuid('closed_by').references(() => users.id, {
+      onDelete: 'set null',
+    }),
+    closedAt: timestamp('closed_at', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [uniqueIndex('cash_closes_space_day_idx').on(t.spaceId, t.day)],
 );

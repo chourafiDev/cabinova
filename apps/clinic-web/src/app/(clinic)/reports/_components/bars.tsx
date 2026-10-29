@@ -21,7 +21,7 @@ export function Bars({
 				<li key={r.key} className="grid min-w-0 gap-1" title={r.hint}>
 					<div className="flex min-w-0 items-baseline justify-between gap-3 text-sm">
 						<span className="min-w-0 truncate">{r.label}</span>
-						<span className="font-medium tabular-nums">{format(r.value)}</span>
+						<span className="shrink-0 font-medium whitespace-nowrap tabular-nums">{format(r.value)}</span>
 					</div>
 					<div className="bg-muted h-2 overflow-hidden rounded-full">
 						<div

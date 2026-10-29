@@ -129,6 +129,7 @@ export class ReportsService {
       heat,
       lead,
       practitioners,
+      revenue,
     ] = await Promise.all([
       this.totals(db, params),
       this.totals(db, [previous.from, previous.to, spaceIds, practitioner]),
@@ -139,6 +140,7 @@ export class ReportsService {
       this.heatmap(db, params),
       this.leadTimes(db, params),
       owner ? this.practitioners(db, spaceIds) : null,
+      owner ? this.revenue(db, params, previous, bucket) : null,
     ]);
 
     const change = (key: keyof Totals) =>
@@ -179,6 +181,120 @@ export class ReportsService {
       byPractitioner,
       bySpace,
       affluence: { heatmap: heat, leadTimes: lead },
+      /** Encaissements, the owner only. */
+      revenue,
+    };
+  }
+
+  /**
+   * Money received in the period (payments minus refunds, by when it was
+   * received), by bucket, method and doctor; acts billed for the period's
+   * visits; and what those visits still owe.
+   */
+  private async revenue(
+    db: Pool,
+    params: unknown[],
+    previous: { from: string; to: string },
+    bucket: Bucket,
+  ) {
+    const [from, to, spaceIds, practitioner] = params as [
+      string,
+      string,
+      string[],
+      string | null,
+    ];
+    const moves = `
+      m as (
+        select p.method, p.received_at at time zone ${TZ} as local, c.practitioner_id,
+               case when p.kind = 'payment' then p.amount else -p.amount end as net,
+               p.kind
+          from payments p join charges c on c.id = p.charge_id
+         where p.cancelled_at is null and p.space_id = any($3::uuid[])
+           and ($4::uuid is null or c.practitioner_id = $4)
+           and p.received_at >= ($1::date::timestamp at time zone ${TZ})
+           and p.received_at < (($2::date + 1)::timestamp at time zone ${TZ}))`;
+    const total = async (range: unknown[]) =>
+      (
+        await db.query<{ net: string; received: string; refunded: string }>(
+          `with ${moves}
+           select coalesce(sum(net), 0) as net,
+                  coalesce(sum(net) filter (where kind = 'payment'), 0) as received,
+                  coalesce(-sum(net) filter (where kind = 'refund'), 0) as refunded
+             from m`,
+          range,
+        )
+      ).rows[0];
+    const [now, before, series, byMethod, byPractitioner, byAct, outstanding] =
+      await Promise.all([
+        total(params),
+        total([previous.from, previous.to, spaceIds, practitioner]),
+        db.query<{ date: string; net: string }>(
+          `with ${moves}
+           select to_char(date_trunc($5, local), 'YYYY-MM-DD') as date, sum(net) as net
+             from m group by 1`,
+          [...params, bucket],
+        ),
+        db.query<{ method: string; net: string }>(
+          `with ${moves} select method, sum(net) as net from m group by 1`,
+          params,
+        ),
+        db.query<{ id: string; name: string; net: string }>(
+          `with ${moves}
+           select u.id, u.name, sum(m.net) as net
+             from m join users u on u.id = m.practitioner_id
+            group by u.id order by net desc`,
+          params,
+        ),
+        db.query<{ label: string; count: string; amount: string }>(
+          `with ${SCOPE}
+           select i.label, sum(i.quantity) as count, sum(i.unit_price * i.quantity) as amount
+             from a join charges c on c.appointment_id = a.id
+             join charge_items i on i.charge_id = c.id
+            group by i.label order by amount desc limit 8`,
+          params,
+        ),
+        db.query<{ amount: string; visits: string }>(
+          `with ${SCOPE}
+           select coalesce(sum(due), 0) as amount, count(*) as visits from (
+             select c.total - coalesce((select sum(case when kind = 'payment' then amount else -amount end)
+                                          from payments where charge_id = c.id and cancelled_at is null), 0) as due
+               from a join charges c on c.appointment_id = a.id) d
+            where due > 0`,
+          params,
+        ),
+      ]);
+    const byDate = new Map(series.rows.map((r) => [r.date, n(r.net)]));
+    return {
+      totals: {
+        net: n(now.net),
+        received: n(now.received),
+        refunded: n(now.refunded),
+      },
+      previous: { net: n(before.net) },
+      change: percentChange(n(now.net), n(before.net)),
+      series: buckets(from, to, bucket).map((date) => ({
+        date,
+        net: byDate.get(date) ?? 0,
+      })),
+      byMethod: ['cash', 'card', 'cheque', 'transfer'].map((method) => ({
+        method,
+        net: n(byMethod.rows.find((r) => r.method === method)?.net ?? 0),
+      })),
+      byPractitioner: byPractitioner.rows.map((r) => ({
+        id: r.id,
+        name: r.name,
+        net: n(r.net),
+      })),
+      byAct: byAct.rows.map((r) => ({
+        label: r.label,
+        count: n(r.count),
+        amount: n(r.amount),
+      })),
+      /** Still owed for the period's visits. */
+      outstanding: {
+        amount: n(outstanding.rows[0].amount),
+        visits: n(outstanding.rows[0].visits),
+      },
     };
   }
 

@@ -72,6 +72,18 @@ export type Report = {
 		heatmap: { weekday: number; hour: number; count: number }[];
 		leadTimes: { median: number | null; buckets: { key: string; label: string; count: number }[] };
 	};
+	/** Encaissements (centimes), the owner only. */
+	revenue: {
+		totals: { net: number; received: number; refunded: number };
+		previous: { net: number };
+		change: number | null;
+		series: { date: string; net: number }[];
+		byMethod: { method: "cash" | "card" | "cheque" | "transfer"; net: number }[];
+		byPractitioner: { id: string; name: string; net: number }[];
+		byAct: { label: string; count: number; amount: number }[];
+		/** Still owed for the period's visits. */
+		outstanding: { amount: number; visits: number };
+	} | null;
 };
 
 /** Period presets, the custom range last. */

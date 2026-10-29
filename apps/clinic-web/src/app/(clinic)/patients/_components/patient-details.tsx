@@ -21,6 +21,7 @@ import { formatDate, initials } from "@/lib/format";
 import { ageOf, COVERAGE_LABELS, formatFileNumber, formatPhone, fullName, type PatientFile, SEX_LABELS } from "@/lib/patients";
 import { cn } from "@/lib/utils";
 import { ArchiveDialog } from "./archive-button";
+import { PatientBalance, PatientPayments } from "./patient-payments";
 import { MedicalProfile } from "./medical-profile-card";
 
 /** Upcoming vs past appointments (outside render: React Compiler purity). */
@@ -268,6 +269,9 @@ export function PatientDetails({
 							</span>
 						)}
 					</TabsTrigger>
+					<TabsTrigger value="payments" className="flex-none px-0">
+						Paiements
+					</TabsTrigger>
 					{medical && (
 						<TabsTrigger value="medical" className="flex-none px-0">
 							Antécédents
@@ -293,6 +297,8 @@ export function PatientDetails({
 								</div>
 							</div>
 						)}
+
+						<PatientBalance patientId={patient.id} />
 
 						<section className="rounded-xl border p-4">
 							<h3 className="text-muted-foreground mb-3 flex items-center gap-2 text-xs font-medium">
@@ -431,6 +437,10 @@ export function PatientDetails({
 							)}
 						</div>
 					)}
+				</TabsContent>
+
+				<TabsContent value="payments" className="min-h-0 overflow-y-auto p-5">
+					<PatientPayments patientId={patient.id} />
 				</TabsContent>
 
 				{medical && (

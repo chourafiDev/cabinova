@@ -22,6 +22,9 @@ import { MailService } from './mail/mail.service.js';
 import { HealthController } from './health/health.controller.js';
 import { OnboardingController } from './onboarding/onboarding.controller.js';
 import { OnboardingService } from './onboarding/onboarding.service.js';
+import { ActsController } from './payments/acts.controller.js';
+import { PaymentsController } from './payments/payments.controller.js';
+import { PaymentsService } from './payments/payments.service.js';
 import { PatientsController } from './patients/patients.controller.js';
 import { PatientsService } from './patients/patients.service.js';
 import { CabinetService } from './settings/cabinet.service.js';
@@ -64,6 +67,8 @@ import { TenancyService } from './tenancy/tenancy.service.js';
     SettingsController,
     TeamController,
     ReportsController,
+    ActsController,
+    PaymentsController,
   ],
   providers: [
     TenancyService,
@@ -79,6 +84,7 @@ import { TenancyService } from './tenancy/tenancy.service.js';
     MailService,
     TeamService,
     ReportsService,
+    PaymentsService,
     { provide: APP_GUARD, useClass: ThrottlerGuard },
     { provide: APP_GUARD, useClass: SessionGuard },
   ],

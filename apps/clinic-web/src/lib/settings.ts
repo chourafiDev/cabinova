@@ -53,6 +53,7 @@ export const SETTINGS_SECTIONS: SettingsSection[] = [
 	{ href: "/settings/cabinet", label: "Cabinet", hint: "Nom, coordonnées", ownerOnly: true },
 	{ href: "/settings/spaces", label: "Espaces", hint: "Sites du cabinet", ownerOnly: true },
 	{ href: "/settings/hours", label: "Horaires & agenda", hint: "Ouverture, durée des RDV", ownerOnly: true },
+	{ href: "/settings/tarifs", label: "Tarifs", hint: "Actes et honoraires", ownerOnly: true },
 ];
 
 /** Days in the order a French week is read (Monday first), as OpeningHours keys. */
