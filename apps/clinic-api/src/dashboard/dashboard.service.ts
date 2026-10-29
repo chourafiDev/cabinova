@@ -23,8 +23,13 @@ const BOUNDS = `
  */
 @Injectable()
 export class DashboardService {
-  async overview(db: Pool, spaceIds: string[], withToday: boolean) {
-    const [kpis, week, today, bySpace] = await Promise.all([
+  async overview(
+    db: Pool,
+    spaceIds: string[],
+    withToday: boolean,
+    owner = false,
+  ) {
+    const [kpis, week, today, bySpace, cashier] = await Promise.all([
       db.query<{
         appointments_today: string;
         upcoming_today: string;
@@ -114,6 +119,29 @@ export class DashboardService {
             [spaceIds],
           )
         : null,
+      db.query<{
+        to_collect: string;
+        received: string | null;
+        received_last_week: string | null;
+      }>(
+        `${BOUNDS}
+         select
+           (select count(*) from appointments a
+              left join charges c on c.appointment_id = a.id
+             where a.space_id = any($1) and a.status = 'completed'
+               and a.starts_at >= r.day_start and a.starts_at < r.day_end
+               and (c.id is null or c.total > (
+                 select coalesce(sum(case when kind = 'payment' then amount else -amount end), 0)
+                   from payments where charge_id = c.id and cancelled_at is null))) as to_collect,
+           case when $2 then (select coalesce(sum(case when kind = 'payment' then amount else -amount end), 0)
+              from payments p where p.space_id = any($1) and p.cancelled_at is null
+               and p.received_at >= r.day_start and p.received_at < r.day_end) end as received,
+           case when $2 then (select coalesce(sum(case when kind = 'payment' then amount else -amount end), 0)
+              from payments p where p.space_id = any($1) and p.cancelled_at is null
+               and p.received_at >= r.last_week_start and p.received_at < r.last_week_end) end as received_last_week
+         from r`,
+        [spaceIds, owner],
+      ),
     ]);
 
     const k = kpis.rows[0];
@@ -138,6 +166,21 @@ export class DashboardService {
         consultations: n(d.consultations),
       })),
       appointments: today?.rows ?? null,
+      /** Encaissements today: finished visits still to check out; money is the owner's. */
+      cashier: {
+        toCollect: n(cashier.rows[0].to_collect),
+        received:
+          cashier.rows[0].received === null
+            ? null
+            : n(cashier.rows[0].received),
+        receivedChange:
+          cashier.rows[0].received === null
+            ? null
+            : percentChange(
+                n(cashier.rows[0].received),
+                n(cashier.rows[0].received_last_week ?? '0'),
+              ),
+      },
       bySpace:
         bySpace?.rows.map((s) => ({
           id: s.id,

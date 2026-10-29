@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { LuBanknote, LuCalendarCheck, LuStethoscope, LuUserPlus } from "react-icons/lu";
 import type { DashboardData } from "@/lib/dashboard";
+import { mad } from "@/lib/payments";
 import { apiGet } from "@/lib/server-api";
 import { getClinicState } from "@/lib/session";
 import { spaceLabel } from "@/lib/spaces";
@@ -83,13 +84,26 @@ export default async function DashboardPage({ searchParams }: PageProps<"/">) {
 					hint="Dossiers créés ce mois-ci, comparés au mois dernier."
 					actions={[{ label: "Voir les patients", href: "/patients" }]}
 				/>
-				<KpiCard
-					icon={LuBanknote}
-					title="Encaissements"
-					value="—"
-					period="Module à venir"
-					hint="Les encaissements apparaîtront ici avec le module de facturation du cabinet."
-				/>
+				{data.cashier.received !== null ? (
+					<KpiCard
+						icon={LuBanknote}
+						title="Encaissé aujourd’hui"
+						value={mad(data.cashier.received)}
+						change={data.cashier.receivedChange}
+						period="vs même jour, semaine dernière"
+						hint="Paiements reçus aujourd’hui moins les remboursements."
+						actions={[{ label: "Ouvrir les encaissements", href: "/payments" }]}
+					/>
+				) : (
+					<KpiCard
+						icon={LuBanknote}
+						title="À encaisser"
+						value={data.cashier.toCollect}
+						period={data.cashier.toCollect > 1 ? "visites terminées aujourd’hui" : "visite terminée aujourd’hui"}
+						hint="Visites terminées aujourd’hui qui ne sont pas encore entièrement réglées."
+						actions={[{ label: "Ouvrir la caisse du jour", href: "/payments" }]}
+					/>
+				)}
 			</section>
 
 			{data.scope === "space" && data.appointments ? (

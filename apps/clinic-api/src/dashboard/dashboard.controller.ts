@@ -47,12 +47,18 @@ export class DashboardController {
           db,
           all.map((s) => s.id),
           false,
+          true,
         )),
       };
     }
     return {
       scope: 'space' as const,
-      ...(await this.dashboard.overview(db, [space.id], true)),
+      ...(await this.dashboard.overview(
+        db,
+        [space.id],
+        true,
+        user.role === 'owner',
+      )),
     };
   }
 }

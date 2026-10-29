@@ -15,6 +15,8 @@ export type DashboardData = {
 		newPatientsChange: number | null;
 	};
 	/** Monday → Saturday of the current week. */
+	/** Encaissements today (centimes): visits still to check out; money for the owner only. */
+	cashier: { toCollect: number; received: number | null; receivedChange: number | null };
 	week: { date: string; appointments: number; consultations: number }[];
 	/** Today's appointments (one space only). */
 	appointments: (Appointment & { firstVisit: boolean })[] | null;

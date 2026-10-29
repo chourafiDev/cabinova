@@ -27,6 +27,7 @@
     "db:migrate": "drizzle-kit migrate",
     "db:studio": "drizzle-kit studio",
     "db:seed": "tsx src/database/scripts/seed.ts",
+    "db:seed-demo": "tsx src/database/scripts/seed-demo-cabinet.ts",
     "db:create-app-role": "tsx src/database/scripts/create-app-role.ts",
     "billing:sweep": "node dist/billing/scripts/run-sweep.js"
   },
