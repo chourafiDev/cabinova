@@ -6,6 +6,7 @@
     "dev": "pnpm --parallel --filter admin-api --filter admin-web --filter clinic-api --filter clinic-web dev",
     "dev:api": "pnpm --filter admin-api start:dev",
     "dev:web": "pnpm --filter admin-web dev",
+    "dev:landing": "pnpm --filter landing dev",
     "build": "pnpm -r build",
     "lint": "pnpm -r lint",
     "typecheck": "pnpm -r typecheck",

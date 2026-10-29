@@ -54,6 +54,16 @@
         "start:dev"
       ],
       "port": 4100
+    },
+    {
+      "name": "landing",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": [
+        "--filter",
+        "landing",
+        "dev"
+      ],
+      "port": 3001
     }
   ]
 }
