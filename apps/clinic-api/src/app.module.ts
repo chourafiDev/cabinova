@@ -8,6 +8,7 @@ import { APP_GUARD } from '@nestjs/core';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { AppointmentsController } from './appointments/appointments.controller.js';
 import { AppointmentsService } from './appointments/appointments.service.js';
+import { TwoFactorService } from './auth/two-factor.service.js';
 import { AuthController } from './auth/auth.controller.js';
 import { SessionGuard } from './auth/auth.guard.js';
 import { BillingController } from './billing/billing.controller.js';
@@ -77,6 +78,7 @@ import { TenancyService } from './tenancy/tenancy.service.js';
   providers: [
     TenancyService,
     AuthService,
+    TwoFactorService,
     ClinicService,
     OnboardingService,
     NotificationsService,

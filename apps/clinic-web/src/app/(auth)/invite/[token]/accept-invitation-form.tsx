@@ -25,11 +25,13 @@ export function AcceptInvitationForm({ token, email }: { token: string; email: s
 
 		setPending(true);
 		setError(null);
+		let loginRequired = false;
 		try {
-			await api(`/auth/invitations/${encodeURIComponent(token)}/accept`, {
+			const result = await api<{ loginRequired?: boolean }>(`/auth/invitations/${encodeURIComponent(token)}/accept`, {
 				method: "POST",
 				body: JSON.stringify({ password }),
 			});
+			loginRequired = !!result.loginRequired;
 		} catch (err) {
 			setPending(false);
 			setError(
@@ -41,7 +43,8 @@ export function AcceptInvitationForm({ token, email }: { token: string; email: s
 			);
 			return;
 		}
-		router.replace("/");
+		// A protected account signs in with its code: the link alone isn't enough.
+		router.replace(loginRequired ? "/login" : "/");
 		router.refresh();
 	}
 

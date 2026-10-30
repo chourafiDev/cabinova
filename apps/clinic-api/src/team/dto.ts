@@ -3,6 +3,7 @@ import {
   ArrayMaxSize,
   ArrayMinSize,
   IsArray,
+  IsBoolean,
   IsEmail,
   IsIn,
   IsString,
@@ -43,4 +44,9 @@ export class InviteMemberDto extends UpdateMemberDto {
   @IsEmail({}, { message: 'Adresse e-mail invalide.' })
   @MaxLength(200)
   email: string;
+}
+
+export class RequireTwoFactorDto {
+  @IsBoolean()
+  required: boolean;
 }

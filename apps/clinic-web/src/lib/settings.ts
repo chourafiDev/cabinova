@@ -123,3 +123,12 @@ export function describeDevice(userAgent: string | null) {
 	const mobile = /Mobile|iPhone|Android/.test(userAgent);
 	return { label: os ? `${browser} · ${os}` : browser, mobile };
 }
+
+/** GET /auth/2fa */
+export type TwoFactorStatus = {
+	enabled: boolean;
+	enabledAt: string | null;
+	recoveryCodesLeft: number;
+	/** The cabinet requires it: it can't be turned off. */
+	required: boolean;
+};

@@ -55,6 +55,8 @@ export const clinicSettings = pgTable(
       .default(30),
     /** Opening hours saved or accepted (getting-started checklist). */
     hoursConfirmedAt: timestamp('hours_confirmed_at', { withTimezone: true }),
+    /** Staff must use two-factor sign-in (Équipe). */
+    requireTwoFactor: boolean('require_two_factor').notNull().default(false),
     /** The responsible doctor hid the getting-started checklist. */
     checklistDismissedAt: timestamp('checklist_dismissed_at', {
       withTimezone: true,
@@ -81,6 +83,20 @@ export const users = pgTable(
     lastLoginAt: timestamp('last_login_at', { withTimezone: true }),
     /** First-sign-in product tour finished or skipped (clinic app). */
     tourCompletedAt: timestamp('tour_completed_at', { withTimezone: true }),
+    /**
+     * Two-factor sign-in: the TOTP secret is encrypted with the master key,
+     * set at enrolment and active only once totpEnabledAt is set.
+     */
+    totpSecret: text('totp_secret'),
+    totpKeyVersion: integer('totp_key_version'),
+    totpEnabledAt: timestamp('totp_enabled_at', { withTimezone: true }),
+    /** Last step accepted: a code can't be used twice. */
+    totpLastStep: integer('totp_last_step'),
+    /** SHA-256 of the unused backup codes. */
+    recoveryCodeHashes: jsonb('recovery_code_hashes')
+      .$type<string[]>()
+      .notNull()
+      .default([]),
     /** The space this person last worked in (reopened at sign-in). */
     lastSpaceId: uuid('last_space_id').references((): AnyPgColumn => spaces.id, {
       onDelete: 'set null',
@@ -513,3 +529,18 @@ export const notifications = pgTable(
     index('notifications_user_idx').on(t.userId, t.createdAt),
   ],
 );
+
+/** Between the password and the second-factor code; no session exists yet. */
+export const twoFactorChallenges = pgTable('two_factor_challenges', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  userId: uuid('user_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
+  tokenHash: text('token_hash').notNull().unique(),
+  remember: boolean('remember').notNull().default(true),
+  attempts: integer('attempts').notNull().default(0),
+  expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+});

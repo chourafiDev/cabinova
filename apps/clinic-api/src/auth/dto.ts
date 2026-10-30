@@ -26,6 +26,20 @@ export class LoginDto {
   rememberMe?: boolean;
 }
 
+/** A code from the authenticator app, or a backup code. */
+export class TwoFactorCodeDto {
+  @IsString()
+  @MinLength(6)
+  @MaxLength(20)
+  code: string;
+}
+
+export class TwoFactorChallengeDto extends TwoFactorCodeDto {
+  @IsString()
+  @MaxLength(100)
+  challenge: string;
+}
+
 export class AcceptInvitationDto {
   @IsString()
   @MinLength(8)

@@ -19,6 +19,7 @@ export type Member = {
 	spaceIds: string[];
 	/** Appointments to come with them as the doctor. */
 	upcomingAppointments: number;
+	twoFactor: boolean;
 };
 
 export type Quota = { used: number; max: number | null };
@@ -29,6 +30,8 @@ export type Team = {
 	limits: { doctors: Quota; secretaries: Quota };
 	/** Open spaces, to choose where each member works. */
 	spaces: { id: string; name: string; city: string | null }[];
+	/** Everyone must use two-factor sign-in. */
+	requireTwoFactor: boolean;
 };
 
 /** A link to give a member (POST /team, POST /team/:id/link). */

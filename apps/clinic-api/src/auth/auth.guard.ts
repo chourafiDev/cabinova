@@ -1,6 +1,7 @@
 import {
   type CanActivate,
   type ExecutionContext,
+  ForbiddenException,
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -8,7 +9,7 @@ import { Reflector } from '@nestjs/core';
 import type { Request } from 'express';
 import { SESSION_COOKIE } from './auth.constants.js';
 import { AuthService } from './auth.service.js';
-import { IS_PUBLIC } from './decorators.js';
+import { ALLOW_BEFORE_2FA, IS_PUBLIC } from './decorators.js';
 
 /**
  * Global: every route needs a session of the request's cabinet unless
@@ -44,6 +45,18 @@ export class SessionGuard implements CanActivate {
       });
     }
     req.user = user;
+    if (
+      user.twoFactorSetupRequired &&
+      !this.reflector.getAllAndOverride<boolean>(ALLOW_BEFORE_2FA, [
+        context.getHandler(),
+        context.getClass(),
+      ])
+    ) {
+      throw new ForbiddenException({
+        code: 'TWO_FACTOR_SETUP_REQUIRED',
+        message: 'Configurez la double authentification pour continuer.',
+      });
+    }
     return true;
   }
 }

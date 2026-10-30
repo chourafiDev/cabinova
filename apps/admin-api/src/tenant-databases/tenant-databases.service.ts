@@ -90,6 +90,33 @@ export class TenantDatabasesService {
     };
   }
 
+  /**
+   * Lost phone of the responsible doctor (their team goes through them, in
+   * Équipe): turns off 2FA and signs them out everywhere.
+   */
+  async resetOwnerTwoFactor(tenantId: string, actor: AuditActor) {
+    const owners = await this.connections.with(tenantId, async (pool) => {
+      const { rows } = await pool.query<{ id: string; email: string }>(
+        `update users set totp_secret = null, totp_key_version = null,
+                totp_enabled_at = null, totp_last_step = null,
+                recovery_code_hashes = '[]'::jsonb
+          where role = 'owner' returning id, email`,
+      );
+      await pool.query('delete from sessions where user_id = any($1)', [
+        rows.map((r) => r.id),
+      ]);
+      return rows;
+    });
+    await writeAudit(this.database.db, actor, {
+      action: 'tenant.owner_2fa_reset',
+      entity: 'tenant',
+      entityId: tenantId,
+      tenantId,
+      metadata: { owners: owners.map((o) => o.email) },
+    });
+    return { ok: true };
+  }
+
   async migrate(tenantId: string, actor: AuditActor) {
     const [before] = await this.database.db
       .select({ schemaVersion: tenantDatabases.schemaVersion })

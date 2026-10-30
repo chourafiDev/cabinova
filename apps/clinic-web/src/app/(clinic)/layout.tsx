@@ -21,6 +21,7 @@ export default async function ClinicLayout({ children }: LayoutProps<'/'>) {
     return <CabinetUnavailable reason={state.reason} />;
   if (state.status === 'signed-out') redirect('/login');
   const { session } = state;
+  if (session.user.twoFactorSetupRequired) redirect('/securite');
   const cookieStore = await cookies();
   // Remember whether the sidebar was collapsed (cookie set by the sidebar).
   const defaultOpen = cookieStore.get('sidebar_state')?.value !== 'false';

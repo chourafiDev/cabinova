@@ -12,15 +12,23 @@ import {
 import { Throttle } from '@nestjs/throttler';
 import type { ClinicUser } from '../auth/auth.types.js';
 import { CurrentUser } from '../auth/decorators.js';
+import { TwoFactorService } from '../auth/two-factor.service.js';
 import { Clinic } from '../tenancy/decorators.js';
 import type { ClinicContext } from '../tenancy/tenancy.service.js';
-import { InviteMemberDto, UpdateMemberDto } from './dto.js';
+import {
+  InviteMemberDto,
+  RequireTwoFactorDto,
+  UpdateMemberDto,
+} from './dto.js';
 import { TeamService } from './team.service.js';
 
 /** Équipe: the responsible doctor manages the cabinet's staff. */
 @Controller('team')
 export class TeamController {
-  constructor(private readonly team: TeamService) {}
+  constructor(
+    private readonly team: TeamService,
+    private readonly twoFactor: TwoFactorService,
+  ) {}
 
   @Get()
   list(@Clinic() clinic: ClinicContext, @CurrentUser() user: ClinicUser) {
@@ -36,6 +44,16 @@ export class TeamController {
     @Body() dto: InviteMemberDto,
   ) {
     return this.team.invite(clinic, user, dto);
+  }
+
+  /** Everyone must use two-factor sign-in, or not. */
+  @Put('two-factor')
+  requireTwoFactor(
+    @Clinic() clinic: ClinicContext,
+    @CurrentUser() user: ClinicUser,
+    @Body() dto: RequireTwoFactorDto,
+  ) {
+    return this.twoFactor.setRequired(clinic, user, dto.required);
   }
 
   @Put(':id')
@@ -58,6 +76,16 @@ export class TeamController {
     @Param('id', ParseUUIDPipe) id: string,
   ) {
     return this.team.issueLink(clinic, user, id);
+  }
+
+  @Post(':id/two-factor/reset')
+  @HttpCode(200)
+  resetTwoFactor(
+    @Clinic() clinic: ClinicContext,
+    @CurrentUser() user: ClinicUser,
+    @Param('id', ParseUUIDPipe) id: string,
+  ) {
+    return this.team.resetTwoFactor(clinic, user, id);
   }
 
   @Post(':id/deactivate')

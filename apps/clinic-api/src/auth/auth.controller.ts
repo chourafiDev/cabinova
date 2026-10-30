@@ -23,10 +23,17 @@ import type { ClinicContext } from '../tenancy/tenancy.service.js';
 import { SESSION_COOKIE } from './auth.constants.js';
 import { AuthService } from './auth.service.js';
 import type { ClinicUser } from './auth.types.js';
-import { CurrentUser, Public } from './decorators.js';
-import { AcceptInvitationDto, LoginDto } from './dto.js';
+import { AllowBeforeTwoFactor, CurrentUser, Public } from './decorators.js';
+import {
+  AcceptInvitationDto,
+  LoginDto,
+  TwoFactorChallengeDto,
+  TwoFactorCodeDto,
+} from './dto.js';
 import { ROLE_LABELS } from './roles.js';
+import { TwoFactorService } from './two-factor.service.js';
 
+@AllowBeforeTwoFactor()
 @Controller('auth')
 export class AuthController {
   private readonly secure: boolean;
@@ -37,6 +44,7 @@ export class AuthController {
     private readonly onboarding: OnboardingService,
     private readonly spaces: SpacesService,
     private readonly notifications: NotificationsService,
+    private readonly twoFactor: TwoFactorService,
     config: ConfigService<Env, true>,
   ) {
     this.secure = config.get('NODE_ENV') === 'production';
@@ -63,8 +71,88 @@ export class AuthController {
         message: 'E-mail ou mot de passe incorrect.',
       });
     }
+    // 2FA accounts get a short-lived challenge, not a session: the code comes next.
+    if (user.twoFactor) {
+      const challenge = await this.twoFactor.createChallenge(
+        db,
+        user.id,
+        body.rememberMe ?? true,
+      );
+      return { twoFactorRequired: true, challenge };
+    }
     await this.signIn(db, user.id, body.rememberMe ?? true, req, res);
     return { ok: true };
+  }
+
+  /** Second step of the sign-in; each code counts against the challenge. */
+  @Public()
+  @Throttle({ default: { limit: 10, ttl: 60_000 } })
+  @Post('2fa/verify')
+  @HttpCode(200)
+  async verifyTwoFactor(
+    @Clinic() clinic: ClinicContext,
+    @Body() body: TwoFactorChallengeDto,
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const { userId, remember } = await this.twoFactor.completeChallenge(
+      clinic,
+      body.challenge,
+      body.code,
+    );
+    await this.signIn(clinic.db, userId, remember, req, res);
+    return { ok: true };
+  }
+
+  @Get('2fa')
+  twoFactorStatus(
+    @Clinic() clinic: ClinicContext,
+    @CurrentUser() user: ClinicUser,
+  ) {
+    return this.twoFactor.status(clinic, user.id);
+  }
+
+  /** Enrolment: a new secret to scan, active only after /2fa/enable. */
+  @Post('2fa/setup')
+  @HttpCode(200)
+  setupTwoFactor(
+    @Clinic() clinic: ClinicContext,
+    @CurrentUser() user: ClinicUser,
+  ) {
+    return this.twoFactor.setup(clinic, user.id);
+  }
+
+  @Throttle({ default: { limit: 10, ttl: 60_000 } })
+  @Post('2fa/enable')
+  @HttpCode(200)
+  enableTwoFactor(
+    @Clinic() clinic: ClinicContext,
+    @CurrentUser() user: ClinicUser,
+    @Body() body: TwoFactorCodeDto,
+  ) {
+    return this.twoFactor.enable(clinic, user.id, body.code);
+  }
+
+  @Throttle({ default: { limit: 10, ttl: 60_000 } })
+  @Post('2fa/disable')
+  @HttpCode(200)
+  disableTwoFactor(
+    @Clinic() clinic: ClinicContext,
+    @CurrentUser() user: ClinicUser,
+    @Body() body: TwoFactorCodeDto,
+  ) {
+    return this.twoFactor.disable(clinic, user.id, body.code);
+  }
+
+  @Throttle({ default: { limit: 10, ttl: 60_000 } })
+  @Post('2fa/recovery-codes')
+  @HttpCode(200)
+  regenerateRecoveryCodes(
+    @Clinic() clinic: ClinicContext,
+    @CurrentUser() user: ClinicUser,
+    @Body() body: TwoFactorCodeDto,
+  ) {
+    return this.twoFactor.regenerateRecoveryCodes(clinic, user.id, body.code);
   }
 
   /** Invitation link: who it is for. */
@@ -93,8 +181,12 @@ export class AuthController {
   ) {
     const user = await this.auth.acceptInvitation(db, token, body.password);
     if (!user) throw this.invalidLink();
-    await this.signIn(db, user.id, true, req, res);
     await this.notifications.memberJoined(db, user.id);
+    // A password link must not skip the second factor.
+    if (await this.twoFactor.isEnabled(db, user.id)) {
+      return { ok: true, loginRequired: true };
+    }
+    await this.signIn(db, user.id, true, req, res);
     return { ok: true };
   }
 
@@ -122,6 +214,7 @@ export class AuthController {
         email: user.email,
         role: user.role,
         roleLabel: ROLE_LABELS[user.role] ?? user.role,
+        twoFactorSetupRequired: user.twoFactorSetupRequired,
       },
       cabinet: {
         name: tenant.name,

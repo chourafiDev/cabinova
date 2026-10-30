@@ -10,6 +10,7 @@ import { ConfigService } from '@nestjs/config';
 import type { ClinicUser } from '../auth/auth.types.js';
 import { assertOwner, ROLE_LABELS } from '../auth/roles.js';
 import { hashToken, newToken } from '../auth/tokens.js';
+import { TwoFactorService } from '../auth/two-factor.service.js';
 import type { Env } from '../config/env.js';
 import { CatalogService } from '../database/catalog.module.js';
 import { MailService } from '../mail/mail.service.js';
@@ -38,6 +39,7 @@ export type Member = {
   spaceIds: string[];
   /** Appointments to come with them as the doctor. */
   upcomingAppointments: number;
+  twoFactor: boolean;
 };
 
 type MemberRow = Omit<Member, 'roleLabel' | 'status'> & {
@@ -52,6 +54,7 @@ const groupOf = (role: string) =>
 const MEMBERS = `
   select u.id, u.name, u.email, u.role, u.active,
          u.password_hash is not null as "hasPassword",
+         u.totp_enabled_at is not null as "twoFactor",
          u.invite_expires_at as "inviteExpiresAt",
          u.last_login_at as "lastLoginAt", u.created_at as "createdAt",
          coalesce(array_agg(m.space_id::text order by m.created_at)
@@ -74,6 +77,7 @@ export class TeamService {
     config: ConfigService<Env, true>,
     private readonly catalog: CatalogService,
     private readonly mail: MailService,
+    private readonly twoFactor: TwoFactorService,
   ) {
     this.appUrl =
       config.get('CLINIC_APP_URL', { infer: true }) ??
@@ -85,7 +89,7 @@ export class TeamService {
   /** Everyone, the owner first; with the offer's limits and the open spaces. */
   async list({ tenant, db }: ClinicContext, user: ClinicUser) {
     assertOwner(user);
-    const [{ rows }, limits, spaces] = await Promise.all([
+    const [{ rows }, limits, spaces, settings] = await Promise.all([
       db.query<MemberRow>(
         `${MEMBERS} group by u.id
           order by u.role = 'owner' desc, u.active desc, u.name`,
@@ -94,8 +98,16 @@ export class TeamService {
       db.query<{ id: string; name: string; city: string | null }>(
         'select id, name, city from spaces where active order by created_at, name',
       ),
+      db.query<{ required: boolean }>(
+        'select require_two_factor as required from clinic_settings where id = 1',
+      ),
     ]);
-    return { members: rows.map(toMember), limits, spaces: spaces.rows };
+    return {
+      members: rows.map(toMember),
+      limits,
+      spaces: spaces.rows,
+      requireTwoFactor: settings.rows[0].required,
+    };
   }
 
   async invite(
@@ -248,6 +260,26 @@ export class TeamService {
     return this.find(db, id);
   }
 
+  /** Lost phone: turns off a member's 2FA; they're told by e-mail. */
+  async resetTwoFactor(clinic: ClinicContext, user: ClinicUser, id: string) {
+    assertOwner(user);
+    const member = await this.find(clinic.db, id);
+    if (member.role === 'owner') {
+      throw new ForbiddenException({
+        code: 'OWNER_RESET',
+        message:
+          'Pour votre propre compte, utilisez vos codes de secours ou contactez le support.',
+      });
+    }
+    await this.twoFactor.reset(clinic, user, id);
+    await this.mail.sendTwoFactorReset({
+      email: member.email,
+      name: member.name,
+      cabinetName: clinic.tenant.name,
+    });
+    return { ok: true };
+  }
+
   /** Only an invitation nobody accepted; members who joined are deactivated. */
   async remove(db: Pool, user: ClinicUser, id: string) {
     assertOwner(user);
@@ -297,11 +329,7 @@ export class TeamService {
   }
 
   /** One more active member of this role fits in the offer (call inside tx). */
-  private async assertRoom(
-    client: PoolClient,
-    tenantId: string,
-    role: string,
-  ) {
+  private async assertRoom(client: PoolClient, tenantId: string, role: string) {
     const group = groupOf(role);
     const { used, max } = (await this.limits(tenantId, client))[group];
     if (max === null || used < max) return;

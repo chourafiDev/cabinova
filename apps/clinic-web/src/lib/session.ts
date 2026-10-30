@@ -3,7 +3,15 @@ import { cache } from "react";
 import { type Unavailable, serverApi, unavailableFrom } from "./server-api";
 
 export type ClinicSession = {
-	user: { id: string; name: string; email: string; role: string; roleLabel: string };
+	user: {
+		id: string;
+		name: string;
+		email: string;
+		role: string;
+		roleLabel: string;
+		/** The cabinet requires 2FA and this account hasn't set it up. */
+		twoFactorSetupRequired: boolean;
+	};
 	cabinet: { name: string; specialty: string | null; city: string | null; subdomain: string };
 	subscription: {
 		plan: string | null;

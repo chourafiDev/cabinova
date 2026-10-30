@@ -154,6 +154,18 @@ export class TenantDatabasesController {
     return this.provisioning.resendInvitation(id, actorOf(user, req));
   }
 
+  /** The responsible doctor lost their phone and backup codes. */
+  @RequirePermissions('technical:write')
+  @Post('tenants/:id/owner-two-factor/reset')
+  @HttpCode(200)
+  resetOwnerTwoFactor(
+    @Param('id', ParseUUIDPipe) id: string,
+    @CurrentUser() user: AuthUser,
+    @Req() req: Request,
+  ) {
+    return this.databases.resetOwnerTwoFactor(id, actorOf(user, req));
+  }
+
   @RequirePermissions('technical:write')
   @Post('tenants/:id/database/migrate')
   @HttpCode(200)

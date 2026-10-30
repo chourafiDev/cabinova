@@ -21,15 +21,19 @@ export class AuthService {
       id: string;
       password_hash: string | null;
       active: boolean;
-    }>('select id, password_hash, active from users where lower(email) = $1', [
-      email.trim().toLowerCase(),
-    ]);
+      totp_enabled_at: Date | null;
+    }>(
+      'select id, password_hash, active, totp_enabled_at from users where lower(email) = $1',
+      [email.trim().toLowerCase()],
+    );
     const user = rows[0];
     const valid = await argon2.verify(
       user?.password_hash ?? DUMMY_HASH,
       password,
     );
-    return valid && user?.active && user.password_hash ? { id: user.id } : null;
+    return valid && user?.active && user.password_hash
+      ? { id: user.id, twoFactor: !!user.totp_enabled_at }
+      : null;
   }
 
   /** New session; returns the raw token for the cookie (only its hash is stored). */
@@ -62,7 +66,10 @@ export class AuthService {
   /** The session's user, or null if unknown, expired or the account disabled. */
   async validateSession(db: Pool, token: string): Promise<ClinicUser | null> {
     const { rows } = await db.query<ClinicUser>(
-      `select s.id as "sessionId", u.id, u.name, u.email, u.role
+      `select s.id as "sessionId", u.id, u.name, u.email, u.role,
+              u.totp_enabled_at is null and coalesce(
+                (select require_two_factor from clinic_settings where id = 1), false
+              ) as "twoFactorSetupRequired"
          from sessions s join users u on u.id = s.user_id
         where s.token_hash = $1 and s.expires_at > now() and u.active`,
       [hashToken(token)],

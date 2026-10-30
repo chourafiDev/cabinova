@@ -169,6 +169,22 @@ export function TenantTechnical({
 									>
 										Renvoyer l’invitation
 									</Button>
+									<Button
+										size="sm"
+										variant="outline"
+										disabled={pending}
+										onClick={() => {
+											if (
+												window.confirm(
+													"Réinitialiser la double authentification du médecin responsable ? Il sera déconnecté partout. Vérifiez son identité avant de confirmer.",
+												)
+											) {
+												act(`/tenants/${tenantId}/owner-two-factor/reset`, {}, () => "Double authentification réinitialisée");
+											}
+										}}
+									>
+										Réinitialiser la 2FA du médecin
+									</Button>
 								</div>
 							)
 						}

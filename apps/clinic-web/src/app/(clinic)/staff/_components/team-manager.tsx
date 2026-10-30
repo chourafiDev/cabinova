@@ -2,6 +2,7 @@
 
 import { formatDistanceToNowStrict } from "date-fns";
 import { fr } from "date-fns/locale";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { HiIdentification } from "react-icons/hi2";
@@ -13,6 +14,8 @@ import {
 	LuMail,
 	LuMapPin,
 	LuPencil,
+	LuShieldCheck,
+	LuShieldOff,
 	LuTrash2,
 	LuUserCheck,
 	LuUserPlus,
@@ -21,6 +24,7 @@ import {
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
 import {
 	Dialog,
 	DialogContent,
@@ -62,7 +66,7 @@ const STATUS_BADGE: Record<MemberStatus, string> = {
 const plural = (n: number, one: string, many: string) => `${n} ${n > 1 ? many : one}`;
 const ago = (date: string) => formatDistanceToNowStrict(new Date(date), { locale: fr, addSuffix: true });
 
-type Confirm = { kind: "deactivate" | "delete"; member: Member };
+type Confirm = { kind: "deactivate" | "delete" | "reset2fa"; member: Member };
 
 /** Équipe: the owner's view of the staff, with the offer's seats. */
 export function TeamManager({ team, plan }: { team: Team; plan: string | null }) {
@@ -111,6 +115,8 @@ export function TeamManager({ team, plan }: { team: Team; plan: string | null })
 				<QuotaCard label="Secrétaires" quota={secretaries} plan={plan} />
 			</div>
 
+			<RequireTwoFactor required={team.requireTwoFactor} ownEnabled={!!team.members.find((m) => m.role === "owner")?.twoFactor} />
+
 			<section className="bg-card overflow-hidden rounded-xl border">
 				<ul className="divide-y">
 					{current.map((m) => (
@@ -151,6 +157,51 @@ export function TeamManager({ team, plan }: { team: Team; plan: string | null })
 			<LinkDialog value={link} onOpenChange={(o) => !o && setLink(null)} />
 			<ConfirmDialog value={confirm} onOpenChange={(o) => !o && setConfirm(null)} />
 		</div>
+	);
+}
+
+/** The owner requires two-factor sign-in, once their own account has it. */
+function RequireTwoFactor({ required, ownEnabled }: { required: boolean; ownEnabled: boolean }) {
+	const router = useRouter();
+	const [pending, setPending] = useState(false);
+	const change = async (next: boolean) => {
+		setPending(true);
+		try {
+			await api("/team/two-factor", { method: "PUT", body: JSON.stringify({ required: next }) });
+			toast.success(next ? "Double authentification obligatoire" : "Double authentification facultative");
+			router.refresh();
+		} catch (err) {
+			toast.error(err instanceof Error ? err.message : "Action impossible");
+		} finally {
+			setPending(false);
+		}
+	};
+	return (
+		<section className="bg-card flex items-center gap-3 rounded-xl border p-4">
+			<LuShieldCheck className="text-primary size-5 shrink-0" />
+			<div className="min-w-0 flex-1">
+				<p className="text-sm font-medium">Double authentification obligatoire</p>
+				<p className="text-muted-foreground text-xs">
+					{ownEnabled ? (
+						"Les membres sans double authentification doivent la configurer avant de continuer."
+					) : (
+						<>
+							Activez-la d’abord sur votre compte, dans{" "}
+							<Link href="/settings/profile" className="text-foreground underline underline-offset-2">
+								Mon profil
+							</Link>
+							.
+						</>
+					)}
+				</p>
+			</div>
+			<Switch
+				aria-label="Double authentification obligatoire"
+				checked={required}
+				disabled={pending || (!ownEnabled && !required)}
+				onCheckedChange={change}
+			/>
+		</section>
 	);
 }
 
@@ -253,6 +304,11 @@ function MemberRow({
 					<Badge variant="outline" className="font-normal">
 						{m.roleLabel}
 					</Badge>
+					{m.twoFactor && (
+						<Badge variant="outline" className="gap-1 border-transparent bg-emerald-50 font-normal text-emerald-700">
+							<LuShieldCheck className="size-3" /> 2FA
+						</Badge>
+					)}
 					{!owner && m.status !== "active" && (
 						<Badge variant="outline" className={cn("border-transparent font-normal", STATUS_BADGE[m.status])}>
 							{STATUS_LABELS[m.status]}
@@ -319,6 +375,11 @@ function MemberRow({
 									</>
 								)}
 							</DropdownMenuItem>
+							{m.twoFactor && (
+								<DropdownMenuItem onSelect={() => onConfirm({ kind: "reset2fa", member: m })}>
+									<LuShieldOff /> Réinitialiser la double authentification
+								</DropdownMenuItem>
+							)}
 							<DropdownMenuSeparator />
 							{joined ? (
 								<DropdownMenuItem variant="destructive" onSelect={() => onConfirm({ kind: "deactivate", member: m })}>
@@ -336,20 +397,23 @@ function MemberRow({
 	);
 }
 
-/** Deactivating a member, or deleting an invitation nobody accepted. */
+/** Deactivating a member, deleting an invitation, or a lost phone. */
 function ConfirmDialog({ value, onOpenChange }: { value: Confirm | null; onOpenChange: (open: boolean) => void }) {
 	const router = useRouter();
 	const [pending, setPending] = useState(false);
 	const m = value?.member;
 	const deactivate = value?.kind === "deactivate";
-
+	const reset = value?.kind === "reset2fa";
 	const confirm = async () => {
 		if (!m) return;
 		setPending(true);
 		try {
-			if (deactivate) await api(`/team/${m.id}/deactivate`, { method: "POST" });
+			if (reset) await api(`/team/${m.id}/two-factor/reset`, { method: "POST" });
+			else if (deactivate) await api(`/team/${m.id}/deactivate`, { method: "POST" });
 			else await api(`/team/${m.id}`, { method: "DELETE" });
-			toast.success(deactivate ? `${m.name} est désactivé(e)` : "Invitation supprimée");
+			toast.success(
+				reset ? "Double authentification réinitialisée" : deactivate ? `${m.name} est désactivé(e)` : "Invitation supprimée",
+			);
 			onOpenChange(false);
 			router.refresh();
 		} catch (err) {
@@ -363,9 +427,20 @@ function ConfirmDialog({ value, onOpenChange }: { value: Confirm | null; onOpenC
 		<Dialog open={value !== null} onOpenChange={onOpenChange}>
 			<DialogContent className="sm:max-w-md">
 				<DialogHeader>
-					<DialogTitle>{deactivate ? `Désactiver ${m?.name} ?` : "Supprimer l’invitation ?"}</DialogTitle>
+					<DialogTitle>
+						{reset
+							? `Réinitialiser la double authentification de ${m?.name} ?`
+							: deactivate
+								? `Désactiver ${m?.name} ?`
+								: "Supprimer l’invitation ?"}
+					</DialogTitle>
 					<DialogDescription>
-						{deactivate ? (
+						{reset ? (
+							<>
+								À utiliser si cette personne a perdu son téléphone et ses codes de secours. Elle est déconnectée partout et
+								reçoit un e-mail. Vérifiez sa demande de vive voix avant de confirmer.
+							</>
+						) : deactivate ? (
 							<>
 								Son accès est coupé tout de suite, sur tous ses appareils. Ses rendez-vous et ce qu’il ou elle a saisi
 								sont conservés ; vous pourrez le ou la réactiver.
@@ -386,7 +461,7 @@ function ConfirmDialog({ value, onOpenChange }: { value: Confirm | null; onOpenC
 						Annuler
 					</Button>
 					<Button variant="destructive" disabled={pending} onClick={confirm}>
-						{pending && <LuLoader className="animate-spin" />} {deactivate ? "Désactiver" : "Supprimer"}
+						{pending && <LuLoader className="animate-spin" />} {reset ? "Réinitialiser" : deactivate ? "Désactiver" : "Supprimer"}
 					</Button>
 				</DialogFooter>
 			</DialogContent>

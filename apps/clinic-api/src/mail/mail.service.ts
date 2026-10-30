@@ -104,6 +104,19 @@ export class MailService {
     });
   }
 
+  /** Lost phone: the owner turned off this member's two-factor sign-in. */
+  sendTwoFactorReset(to: { email: string; name: string; cabinetName: string }) {
+    return this.send({
+      to: to.email,
+      subject: `Double authentification réinitialisée — ${to.cabinetName}`,
+      body: `
+        <p>Bonjour ${escapeHtml(to.name)},</p>
+        <p>Le médecin responsable de <strong>${escapeHtml(to.cabinetName)}</strong> a réinitialisé votre double authentification. Vous pouvez vous connecter avec votre mot de passe, puis la configurer à nouveau.</p>
+        <p style="color:#6b7280;font-size:12px">Si vous n’êtes pas à l’origine de cette demande, prévenez-le sans attendre.</p>
+      `,
+    });
+  }
+
   /** The devis the doctor just asked for. */
   sendQuote(to: Parameters<typeof quoteEmail>[0] & { email: string }) {
     return this.send({ to: to.email, ...quoteEmail(to) });
