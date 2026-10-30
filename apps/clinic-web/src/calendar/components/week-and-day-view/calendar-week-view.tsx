@@ -5,13 +5,12 @@ import { useCalendar } from "@/calendar/contexts/calendar-context";
 
 import { ScrollArea } from "@/components/ui/scroll-area";
 
-import { AddEventDialog } from "@/calendar/components/dialogs/add-event-dialog";
 import { EventBlock } from "@/calendar/components/week-and-day-view/event-block";
-import { DroppableTimeBlock } from "@/calendar/components/dnd/droppable-time-block";
 import { CalendarTimeline } from "@/calendar/components/week-and-day-view/calendar-time-line";
 import { WeekViewMultiDayEventsRow } from "@/calendar/components/week-and-day-view/week-view-multi-day-events-row";
 
 import { cn } from "@/lib/utils";
+import { TimeSlot } from "@/calendar/components/week-and-day-view/time-slot";
 import { groupEvents, getEventBlockStyle, isWorkingHour, getVisibleHours } from "@/calendar/helpers";
 
 import type { IEvent } from "@/calendar/interfaces";
@@ -82,31 +81,15 @@ export function CalendarWeekView({ singleDayEvents, multiDayEvents }: IProps) {
                           <div key={hour} className={cn("relative", isDisabled && "bg-calendar-disabled-hour")} style={{ height: "96px" }}>
                             {index !== 0 && <div className="pointer-events-none absolute inset-x-0 top-0 border-b"></div>}
 
-                            <DroppableTimeBlock date={day} hour={hour} minute={0}>
-                              <AddEventDialog startDate={day} startTime={{ hour, minute: 0 }}>
-                                <div className="absolute inset-x-0 top-0 h-[24px] cursor-pointer transition-colors hover:bg-accent" />
-                              </AddEventDialog>
-                            </DroppableTimeBlock>
+                            <TimeSlot date={day} hour={hour} minute={0} />
 
-                            <DroppableTimeBlock date={day} hour={hour} minute={15}>
-                              <AddEventDialog startDate={day} startTime={{ hour, minute: 15 }}>
-                                <div className="absolute inset-x-0 top-[24px] h-[24px] cursor-pointer transition-colors hover:bg-accent" />
-                              </AddEventDialog>
-                            </DroppableTimeBlock>
+                            <TimeSlot date={day} hour={hour} minute={15} />
 
                             <div className="pointer-events-none absolute inset-x-0 top-1/2 border-b border-dashed"></div>
 
-                            <DroppableTimeBlock date={day} hour={hour} minute={30}>
-                              <AddEventDialog startDate={day} startTime={{ hour, minute: 30 }}>
-                                <div className="absolute inset-x-0 top-[48px] h-[24px] cursor-pointer transition-colors hover:bg-accent" />
-                              </AddEventDialog>
-                            </DroppableTimeBlock>
+                            <TimeSlot date={day} hour={hour} minute={30} />
 
-                            <DroppableTimeBlock date={day} hour={hour} minute={45}>
-                              <AddEventDialog startDate={day} startTime={{ hour, minute: 45 }}>
-                                <div className="absolute inset-x-0 top-[72px] h-[24px] cursor-pointer transition-colors hover:bg-accent" />
-                              </AddEventDialog>
-                            </DroppableTimeBlock>
+                            <TimeSlot date={day} hour={hour} minute={45} />
                           </div>
                         );
                       })}

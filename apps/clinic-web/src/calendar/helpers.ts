@@ -121,6 +121,12 @@ export function isWorkingHour(day: Date, hour: number, workingHours: TWorkingHou
   return (workingHours[day.getDay()] ?? []).some((p) => p.from < (hour + 1) * 60 && p.to > hour * 60);
 }
 
+/** The quarter of an hour overlaps opening hours. */
+export function isWorkingSlot(day: Date, hour: number, minute: number, workingHours: TWorkingHours) {
+  const from = hour * 60 + minute;
+  return (workingHours[day.getDay()] ?? []).some((p) => p.from < from + 15 && p.to > from);
+}
+
 /** The whole appointment falls inside one opening period of its day. */
 export function isWithinWorkingHours(start: Date, end: Date, workingHours: TWorkingHours) {
   const from = start.getHours() * 60 + start.getMinutes();
