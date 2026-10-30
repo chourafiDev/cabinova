@@ -25,6 +25,12 @@ export type DeviceSession = {
 	current: boolean;
 };
 
+/** A device of the team (GET /team/sessions). */
+export type TeamSession = DeviceSession & {
+	lastSeenAt: string;
+	member: { id: string; name: string; role: string };
+};
+
 /** A space as the owner manages it (GET /spaces/manage). */
 export type ManagedSpace = Space & {
 	active: boolean;
@@ -54,6 +60,7 @@ export const SETTINGS_SECTIONS: SettingsSection[] = [
 	{ href: "/settings/spaces", label: "Espaces", hint: "Sites du cabinet", ownerOnly: true },
 	{ href: "/settings/hours", label: "Horaires & agenda", hint: "Ouverture, durée des RDV", ownerOnly: true },
 	{ href: "/settings/tarifs", label: "Tarifs", hint: "Actes et honoraires", ownerOnly: true },
+	{ href: "/settings/sessions", label: "Sessions actives", hint: "Appareils de l’équipe", ownerOnly: true },
 	{ href: "/settings/activity", label: "Journal d’activité", hint: "Qui a fait quoi", ownerOnly: true },
 ];
 

@@ -5,6 +5,9 @@ import { SESSION_TTL_DEFAULT, SESSION_TTL_REMEMBER } from './auth.constants.js';
 import type { ClinicUser } from './auth.types.js';
 import { hashToken, newToken } from './tokens.js';
 
+/** How often a session's last activity is written. */
+const LAST_SEEN_EVERY_MINUTES = 5;
+
 // Verified when the e-mail is unknown, so both cases take the same time.
 const DUMMY_HASH = await argon2.hash('cabinova-timing-guard');
 
@@ -65,8 +68,9 @@ export class AuthService {
 
   /** The session's user, or null if unknown, expired or the account disabled. */
   async validateSession(db: Pool, token: string): Promise<ClinicUser | null> {
-    const { rows } = await db.query<ClinicUser>(
+    const { rows } = await db.query<ClinicUser & { stale: boolean }>(
       `select s.id as "sessionId", u.id, u.name, u.email, u.role,
+              s.last_seen_at < now() - make_interval(mins => ${LAST_SEEN_EVERY_MINUTES}) as stale,
               u.totp_enabled_at is null and coalesce(
                 (select require_two_factor from clinic_settings where id = 1), false
               ) as "twoFactorSetupRequired"
@@ -74,7 +78,17 @@ export class AuthService {
         where s.token_hash = $1 and s.expires_at > now() and u.active`,
       [hashToken(token)],
     );
-    return rows[0] ?? null;
+    if (!rows[0]) return null;
+    const { stale, ...user } = rows[0];
+    // Not awaited: it must neither slow nor fail the request.
+    if (stale) {
+      void db
+        .query('update sessions set last_seen_at = now() where id = $1', [
+          user.sessionId,
+        ])
+        .catch(() => undefined);
+    }
+    return user;
   }
 
   async revokeSession(db: Pool, sessionId: string) {
@@ -97,6 +111,38 @@ export class AuthService {
       [user.id, user.sessionId],
     );
     return rows.map((s) => ({ ...s, current: s.id === user.sessionId }));
+  }
+
+  /** Every signed-in device of the cabinet, most recently active first. */
+  async listTeamSessions(db: Pool, user: ClinicUser) {
+    const { rows } = await db.query<{ id: string }>(
+      `select s.id, s.user_agent as "userAgent", s.ip,
+              s.created_at as "createdAt", s.expires_at as "expiresAt",
+              s.last_seen_at as "lastSeenAt",
+              json_build_object('id', u.id, 'name', u.name, 'role', u.role) as member
+         from sessions s join users u on u.id = s.user_id
+        where s.expires_at > now()
+        order by s.last_seen_at desc`,
+    );
+    return rows.map((s) => ({ ...s, current: s.id === user.sessionId }));
+  }
+
+  /** Signs out one device of the cabinet, never the one in use. */
+  async revokeTeamSession(db: Pool, user: ClinicUser, sessionId: string) {
+    const { rowCount } = await db.query(
+      'delete from sessions where id = $1 and id <> $2',
+      [sessionId, user.sessionId],
+    );
+    return Boolean(rowCount);
+  }
+
+  /** Signs out every device of a member. */
+  async revokeMemberSessions(db: Pool, memberId: string) {
+    const { rowCount } = await db.query(
+      'delete from sessions where user_id = $1',
+      [memberId],
+    );
+    return rowCount ?? 0;
   }
 
   /** Signs out one of this person's other devices (false if not theirs). */

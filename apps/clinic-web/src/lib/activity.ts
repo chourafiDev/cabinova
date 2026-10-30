@@ -53,6 +53,8 @@ const ACTIONS: Record<string, string> = {
 	"team.link": "a envoyé un lien de mot de passe à",
 	"team.two_factor_reset": "a réinitialisé la double authentification de",
 	"team.two_factor_required": "a changé l’obligation de double authentification",
+	"team.session_revoke": "a déconnecté un appareil de",
+	"team.sessions_revoke": "a déconnecté tous les appareils de",
 	"team.deactivate": "a désactivé",
 	"team.reactivate": "a réactivé",
 	"team.delete": "a supprimé l’invitation de",

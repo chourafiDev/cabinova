@@ -120,6 +120,10 @@ export const sessions = pgTable('sessions', {
   expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
   userAgent: text('user_agent'),
   ip: text('ip'),
+  /** Refreshed at most every few minutes (Sessions actives). */
+  lastSeenAt: timestamp('last_seen_at', { withTimezone: true })
+    .notNull()
+    .defaultNow(),
   createdAt: timestamp('created_at', { withTimezone: true })
     .notNull()
     .defaultNow(),

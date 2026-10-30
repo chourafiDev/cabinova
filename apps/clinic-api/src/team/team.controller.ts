@@ -1,9 +1,11 @@
 import {
   Body,
+  ConflictException,
   Controller,
   Delete,
   Get,
   HttpCode,
+  NotFoundException,
   Param,
   ParseUUIDPipe,
   Post,
@@ -12,7 +14,9 @@ import {
 import { Throttle } from '@nestjs/throttler';
 import { Activity } from '../activity/activity.decorator.js';
 import type { ClinicUser } from '../auth/auth.types.js';
+import { AuthService } from '../auth/auth.service.js';
 import { CurrentUser } from '../auth/decorators.js';
+import { assertOwner } from '../auth/roles.js';
 import { TwoFactorService } from '../auth/two-factor.service.js';
 import { Clinic } from '../tenancy/decorators.js';
 import type { ClinicContext } from '../tenancy/tenancy.service.js';
@@ -29,6 +33,7 @@ export class TeamController {
   constructor(
     private readonly team: TeamService,
     private readonly twoFactor: TwoFactorService,
+    private readonly auth: AuthService,
   ) {}
 
   @Get()
@@ -46,6 +51,49 @@ export class TeamController {
     @Body() dto: InviteMemberDto,
   ) {
     return this.team.invite(clinic, user, dto);
+  }
+
+  /** Sessions actives: every signed-in device of the cabinet. */
+  @Get('sessions')
+  sessions(@Clinic() { db }: ClinicContext, @CurrentUser() user: ClinicUser) {
+    assertOwner(user);
+    return this.auth.listTeamSessions(db, user);
+  }
+
+  @Activity('team.session_revoke', 'session')
+  @Delete('sessions/:id')
+  @HttpCode(204)
+  async revokeSession(
+    @Clinic() { db }: ClinicContext,
+    @CurrentUser() user: ClinicUser,
+    @Param('id', ParseUUIDPipe) id: string,
+  ) {
+    assertOwner(user);
+    if (!(await this.auth.revokeTeamSession(db, user, id))) {
+      throw new NotFoundException({
+        code: 'SESSION_NOT_FOUND',
+        message: 'Session introuvable.',
+      });
+    }
+  }
+
+  /** Signs a member out everywhere; for oneself, Mon profil does it. */
+  @Activity('team.sessions_revoke', 'member')
+  @Post(':id/sessions/revoke')
+  @HttpCode(200)
+  async revokeMemberSessions(
+    @Clinic() { db }: ClinicContext,
+    @CurrentUser() user: ClinicUser,
+    @Param('id', ParseUUIDPipe) id: string,
+  ) {
+    assertOwner(user);
+    if (id === user.id) {
+      throw new ConflictException({
+        code: 'OWN_SESSIONS',
+        message: 'Pour vos propres appareils, utilisez Mon profil.',
+      });
+    }
+    return { revoked: await this.auth.revokeMemberSessions(db, id) };
   }
 
   /** Everyone must use two-factor sign-in, or not. */

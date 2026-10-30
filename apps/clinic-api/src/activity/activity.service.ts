@@ -8,7 +8,14 @@ const TZ = 'Africa/Casablanca';
 
 /** What an entry is about, resolved to words while it still exists. */
 export type ActivityEntity =
-  'patient' | 'appointment' | 'member' | 'act' | 'space' | 'payment' | 'charge';
+  | 'patient'
+  | 'appointment'
+  | 'member'
+  | 'act'
+  | 'space'
+  | 'payment'
+  | 'charge'
+  | 'session';
 
 const PATIENT_NAME = `upper(p.last_name) || ' ' || p.first_name`;
 
@@ -19,6 +26,8 @@ const DESCRIBE: Record<ActivityEntity, string> = {
                   from appointments a join patients p on p.id = a.patient_id
                  where a.id = $1`,
   member: 'select name as target from users where id = $1',
+  session: `select u.name as target from sessions s
+              join users u on u.id = s.user_id where s.id = $1`,
   act: 'select name as target from acts where id = $1',
   space: 'select name as target from spaces where id = $1',
   payment: `select ${PATIENT_NAME} || coalesce(' · ' || c.receipt_number, '') as target
