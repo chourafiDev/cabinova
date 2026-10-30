@@ -12,13 +12,17 @@ import type { ClinicUser } from '../auth/auth.types.js';
 import { CurrentUser } from '../auth/decorators.js';
 import { Clinic } from '../tenancy/decorators.js';
 import type { ClinicContext } from '../tenancy/tenancy.service.js';
+import { OnboardingService } from '../onboarding/onboarding.service.js';
 import { OpeningHoursDto } from '../settings/dto.js';
 import { CreateSpaceDto, SwitchSpaceDto } from './dto.js';
 import { SpacesService } from './spaces.service.js';
 
 @Controller('spaces')
 export class SpacesController {
-  constructor(private readonly spaces: SpacesService) {}
+  constructor(
+    private readonly spaces: SpacesService,
+    private readonly onboarding: OnboardingService,
+  ) {}
 
   /** The spaces this person may enter, and the current one. */
   @Get()
@@ -62,13 +66,20 @@ export class SpacesController {
   }
 
   @Put(':id/hours')
-  setHours(
+  async setHours(
     @Clinic() { db }: ClinicContext,
     @CurrentUser() user: ClinicUser,
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: OpeningHoursDto,
   ) {
-    return this.spaces.setOpeningHours(db, user, id, dto.openingHours);
+    const space = await this.spaces.setOpeningHours(
+      db,
+      user,
+      id,
+      dto.openingHours,
+    );
+    await this.onboarding.confirmHours(db);
+    return space;
   }
 
   @Post(':id/close')

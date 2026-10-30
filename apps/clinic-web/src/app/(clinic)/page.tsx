@@ -7,6 +7,7 @@ import { apiGet } from "@/lib/server-api";
 import { getClinicState } from "@/lib/session";
 import { spaceLabel } from "@/lib/spaces";
 import { cn } from "@/lib/utils";
+import { GettingStarted, type ChecklistSteps } from "./_components/dashboard/getting-started";
 import { SpacesOverview } from "./_components/dashboard/spaces-overview";
 import { SubscriptionCard } from "./_components/dashboard/subscription-card";
 import { TodayAppointments } from "./_components/dashboard/today-appointments";
@@ -28,13 +29,18 @@ export default async function DashboardPage({ searchParams }: PageProps<"/">) {
 	const isOwner = session.user.role === "owner";
 	const manySpaces = (session.spaces?.spaces.length ?? 0) > 1;
 	const all = isOwner && manySpaces && (await searchParams).espaces === "tous";
-	const data = await apiGet<DashboardData>(all ? "/dashboard?scope=all" : "/dashboard");
+	const [data, checklist] = await Promise.all([
+		apiGet<DashboardData>(all ? "/dashboard?scope=all" : "/dashboard"),
+		isOwner ? apiGet<{ steps: ChecklistSteps | null }>("/onboarding/checklist") : null,
+	]);
 	const { kpis } = data;
 	const current = session.spaces?.current;
 
 	return (
 		<>
 			<WelcomeBanner session={session} date={data.date} upcoming={kpis.upcomingToday} />
+
+			{checklist?.steps && <GettingStarted steps={checklist.steps} />}
 
 			{isOwner && manySpaces && current && (
 				<nav className="bg-muted mb-3 flex w-fit rounded-lg p-0.5 text-sm" aria-label="Périmètre">

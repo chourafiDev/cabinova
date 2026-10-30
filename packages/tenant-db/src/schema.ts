@@ -53,6 +53,12 @@ export const clinicSettings = pgTable(
     defaultAppointmentMinutes: smallint('default_appointment_minutes')
       .notNull()
       .default(30),
+    /** Opening hours saved or accepted (getting-started checklist). */
+    hoursConfirmedAt: timestamp('hours_confirmed_at', { withTimezone: true }),
+    /** The responsible doctor hid the getting-started checklist. */
+    checklistDismissedAt: timestamp('checklist_dismissed_at', {
+      withTimezone: true,
+    }),
     ...timestamps,
   },
   (t) => [check('clinic_settings_single_row', sql`${t.id} = 1`)],
