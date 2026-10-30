@@ -154,3 +154,26 @@ export async function signInAgain(
     .expect(200);
   return agent;
 }
+
+/**
+ * Every day, all day, in the space(s): for suites that book relative to
+ * today, which may be a day the default hours are closed.
+ */
+export async function openEveryDay(
+  clinic: INestApplication,
+  subdomain: string,
+  owner: Agent,
+) {
+  const cab = onCabinet(clinic, subdomain, owner);
+  const { body: me } = await cab.get('/auth/me').expect(200);
+  const day = [{ from: '00:00', to: '23:59' }];
+  const openingHours = Object.fromEntries(
+    ['0', '1', '2', '3', '4', '5', '6'].map((d) => [d, day]),
+  );
+  for (const space of me.spaces.spaces as { id: string }[]) {
+    await cab
+      .put(`/spaces/${space.id}/hours`)
+      .send({ openingHours })
+      .expect(200);
+  }
+}

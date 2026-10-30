@@ -6,6 +6,10 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import {
+  isWithinOpeningHours,
+  type OpeningHours,
+} from '../settings/opening-hours.js';
+import {
   type AppointmentDto,
   type AppointmentStatus,
   type ListAppointmentsQuery,
@@ -41,7 +45,8 @@ const time = (d: Date) =>
  * A space's agenda. Every query is filtered by the space; the patient must
  * belong to it. A practitioner is never double-booked, in any space (a
  * doctor can't be in Fès and Marrakech at once), unless the user accepts
- * it ("Réserver quand même").
+ * it ("Réserver quand même"). Nothing is booked or moved outside the space's
+ * opening hours.
  */
 @Injectable()
 export class AppointmentsService {
@@ -118,7 +123,7 @@ export class AppointmentsService {
           message: 'Un rendez-vous terminé ne peut plus être modifié.',
         });
       }
-      const values = await this.validate(tx, spaceId, dto, id);
+      const values = await this.validate(tx, spaceId, dto, current);
       await tx.query(
         `update appointments set patient_id = $3, practitioner_id = $4,
            starts_at = $5, ends_at = $6, reason = $7, notes = $8, updated_at = now()
@@ -195,6 +200,7 @@ export class AppointmentsService {
 
   private async find(tx: PoolClient, spaceId: string, id: string) {
     const { rows } = await tx.query<{
+      id: string;
       status: AppointmentStatus;
       startsAt: string;
       endsAt: string;
@@ -217,7 +223,8 @@ export class AppointmentsService {
     tx: PoolClient,
     spaceId: string,
     dto: AppointmentDto,
-    exceptId?: string,
+    /** Updating: an appointment that keeps its time is left alone. */
+    current?: { id: string; startsAt: string; endsAt: string },
   ) {
     const startsAt = new Date(dto.startsAt);
     const endsAt = new Date(dto.endsAt);
@@ -245,13 +252,18 @@ export class AppointmentsService {
         message: 'Ce praticien ne consulte pas dans cet espace.',
       });
     }
+    const moved =
+      !current ||
+      new Date(current.startsAt).getTime() !== startsAt.getTime() ||
+      new Date(current.endsAt).getTime() !== endsAt.getTime();
+    if (moved) await this.assertOpen(tx, spaceId, startsAt, endsAt);
     if (!dto.allowOverlap) {
       await this.assertSlotFree(
         tx,
         dto.practitionerId,
         startsAt,
         endsAt,
-        exceptId,
+        current?.id,
       );
     }
     return {
@@ -262,6 +274,25 @@ export class AppointmentsService {
       reason: dto.reason ?? null,
       notes: dto.notes ?? null,
     };
+  }
+
+  private async assertOpen(
+    tx: PoolClient,
+    spaceId: string,
+    startsAt: Date,
+    endsAt: Date,
+  ) {
+    const { rows } = await tx.query<{ opening_hours: OpeningHours }>(
+      'select opening_hours from spaces where id = $1',
+      [spaceId],
+    );
+    if (!isWithinOpeningHours(startsAt, endsAt, rows[0].opening_hours)) {
+      throw new BadRequestException({
+        code: 'OUTSIDE_HOURS',
+        message:
+          'Ce créneau est en dehors des horaires d’ouverture du cabinet.',
+      });
+    }
   }
 
   /**

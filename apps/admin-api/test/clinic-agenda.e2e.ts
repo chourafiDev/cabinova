@@ -4,6 +4,7 @@ import {
   captureInvitations,
   createClinicApp,
   onCabinet,
+  openEveryDay,
   provisionCabinet,
   signInDoctor,
 } from './clinic.js';
@@ -190,6 +191,50 @@ describe('clinic: agenda', () => {
       .send({ spaceId: principalId })
       .expect(200);
     expect((await day()).length).toBeGreaterThan(0);
+  });
+
+  it('refuses a slot outside opening hours, and leaves an old one alone', async () => {
+    // Defaults: closed on Sunday, 08:00 – 18:00 on Monday.
+    const sunday = await book({
+      startsAt: '2026-11-08T10:00:00+01:00',
+      endsAt: '2026-11-08T10:30:00+01:00',
+    }).expect(400);
+    expect(sunday.body.code).toBe('OUTSIDE_HOURS');
+    await book({ startsAt: at('07:30'), endsAt: at('08:00') }).expect(400);
+    await book({ startsAt: at('17:45'), endsAt: at('18:15') }).expect(400);
+    // "Réserver quand même" doesn't get around it.
+    await book({
+      startsAt: at('19:00'),
+      endsAt: at('19:30'),
+      allowOverlap: true,
+    }).expect(400);
+
+    const { body: late } = await book({
+      startsAt: at('17:30'),
+      endsAt: at('18:00'),
+    }).expect(201);
+    const move = (startsAt: string, endsAt: string, reason?: string) =>
+      cab().put(`/appointments/${late.id}`).send({
+        patientId,
+        practitionerId: doctorId,
+        startsAt,
+        endsAt,
+        reason,
+      });
+    await move(at('18:30'), at('19:00')).expect(400);
+
+    // Booked before the hours changed: it can still be edited, not moved.
+    const { body: me } = await cab().get('/auth/me').expect(200);
+    await cab()
+      .put(`/spaces/${me.spaces.current.id}/hours`)
+      .send({ openingHours: { 1: [{ from: '08:00', to: '12:00' }] } })
+      .expect(200);
+    await move(at('17:30'), at('18:00'), 'Contrôle').expect(200);
+    await move(at('17:45'), at('18:15')).expect(400);
+    await cab()
+      .post(`/appointments/${late.id}/status`)
+      .send({ status: 'cancelled' });
+    await openEveryDay(clinic, 'agenda-atlas', doctor);
   });
 
   it('feeds the dashboard from the agenda, per space and for all spaces', async () => {

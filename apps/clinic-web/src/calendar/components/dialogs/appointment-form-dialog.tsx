@@ -101,9 +101,11 @@ export function AppointmentFormDialog({
 	const durations = [...new Set([...DURATIONS, form.getValues("duration")])].sort((a, b) => a - b);
 	const [date, time, duration] = useWatch({ control: form.control, name: ["date", "time", "duration"] });
 	const slotStart = date && /^\d{2}:\d{2}$/.test(time) ? new Date(`${date}T${time}`) : null;
-	// Allowed, but worth a second look (the agenda greys these hours out).
+	// Refused (the API too), unless an existing appointment simply keeps its time.
+	const keepsTime =
+		!!event && !!slotStart && slotStart.getTime() === parseISO(event.startDate).getTime() && duration === differenceInMinutes(parseISO(event.endDate), parseISO(event.startDate));
 	const outsideHours =
-		slotStart && !Number.isNaN(slotStart.getTime()) && !isWithinWorkingHours(slotStart, addMinutes(slotStart, duration), workingHours)
+		slotStart && !keepsTime && !Number.isNaN(slotStart.getTime()) && !isWithinWorkingHours(slotStart, addMinutes(slotStart, duration), workingHours)
 			? slotStart
 			: null;
 
@@ -227,10 +229,10 @@ export function AppointmentFormDialog({
 						</div>
 
 						{outsideHours && (
-							<p className="-mt-2 flex items-start gap-1.5 text-xs text-amber-700 dark:text-amber-400">
+							<p role="alert" className="text-destructive -mt-2 flex items-start gap-1.5 text-xs">
 								<LuClock className="mt-px size-3.5 shrink-0" />
 								<span>
-									En dehors des horaires d’ouverture ({format(outsideHours, "EEEE", { locale: fr })} :{" "}
+									Cabinet fermé à ce créneau. Horaires ({format(outsideHours, "EEEE", { locale: fr })} :{" "}
 									{formatPeriods(openingHours[String(outsideHours.getDay()) as keyof typeof openingHours]).toLowerCase()}).
 								</span>
 							</p>
@@ -268,7 +270,7 @@ export function AppointmentFormDialog({
 									size="sm"
 									variant="outline"
 									className="w-fit bg-background"
-									disabled={isSubmitting}
+									disabled={isSubmitting || !!outsideHours}
 									onClick={form.handleSubmit((values) => save(values, true))}
 								>
 									Réserver quand même
@@ -281,7 +283,7 @@ export function AppointmentFormDialog({
 						<Button type="button" variant="outline" onClick={() => setOpen(false)}>
 							Annuler
 						</Button>
-						<Button type="submit" disabled={isSubmitting || !users.length}>
+						<Button type="submit" disabled={isSubmitting || !users.length || !!outsideHours}>
 							{isSubmitting && <LuLoader className="size-4 animate-spin" />}
 							{event ? "Enregistrer" : "Ajouter"}
 						</Button>

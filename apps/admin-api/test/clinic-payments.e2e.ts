@@ -5,6 +5,7 @@ import {
   captureInvitations,
   createClinicApp,
   onCabinet,
+  openEveryDay,
   provisionCabinet,
   signInDoctor,
 } from './clinic.js';
@@ -50,6 +51,7 @@ describe('clinic: payments', () => {
     const tenantId = await provisionCabinet(adminAgent, SUB, EMAIL);
     clinic = await createClinicApp();
     owner = await signInDoctor(clinic, SUB, invitations.get(EMAIL)!);
+    await openEveryDay(clinic, SUB, owner);
     secretary = await addStaff(clinic, adminAgent, tenantId, SUB, {
       name: 'Salma Secrétaire',
       email: 'secretaire@caisse.test',

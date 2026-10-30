@@ -11,6 +11,44 @@ const TIME = /^([01]\d|2[0-3]):[0-5]\d$/;
 const invalid = (message: string) =>
   new BadRequestException({ code: 'INVALID_OPENING_HOURS', message });
 
+const WEEKDAY = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+const clock = new Intl.DateTimeFormat('en-US', {
+  timeZone: 'Africa/Casablanca',
+  weekday: 'short',
+  hour: '2-digit',
+  minute: '2-digit',
+  hourCycle: 'h23',
+});
+const toMinutes = (time: string) =>
+  Number(time.slice(0, 2)) * 60 + Number(time.slice(3));
+
+/** Weekday and minutes since midnight, on the cabinet's clock. */
+function local(date: Date) {
+  const part = (type: string) =>
+    clock.formatToParts(date).find((p) => p.type === type)!.value;
+  return {
+    day: String(WEEKDAY.indexOf(part('weekday'))) as keyof OpeningHours,
+    minutes: Number(part('hour')) * 60 + Number(part('minute')),
+  };
+}
+
+/** The whole slot is open; back-to-back periods count as one. */
+export function isWithinOpeningHours(
+  startsAt: Date,
+  endsAt: Date,
+  hours: OpeningHours,
+) {
+  const { day, minutes } = local(startsAt);
+  const end = minutes + (endsAt.getTime() - startsAt.getTime()) / 60_000;
+  let reached = minutes;
+  for (const period of hours[day] ?? []) {
+    if (toMinutes(period.from) <= reached && toMinutes(period.to) > reached) {
+      reached = toMinutes(period.to);
+    }
+  }
+  return reached >= end;
+}
+
 /**
  * Checks a week of opening hours from the client and returns it in its
  * stored form: every day present, periods sorted, nothing else kept.

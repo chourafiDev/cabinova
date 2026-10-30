@@ -5,6 +5,7 @@ import {
   captureInvitations,
   createClinicApp,
   onCabinet,
+  openEveryDay,
   provisionCabinet,
   signInDoctor,
 } from './clinic.js';
@@ -41,6 +42,7 @@ describe('clinic: reports', () => {
       .expect(200);
     clinic = await createClinicApp();
     owner = await signInDoctor(clinic, SUB, invitations.get(EMAIL)!);
+    await openEveryDay(clinic, SUB, owner);
     doctor = await addStaff(clinic, adminAgent, tenantId, SUB, {
       name: 'Dr Yassine Amrani',
       email: 'amrani@stats.test',

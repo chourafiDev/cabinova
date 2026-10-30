@@ -127,11 +127,15 @@ export function isWorkingSlot(day: Date, hour: number, minute: number, workingHo
   return (workingHours[day.getDay()] ?? []).some((p) => p.from < from + 15 && p.to > from);
 }
 
-/** The whole appointment falls inside one opening period of its day. */
+/** The whole appointment is open; back-to-back periods count as one (same rule as the API). */
 export function isWithinWorkingHours(start: Date, end: Date, workingHours: TWorkingHours) {
   const from = start.getHours() * 60 + start.getMinutes();
   const to = from + Math.round((end.getTime() - start.getTime()) / 60_000);
-  return (workingHours[start.getDay()] ?? []).some((p) => p.from <= from && p.to >= to);
+  let reached = from;
+  for (const p of workingHours[start.getDay()] ?? []) {
+    if (p.from <= reached && p.to > reached) reached = p.to;
+  }
+  return reached >= to;
 }
 
 export function getVisibleHours(visibleHours: TVisibleHours, singleDayEvents: IEvent[]) {

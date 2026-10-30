@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { parseOpeningHours } from './opening-hours.js';
+import { isWithinOpeningHours, parseOpeningHours } from './opening-hours.js';
 
 const closed = { 0: [], 1: [], 2: [], 3: [], 4: [], 5: [], 6: [] };
 const message = (value: unknown) => {
@@ -63,5 +63,46 @@ describe('parseOpeningHours', () => {
     expect(message({ 1: Array(4).fill({ from: '08:00', to: '09:00' }) })).toBe(
       'Au plus 3 plages horaires par jour.',
     );
+  });
+});
+
+describe('isWithinOpeningHours', () => {
+  const hours = parseOpeningHours({
+    1: [
+      { from: '08:00', to: '12:00' },
+      { from: '12:00', to: '13:00' },
+      { from: '15:00', to: '18:00' },
+    ],
+  });
+  // Monday 2 November 2026; Morocco is UTC+1.
+  const at = (time: string) => new Date(`2026-11-02T${time}:00+01:00`);
+  const within = (from: string, to: string) =>
+    isWithinOpeningHours(at(from), at(to), hours);
+
+  it('uses the cabinet clock, whatever the server time zone', () => {
+    expect(within('08:00', '08:30')).toBe(true);
+    expect(within('07:30', '08:00')).toBe(false);
+    expect(within('17:30', '18:00')).toBe(true);
+  });
+
+  it('refuses a slot that runs past closing or across a gap', () => {
+    expect(within('17:45', '18:15')).toBe(false);
+    expect(within('12:30', '15:30')).toBe(false);
+    expect(within('13:00', '13:30')).toBe(false);
+  });
+
+  it('treats back-to-back periods as one', () => {
+    expect(within('11:30', '12:30')).toBe(true);
+  });
+
+  it('refuses a closed day', () => {
+    const sunday = new Date('2026-11-01T10:00:00+01:00');
+    expect(
+      isWithinOpeningHours(
+        sunday,
+        new Date(sunday.getTime() + 1_800_000),
+        hours,
+      ),
+    ).toBe(false);
   });
 });
