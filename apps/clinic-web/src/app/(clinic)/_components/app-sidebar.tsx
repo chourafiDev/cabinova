@@ -22,10 +22,12 @@ import { findNavItem, navGroups, visibleNavItems } from "./nav";
 export function AppSidebar({
 	cabinet,
 	spaces,
+	subscription,
 	role,
 }: {
 	cabinet: ClinicSession["cabinet"];
 	spaces: ClinicSession["spaces"];
+	subscription: ClinicSession["subscription"];
 	role: string;
 }) {
 	const isOwner = role === "owner";
@@ -36,7 +38,7 @@ export function AppSidebar({
 		<Sidebar collapsible="icon" variant="inset">
 			<SidebarHeader>
 				{spaces ? (
-					<SpaceSwitcher cabinet={cabinet} spaces={spaces} isOwner={isOwner} />
+					<SpaceSwitcher cabinet={cabinet} spaces={spaces} subscription={subscription} isOwner={isOwner} />
 				) : (
 					<SidebarMenu>
 						<SidebarMenuItem>

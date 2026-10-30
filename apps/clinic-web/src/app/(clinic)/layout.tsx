@@ -39,6 +39,7 @@ export default async function ClinicLayout({ children }: LayoutProps<'/'>) {
         <AppSidebar
           cabinet={session.cabinet}
           spaces={session.spaces}
+          subscription={session.subscription}
           role={session.user.role}
         />
         {/* Inset panel: fixed frame on desktop, the page scrolls inside it. */}

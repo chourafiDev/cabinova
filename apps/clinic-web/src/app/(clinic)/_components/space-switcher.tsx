@@ -1,6 +1,18 @@
 "use client";
 
-import { LuCheck, LuChevronsUpDown, LuLoader, LuMapPin, LuPlus } from "react-icons/lu";
+import {
+	LuBuilding2,
+	LuCheck,
+	LuChevronsUpDown,
+	LuClock,
+	LuLoader,
+	LuMapPin,
+	LuPlus,
+	LuSettings,
+	LuTags,
+	LuUsers,
+} from "react-icons/lu";
+import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -27,28 +39,48 @@ import { SidebarMenu, SidebarMenuButton, SidebarMenuItem } from "@/components/ui
 import { api } from "@/lib/api-client";
 import type { ClinicSession, Space } from "@/lib/session";
 import { spaceLabel, switchSpace } from "@/lib/spaces";
+import { cn } from "@/lib/utils";
+import { SubscriptionDialog } from "./billing/subscription-dialog";
 
 const initial = (name: string) => name.replace(/^(cabinet|espace)\s+/i, "").charAt(0).toUpperCase();
 
+const MANAGE = [
+	{ href: "/settings/cabinet", label: "Le cabinet", icon: LuBuilding2 },
+	{ href: "/settings/hours", label: "Horaires d’ouverture", icon: LuClock },
+	{ href: "/settings/tarifs", label: "Tarifs", icon: LuTags },
+	{ href: "/settings/spaces", label: "Espaces", icon: LuMapPin },
+];
+
+const STATUS = { trialing: "Essai gratuit", past_due: "En attente de paiement" } as const;
+
 /**
- * Top of the sidebar: the cabinet and the space you work in. Switching
- * reloads everything for the other space (patients, agenda…); the owner
- * also creates spaces here.
+ * Top of the sidebar: the cabinet and the space you work in, its offer, and
+ * the way to the cabinet's settings. Switching reloads everything for the
+ * other space (patients, agenda…); the owner also creates spaces here.
  */
 export function SpaceSwitcher({
 	cabinet,
 	spaces,
+	subscription,
 	isOwner,
 }: {
 	cabinet: ClinicSession["cabinet"];
 	spaces: NonNullable<ClinicSession["spaces"]>;
+	subscription: ClinicSession["subscription"];
 	isOwner: boolean;
 }) {
 	const router = useRouter();
 	const pathname = usePathname();
 	const [pending, setPending] = useState<string | null>(null);
 	const [creating, setCreating] = useState(false);
+	const [billing, setBilling] = useState(false);
 	const { current } = spaces;
+	// Staff don't see the cabinet's billing: what the cabinet is, instead.
+	const offerLine = isOwner
+		? [subscription.plan ? `Offre ${subscription.plan}` : "Aucune offre", STATUS[subscription.status as keyof typeof STATUS]]
+				.filter(Boolean)
+				.join(" · ")
+		: (cabinet.specialty ?? cabinet.city ?? `${cabinet.subdomain}.cabinova.ma`);
 
 	const choose = async (space: Space) => {
 		if (space.id === current.id) return;
@@ -88,8 +120,51 @@ export function SpaceSwitcher({
 							<LuChevronsUpDown className="text-muted-foreground ms-auto size-4" />
 						</SidebarMenuButton>
 					</DropdownMenuTrigger>
-					<DropdownMenuContent align="start" sideOffset={6} className="w-64">
-						<DropdownMenuLabel className="text-muted-foreground text-xs font-normal">Espaces</DropdownMenuLabel>
+					<DropdownMenuContent align="start" sideOffset={6} className="w-80 p-2">
+						<div className="flex items-center gap-3 p-2">
+							<span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary text-lg font-semibold text-primary-foreground">
+								{initial(cabinet.name)}
+							</span>
+							<div className="grid min-w-0 flex-1 gap-0.5">
+								<p className="truncate font-semibold">{cabinet.name}</p>
+								<div className="text-muted-foreground flex min-w-0 items-center gap-1.5 text-xs">
+									<span className="truncate">{offerLine}</span>
+									{isOwner && (
+										<>
+											<span aria-hidden>·</span>
+											<DropdownMenuItem
+												onSelect={() => setBilling(true)}
+												className="text-muted-foreground w-fit shrink-0 rounded-sm p-1 text-xs underline underline-offset-2 focus:text-brand focus:bg-transparent"
+											>
+												{subscription.quotePending
+													? "Voir mon devis"
+													: subscription.status === "trialing"
+														? "Choisir mon offre"
+														: "Gérer"}
+											</DropdownMenuItem>
+										</>
+									)}
+								</div>
+							</div>
+						</div>
+
+						<div className={cn("grid gap-2 px-2 pt-1 pb-3", isOwner && "grid-cols-2")}>
+							<DropdownMenuItem asChild className="h-9 justify-center gap-2 rounded-lg border">
+								<Link href="/settings">
+									<LuSettings className="size-4" /> Paramètres
+								</Link>
+							</DropdownMenuItem>
+							{isOwner && (
+								<DropdownMenuItem asChild className="h-9 justify-center gap-2 rounded-lg border">
+									<Link href="/staff">
+										<LuUsers className="size-4" /> Équipe
+									</Link>
+								</DropdownMenuItem>
+							)}
+						</div>
+
+						<DropdownMenuSeparator />
+						<DropdownMenuLabel className="text-muted-foreground px-2 text-xs font-normal">Espaces</DropdownMenuLabel>
 						{spaces.spaces.map((space) => (
 							<DropdownMenuItem key={space.id} onSelect={() => choose(space)} className="gap-2">
 								<p className="!text-brand text-brand bg-muted flex size-6 shrink-0 items-center justify-center rounded-md text-xs font-medium">
@@ -106,20 +181,32 @@ export function SpaceSwitcher({
 								)}
 							</DropdownMenuItem>
 						))}
+
 						{isOwner && (
 							<>
 								<DropdownMenuSeparator />
-								<DropdownMenuItem onSelect={() => setCreating(true)} className="gap-2">
-									<span className="flex size-6 items-center justify-center rounded-md border border-dashed">
-										<LuPlus className="size-3.5" />
-									</span>
-									Nouvel espace
-								</DropdownMenuItem>
+								<DropdownMenuLabel className="text-muted-foreground px-2 text-xs font-normal">Gérer</DropdownMenuLabel>
+								{MANAGE.map((item) => (
+									<DropdownMenuItem key={item.href} asChild className="gap-2.5">
+										<Link href={item.href}>
+											<item.icon className="text-muted-foreground size-4" /> {item.label}
+										</Link>
+									</DropdownMenuItem>
+								))}
+								<div className="px-2 pt-2 pb-1">
+									<DropdownMenuItem
+										onSelect={() => setCreating(true)}
+										className="h-9 justify-center gap-2 rounded-lg border"
+									>
+										<LuPlus className="size-4" /> Nouvel espace
+									</DropdownMenuItem>
+								</div>
 							</>
 						)}
 					</DropdownMenuContent>
 				</DropdownMenu>
 				{isOwner && <NewSpaceDialog open={creating} onOpenChange={setCreating} />}
+				{isOwner && <SubscriptionDialog open={billing} onOpenChange={setBilling} />}
 			</SidebarMenuItem>
 		</SidebarMenu>
 	);
