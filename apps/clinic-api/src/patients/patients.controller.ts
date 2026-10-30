@@ -10,6 +10,7 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
+import { Activity } from '../activity/activity.decorator.js';
 import type { ClinicUser } from '../auth/auth.types.js';
 import { CurrentUser } from '../auth/decorators.js';
 import { assertMedical, isMedical } from '../auth/roles.js';
@@ -35,6 +36,7 @@ export class PatientsController {
     return this.patients.list(db, space.id, query);
   }
 
+  @Activity('patient.view', 'patient', { only: isMedical, hourly: true })
   @Get(':id')
   get(
     @Clinic() { db }: ClinicContext,
@@ -45,6 +47,7 @@ export class PatientsController {
     return this.patients.get(db, space.id, id, isMedical(user));
   }
 
+  @Activity('patient.create', 'patient')
   @Post()
   create(
     @Clinic() { db }: ClinicContext,
@@ -55,6 +58,7 @@ export class PatientsController {
     return this.patients.create(db, space.id, dto, user.id);
   }
 
+  @Activity('patient.update', 'patient')
   @Put(':id')
   update(
     @Clinic() { db }: ClinicContext,
@@ -66,6 +70,7 @@ export class PatientsController {
   }
 
   /** Health records are never deleted: archived, and restorable. */
+  @Activity('patient.archive', 'patient')
   @Post(':id/archive')
   @HttpCode(200)
   archive(
@@ -76,6 +81,7 @@ export class PatientsController {
     return this.patients.setArchived(db, space.id, id, true);
   }
 
+  @Activity('patient.restore', 'patient')
   @Post(':id/restore')
   @HttpCode(200)
   restore(
@@ -86,6 +92,7 @@ export class PatientsController {
     return this.patients.setArchived(db, space.id, id, false);
   }
 
+  @Activity('patient.medical_update', 'patient')
   @Put(':id/medical-profile')
   saveMedicalProfile(
     @Clinic() { db }: ClinicContext,

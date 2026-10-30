@@ -8,6 +8,7 @@ import {
   Post,
   Put,
 } from '@nestjs/common';
+import { Activity } from '../activity/activity.decorator.js';
 import type { ClinicUser } from '../auth/auth.types.js';
 import { CurrentUser } from '../auth/decorators.js';
 import { Clinic } from '../tenancy/decorators.js';
@@ -40,6 +41,7 @@ export class SpacesController {
     return this.spaces.switchTo(db, user, dto.spaceId);
   }
 
+  @Activity('space.create', 'space')
   @Post()
   create(
     @Clinic() { db }: ClinicContext,
@@ -55,6 +57,7 @@ export class SpacesController {
     return this.spaces.manage(db, user);
   }
 
+  @Activity('space.update', 'space')
   @Put(':id')
   update(
     @Clinic() { db }: ClinicContext,
@@ -65,6 +68,7 @@ export class SpacesController {
     return this.spaces.update(db, user, id, dto);
   }
 
+  @Activity('space.hours', 'space')
   @Put(':id/hours')
   async setHours(
     @Clinic() { db }: ClinicContext,
@@ -82,6 +86,7 @@ export class SpacesController {
     return space;
   }
 
+  @Activity('space.close', 'space')
   @Post(':id/close')
   @HttpCode(200)
   close(
@@ -92,6 +97,7 @@ export class SpacesController {
     return this.spaces.setActive(db, user, id, false);
   }
 
+  @Activity('space.reopen', 'space')
   @Post(':id/reopen')
   @HttpCode(200)
   reopen(

@@ -544,3 +544,35 @@ export const twoFactorChallenges = pgTable('two_factor_challenges', {
     .notNull()
     .defaultNow(),
 });
+
+/**
+ * The cabinet's journal (Paramètres › Journal d'activité): who did what,
+ * kept a year. Names are copied, so an entry outlives the account or the
+ * record it mentions; it never holds medical content.
+ */
+export const activityLogs = pgTable(
+  'activity_logs',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    userId: uuid('user_id').references(() => users.id, {
+      onDelete: 'set null',
+    }),
+    actorName: text('actor_name'),
+    /** e.g. "patient.update". */
+    action: text('action').notNull(),
+    entity: text('entity'),
+    entityId: uuid('entity_id'),
+    /** The record, in words: "ALAOUI Omar". */
+    target: text('target'),
+    detail: text('detail'),
+    ip: text('ip'),
+    createdAt: timestamp('created_at', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [
+    index('activity_logs_created_idx').on(t.createdAt),
+    index('activity_logs_user_idx').on(t.userId, t.createdAt),
+    index('activity_logs_entity_idx').on(t.entityId, t.createdAt),
+  ],
+);

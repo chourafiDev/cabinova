@@ -9,6 +9,7 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
+import { Activity } from '../activity/activity.decorator.js';
 import type { ClinicUser } from '../auth/auth.types.js';
 import { CurrentUser } from '../auth/decorators.js';
 import { CurrentSpace, SpaceGuard } from '../spaces/space.guard.js';
@@ -43,6 +44,7 @@ export class PaymentsController {
     return this.payments.account(db, space.id, id);
   }
 
+  @Activity('payment.checkout', 'appointment')
   @Post('appointments/:id/checkout')
   @HttpCode(200)
   checkout(
@@ -64,6 +66,7 @@ export class PaymentsController {
     return this.payments.patientAccount(db, space.id, id);
   }
 
+  @Activity('payment.cancel', 'payment')
   @Post('payments/:id/cancel')
   @HttpCode(200)
   cancel(
@@ -76,6 +79,7 @@ export class PaymentsController {
     return this.payments.cancel(db, user, space.id, id, dto.reason);
   }
 
+  @Activity('payment.refund', 'charge')
   @Post('charges/:id/refunds')
   @HttpCode(200)
   refund(
@@ -102,6 +106,7 @@ export class PaymentsController {
     return this.payments.desk(db, space.id);
   }
 
+  @Activity('cashier.close')
   @Post('cashier/close')
   @HttpCode(200)
   close(

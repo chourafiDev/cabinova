@@ -10,6 +10,7 @@ import {
   Put,
 } from '@nestjs/common';
 import { Throttle } from '@nestjs/throttler';
+import { Activity } from '../activity/activity.decorator.js';
 import type { ClinicUser } from '../auth/auth.types.js';
 import { CurrentUser } from '../auth/decorators.js';
 import { TwoFactorService } from '../auth/two-factor.service.js';
@@ -37,6 +38,7 @@ export class TeamController {
 
   /** Sends the invitation e-mail; the link is also returned to copy. */
   @Throttle({ default: { limit: 20, ttl: 60_000 } })
+  @Activity('team.invite', 'member')
   @Post()
   invite(
     @Clinic() clinic: ClinicContext,
@@ -47,6 +49,9 @@ export class TeamController {
   }
 
   /** Everyone must use two-factor sign-in, or not. */
+  @Activity('team.two_factor_required', undefined, {
+    detail: (req) => String((req.body as { required?: boolean }).required),
+  })
   @Put('two-factor')
   requireTwoFactor(
     @Clinic() clinic: ClinicContext,
@@ -56,6 +61,7 @@ export class TeamController {
     return this.twoFactor.setRequired(clinic, user, dto.required);
   }
 
+  @Activity('team.update', 'member')
   @Put(':id')
   update(
     @Clinic() clinic: ClinicContext,
@@ -68,6 +74,7 @@ export class TeamController {
 
   /** The invitation again, or a new password link. */
   @Throttle({ default: { limit: 20, ttl: 60_000 } })
+  @Activity('team.link', 'member')
   @Post(':id/link')
   @HttpCode(200)
   issueLink(
@@ -78,6 +85,7 @@ export class TeamController {
     return this.team.issueLink(clinic, user, id);
   }
 
+  @Activity('team.two_factor_reset', 'member')
   @Post(':id/two-factor/reset')
   @HttpCode(200)
   resetTwoFactor(
@@ -88,6 +96,7 @@ export class TeamController {
     return this.team.resetTwoFactor(clinic, user, id);
   }
 
+  @Activity('team.deactivate', 'member')
   @Post(':id/deactivate')
   @HttpCode(200)
   deactivate(
@@ -98,6 +107,7 @@ export class TeamController {
     return this.team.setActive(clinic, user, id, false);
   }
 
+  @Activity('team.reactivate', 'member')
   @Post(':id/reactivate')
   @HttpCode(200)
   reactivate(
@@ -109,6 +119,7 @@ export class TeamController {
   }
 
   /** A pending invitation only. */
+  @Activity('team.delete', 'member')
   @Delete(':id')
   @HttpCode(204)
   remove(

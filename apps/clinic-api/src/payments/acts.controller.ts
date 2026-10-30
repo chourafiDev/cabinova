@@ -12,6 +12,7 @@ import {
   Query,
 } from '@nestjs/common';
 import type { Pool } from '@neondatabase/serverless';
+import { Activity } from '../activity/activity.decorator.js';
 import type { ClinicUser } from '../auth/auth.types.js';
 import { CurrentUser } from '../auth/decorators.js';
 import { assertOwner } from '../auth/roles.js';
@@ -41,6 +42,7 @@ export class ActsController {
     return rows;
   }
 
+  @Activity('act.create', 'act')
   @Post()
   async create(
     @Clinic() { db }: ClinicContext,
@@ -59,6 +61,7 @@ export class ActsController {
   }
 
   /** New name or price: past visits keep what they were charged. */
+  @Activity('act.update', 'act')
   @Put(':id')
   async update(
     @Clinic() { db }: ClinicContext,
@@ -77,6 +80,7 @@ export class ActsController {
     );
   }
 
+  @Activity('act.archive', 'act')
   @Post(':id/archive')
   @HttpCode(200)
   archive(
@@ -92,6 +96,7 @@ export class ActsController {
     );
   }
 
+  @Activity('act.restore', 'act')
   @Post(':id/restore')
   @HttpCode(200)
   restore(

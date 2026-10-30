@@ -4,7 +4,10 @@ import {
   type NestModule,
 } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { APP_GUARD } from '@nestjs/core';
+import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
+import { ActivityController } from './activity/activity.controller.js';
+import { ActivityInterceptor } from './activity/activity.interceptor.js';
+import { ActivityService } from './activity/activity.service.js';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { AppointmentsController } from './appointments/appointments.controller.js';
 import { AppointmentsService } from './appointments/appointments.service.js';
@@ -60,6 +63,7 @@ import { TenancyService } from './tenancy/tenancy.service.js';
   ],
   controllers: [
     HealthController,
+    ActivityController,
     ClinicController,
     AuthController,
     BillingController,
@@ -77,6 +81,7 @@ import { TenancyService } from './tenancy/tenancy.service.js';
   ],
   providers: [
     TenancyService,
+    ActivityService,
     AuthService,
     TwoFactorService,
     ClinicService,
@@ -95,6 +100,7 @@ import { TenancyService } from './tenancy/tenancy.service.js';
     PaymentsService,
     { provide: APP_GUARD, useClass: ThrottlerGuard },
     { provide: APP_GUARD, useClass: SessionGuard },
+    { provide: APP_INTERCEPTOR, useClass: ActivityInterceptor },
   ],
 })
 export class AppModule implements NestModule {

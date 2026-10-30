@@ -10,6 +10,7 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
+import { Activity } from '../activity/activity.decorator.js';
 import type { ClinicUser } from '../auth/auth.types.js';
 import { CurrentUser } from '../auth/decorators.js';
 import { CurrentSpace, SpaceGuard } from '../spaces/space.guard.js';
@@ -47,6 +48,7 @@ export class AppointmentsController {
     return this.appointments.practitioners(db, space.id);
   }
 
+  @Activity('appointment.create', 'appointment')
   @Post()
   create(
     @Clinic() { db }: ClinicContext,
@@ -58,6 +60,7 @@ export class AppointmentsController {
   }
 
   /** Edit, move or resize (drag & drop sends the whole appointment). */
+  @Activity('appointment.update', 'appointment')
   @Put(':id')
   update(
     @Clinic() { db }: ClinicContext,
@@ -68,6 +71,9 @@ export class AppointmentsController {
     return this.appointments.update(db, space.id, id, dto);
   }
 
+  @Activity('appointment.status', 'appointment', {
+    detail: (req) => (req.body as { status?: string }).status,
+  })
   @Post(':id/status')
   @HttpCode(200)
   async setStatus(

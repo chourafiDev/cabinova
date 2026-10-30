@@ -187,6 +187,10 @@ export class AuthService {
     } finally {
       client.release();
     }
-    return { id: invitation.id, joined: !invitation.hasPassword };
+    return {
+      id: invitation.id,
+      name: invitation.name,
+      joined: !invitation.hasPassword,
+    };
   }
 }

@@ -14,6 +14,7 @@ import {
 import { Throttle } from '@nestjs/throttler';
 import type { Request } from 'express';
 import { AuthService } from '../auth/auth.service.js';
+import { Activity } from '../activity/activity.decorator.js';
 import type { ClinicUser } from '../auth/auth.types.js';
 import { CurrentUser } from '../auth/decorators.js';
 import { assertOwner } from '../auth/roles.js';
@@ -53,6 +54,7 @@ export class SettingsController {
   }
 
   @Throttle({ default: { limit: 5, ttl: 60_000 } })
+  @Activity('auth.password_change')
   @Put('password')
   @HttpCode(204)
   async changePassword(
@@ -118,6 +120,7 @@ export class SettingsController {
     return this.cabinet.get(tenant.id);
   }
 
+  @Activity('settings.cabinet')
   @Put('cabinet')
   updateCabinet(
     @Clinic() { tenant, db }: ClinicContext,
@@ -139,6 +142,7 @@ export class SettingsController {
     return rows[0] ?? { defaultAppointmentMinutes: 30 };
   }
 
+  @Activity('settings.agenda')
   @Put('agenda')
   async updateAgenda(
     @Clinic() { db }: ClinicContext,

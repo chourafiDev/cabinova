@@ -1,3 +1,4 @@
+import { Activity } from '../activity/activity.decorator.js';
 import {
   Body,
   Controller,
@@ -34,6 +35,7 @@ import {
 import { ROLE_LABELS } from './roles.js';
 import { TwoFactorService } from './two-factor.service.js';
 import { TeamService } from '../team/team.service.js';
+import { ActivityService } from '../activity/activity.service.js';
 
 @AllowBeforeTwoFactor()
 @Controller('auth')
@@ -48,6 +50,7 @@ export class AuthController {
     private readonly notifications: NotificationsService,
     private readonly twoFactor: TwoFactorService,
     private readonly team: TeamService,
+    private readonly activity: ActivityService,
     config: ConfigService<Env, true>,
   ) {
     this.secure = config.get('NODE_ENV') === 'production';
@@ -69,6 +72,11 @@ export class AuthController {
       body.password,
     );
     if (!user) {
+      await this.activity.record(db, {
+        action: 'auth.login_failed',
+        target: body.email,
+        ip: req.ip,
+      });
       throw new UnauthorizedException({
         code: 'INVALID_CREDENTIALS',
         message: 'E-mail ou mot de passe incorrect.',
@@ -126,6 +134,7 @@ export class AuthController {
   }
 
   @Throttle({ default: { limit: 10, ttl: 60_000 } })
+  @Activity('auth.two_factor_enable')
   @Post('2fa/enable')
   @HttpCode(200)
   enableTwoFactor(
@@ -137,6 +146,7 @@ export class AuthController {
   }
 
   @Throttle({ default: { limit: 10, ttl: 60_000 } })
+  @Activity('auth.two_factor_disable')
   @Post('2fa/disable')
   @HttpCode(200)
   disableTwoFactor(
@@ -205,6 +215,11 @@ export class AuthController {
     const user = await this.auth.acceptInvitation(db, token, body.password);
     if (!user) throw this.invalidLink();
     if (user.joined) await this.notifications.memberJoined(db, user.id);
+    await this.activity.record(db, {
+      action: user.joined ? 'team.joined' : 'auth.password_reset',
+      actor: { id: user.id, name: user.name },
+      ip: req.ip,
+    });
     // A password link must not skip the second factor.
     if (await this.twoFactor.isEnabled(db, user.id)) {
       return { ok: true, loginRequired: true };
@@ -253,6 +268,22 @@ export class AuthController {
     };
   }
 
+  private async recordSignIn(
+    db: ClinicContext['db'],
+    userId: string,
+    req: Request,
+  ) {
+    await this.activity.record(db, {
+      action: 'auth.login',
+      actor: {
+        id: userId,
+        name: await this.activity.describe(db, 'member', userId),
+      },
+      ip: req.ip,
+    });
+    await this.activity.prune(db);
+  }
+
   private async signIn(
     db: ClinicContext['db'],
     userId: string,
@@ -260,6 +291,7 @@ export class AuthController {
     req: Request,
     res: Response,
   ) {
+    await this.recordSignIn(db, userId, req);
     const { token, expiresAt } = await this.auth.createSession(db, userId, {
       remember,
       userAgent: req.get('user-agent'),
