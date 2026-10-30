@@ -11,6 +11,7 @@ type OfferRow = {
   storage_quota_mb: number | null;
   size_bytes: string | null;
   quote_pending: boolean;
+  invoice_due_at: Date | null;
 };
 
 /** What the cabinet's staff may see about their offer, set by the platform. */
@@ -26,6 +27,10 @@ export class ClinicService {
                   select 1 from quotes q
                    where q.tenant_id = t.id and q.status = 'pending'
                 ) as quote_pending,
+                (
+                  select min(i.due_at) from invoices i
+                   where i.tenant_id = t.id and i.status in ('billed', 'overdue')
+                ) as invoice_due_at,
                 t.max_doctors, t.max_secretaries, t.storage_quota_mb,
                 db.size_bytes
            from tenants t
@@ -57,6 +62,8 @@ export class ClinicService {
         offer?.status === 'trialing' ? offer.current_period_end : null,
       currentPeriodEnd: offer?.current_period_end ?? null,
       quotePending: offer?.quote_pending ?? false,
+      /** A facture is waiting for its transfer, due on this date. */
+      invoiceDueAt: offer?.invoice_due_at ?? null,
       doctors: {
         used: count('owner', 'doctor'),
         max: offer?.max_doctors ?? null,

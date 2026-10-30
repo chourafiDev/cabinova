@@ -42,6 +42,12 @@ function message(notice: BillingNotice) {
 					<span className="hidden sm:inline">Réglez-le par virement pour démarrer votre abonnement.</span>
 				</>
 			);
+		case "renewal-due":
+			return (
+				<strong className="font-semibold">
+					Facture de renouvellement à régler avant le {formatDate(notice.dueAt, { year: undefined })}.
+				</strong>
+			);
 		case "past-due":
 			return (
 				<>
@@ -54,7 +60,7 @@ function message(notice: BillingNotice) {
 
 /**
  * Subscription banner under the header, for the responsible doctor: trial
- * countdown or unpaid invoice, with the offer and payment details one click
+ * countdown, renewal or unpaid invoice, with the offer and payment details one click
  * away. It can't be closed: it stays up for the whole trial.
  */
 export function BillingBanner({ notice }: { notice: BillingNotice }) {
@@ -74,7 +80,7 @@ export function BillingBanner({ notice }: { notice: BillingNotice }) {
 				className="h-7 shrink-0"
 				onClick={() => setOpen(true)}
 			>
-				{notice.kind === "past-due"
+				{notice.kind === "past-due" || notice.kind === "renewal-due"
 					? "Voir comment payer"
 					: notice.kind === "quote-due" || ("quotePending" in notice && notice.quotePending)
 						? "Voir mon devis"

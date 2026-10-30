@@ -11,6 +11,7 @@ export type ClinicSession = {
 		trialEndsAt: string | null;
 		currentPeriodEnd: string | null;
 		quotePending: boolean;
+		invoiceDueAt: string | null;
 		doctors: { used: number; max: number | null };
 		secretaries: { used: number; max: number | null };
 		storage: { usedMb: number | null; quotaMb: number | null };

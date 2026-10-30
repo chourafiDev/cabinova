@@ -184,6 +184,22 @@ describe('billing: devis', () => {
     await adminAgent.post(`/tenants/${tenantId}/billing/quotes`).expect(409);
   });
 
+  it('tells the doctor as soon as a renewal facture is waiting', async () => {
+    const { subscription } = await tenantBilling();
+    const end = new Date(subscription.currentPeriodEnd).getTime();
+    await billing.sweep(new Date(end - 6 * DAY));
+    const { invoices } = await tenantBilling();
+    const renewal = invoices.find(
+      (i: { status: string }) => i.status === 'billed',
+    );
+    expect(renewal).toBeDefined();
+    const { body: me } = await cab().get('/auth/me').expect(200);
+    expect(me.subscription).toMatchObject({
+      status: 'active',
+      invoiceDueAt: renewal.dueAt,
+    });
+  });
+
   describe('a trial nobody pays', () => {
     const OTHER = 'devis-rif';
     let otherId: string;

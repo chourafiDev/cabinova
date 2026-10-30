@@ -9,16 +9,19 @@ export type BillingNotice =
 	| { kind: "trial-last-day"; tone: "warning"; endsAt: string; quotePending: boolean }
 	| { kind: "trial-ended"; tone: "warning"; endsAt: string; quotePending: boolean }
 	| { kind: "quote-due"; tone: "danger" }
+	| { kind: "renewal-due"; tone: "warning"; dueAt: string }
 	| { kind: "past-due"; tone: "danger" };
 
 /**
  * The banner the responsible doctor sees about their subscription, or null:
- * the trial countdown, then the unpaid devis or invoice. Staff never see billing.
+ * the trial countdown, the unpaid devis, then any invoice waiting. Staff never see billing.
  */
 export function billingNotice(session: ClinicSession, now: Date): BillingNotice | null {
 	if (session.user.role !== "owner") return null;
-	const { status, trialEndsAt, quotePending } = session.subscription;
+	const { status, trialEndsAt, quotePending, invoiceDueAt } = session.subscription;
 	if (status === "past_due") return { kind: quotePending ? "quote-due" : "past-due", tone: "danger" };
+	// Issued before the period ends: the plan still runs, payment is expected.
+	if (status === "active" && invoiceDueAt) return { kind: "renewal-due", tone: "warning", dueAt: invoiceDueAt };
 	if (status !== "trialing" || !trialEndsAt) return null;
 
 	const daysLeft = Math.ceil((new Date(trialEndsAt).getTime() - now.getTime()) / DAY);
