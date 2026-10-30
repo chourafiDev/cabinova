@@ -49,7 +49,7 @@ export function Navbar() {
 					</button>
 					<a
 						href={demoHref}
-						className="bg-primary text-primary-foreground hidden h-9 items-center gap-1.5 rounded-full px-4 text-sm font-medium shadow-sm transition hover:opacity-90 sm:flex"
+						className="btn-raised bg-primary text-primary-foreground hidden h-9 items-center gap-1.5 rounded-full px-4 text-sm font-medium shadow-sm transition hover:opacity-90 sm:flex"
 					>
 						Demander une démo <LuArrowRight className="size-4" />
 					</a>
@@ -86,7 +86,7 @@ export function Navbar() {
 						>
 							<LuLogIn className="size-4" /> Se connecter
 						</button>
-						<a href={demoHref} className="bg-primary text-primary-foreground flex h-10 items-center justify-center gap-1.5 rounded-full text-sm font-medium">
+						<a href={demoHref} className="btn-raised bg-primary text-primary-foreground flex h-10 items-center justify-center gap-1.5 rounded-full text-sm font-medium">
 							Demander une démo <LuArrowRight className="size-4" />
 						</a>
 					</div>
@@ -171,7 +171,7 @@ function LoginDialog({ onClose }: { onClose: () => void }) {
 						<span className="text-muted-foreground bg-muted flex h-11 items-center border-s px-3 text-sm">.{TENANT_BASE_DOMAIN}</span>
 					</div>
 					{error && <p className="text-sm text-red-600 dark:text-red-400">{error}</p>}
-					<button type="submit" className="bg-primary text-primary-foreground mt-1 flex h-11 items-center justify-center gap-1.5 rounded-xl font-medium">
+					<button type="submit" className="btn-raised bg-primary text-primary-foreground mt-1 flex h-11 items-center justify-center gap-1.5 rounded-xl font-medium">
 						Continuer <LuArrowRight className="size-4" />
 					</button>
 				</form>

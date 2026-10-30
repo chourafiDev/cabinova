@@ -80,7 +80,7 @@ export function Pricing() {
 								className={cn(
 									"mt-6 flex h-11 items-center justify-center gap-1.5 rounded-full font-medium transition",
 									plan.featured
-										? "bg-primary text-primary-foreground hover:opacity-90"
+										? "btn-raised bg-primary text-primary-foreground hover:opacity-90"
 										: "bg-card hover:bg-muted border",
 								)}
 							>

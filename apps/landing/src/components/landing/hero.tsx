@@ -51,7 +51,7 @@ export function Hero() {
 				<div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
 					<a
 						href={demoHref}
-						className="bg-primary text-primary-foreground shadow-primary/25 flex h-12 items-center gap-2 rounded-full px-6 font-medium shadow-lg transition hover:-translate-y-0.5 hover:opacity-95"
+						className="btn-raised bg-primary text-primary-foreground flex h-12 items-center gap-2 rounded-full px-6 font-medium transition hover:-translate-y-0.5 hover:opacity-95"
 					>
 						Essayer {TRIAL_DAYS} jours gratuitement <LuArrowRight className="size-4" />
 					</a>
