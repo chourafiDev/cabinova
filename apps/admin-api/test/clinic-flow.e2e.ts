@@ -66,7 +66,11 @@ describe('clinic sign-in: from provisioning to the dashboard', () => {
     const { body: invitation } = await on('flow')
       .get(`/auth/invitations/${token}`)
       .expect(200);
-    expect(invitation).toEqual({ name: 'Dr flow', email: 'flow@e2e.test' });
+    expect(invitation).toEqual({
+      name: 'Dr flow',
+      email: 'flow@e2e.test',
+      reset: false,
+    });
 
     const doctor = request.agent(clinic.getHttpServer());
     await on('flow', doctor)

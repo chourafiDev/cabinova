@@ -26,6 +26,15 @@ export class LoginDto {
   rememberMe?: boolean;
 }
 
+export class ForgotPasswordDto {
+  @Transform(({ value }: { value: unknown }) =>
+    typeof value === 'string' ? value.trim().toLowerCase() : value,
+  )
+  @IsEmail()
+  @MaxLength(200)
+  email: string;
+}
+
 /** A code from the authenticator app, or a backup code. */
 export class TwoFactorCodeDto {
   @IsString()

@@ -1,6 +1,7 @@
 "use client";
 
 import { LuLoader } from "react-icons/lu";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { PasswordInput } from "@/components/password-input";
@@ -138,7 +139,12 @@ export function LoginForm({ next }: { next: string }) {
 				/>
 			</div>
 			<div className="grid gap-2">
-				<AuthLabel htmlFor="password">Mot de passe</AuthLabel>
+				<div className="flex items-baseline justify-between gap-3">
+					<AuthLabel htmlFor="password">Mot de passe</AuthLabel>
+					<Link href="/forgot-password" className="text-muted-foreground hover:text-foreground text-sm">
+						Mot de passe oublié ?
+					</Link>
+				</div>
 				<PasswordInput
 					id="password"
 					name="password"

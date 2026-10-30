@@ -104,6 +104,25 @@ export class MailService {
     });
   }
 
+  /** "Mot de passe oublié", asked for from the login page. */
+  sendPasswordReset(to: {
+    email: string;
+    name: string;
+    cabinetName: string;
+    url: string;
+  }) {
+    return this.send({
+      to: to.email,
+      subject: `Réinitialisez votre mot de passe — ${to.cabinetName}`,
+      body: `
+        <p>Bonjour ${escapeHtml(to.name)},</p>
+        <p>Vous avez demandé un nouveau mot de passe pour <strong>${escapeHtml(to.cabinetName)}</strong>.</p>
+        ${button(to.url, 'Choisir un nouveau mot de passe')}
+        <p style="color:#6b7280;font-size:12px">Ce lien est valable 1 heure et ne peut servir qu'une seule fois. Si vous n’êtes pas à l’origine de cette demande, ignorez ce message : votre mot de passe ne change pas.</p>
+      `,
+    });
+  }
+
   /** Lost phone: the owner turned off this member's two-factor sign-in. */
   sendTwoFactorReset(to: { email: string; name: string; cabinetName: string }) {
     return this.send({

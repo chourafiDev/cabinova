@@ -4,6 +4,7 @@ import {
   ConflictException,
   ForbiddenException,
   Injectable,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
@@ -22,6 +23,10 @@ import type { InviteMemberDto, UpdateMemberDto } from './dto.js';
 
 /** Same validity as the owner's invitation (admin-api provisioning). */
 const LINK_TTL_MS = 7 * 24 * 60 * 60 * 1000;
+/** "Mot de passe oublié": short, the request comes from an unknown browser. */
+const RESET_TTL_MS = 60 * 60 * 1000;
+/** One reset e-mail a minute per account. */
+const RESET_INTERVAL_MS = 60 * 1000;
 
 export type MemberStatus = 'active' | 'invited' | 'expired' | 'disabled';
 
@@ -72,6 +77,7 @@ const MEMBERS = `
 @Injectable()
 export class TeamService {
   private readonly appUrl: string;
+  private readonly logger = new Logger(TeamService.name);
 
   constructor(
     config: ConfigService<Env, true>,
@@ -258,6 +264,40 @@ export class TeamService {
       }
     });
     return this.find(db, id);
+  }
+
+  /**
+   * "Mot de passe oublié": a one-hour link, for an active account that has
+   * a password (an invitation stays with its own link). Never throws: the
+   * caller answers the same whatever happens here.
+   */
+  async sendPasswordReset({ tenant, db }: ClinicContext, email: string) {
+    try {
+      const token = newToken();
+      const { rows } = await db.query<{ name: string; email: string }>(
+        `update users set invite_token_hash = $2, invite_expires_at = $3,
+                updated_at = now()
+          where lower(email) = $1 and active and password_hash is not null
+            and not coalesce(invite_expires_at between $4 and $3, false)
+          returning name, email`,
+        [
+          email,
+          hashToken(token),
+          new Date(Date.now() + RESET_TTL_MS),
+          new Date(Date.now() + RESET_TTL_MS - RESET_INTERVAL_MS),
+        ],
+      );
+      const user = rows[0];
+      if (!user) return;
+      await this.mail.sendPasswordReset({
+        email: user.email,
+        name: user.name,
+        cabinetName: tenant.name,
+        url: this.linkUrl(tenant, token),
+      });
+    } catch (err) {
+      this.logger.error('Password reset failed', err);
+    }
   }
 
   /** Lost phone: turns off a member's 2FA; they're told by e-mail. */

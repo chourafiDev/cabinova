@@ -8,7 +8,7 @@ import { AcceptInvitationForm } from "./accept-invitation-form";
 
 export const metadata: Metadata = { title: "Choisir un mot de passe" };
 
-type Invitation = { name: string; email: string };
+type Invitation = { name: string; email: string; reset: boolean };
 
 export default async function InvitePage({ params }: PageProps<"/invite/[token]">) {
 	const { token } = await params;
@@ -21,9 +21,12 @@ export default async function InvitePage({ params }: PageProps<"/invite/[token]"
 			<AuthCard
 				cabinet={found.cabinet}
 				title="Lien invalide ou expiré"
-				description="Ce lien a déjà servi ou n’est plus valable. Demandez-en un nouveau au médecin responsable du cabinet, ou au support Cabinova."
+				description="Ce lien a déjà servi ou n’est plus valable. Demandez-en un nouveau, ou adressez-vous au médecin responsable du cabinet."
 			>
-				<p className="mt-8 text-center text-sm">
+				<p className="mt-8 flex justify-center gap-6 text-sm">
+					<Link href="/forgot-password" className="font-medium hover:underline">
+						Mot de passe oublié
+					</Link>
 					<Link href="/login" className="font-medium hover:underline">
 						Aller à la connexion
 					</Link>
@@ -36,8 +39,12 @@ export default async function InvitePage({ params }: PageProps<"/invite/[token]"
 	return (
 		<AuthCard
 			cabinet={found.cabinet}
-			title={`Bienvenue, ${invitation.name}`}
-			description={`Choisissez votre mot de passe pour accéder à l’espace du ${found.cabinet.name}.`}
+			title={invitation.reset ? "Nouveau mot de passe" : `Bienvenue, ${invitation.name}`}
+			description={
+				invitation.reset
+					? "Choisissez un nouveau mot de passe. Vos autres appareils seront déconnectés."
+					: `Choisissez votre mot de passe pour accéder à l’espace du ${found.cabinet.name}.`
+			}
 		>
 			<AcceptInvitationForm token={token} email={invitation.email} />
 		</AuthCard>

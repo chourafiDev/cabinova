@@ -148,8 +148,9 @@ export class AuthService {
       id: string;
       name: string;
       email: string;
+      hasPassword: boolean;
     }>(
-      `select id, name, email from users
+      `select id, name, email, password_hash is not null as "hasPassword" from users
         where invite_token_hash = $1 and invite_expires_at > now() and active`,
       [hashToken(token)],
     );
@@ -186,6 +187,6 @@ export class AuthService {
     } finally {
       client.release();
     }
-    return { id: invitation.id };
+    return { id: invitation.id, joined: !invitation.hasPassword };
   }
 }

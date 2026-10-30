@@ -26,12 +26,14 @@ import type { ClinicUser } from './auth.types.js';
 import { AllowBeforeTwoFactor, CurrentUser, Public } from './decorators.js';
 import {
   AcceptInvitationDto,
+  ForgotPasswordDto,
   LoginDto,
   TwoFactorChallengeDto,
   TwoFactorCodeDto,
 } from './dto.js';
 import { ROLE_LABELS } from './roles.js';
 import { TwoFactorService } from './two-factor.service.js';
+import { TeamService } from '../team/team.service.js';
 
 @AllowBeforeTwoFactor()
 @Controller('auth')
@@ -45,6 +47,7 @@ export class AuthController {
     private readonly spaces: SpacesService,
     private readonly notifications: NotificationsService,
     private readonly twoFactor: TwoFactorService,
+    private readonly team: TeamService,
     config: ConfigService<Env, true>,
   ) {
     this.secure = config.get('NODE_ENV') === 'production';
@@ -155,6 +158,22 @@ export class AuthController {
     return this.twoFactor.regenerateRecoveryCodes(clinic, user.id, body.code);
   }
 
+  /**
+   * Sends a reset link if the account exists. Same answer and same timing
+   * either way (the e-mail isn't awaited), so nobody can test addresses.
+   */
+  @Public()
+  @Throttle({ default: { limit: 3, ttl: 60_000 } })
+  @Post('forgot-password')
+  @HttpCode(200)
+  forgotPassword(
+    @Clinic() clinic: ClinicContext,
+    @Body() body: ForgotPasswordDto,
+  ) {
+    void this.team.sendPasswordReset(clinic, body.email);
+    return { ok: true };
+  }
+
   /** Invitation link: who it is for. */
   @Public()
   @Get('invitations/:token')
@@ -164,7 +183,11 @@ export class AuthController {
   ) {
     const invitation = await this.auth.findInvitation(db, token);
     if (!invitation) throw this.invalidLink();
-    return { name: invitation.name, email: invitation.email };
+    return {
+      name: invitation.name,
+      email: invitation.email,
+      reset: invitation.hasPassword,
+    };
   }
 
   /** Chooses the password from the link, then signs in. */
@@ -181,7 +204,7 @@ export class AuthController {
   ) {
     const user = await this.auth.acceptInvitation(db, token, body.password);
     if (!user) throw this.invalidLink();
-    await this.notifications.memberJoined(db, user.id);
+    if (user.joined) await this.notifications.memberJoined(db, user.id);
     // A password link must not skip the second factor.
     if (await this.twoFactor.isEnabled(db, user.id)) {
       return { ok: true, loginRequired: true };
