@@ -53,6 +53,30 @@ export function invoiceDescription(
   }`;
 }
 
+/** The devis has no dates: the period starts when the payment is confirmed. */
+export const quoteDescription = (
+  planName: string,
+  period: BillingPeriod,
+  discountPercent: number,
+) =>
+  `Abonnement ${planName} — ${period === 'annual' ? 'annuel' : 'mensuel'}${
+    discountPercent ? ` (remise ${discountPercent} %)` : ''
+  }`;
+
+/**
+ * A confirmed devis starts when the trial would have ended, so paying early
+ * loses no trial day; after the trial, on the day the transfer arrived.
+ */
+export const firstPeriodStart = (
+  trialEnd: Date | null,
+  trialing: boolean,
+  receivedAt: Date,
+) => (trialing && trialEnd && trialEnd > receivedAt ? trialEnd : receivedAt);
+
+/** "D-2026-000042" */
+export const quoteNumber = (year: number, sequence: number) =>
+  `D-${year}-${String(sequence).padStart(6, '0')}`;
+
 /** "F-2026-000042" */
 export const invoiceNumber = (year: number, sequence: number) =>
   `F-${year}-${String(sequence).padStart(6, '0')}`;

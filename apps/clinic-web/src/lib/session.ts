@@ -10,6 +10,7 @@ export type ClinicSession = {
 		status: "trialing" | "active" | "past_due" | "cancelled" | null;
 		trialEndsAt: string | null;
 		currentPeriodEnd: string | null;
+		quotePending: boolean;
 		doctors: { used: number; max: number | null };
 		secretaries: { used: number; max: number | null };
 		storage: { usedMb: number | null; quotaMb: number | null };

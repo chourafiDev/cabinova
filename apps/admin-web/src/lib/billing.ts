@@ -125,7 +125,56 @@ export type InvoiceDetail = Omit<Invoice, "tenant"> & {
 	creditable: number;
 };
 
+export type QuoteStatus = "pending" | "paid" | "void";
+
+export const QUOTE_STATUS_LABELS: Record<QuoteStatus, string> = {
+	pending: "En attente",
+	paid: "Payé",
+	void: "Annulé",
+};
+
+export const QUOTE_STATUS_TONES: Record<QuoteStatus, string> = {
+	pending: "bg-sky-50 text-sky-700",
+	paid: "bg-emerald-50 text-emerald-700",
+	void: "bg-zinc-100 text-zinc-500 line-through",
+};
+
+export type Quote = {
+	id: string;
+	number: string;
+	tenantId: string;
+	billingPeriod: "monthly" | "annual";
+	description: string;
+	/** Centimes. */
+	amount: number;
+	status: QuoteStatus;
+	source: string;
+	issuedAt: string;
+	dueAt: string;
+	paidAt: string | null;
+	planName: string;
+	invoiceId: string | null;
+	invoiceNumber: string | null;
+	tenant: { id: string; name: string; status: TenantStatus };
+};
+
+export type QuoteDetail = Omit<Quote, "tenant"> & {
+	tenant: {
+		id: string;
+		name: string;
+		legalName: string | null;
+		address: string | null;
+		city: string | null;
+		email: string;
+		responsibleName: string;
+	};
+	issuer: BillingSettings;
+};
+
 export type TenantBilling = {
+	/** No facture yet: the next step for this cabinet is a devis. */
+	quoteable: boolean;
+	quotes: Quote[];
 	subscription: {
 		id: string;
 		status: "trialing" | "active" | "past_due" | "cancelled";

@@ -27,6 +27,7 @@ import { SUBSCRIPTION_STATUS_LABELS } from "@/lib/tenants";
 import { cn } from "@/lib/utils";
 import { FormCard } from "../../../_components/shared/form-card";
 import { InvoicesTable } from "../../../billing/_components/invoices-table";
+import { QuotesTable } from "../../../billing/_components/quotes-table";
 
 const STATUS_TONES = {
 	trialing: "bg-sky-50 text-sky-700",
@@ -40,7 +41,7 @@ type Form = { planKey: string; billingPeriod: BillingPeriod; discountPercent: st
 /**
  * Module 3 on the cabinet page: the subscription (plan, price, paid-until
  * date), its invoices, and the actions — change plan, attach a plan,
- * résiliation at term, issue the next invoice now.
+ * résiliation at term, send a devis or issue the next invoice now.
  */
 export function TenantSubscription({
 	tenantId,
@@ -128,7 +129,17 @@ export function TenantSubscription({
 					}
 					action={
 						<div className="flex flex-wrap gap-2">
-							{canBill && sub.status !== "trialing" && (
+							{canBill && billing.quoteable && !billing.quotes.some((q) => q.status === "pending") && (
+								<Button
+									size="sm"
+									variant="outline"
+									disabled={pending}
+									onClick={() => run(() => api(`/tenants/${tenantId}/billing/quotes`, { method: "POST" }), "Devis envoyé")}
+								>
+									<LuFileText /> Envoyer un devis
+								</Button>
+							)}
+							{canBill && !billing.quoteable && (
 								<Button
 									size="sm"
 									variant="outline"
@@ -275,6 +286,12 @@ export function TenantSubscription({
 							</Button>
 						)}
 					</div>
+				</FormCard>
+			)}
+
+			{billing.quotes.length > 0 && (
+				<FormCard title="Devis" contentClassName="p-0">
+					<QuotesTable quotes={billing.quotes} canWrite={canBill} showTenant={false} />
 				</FormCard>
 			)}
 

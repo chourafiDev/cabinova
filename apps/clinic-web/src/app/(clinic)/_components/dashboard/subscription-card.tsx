@@ -1,9 +1,8 @@
-import Link from "next/link";
 import { LuSparkles } from "react-icons/lu";
-import { Button } from "@/components/ui/button";
 import { formatDate } from "@/lib/format";
 import type { ClinicSession } from "@/lib/session";
 import { cn } from "@/lib/utils";
+import { SubscriptionButton } from "../billing/subscription-button";
 import { ChartCard } from "./chart-card";
 
 const STATUS = {
@@ -55,7 +54,14 @@ function Usage({
 }
 
 /** The cabinet's offer, as set by the platform: trial end and limits. */
-export function SubscriptionCard({ subscription: s }: { subscription: ClinicSession["subscription"] }) {
+export function SubscriptionCard({
+	subscription: s,
+	canManage,
+}: {
+	subscription: ClinicSession["subscription"];
+	/** The responsible doctor: staff don't see the cabinet's billing. */
+	canManage: boolean;
+}) {
 	const gb = (mb: number) => Math.round((mb / 1024) * 10) / 10;
 
 	return (
@@ -66,7 +72,7 @@ export function SubscriptionCard({ subscription: s }: { subscription: ClinicSess
 					<span>
 						<span className="font-medium">{s.status ? STATUS[s.status] : "Pas d’abonnement en cours"}</span>
 						{s.status === "trialing" && s.trialEndsAt && (
-							<> jusqu’au {formatDate(s.trialEndsAt)}. La première facture suit la fin de l’essai.</>
+							<> jusqu’au {formatDate(s.trialEndsAt)}. Choisissez votre offre pour recevoir votre devis.</>
 						)}
 						{s.status === "active" && s.currentPeriodEnd && <> jusqu’au {formatDate(s.currentPeriodEnd)}.</>}
 					</span>
@@ -80,9 +86,7 @@ export function SubscriptionCard({ subscription: s }: { subscription: ClinicSess
 					unit=" Go"
 					warn
 				/>
-				<Button asChild variant="outline" size="sm" className="w-fit">
-					<Link href="/settings">Gérer l’abonnement</Link>
-				</Button>
+				{canManage && <SubscriptionButton quotePending={s.quotePending} trialing={s.status === "trialing"} />}
 			</div>
 		</ChartCard>
 	);

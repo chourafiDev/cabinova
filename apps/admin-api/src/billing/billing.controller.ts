@@ -20,6 +20,7 @@ import { BillingSettingsService } from './billing-settings.service.js';
 import { BillingService } from './billing.service.js';
 import { CreditNotesService } from './credit-notes.service.js';
 import { PromoCodesService } from './promo-codes.service.js';
+import { QuotesService } from './quotes.service.js';
 import { invoiceAmount } from './periods.js';
 import {
   ApplyPromoCodeDto,
@@ -30,7 +31,9 @@ import {
   BillingSettingsDto,
   CancelAtTermDto,
   ChangeSubscriptionDto,
+  ConfirmQuoteDto,
   ListInvoicesQuery,
+  ListQuotesQuery,
   RecordPaymentDto,
   VoidInvoiceDto,
 } from './dto.js';
@@ -48,7 +51,55 @@ export class BillingController {
     private readonly settings: BillingSettingsService,
     private readonly creditNotes: CreditNotesService,
     private readonly promos: PromoCodesService,
+    private readonly quotes: QuotesService,
   ) {}
+
+  @RequirePermissions('billing:read')
+  @Get('billing/quotes')
+  listQuotes(@Query() query: ListQuotesQuery) {
+    return this.quotes.list(query);
+  }
+
+  @RequirePermissions('billing:read')
+  @Get('billing/quotes/:id')
+  quote(@Param('id', ParseUUIDPipe) id: string) {
+    return this.quotes.get(id);
+  }
+
+  /** Payment received: creates the facture and starts the plan. */
+  @RequirePermissions('billing:write')
+  @Post('billing/quotes/:id/confirm')
+  @HttpCode(200)
+  confirmQuote(
+    @Param('id', ParseUUIDPipe) id: string,
+    @CurrentUser() user: AuthUser,
+    @Req() req: Request,
+    @Body() dto: ConfirmQuoteDto,
+  ) {
+    return this.billing.confirmQuote(id, actorOf(user, req), dto);
+  }
+
+  @RequirePermissions('billing:write')
+  @Post('billing/quotes/:id/void')
+  @HttpCode(200)
+  voidQuote(
+    @Param('id', ParseUUIDPipe) id: string,
+    @CurrentUser() user: AuthUser,
+    @Req() req: Request,
+    @Body() dto: VoidInvoiceDto,
+  ) {
+    return this.quotes.voidQuote(id, actorOf(user, req), dto.reason);
+  }
+
+  @RequirePermissions('billing:write')
+  @Post('tenants/:id/billing/quotes')
+  sendQuote(
+    @Param('id', ParseUUIDPipe) id: string,
+    @CurrentUser() user: AuthUser,
+    @Req() req: Request,
+  ) {
+    return this.quotes.sendForTenant(id, actorOf(user, req));
+  }
 
   @RequirePermissions('billing:read')
   @Get('billing/invoices')
@@ -175,11 +226,12 @@ export class BillingController {
   @RequirePermissions('tenants:read')
   @Get('tenants/:id/billing')
   async tenantBilling(@Param('id', ParseUUIDPipe) id: string) {
-    const [billing, credit, promo, settings] = await Promise.all([
+    const [billing, credit, promo, settings, quotes] = await Promise.all([
       this.billing.tenantBilling(id),
       this.creditNotes.forTenant(id),
       this.promos.forTenant(id),
       this.settings.get(),
+      this.quotes.list({ tenantId: id }),
     ]);
     const sub = billing.subscription;
     // What the next invoice will really ask: the better of the discount and
@@ -206,6 +258,7 @@ export class BillingController {
       },
       creditNotes: credit.notes,
       creditBalance: credit.creditBalance,
+      quotes: quotes.data,
       promo,
       suspendAfterDays: settings.suspendAfterDays,
     };

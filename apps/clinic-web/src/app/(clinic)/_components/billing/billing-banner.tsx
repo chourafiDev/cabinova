@@ -32,7 +32,14 @@ function message(notice: BillingNotice) {
 			return (
 				<>
 					<strong className="font-semibold">Votre essai est terminé.</strong>{" "}
-					<span className="hidden sm:inline">La première facture arrive par e-mail.</span>
+					<span className="hidden sm:inline">Votre devis arrive par e-mail.</span>
+				</>
+			);
+		case "quote-due":
+			return (
+				<>
+					<strong className="font-semibold">Devis en attente de paiement.</strong>{" "}
+					<span className="hidden sm:inline">Réglez-le par virement pour démarrer votre abonnement.</span>
 				</>
 			);
 		case "past-due":
@@ -67,7 +74,11 @@ export function BillingBanner({ notice }: { notice: BillingNotice }) {
 				className="h-7 shrink-0"
 				onClick={() => setOpen(true)}
 			>
-				{notice.kind === "past-due" ? "Voir comment payer" : "Choisir mon offre"}
+				{notice.kind === "past-due"
+					? "Voir comment payer"
+					: notice.kind === "quote-due" || ("quotePending" in notice && notice.quotePending)
+						? "Voir mon devis"
+						: "Choisir mon offre"}
 			</Button>
 			<SubscriptionDialog open={open} onOpenChange={setOpen} />
 		</div>

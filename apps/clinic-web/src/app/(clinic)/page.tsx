@@ -126,7 +126,7 @@ export default async function DashboardPage({ searchParams }: PageProps<"/">) {
 					<WeekActivityChart week={data.week} />
 				</div>
 				<div data-tour="subscription" className="h-full">
-					<SubscriptionCard subscription={session.subscription} />
+					<SubscriptionCard subscription={session.subscription} canManage={session.user.role === "owner"} />
 				</div>
 			</section>
 		</>

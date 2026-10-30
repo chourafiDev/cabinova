@@ -105,7 +105,7 @@ describe('cabinet: creation to suspension and back', () => {
     expect(check.sizeBytes).toBeGreaterThan(0);
   });
 
-  it('invoices at the end of the trial, and payment activates the subscription', async () => {
+  it('sends a devis at the end of the trial, and its payment starts the plan', async () => {
     const { subscription } = await invoices();
     expect(
       (await billing.sweep(at(subscription.currentPeriodEnd, -2 * DAY)))
@@ -113,24 +113,24 @@ describe('cabinet: creation to suspension and back', () => {
     ).toBeGreaterThanOrEqual(1);
 
     const counts = await billing.sweep(at(subscription.currentPeriodEnd, HOUR));
-    expect(counts.issued).toBeGreaterThanOrEqual(1);
-    const {
-      invoices: [first],
-      subscription: waiting,
-    } = await invoices();
-    expect(first).toMatchObject({ status: 'billed', amount: 59_900 });
-    expect(waiting.status).toBe('past_due');
+    expect(counts.quotes).toBeGreaterThanOrEqual(1);
+    const waiting = await invoices();
+    expect(waiting.invoices).toHaveLength(0);
+    expect(waiting.subscription.status).toBe('past_due');
+    const [quote] = waiting.quotes;
+    expect(quote).toMatchObject({ status: 'pending', amount: 59_900 });
 
     await admin
-      .post(`/billing/invoices/${first.id}/payments`)
+      .post(`/billing/quotes/${quote.id}/confirm`)
       .send({
         amount: 59_900,
         receivedAt: new Date().toISOString(),
-        reference: first.number,
+        reference: quote.number,
       })
       .expect(200);
     const after = await invoices();
     expect(after.invoices[0].status).toBe('paid');
+    expect(after.quotes[0]).toMatchObject({ status: 'paid' });
     expect(after.subscription.status).toBe('active');
   });
 

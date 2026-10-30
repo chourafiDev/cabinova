@@ -17,3 +17,27 @@ export declare function layout(
     footer: (string | null)[] | null;
   },
 ): string;
+
+/** The devis e-mail: subject and body, to wrap in the sender's own layout. */
+export declare function quoteEmail(quote: {
+  kind: 'request' | 'trial_end' | 'reminder' | 'suspension_warning' | 'suspended';
+  name: string;
+  tenantName: string;
+  number: string;
+  description: string;
+  /** Centimes. */
+  amount: number;
+  dueAt: Date;
+  /** suspension_warning: the day access will be cut. */
+  suspendOn?: Date;
+  bank: {
+    accountHolder: string;
+    bankName: string;
+    rib: string;
+    swift?: string | null;
+  } | null;
+  /** Where to send the proof of transfer; null = reply to the e-mail. */
+  proofEmail: string | null;
+  /** The devis in the clinic app. */
+  url: string;
+}): { subject: string; body: string };

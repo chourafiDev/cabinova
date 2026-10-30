@@ -11,6 +11,7 @@ import {
   type Transaction,
 } from '../database/database.module.js';
 import {
+  quotes,
   subscriptions,
   tenants,
   tenantStatusChanges,
@@ -293,6 +294,15 @@ export class TenantLifecycleService {
           and(
             eq(subscriptions.tenantId, change.tenantId),
             ne(subscriptions.status, 'cancelled'),
+          ),
+        );
+      await tx
+        .update(quotes)
+        .set({ status: 'void', voidReason: 'Cabinet fermé' })
+        .where(
+          and(
+            eq(quotes.tenantId, change.tenantId),
+            eq(quotes.status, 'pending'),
           ),
         );
     }

@@ -1,6 +1,12 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { addressOf, button, escapeHtml, layout } from '@cabinova/mail';
+import {
+  addressOf,
+  button,
+  escapeHtml,
+  layout,
+  quoteEmail,
+} from '@cabinova/mail';
 import { Resend } from 'resend';
 import type { Env } from '../config/env.js';
 import { PlatformConfigService } from '../settings/platform-config.service.js';
@@ -164,6 +170,37 @@ export class EmailService {
     });
   }
 
+  /** A devis to pay by transfer, or a reminder about one. */
+  async sendQuote(to: Parameters<typeof quoteEmail>[0] & { email: string }) {
+    await this.send({ to: to.email, ...quoteEmail(to) });
+  }
+
+  /** The payment was confirmed: the facture, and the plan is running. */
+  async sendSubscriptionStarted(to: {
+    email: string;
+    name: string;
+    tenantName: string;
+    planName: string;
+    invoice: { number: string; amount: number };
+    url: string;
+  }) {
+    const amount = new Intl.NumberFormat('fr-MA', {
+      style: 'currency',
+      currency: 'MAD',
+    }).format(to.invoice.amount / 100);
+    await this.send({
+      to: to.email,
+      subject: `Facture ${to.invoice.number} — votre abonnement ${to.planName} est actif`,
+      body: `
+        <p>Bonjour ${escapeHtml(to.name)},</p>
+        <p>Nous avons bien reçu votre paiement de <strong>${amount}</strong>. Merci !</p>
+        <p>Votre abonnement <strong>${escapeHtml(to.planName)}</strong> est actif. Votre facture <strong>${escapeHtml(to.invoice.number)}</strong> est disponible dans votre espace.</p>
+        ${button(to.url, 'Voir la facture')}
+        <p style="color:#6b7280;font-size:12px">Cabinet : ${escapeHtml(to.tenantName)}. Pour toute question, répondez à ce message.</p>
+      `,
+    });
+  }
+
   /** "Your trial ends on …": what happens next and how to pay. */
   async sendTrialEnding(to: {
     email: string;
@@ -185,8 +222,8 @@ export class EmailService {
       body: `
         <p>Bonjour ${escapeHtml(to.name)},</p>
         <p>La période d'essai de <strong>${escapeHtml(to.tenantName)}</strong> se termine le <strong>${fmtDate(to.endsAt)}</strong>.</p>
-        <p>Votre abonnement <strong>${escapeHtml(to.planName)}</strong> continuera ensuite à <strong>${amount}</strong> par ${to.period === 'annual' ? 'an' : 'mois'}. Vous recevrez la facture avec nos coordonnées bancaires pour le virement.</p>
-        <p>Pour changer d'offre ou pour toute question, répondez simplement à ce message.</p>
+        <p>Votre abonnement <strong>${escapeHtml(to.planName)}</strong> continuera ensuite à <strong>${amount}</strong> par ${to.period === 'annual' ? 'an' : 'mois'}. Si vous n'avez pas encore demandé votre devis, vous le recevrez à cette date avec nos coordonnées bancaires pour le virement.</p>
+        <p>Pour choisir une autre offre, ouvrez « Mon abonnement » dans votre espace. Pour toute question, répondez simplement à ce message.</p>
       `,
     });
   }

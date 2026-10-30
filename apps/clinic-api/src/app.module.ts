@@ -11,6 +11,7 @@ import { AppointmentsService } from './appointments/appointments.service.js';
 import { AuthController } from './auth/auth.controller.js';
 import { SessionGuard } from './auth/auth.guard.js';
 import { BillingController } from './billing/billing.controller.js';
+import { QuotesService } from './billing/quotes.service.js';
 import { AuthService } from './auth/auth.service.js';
 import { ClinicController } from './clinic/clinic.controller.js';
 import { ClinicService } from './clinic/clinic.service.js';
@@ -82,6 +83,7 @@ import { TenancyService } from './tenancy/tenancy.service.js';
     DashboardService,
     CabinetService,
     MailService,
+    QuotesService,
     TeamService,
     ReportsService,
     PaymentsService,

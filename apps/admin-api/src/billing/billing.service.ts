@@ -30,6 +30,7 @@ import {
   invoices,
   platformUsers,
   promoCodes,
+  quotes,
   subscriptionPlans,
   subscriptions,
   tenantStatusChanges,
@@ -44,6 +45,7 @@ import { BillingSettingsService } from './billing-settings.service.js';
 import type {
   AttachSubscriptionDto,
   ChangeSubscriptionDto,
+  ConfirmQuoteDto,
   ListInvoicesQuery,
   RecordPaymentDto,
 } from './dto.js';
@@ -51,11 +53,13 @@ import {
   addDays,
   addPeriod,
   dueDate,
+  firstPeriodStart,
   invoiceAmount,
   invoiceDescription,
   invoiceNumber,
   unpaidStep,
 } from './periods.js';
+import { type QuoteNotice, QuotesService } from './quotes.service.js';
 
 type Subscription = typeof subscriptions.$inferSelect;
 type Invoice = typeof invoices.$inferSelect;
@@ -79,14 +83,18 @@ const OPEN = ['billed', 'overdue'] as const;
 /**
  * Module 3 — subscriptions paid by bank transfer to the platform's RIB.
  *
- * The sweep (hourly) issues invoices when a trial ends and before each
- * renewal, moves unpaid subscriptions to past_due when their period ends,
- * marks invoices overdue after the grace period, and ends subscriptions
- * cancelled at term. An admin records each transfer seen on the bank
- * statement, which pays the invoice and extends the paid period.
+ * A trial ends in a devis, not a facture: the cabinet transfers, sends its
+ * proof of payment, and an admin confirms it, which creates the (paid)
+ * facture and starts the plan. See QuotesService.
+ *
+ * The sweep (hourly) sends that devis when a trial ends, invoices before
+ * each renewal, moves unpaid subscriptions to past_due when their period
+ * ends, marks invoices overdue after the grace period, and ends
+ * subscriptions cancelled at term. An admin records each transfer seen on
+ * the bank statement, which pays the invoice and extends the paid period.
  *
  * Non-payment: when "suspendAfterDays" is set (Paiements), a cabinet whose
- * invoice stays overdue that long is suspended (reason "unpaid"), after a
+ * invoice (or devis) stays overdue that long is suspended (reason "unpaid"), after a
  * warning e-mail; recording the payment reactivates it — only if it was
  * suspended for non-payment. 0 keeps suspension manual.
  */
@@ -102,6 +110,7 @@ export class BillingService {
     private readonly alerts: TeamAlertsService,
     private readonly lifecycle: TenantLifecycleService,
     private readonly notifications: NotificationsService,
+    private readonly quotes: QuotesService,
   ) {}
 
   // ── Sweep ──────────────────────────────────────────────────────────────
@@ -114,8 +123,11 @@ export class BillingService {
       suspendAfterDays,
     } = await this.settings.get();
     const notices: Notice[] = [];
+    const quoteNotices: QuoteNotice[] = [];
     const counts = {
       issued: 0,
+      quotes: 0,
+      quoteReminders: 0,
       pastDue: 0,
       overdue: 0,
       cancelled: 0,
@@ -143,17 +155,33 @@ export class BillingService {
           counts.cancelled++;
           continue;
         }
-        const issued = await this.issueNext(tx, sub, now, graceDays, SYSTEM);
-        if (issued) {
-          counts.issued++;
-          notices.push({
-            invoiceId: issued.id,
-            kind: issued.status === 'paid' ? 'receipt' : 'invoice',
-          });
-          // Fully covered by credit: the new period is already paid.
-          if (issued.status === 'paid') {
-            await this.extendSubscription(tx, issued);
-            continue;
+        if (sub.status === 'trialing') {
+          // No facture before the payment; a devis may already be waiting.
+          const quote = await this.quotes.issue(
+            tx,
+            sub,
+            now,
+            graceDays,
+            SYSTEM,
+            'trial_end',
+          );
+          if (quote) {
+            counts.quotes++;
+            quoteNotices.push({ quoteId: quote.id, kind: 'trial_end' });
+          }
+        } else {
+          const issued = await this.issueNext(tx, sub, now, graceDays, SYSTEM);
+          if (issued) {
+            counts.issued++;
+            notices.push({
+              invoiceId: issued.id,
+              kind: issued.status === 'paid' ? 'receipt' : 'invoice',
+            });
+            // Fully covered by credit: the new period is already paid.
+            if (issued.status === 'paid') {
+              await this.extendSubscription(tx, issued);
+              continue;
+            }
           }
         }
         await tx
@@ -245,6 +273,41 @@ export class BillingService {
         counts.trialReminders = ending.length;
       }
 
+      // New devis (from the sweep or the doctors): tell the team once.
+      const announced = await tx
+        .update(quotes)
+        .set({ announcedAt: now })
+        .where(and(eq(quotes.status, 'pending'), isNull(quotes.announcedAt)))
+        .returning({ id: quotes.id });
+      for (const { id } of announced) {
+        quoteNotices.push({ quoteId: id, kind: 'announce' });
+      }
+
+      // A trial still unpaid: devis past its date, reminded once.
+      const unpaidQuotes = await tx
+        .select({ quote: quotes })
+        .from(quotes)
+        .innerJoin(subscriptions, eq(subscriptions.id, quotes.subscriptionId))
+        .innerJoin(tenants, eq(tenants.id, quotes.tenantId))
+        .where(
+          and(
+            eq(quotes.status, 'pending'),
+            eq(subscriptions.status, 'past_due'),
+            eq(tenants.status, 'active'),
+            lte(quotes.dueAt, now),
+          ),
+        )
+        .for('update', { of: quotes, skipLocked: true });
+      for (const { quote } of unpaidQuotes) {
+        if (quote.reminderSentAt) continue;
+        await tx
+          .update(quotes)
+          .set({ reminderSentAt: now })
+          .where(eq(quotes.id, quote.id));
+        quoteNotices.push({ quoteId: quote.id, kind: 'reminder' });
+        counts.quoteReminders++;
+      }
+
       // 5–6. Unpaid long enough: warn, then suspend (active cabinets only).
       if (suspendAfterDays > 0) {
         const overdue = await tx
@@ -285,10 +348,39 @@ export class BillingService {
             counts.suspensionWarnings++;
           }
         }
+
+        // The same rule for a devis left unpaid after the trial.
+        for (const { quote } of unpaidQuotes) {
+          const step = unpaidStep(quote, suspendAfterDays, now);
+          if (step.action === 'suspend') {
+            await this.lifecycle.applySystem(
+              tx,
+              quote.tenantId,
+              'suspend',
+              SYSTEM,
+              `Suspension automatique : devis ${quote.number} impayé ${suspendAfterDays} jours après sa date limite.`,
+              'unpaid',
+            );
+            quoteNotices.push({ quoteId: quote.id, kind: 'suspended' });
+            counts.suspended++;
+          } else if (step.action === 'warn') {
+            await tx
+              .update(quotes)
+              .set({ suspensionWarningSentAt: now })
+              .where(eq(quotes.id, quote.id));
+            quoteNotices.push({
+              quoteId: quote.id,
+              kind: 'suspension_warning',
+              suspendOn: step.suspendOn!,
+            });
+            counts.suspensionWarnings++;
+          }
+        }
       }
     });
 
     await this.notify(notices);
+    await this.quotes.notify(quoteNotices);
     if (Object.values(counts).some(Boolean)) {
       this.logger.log(`Billing sweep: ${JSON.stringify(counts)}`);
     }
@@ -382,6 +474,132 @@ export class BillingService {
     };
   }
 
+  /**
+   * The cabinet's fiche de paiement arrived and the transfer is on the
+   * statement: creates the facture (already paid), moves the subscription
+   * to the devis' plan and period, and starts it.
+   */
+  async confirmQuote(quoteId: string, actor: AuditActor, dto: ConfirmQuoteDto) {
+    const result = await this.database.db.transaction(async (tx) => {
+      const quote = await this.quotes.lock(tx, quoteId);
+      if (quote.status !== 'pending') {
+        throw new ConflictException({
+          code: 'QUOTE_NOT_PENDING',
+          message: 'Ce devis n’attend pas de paiement.',
+        });
+      }
+      if (dto.amount < quote.amount) {
+        throw new BadRequestException({
+          code: 'AMOUNT_TOO_LOW',
+          message:
+            'Montant inférieur au devis. Si le client a payé moins, annulez le devis et envoyez-en un nouveau.',
+        });
+      }
+      const sub = await this.liveSubscription(tx, quote.tenantId);
+      const [plan] = await tx
+        .select()
+        .from(subscriptionPlans)
+        .where(eq(subscriptionPlans.id, quote.planId));
+      const receivedAt = new Date(dto.receivedAt);
+      const now = new Date();
+      const periodStart = firstPeriodStart(
+        sub.currentPeriodEnd,
+        sub.status === 'trialing',
+        receivedAt,
+      );
+      const periodEnd = addPeriod(periodStart, quote.billingPeriod);
+      const [{ n }] = await tx
+        .execute<{ n: string }>(sql`select nextval('invoice_number_seq') as n`)
+        .then((r) => r.rows);
+      const [invoice] = await tx
+        .insert(invoices)
+        .values({
+          number: invoiceNumber(now.getUTCFullYear(), Number(n)),
+          tenantId: quote.tenantId,
+          subscriptionId: sub.id,
+          description:
+            invoiceDescription(
+              plan.name,
+              quote.billingPeriod,
+              periodStart,
+              periodEnd,
+              quote.discountPercent,
+            ) + ` — devis ${quote.number}`,
+          amount: quote.amount,
+          periodStart,
+          periodEnd,
+          issuedAt: now,
+          dueAt: now,
+          status: 'paid',
+          paidAt: receivedAt,
+        })
+        .returning();
+      await tx.insert(invoicePayments).values({
+        invoiceId: invoice.id,
+        amount: dto.amount,
+        receivedAt,
+        reference: dto.reference,
+        note: dto.note,
+        recordedBy: actor.userId,
+      });
+      await tx
+        .update(quotes)
+        .set({ status: 'paid', paidAt: receivedAt, invoiceId: invoice.id })
+        .where(eq(quotes.id, quote.id));
+      await tx
+        .update(subscriptions)
+        .set({
+          planId: quote.planId,
+          billingPeriod: quote.billingPeriod,
+          price: quote.price,
+          status: 'active',
+          currentPeriodEnd: periodEnd,
+          ...(sub.promoCodeId &&
+            sub.promoInvoicesLeft !== null && {
+              promoInvoicesLeft: Math.max(0, sub.promoInvoicesLeft - 1),
+            }),
+        })
+        .where(eq(subscriptions.id, sub.id));
+      // The doctor picked another offer: its limits come with it.
+      if (quote.planId !== sub.planId) {
+        await this.applyQuotas(tx, quote.tenantId, plan);
+      }
+      const reactivated = await this.reactivateIfUnpaidOnly(
+        tx,
+        quote.tenantId,
+        actor,
+        quote.number,
+      );
+      await this.audit(tx, actor, quote.tenantId, 'billing.quote.paid', {
+        quote: quote.number,
+        invoice: invoice.number,
+        amount: dto.amount,
+        receivedAt: dto.receivedAt,
+        reference: dto.reference ?? null,
+        plan: plan.key,
+      });
+      return { invoice, planName: plan.name, reactivated };
+    });
+    const { invoice, planName, reactivated } = result;
+    try {
+      const [tenant] = await this.database.db
+        .select()
+        .from(tenants)
+        .where(eq(tenants.id, invoice.tenantId));
+      await this.email.sendSubscriptionStarted({
+        email: tenant.email,
+        name: tenant.responsibleName,
+        tenantName: tenant.name,
+        planName,
+        invoice,
+        url: await this.quotes.appUrl(tenant.id, `/factures/${invoice.id}`),
+      });
+    } catch (err) {
+      this.logger.error('Subscription started e-mail failed', err);
+    }
+    return { ok: true, invoiceId: invoice.id, reactivated };
+  }
+
   /** Cancels an unpaid invoice (wrong amount…). The number is never reused. */
   async voidInvoice(invoiceId: string, actor: AuditActor, reason: string) {
     return this.database.db.transaction(async (tx) => {
@@ -413,6 +631,13 @@ export class BillingService {
     const { graceDays } = await this.settings.get();
     const invoice = await this.database.db.transaction(async (tx) => {
       const sub = await this.liveSubscription(tx, tenantId);
+      if (await this.quotes.quoteable(tx, sub)) {
+        throw new ConflictException({
+          code: 'QUOTE_FIRST',
+          message:
+            'Ce cabinet n’a encore rien payé : envoyez-lui un devis, la facture suivra le paiement.',
+        });
+      }
       const issued = await this.issueNext(
         tx,
         sub,
@@ -701,6 +926,12 @@ export class BillingService {
             plan: { key: sub.plan.key, name: sub.plan.name },
           }
         : null,
+      /** No facture before payment: the next step is a devis. */
+      quoteable: sub
+        ? await db.transaction((tx) =>
+            this.quotes.quoteable(tx, sub.subscription),
+          )
+        : false,
       invoices: list.data,
     };
   }

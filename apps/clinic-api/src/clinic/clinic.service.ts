@@ -10,6 +10,7 @@ type OfferRow = {
   max_secretaries: number | null;
   storage_quota_mb: number | null;
   size_bytes: string | null;
+  quote_pending: boolean;
 };
 
 /** What the cabinet's staff may see about their offer, set by the platform. */
@@ -21,6 +22,10 @@ export class ClinicService {
     const [{ rows }, team] = await Promise.all([
       this.catalog.pool.query<OfferRow>(
         `select p.name as plan, s.status, s.current_period_end,
+                exists (
+                  select 1 from quotes q
+                   where q.tenant_id = t.id and q.status = 'pending'
+                ) as quote_pending,
                 t.max_doctors, t.max_secretaries, t.storage_quota_mb,
                 db.size_bytes
            from tenants t
@@ -51,6 +56,7 @@ export class ClinicService {
       trialEndsAt:
         offer?.status === 'trialing' ? offer.current_period_end : null,
       currentPeriodEnd: offer?.current_period_end ?? null,
+      quotePending: offer?.quote_pending ?? false,
       doctors: {
         used: count('owner', 'doctor'),
         max: offer?.max_doctors ?? null,

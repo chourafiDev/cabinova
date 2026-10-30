@@ -146,7 +146,7 @@ export const FAQ = [
 	},
 	{
 		q: "Comment se passe le paiement de l’abonnement ?",
-		a: `L’essai gratuit dure ${TRIAL_DAYS} jours, sans engagement. Ensuite, la facture arrive par e-mail et se règle par virement ; l’abonnement annuel offre deux mois.`,
+		a: `L’essai gratuit dure ${TRIAL_DAYS} jours, sans engagement. Quand vous choisissez votre offre, vous recevez un devis à régler par virement ; votre facture suit le paiement et l’abonnement démarre. L’abonnement annuel offre deux mois.`,
 	},
 	{
 		q: "Puis-je changer d’offre plus tard ?",

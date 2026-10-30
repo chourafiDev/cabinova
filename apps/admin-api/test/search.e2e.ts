@@ -32,10 +32,17 @@ describe('global search', () => {
       })
       .expect(201);
     tenantId = tenant.id;
-    const { body: invoice } = await admin
-      .post(`/tenants/${tenantId}/billing/invoices`)
+    const { body: quote } = await admin
+      .post(`/tenants/${tenantId}/billing/quotes`)
       .expect(201);
-    invoiceNumber = invoice.number;
+    await admin
+      .post(`/billing/quotes/${quote.id}/confirm`)
+      .send({ amount: quote.amount, receivedAt: new Date().toISOString() })
+      .expect(200);
+    const { body: billing } = await admin
+      .get(`/tenants/${tenantId}/billing`)
+      .expect(200);
+    invoiceNumber = billing.invoices[0].number;
 
     agent = await inviteUser(app, admin, {
       name: 'Agent Recherche',

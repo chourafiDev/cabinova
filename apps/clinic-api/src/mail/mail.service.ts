@@ -1,5 +1,11 @@
 import { createHash } from 'node:crypto';
-import { addressOf, button, escapeHtml, layout } from '@cabinova/mail';
+import {
+  addressOf,
+  button,
+  escapeHtml,
+  layout,
+  quoteEmail,
+} from '@cabinova/mail';
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Resend } from 'resend';
@@ -96,6 +102,15 @@ export class MailService {
         <p style="color:#6b7280;font-size:12px">Ce lien est valable 7 jours et ne peut servir qu'une seule fois. Votre mot de passe actuel reste valable jusqu’à ce que vous en choisissiez un nouveau.</p>
       `,
     });
+  }
+
+  /** The devis the doctor just asked for. */
+  sendQuote(to: Parameters<typeof quoteEmail>[0] & { email: string }) {
+    return this.send({ to: to.email, ...quoteEmail(to) });
+  }
+
+  async supportEmail() {
+    return (await this.platform()).general.supportEmail;
   }
 
   private async send(message: {

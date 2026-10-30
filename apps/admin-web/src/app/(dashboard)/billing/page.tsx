@@ -4,7 +4,7 @@ import { HiBanknotes } from "react-icons/hi2";
 import { LuBanknote, LuClock, LuLandmark, LuSettings, LuTriangleAlert } from "react-icons/lu";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import type { BillingSettings, InvoicesPage } from "@/lib/billing";
+import type { BillingSettings, InvoicesPage, Quote } from "@/lib/billing";
 import { can } from "@/lib/permissions";
 import { formatPrice } from "@/lib/plans";
 import { plural } from "@/lib/plural";
@@ -16,11 +16,13 @@ import { KpiCard } from "../_components/shared/kpi-card";
 import { ListHeader } from "../_components/shared/list-header";
 import { ListTransitionProvider } from "../_components/shared/list-transition";
 import { InvoicesTable } from "./_components/invoices-table";
+import { QuotesTable } from "./_components/quotes-table";
 
 export const metadata = { title: "Facturation" };
 
 const TABS = [
 	{ key: "open", label: "À encaisser" },
+	{ key: "quotes", label: "Devis" },
 	{ key: "overdue", label: "En retard" },
 	{ key: "paid", label: "Payées" },
 	{ key: "void", label: "Annulées" },
@@ -30,7 +32,8 @@ const TABS = [
 /**
  * Module 3 — invoices paid by bank transfer. The daily task: open
  * "À encaisser", match each transfer on the bank statement to its invoice
- * and record it. Invoices are issued automatically (trial end, renewals).
+ * and record it. Renewal invoices are issued automatically. Cabinets on
+ * trial pay a devis first ("Devis"): the facture follows their payment.
  */
 export default async function BillingPage({ searchParams }: PageProps<"/billing">) {
 	const session = await getSession();
@@ -39,19 +42,22 @@ export default async function BillingPage({ searchParams }: PageProps<"/billing"
 	const { status: rawStatus, search: rawSearch } = await searchParams;
 	const status = TABS.some((t) => t.key === rawStatus) ? (rawStatus as string) : "open";
 	const search = typeof rawSearch === "string" ? rawSearch.trim() : "";
-	const query = new URLSearchParams({ ...(status !== "all" && { status }), ...(search && { search }) });
-	const [page, settings] = await Promise.all([
+	const quotesTab = status === "quotes";
+	const query = new URLSearchParams({ ...(status !== "all" && !quotesTab && { status }), ...(search && { search }) });
+	const [page, settings, quotes] = await Promise.all([
 		apiGet<InvoicesPage>(`/billing/invoices?${query}`),
 		apiGet<BillingSettings>("/billing/settings"),
+		apiGet<{ data: Quote[] }>("/billing/quotes"),
 	]);
+	const pendingQuotes = quotes.data.filter((q) => q.status === "pending").length;
 	const href = (s: string) => `/billing?${new URLSearchParams({ status: s, ...(search && { search }) })}`;
 
 	return (
 		<ListTransitionProvider>
 			<ListHeader
 				icon={<HiBanknotes />}
-				total={page.data.length}
-				label={{ singular: "Facture", plural: "Factures" }}
+				total={quotesTab ? quotes.data.length : page.data.length}
+				label={quotesTab ? { singular: "Devis", plural: "Devis" } : { singular: "Facture", plural: "Factures" }}
 				action={
 					<Button asChild variant="outline">
 						<Link href="/billing/settings">
@@ -110,17 +116,28 @@ export default async function BillingPage({ searchParams }: PageProps<"/billing"
 							className={cn("rounded-md px-3 py-1 text-muted-foreground", t.key === status && "bg-background text-foreground shadow-sm")}
 						>
 							{t.label}
+							{t.key === "quotes" && pendingQuotes > 0 && (
+								<span className="ms-1.5 rounded-full bg-primary px-1.5 text-xs font-medium text-primary-foreground tabular-nums">
+									{pendingQuotes}
+								</span>
+							)}
 						</Link>
 					))}
 				</nav>
-				<form action="/billing" className="w-full sm:w-64">
-					<input type="hidden" name="status" value={status} />
-					<Input name="search" defaultValue={search} placeholder="N° de facture ou cabinet…" aria-label="Rechercher" />
-				</form>
+				{!quotesTab && (
+					<form action="/billing" className="w-full sm:w-64">
+						<input type="hidden" name="status" value={status} />
+						<Input name="search" defaultValue={search} placeholder="N° de facture ou cabinet…" aria-label="Rechercher" />
+					</form>
+				)}
 			</div>
 
 			<FormCard contentClassName="p-0">
-				<InvoicesTable invoices={page.data} canWrite={canWrite} />
+				{quotesTab ? (
+					<QuotesTable quotes={quotes.data} canWrite={canWrite} />
+				) : (
+					<InvoicesTable invoices={page.data} canWrite={canWrite} />
+				)}
 			</FormCard>
 		</ListTransitionProvider>
 	);

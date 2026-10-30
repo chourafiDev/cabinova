@@ -139,6 +139,41 @@ export class RecordPaymentDto {
   note?: string;
 }
 
+/** The fiche de paiement arrived and the transfer is on the statement. */
+export class ConfirmQuoteDto {
+  /** Centimes received; must cover the devis (0 for a fully discounted one). */
+  @Type(() => Number)
+  @IsInt()
+  @Min(0)
+  amount: number;
+
+  @IsISO8601({ strict: true })
+  receivedAt: string;
+
+  @clean()
+  @IsOptional()
+  @IsString()
+  @MaxLength(120)
+  reference?: string;
+
+  @clean()
+  @IsOptional()
+  @IsString()
+  @MaxLength(500)
+  note?: string;
+}
+
+export class ListQuotesQuery {
+  @IsOptional()
+  @IsIn(['pending', 'paid', 'void'])
+  status?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(40)
+  tenantId?: string;
+}
+
 export class VoidInvoiceDto {
   @clean()
   @IsString()

@@ -6,6 +6,7 @@ import { BillingScheduler } from './billing.scheduler.js';
 import { BillingService } from './billing.service.js';
 import { CreditNotesService } from './credit-notes.service.js';
 import { PromoCodesService } from './promo-codes.service.js';
+import { QuotesService } from './quotes.service.js';
 
 @Module({
   imports: [TenantsModule],
@@ -16,6 +17,7 @@ import { PromoCodesService } from './promo-codes.service.js';
     BillingScheduler,
     CreditNotesService,
     PromoCodesService,
+    QuotesService,
   ],
 })
 export class BillingModule {}

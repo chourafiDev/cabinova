@@ -46,8 +46,18 @@ export const invoiceStatus = pgEnum('invoice_status', [
   'void',
 ]);
 
+/**
+ * pending — waiting for the transfer and its proof of payment
+ * paid    — payment confirmed: the facture exists and the plan runs
+ * void    — replaced by a newer devis, or cancelled by an admin
+ */
+export const quoteStatus = pgEnum('quote_status', ['pending', 'paid', 'void']);
+
 /** Invoice numbers: F-<year>-<6 digits>, never reused. */
 export const invoiceNumberSeq = pgSequence('invoice_number_seq');
+
+/** Devis numbers: D-<year>-<6 digits>, never reused. */
+export const quoteNumberSeq = pgSequence('quote_number_seq');
 
 export const subscriptionPlans = pgTable('subscription_plans', {
   id: id(),
@@ -209,6 +219,70 @@ export const invoices = pgTable(
   (t) => [
     index('invoices_tenant_idx').on(t.tenantId, t.issuedAt),
     index('invoices_status_idx').on(t.status, t.dueAt),
+  ],
+);
+
+/**
+ * Devis: what a cabinet on trial pays to start its plan. A cabinet asks for
+ * one from its app, or the billing sweep sends one when the trial ends. No
+ * facture exists until the payment is confirmed; the plan and period here
+ * then replace the subscription's. At most one is pending per cabinet.
+ */
+export const quotes = pgTable(
+  'quotes',
+  {
+    id: id(),
+    /** e.g. "D-2026-000042" — also the reference to write on the transfer. */
+    number: text('number').notNull().unique(),
+    tenantId: uuid('tenant_id')
+      .notNull()
+      .references(() => tenants.id, { onDelete: 'cascade' }),
+    subscriptionId: uuid('subscription_id')
+      .notNull()
+      .references(() => subscriptions.id, { onDelete: 'cascade' }),
+    planId: uuid('plan_id')
+      .notNull()
+      .references(() => subscriptionPlans.id, { onDelete: 'restrict' }),
+    billingPeriod: billingPeriod('billing_period').notNull(),
+    /** Centimes per billing period, before discount. */
+    price: integer('price').notNull(),
+    /** Discount applied to this devis: the better of commercial and promo. */
+    discountPercent: integer('discount_percent').notNull().default(0),
+    /** Centimes to transfer, after discount. */
+    amount: integer('amount').notNull(),
+    currency: text('currency').notNull().default('MAD'),
+    /** e.g. "Abonnement Pro — mensuel (remise 10 %)" */
+    description: text('description').notNull(),
+    status: quoteStatus('status').notNull().default('pending'),
+    /** "request" (the doctor asked) or "trial_end" (the billing sweep). */
+    source: text('source').notNull(),
+    issuedAt: timestamp('issued_at', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    /** Pay by this date; the unpaid rule (suspension) counts from it. */
+    dueAt: timestamp('due_at', { withTimezone: true }).notNull(),
+    paidAt: timestamp('paid_at', { withTimezone: true }),
+    /** The facture created when the payment was confirmed. */
+    invoiceId: uuid('invoice_id').references(() => invoices.id, {
+      onDelete: 'set null',
+    }),
+    voidReason: text('void_reason'),
+    /** Bell and team alert sent by the billing sweep. */
+    announcedAt: timestamp('announced_at', { withTimezone: true }),
+    /** "Your devis is past its date" e-mail, sent once. */
+    reminderSentAt: timestamp('reminder_sent_at', { withTimezone: true }),
+    /** "Access will be suspended on …" e-mail, sent once. */
+    suspensionWarningSentAt: timestamp('suspension_warning_sent_at', {
+      withTimezone: true,
+    }),
+    ...timestamps,
+  },
+  (t) => [
+    uniqueIndex('quotes_one_pending_idx')
+      .on(t.tenantId)
+      .where(sql`${t.status} = 'pending'`),
+    index('quotes_status_idx').on(t.status, t.dueAt),
+    index('quotes_tenant_idx').on(t.tenantId, t.issuedAt),
   ],
 );
 
