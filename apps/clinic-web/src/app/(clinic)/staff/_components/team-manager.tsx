@@ -177,17 +177,17 @@ function RequireTwoFactor({ required, ownEnabled }: { required: boolean; ownEnab
 		}
 	};
 	return (
-		<section className="bg-card flex items-center gap-3 rounded-xl border p-4">
-			<LuShieldCheck className="text-primary size-5 shrink-0" />
+		<section className="bg-brand dark:bg-brand/10 flex items-center gap-3 rounded-xl dark:border p-4">
+			<LuShieldCheck className="text-white size-5 shrink-0" />
 			<div className="min-w-0 flex-1">
-				<p className="text-sm font-medium">Double authentification obligatoire</p>
-				<p className="text-muted-foreground text-xs">
+				<p className="text-sm text-white font-medium">Double authentification obligatoire</p>
+				<p className="text-white/60 text-xs">
 					{ownEnabled ? (
 						"Les membres sans double authentification doivent la configurer avant de continuer."
 					) : (
 						<>
 							Activez-la d’abord sur votre compte, dans{" "}
-							<Link href="/settings/profile" className="text-foreground underline underline-offset-2">
+							<Link href="/settings/profile" className="text-white underline underline-offset-2">
 								Mon profil
 							</Link>
 							.
