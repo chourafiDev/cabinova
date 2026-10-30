@@ -58,8 +58,8 @@ export function ProfileForm({ name, email, roleLabel }: { name: string; email: s
 			>
 				<div className="grid gap-5">
 					<div className="flex items-center gap-3">
-						<Avatar className="size-12 rounded-xl">
-							<AvatarFallback className="bg-primary/10 text-primary rounded-xl font-medium">
+						<Avatar className="size-12 rounded-full">
+							<AvatarFallback className="bg-primary/10 text-primary rounded-full font-medium">
 								{initials(value.trim() || saved)}
 							</AvatarFallback>
 						</Avatar>

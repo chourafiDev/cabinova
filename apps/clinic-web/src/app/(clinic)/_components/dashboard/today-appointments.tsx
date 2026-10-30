@@ -56,8 +56,8 @@ export function TodayAppointments({ appointments }: { appointments: NonNullable<
 										{differenceInMinutes(new Date(a.endsAt), new Date(a.startsAt))} min
 									</p>
 								</div>
-								<Avatar className="size-8 rounded-lg">
-									<AvatarFallback className="rounded-lg bg-muted text-xs font-medium">
+								<Avatar className="size-8 rounded-full">
+									<AvatarFallback className="rounded-full bg-muted text-xs font-medium">
 										{initials(`${a.patient.firstName} ${a.patient.lastName}`)}
 									</AvatarFallback>
 								</Avatar>
