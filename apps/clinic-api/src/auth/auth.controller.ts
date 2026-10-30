@@ -14,6 +14,7 @@ import { ConfigService } from '@nestjs/config';
 import { Throttle } from '@nestjs/throttler';
 import type { Request, Response } from 'express';
 import { ClinicService } from '../clinic/clinic.service.js';
+import { NotificationsService } from '../notifications/notifications.service.js';
 import { OnboardingService } from '../onboarding/onboarding.service.js';
 import { SpacesService } from '../spaces/spaces.service.js';
 import type { Env } from '../config/env.js';
@@ -35,6 +36,7 @@ export class AuthController {
     private readonly clinic: ClinicService,
     private readonly onboarding: OnboardingService,
     private readonly spaces: SpacesService,
+    private readonly notifications: NotificationsService,
     config: ConfigService<Env, true>,
   ) {
     this.secure = config.get('NODE_ENV') === 'production';
@@ -92,6 +94,7 @@ export class AuthController {
     const user = await this.auth.acceptInvitation(db, token, body.password);
     if (!user) throw this.invalidLink();
     await this.signIn(db, user.id, true, req, res);
+    await this.notifications.memberJoined(db, user.id);
     return { ok: true };
   }
 

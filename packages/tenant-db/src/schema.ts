@@ -482,3 +482,34 @@ export const cashCloses = pgTable(
   },
   (t) => [uniqueIndex('cash_closes_space_day_idx').on(t.spaceId, t.day)],
 );
+
+// ── Notifications ─────────────────────────────────────────────────────────
+
+/**
+ * The bell: one row per recipient. `dedupeKey` keeps one event from arriving
+ * twice ("appointment:<id>:arrived", "quote:<id>"…).
+ */
+export const notifications = pgTable(
+  'notifications',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    /** "arrived" | "no_show" | "cancelled" | "team" | "billing" */
+    kind: text('kind').notNull(),
+    title: text('title').notNull(),
+    body: text('body'),
+    /** Where the notification leads in the app. */
+    href: text('href'),
+    dedupeKey: text('dedupe_key').notNull(),
+    readAt: timestamp('read_at', { withTimezone: true }),
+    createdAt: timestamp('created_at', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [
+    uniqueIndex('notifications_user_key_idx').on(t.userId, t.dedupeKey),
+    index('notifications_user_idx').on(t.userId, t.createdAt),
+  ],
+);

@@ -7,6 +7,7 @@ import { SidebarTrigger } from "@/components/ui/sidebar";
 import type { ClinicSession } from "@/lib/session";
 import { CommandPalette } from "./command-palette";
 import { findNavItem } from "./nav";
+import { NotificationBell } from "./notification-bell";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { UserMenu } from "./user-menu";
 
@@ -27,6 +28,7 @@ export function SiteHeader({ user, spaces }: { user: ClinicSession["user"]; spac
       </Breadcrumb>
       <div className="ms-auto flex flex-1 items-center justify-end gap-2">
         <CommandPalette spaces={spaces} role={user.role} />
+        <NotificationBell />
         <span data-tour="account" className="flex items-center gap-2">
           <ThemeToggle />
           <UserMenu user={user} />

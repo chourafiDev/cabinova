@@ -21,6 +21,8 @@ import { validateEnv } from './config/env.js';
 import { CatalogModule } from './database/catalog.module.js';
 import { MailService } from './mail/mail.service.js';
 import { HealthController } from './health/health.controller.js';
+import { NotificationsController } from './notifications/notifications.controller.js';
+import { NotificationsService } from './notifications/notifications.service.js';
 import { OnboardingController } from './onboarding/onboarding.controller.js';
 import { OnboardingService } from './onboarding/onboarding.service.js';
 import { ActsController } from './payments/acts.controller.js';
@@ -61,6 +63,7 @@ import { TenancyService } from './tenancy/tenancy.service.js';
     AuthController,
     BillingController,
     OnboardingController,
+    NotificationsController,
     PatientsController,
     SpacesController,
     AppointmentsController,
@@ -76,6 +79,7 @@ import { TenancyService } from './tenancy/tenancy.service.js';
     AuthService,
     ClinicService,
     OnboardingService,
+    NotificationsService,
     PatientsService,
     SpacesService,
     SpaceGuard,

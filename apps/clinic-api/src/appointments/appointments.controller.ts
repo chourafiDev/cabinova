@@ -14,6 +14,7 @@ import type { ClinicUser } from '../auth/auth.types.js';
 import { CurrentUser } from '../auth/decorators.js';
 import { CurrentSpace, SpaceGuard } from '../spaces/space.guard.js';
 import type { Space } from '../spaces/spaces.service.js';
+import { NotificationsService } from '../notifications/notifications.service.js';
 import { Clinic } from '../tenancy/decorators.js';
 import type { ClinicContext } from '../tenancy/tenancy.service.js';
 import { AppointmentsService } from './appointments.service.js';
@@ -27,7 +28,10 @@ import {
 @UseGuards(SpaceGuard)
 @Controller('appointments')
 export class AppointmentsController {
-  constructor(private readonly appointments: AppointmentsService) {}
+  constructor(
+    private readonly appointments: AppointmentsService,
+    private readonly notifications: NotificationsService,
+  ) {}
 
   @Get()
   list(
@@ -66,12 +70,20 @@ export class AppointmentsController {
 
   @Post(':id/status')
   @HttpCode(200)
-  setStatus(
+  async setStatus(
     @Clinic() { db }: ClinicContext,
     @CurrentSpace() space: Space,
+    @CurrentUser() user: ClinicUser,
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: UpdateStatusDto,
   ) {
-    return this.appointments.setStatus(db, space.id, id, dto.status);
+    const appointment = await this.appointments.setStatus(
+      db,
+      space.id,
+      id,
+      dto.status,
+    );
+    await this.notifications.appointmentChanged(db, id, dto.status, user.id);
+    return appointment;
   }
 }

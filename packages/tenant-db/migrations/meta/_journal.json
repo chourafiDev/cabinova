@@ -64,6 +64,13 @@
       "when": 1793361901031,
       "tag": "0008_getting_started",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1793371147917,
+      "tag": "0009_notifications",
+      "breakpoints": true
     }
   ]
 }
