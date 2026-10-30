@@ -8,7 +8,7 @@ import { LuClock, LuText, LuUser } from "react-icons/lu";
 
 import { useCalendar } from "@/calendar/contexts/calendar-context";
 
-import { EventDetailsDialog } from "@/calendar/components/dialogs/event-details-dialog";
+import { EventDetailsTrigger } from "@/calendar/components/dialogs/event-details-trigger";
 
 import type { IEvent } from "@/calendar/interfaces";
 import type { VariantProps } from "class-variance-authority";
@@ -67,7 +67,7 @@ export function AgendaEventCard({ event, eventCurrentDay, eventTotalDays }: IPro
   };
 
   return (
-    <EventDetailsDialog event={event}>
+    <EventDetailsTrigger event={event}>
       <div role="button" tabIndex={0} className={agendaEventCardClasses} onKeyDown={handleKeyDown}>
         <div className="flex flex-col gap-2">
           <div className="flex items-center gap-1.5">
@@ -105,6 +105,6 @@ export function AgendaEventCard({ event, eventCurrentDay, eventTotalDays }: IPro
           </div>
         </div>
       </div>
-    </EventDetailsDialog>
+    </EventDetailsTrigger>
   );
 }

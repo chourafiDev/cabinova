@@ -7,6 +7,7 @@ import { useMemo } from "react";
 
 import { ClientContainer } from "@/calendar/components/client-container";
 import { AppointmentDialogsProvider } from "@/calendar/components/dialogs/appointment-dialogs";
+import { AppointmentPanel } from "@/calendar/components/dialogs/appointment-panel";
 import { CalendarProvider } from "@/calendar/contexts/calendar-context";
 import type { TCalendarView } from "@/calendar/types";
 import { api } from "@/lib/api-client";
@@ -75,8 +76,11 @@ export function Agenda({
 				{isError && (
 					<p className="text-destructive mb-2 text-sm">Impossible de charger les rendez-vous. Réessayez.</p>
 				)}
-				<div className={cn("transition-opacity", isFetching && "opacity-70")}>
-					<ClientContainer view={view} />
+				<div className="flex items-start gap-3">
+					<div className={cn("min-w-0 flex-1 transition-opacity", isFetching && "opacity-70")}>
+						<ClientContainer view={view} />
+					</div>
+					<AppointmentPanel />
 				</div>
 			</AppointmentDialogsProvider>
 		</CalendarProvider>
