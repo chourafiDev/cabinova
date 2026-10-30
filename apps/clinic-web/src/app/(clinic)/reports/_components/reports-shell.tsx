@@ -17,7 +17,7 @@ export function ReportsShell({ filters, children }: { filters: React.ReactNode; 
 	return (
 		<NavigateContext value={navigate}>
 			{filters}
-			<div aria-busy={pending} className={cn("grid gap-4 transition-opacity", pending && "pointer-events-none opacity-60")}>
+			<div aria-busy={pending} className={cn("grid min-w-0 grid-cols-1 gap-4 transition-opacity", pending && "pointer-events-none opacity-60")}>
 				{children}
 			</div>
 		</NavigateContext>

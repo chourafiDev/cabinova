@@ -4,8 +4,6 @@ import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
 import {
 	type ChartConfig,
 	ChartContainer,
-	ChartLegend,
-	ChartLegendContent,
 	ChartTooltip,
 	ChartTooltipContent,
 } from "@/components/ui/chart";
@@ -13,28 +11,48 @@ import { type Bucket, bucketLabel, bucketTitle, SERIES, type SeriesPoint } from 
 
 type Key = keyof typeof SERIES & keyof SeriesPoint;
 
+/** The legend sits outside the chart: same colours as SERIES, light and dark. */
+const SWATCHES: Record<Key, string> = {
+	completed: "bg-[#724e91]",
+	pending: "bg-[#00a896]",
+	noShow: "bg-[#eda100] dark:bg-[#c98500]",
+	cancelled: "bg-[#c3c2b7] dark:bg-[#5f5e58]",
+	newPatients: "bg-[#724e91]",
+	returningPatients: "bg-[#00a896]",
+};
+
 /**
  * Stacked columns over the period (one per day, week or month), in the
- * validated order of `keys`; a 2px surface gap between segments, a legend,
- * a tooltip listing every series, and the same numbers as a table.
+ * validated order of `keys`; a 2px surface gap between segments, a tooltip
+ * listing every series, and a legend that carries each series' total.
  */
 export function SeriesChart({
 	series,
 	bucket,
 	keys,
-	tableLabel,
+	totals,
 }: {
 	series: SeriesPoint[];
 	bucket: Bucket;
 	keys: Key[];
-	/** First column of the table view, e.g. "Jour". */
-	tableLabel: string;
+	totals: Partial<Record<Key, number>>;
 }) {
 	const config = Object.fromEntries(keys.map((k) => [k, SERIES[k]])) satisfies ChartConfig;
 	const top = keys.at(-1);
 
 	return (
-		<>
+		<div className="grid gap-4">
+			<ul className="flex flex-wrap gap-x-6 gap-y-2">
+				{keys.map((k) => (
+					<li key={k} className="grid gap-0.5">
+						<span className="text-muted-foreground flex items-center gap-1.5 text-xs">
+							<span className={`size-2 rounded-[2px] ${SWATCHES[k]}`} />
+							{SERIES[k].label}
+						</span>
+						<span className="text-lg font-semibold tabular-nums">{totals[k] ?? 0}</span>
+					</li>
+				))}
+			</ul>
 			<ChartContainer config={config} className="aspect-auto h-64 w-full">
 				<BarChart data={series} barCategoryGap="25%" margin={{ top: 8, right: 0, left: -8, bottom: 0 }}>
 					<CartesianGrid vertical={false} />
@@ -59,16 +77,12 @@ export function SeriesChart({
 							/>
 						}
 					/>
-					<ChartLegend
-						verticalAlign="top"
-						itemSorter={(item) => keys.indexOf(item.dataKey as Key)}
-						content={<ChartLegendContent verticalAlign="top" className="justify-end" />}
-					/>
 					{keys.map((k) => (
 						<Bar
 							key={k}
 							dataKey={k}
 							stackId="a"
+							isAnimationActive={false}
 							fill={`var(--color-${k})`}
 							stroke="var(--card)"
 							strokeWidth={2}
@@ -78,35 +92,47 @@ export function SeriesChart({
 					))}
 				</BarChart>
 			</ChartContainer>
-			<details className="mt-2 text-xs">
-				<summary className="text-muted-foreground cursor-pointer">Voir les données en tableau</summary>
-				<div className="mt-2 max-h-64 overflow-auto">
-					<table className="w-full tabular-nums">
-						<thead className="bg-card sticky top-0">
-							<tr className="text-muted-foreground">
-								<th className="py-1 text-start font-normal">{tableLabel}</th>
-								{keys.map((k) => (
-									<th key={k} className="py-1 text-end font-normal">
-										{SERIES[k].label}
-									</th>
-								))}
-							</tr>
-						</thead>
-						<tbody className="divide-y">
-							{series.map((d) => (
-								<tr key={d.date}>
-									<td className="py-1 first-letter:uppercase">{bucketTitle(d.date, bucket)}</td>
-									{keys.map((k) => (
-										<td key={k} className="py-1 text-end">
-											{d[k]}
-										</td>
-									))}
-								</tr>
-							))}
-						</tbody>
-					</table>
-				</div>
-			</details>
-		</>
+		</div>
+	);
+}
+
+/** The same numbers as the chart. */
+export function SeriesTable({
+	series,
+	bucket,
+	keys,
+	label,
+}: {
+	series: SeriesPoint[];
+	bucket: Bucket;
+	keys: Key[];
+	/** First column, e.g. "Jour". */
+	label: string;
+}) {
+	return (
+		<table className="w-full tabular-nums">
+			<thead className="bg-card sticky top-0">
+				<tr className="text-muted-foreground border-b">
+					<th className="py-2 text-start font-normal">{label}</th>
+					{keys.map((k) => (
+						<th key={k} className="py-2 text-end font-normal">
+							{SERIES[k].label}
+						</th>
+					))}
+				</tr>
+			</thead>
+			<tbody className="divide-y">
+				{series.map((d) => (
+					<tr key={d.date}>
+						<td className="py-2 first-letter:uppercase">{bucketTitle(d.date, bucket)}</td>
+						{keys.map((k) => (
+							<td key={k} className="py-2 text-end">
+								{d[k]}
+							</td>
+						))}
+					</tr>
+				))}
+			</tbody>
+		</table>
 	);
 }

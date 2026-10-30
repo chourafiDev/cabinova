@@ -19,7 +19,7 @@ export type KpiAction = { label: string; href: string };
  * Change vs. the previous period, e.g. 12 → "+12 %", -3 (pts) → "-3 pts".
  * null = nothing to compare with. `invert` when a rise is bad (losses, delays).
  */
-function Change({ value, unit, invert }: { value: number | null; unit: "%" | "pts"; invert?: boolean }) {
+export function Change({ value, unit, invert }: { value: number | null; unit: "%" | "pts"; invert?: boolean }) {
 	if (value === null) return <span className="text-muted-foreground">Nouveau</span>;
 	const good = invert ? value < 0 : value > 0;
 	const bad = invert ? value > 0 : value < 0;

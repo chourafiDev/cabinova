@@ -164,9 +164,6 @@ export function ReportsFilters({
 				</Select>
 			)}
 
-			<p className="text-muted-foreground ms-auto text-xs">
-				{periodLabel(period.from, period.to)} · comparé aux {period.days} jours précédents
-			</p>
 		</div>
 	);
 }

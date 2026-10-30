@@ -16,8 +16,7 @@ const axis = (centimes: number) => {
 /** Money received per day, week or month: one series, so no legend. */
 export function RevenueChart({ series, bucket }: { series: { date: string; net: number }[]; bucket: Bucket }) {
 	return (
-		<>
-			<ChartContainer config={config} className="aspect-auto h-56 w-full">
+		<ChartContainer config={config} className="aspect-auto h-64 w-full">
 				<BarChart data={series} barCategoryGap="25%" margin={{ top: 8, right: 0, left: -8, bottom: 0 }}>
 					<CartesianGrid vertical={false} />
 					<XAxis
@@ -42,24 +41,24 @@ export function RevenueChart({ series, bucket }: { series: { date: string; net: 
 							/>
 						}
 					/>
-					<Bar dataKey="net" fill="var(--color-net)" radius={[4, 4, 0, 0]} maxBarSize={24} />
+					<Bar dataKey="net" isAnimationActive={false} fill="var(--color-net)" radius={[4, 4, 0, 0]} maxBarSize={24} />
 				</BarChart>
 			</ChartContainer>
-			<details className="mt-2 text-xs">
-				<summary className="text-muted-foreground cursor-pointer">Voir les données en tableau</summary>
-				<div className="mt-2 max-h-64 overflow-auto">
-					<table className="w-full tabular-nums">
-						<tbody className="divide-y">
-							{series.map((d) => (
-								<tr key={d.date}>
-									<td className="py-1 first-letter:uppercase">{bucketTitle(d.date, bucket)}</td>
-									<td className="py-1 text-end">{mad(d.net)}</td>
-								</tr>
-							))}
-						</tbody>
-					</table>
-				</div>
-			</details>
-		</>
+	);
+}
+
+/** The same numbers as the chart. */
+export function RevenueTable({ series, bucket }: { series: { date: string; net: number }[]; bucket: Bucket }) {
+	return (
+		<table className="w-full tabular-nums">
+			<tbody className="divide-y">
+				{series.map((d) => (
+					<tr key={d.date}>
+						<td className="py-2 first-letter:uppercase">{bucketTitle(d.date, bucket)}</td>
+						<td className="py-2 text-end">{mad(d.net)}</td>
+					</tr>
+				))}
+			</tbody>
+		</table>
 	);
 }
