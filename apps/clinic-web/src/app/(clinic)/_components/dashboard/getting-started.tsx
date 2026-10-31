@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { LuArrowRight, LuCheck, LuX } from "react-icons/lu";
 import { toast } from "sonner";
@@ -19,48 +20,19 @@ export type ChecklistSteps = {
 	appointment: boolean;
 };
 
-const STEPS: { key: keyof ChecklistSteps; title: string; hint: string; href: string; action: string }[] = [
-	{
-		key: "hours",
-		title: "Vérifiez vos horaires",
-		hint: "L’agenda n’accepte de rendez-vous que pendant ces horaires.",
-		href: "/settings/hours",
-		action: "Vérifier",
-	},
-	{
-		key: "acts",
-		title: "Ajoutez vos tarifs",
-		hint: "Consultation, contrôle, ECG… pour encaisser en un clic.",
-		href: "/settings/tarifs",
-		action: "Ajouter",
-	},
-	{
-		key: "team",
-		title: "Invitez votre équipe",
-		hint: "Votre secrétaire ou un confrère reçoit un lien par e-mail.",
-		href: "/staff",
-		action: "Inviter",
-	},
-	{
-		key: "patient",
-		title: "Créez un premier patient",
-		hint: "Son dossier, sa couverture et ses antécédents au même endroit.",
-		href: NEW_PATIENT_HREF,
-		action: "Créer",
-	},
-	{
-		key: "appointment",
-		title: "Prenez un premier rendez-vous",
-		hint: "Il apparaît dans l’agenda et dans la salle d’attente.",
-		href: "/appointments?view=day",
-		action: "Ouvrir l’agenda",
-	},
+const STEPS: { key: keyof ChecklistSteps; href: string }[] = [
+	{ key: "hours", href: "/settings/hours" },
+	{ key: "acts", href: "/settings/tarifs" },
+	{ key: "team", href: "/staff" },
+	{ key: "patient", href: NEW_PATIENT_HREF },
+	{ key: "appointment", href: "/appointments?view=day" },
 ];
 
 /** First steps of a new cabinet, on the dashboard until they're done or hidden. */
 export function GettingStarted({ steps }: { steps: ChecklistSteps }) {
 	const router = useRouter();
 	const [saving, setSaving] = useState(false);
+	const t = useTranslations("dashboard.checklist");
 	const done = STEPS.filter((s) => steps[s.key]).length;
 	if (done === STEPS.length) return null;
 	const next = STEPS.find((s) => !steps[s.key]);
@@ -71,7 +43,7 @@ export function GettingStarted({ steps }: { steps: ChecklistSteps }) {
 			await api(`/onboarding/checklist/${path}`, { method: "POST" });
 			router.refresh();
 		} catch (err) {
-			toast.error(err instanceof Error ? err.message : "Action impossible");
+			toast.error(err instanceof Error ? err.message : t("error"));
 		} finally {
 			setSaving(false);
 		}
@@ -82,18 +54,18 @@ export function GettingStarted({ steps }: { steps: ChecklistSteps }) {
 			<header className="flex items-start justify-between gap-3">
 				<div className="grid gap-0.5">
 					<h2 id="getting-started" className="font-semibold">
-						Bien démarrer avec Cabinova
+						{t("title")}
 					</h2>
 					<p className="text-muted-foreground text-sm">
-						{done} sur {STEPS.length} étapes terminées
+						{t("progress", { done, total: STEPS.length })}
 					</p>
 				</div>
 				<Button
 					size="icon"
 					variant="ghost"
 					className="size-8 shrink-0"
-					aria-label="Masquer cette liste"
-					title="Masquer cette liste"
+					aria-label={t("hide")}
+					title={t("hide")}
 					disabled={saving}
 					onClick={() => post("dismiss")}
 				>
@@ -103,7 +75,7 @@ export function GettingStarted({ steps }: { steps: ChecklistSteps }) {
 
 			<div
 				role="progressbar"
-				aria-label="Progression"
+				aria-label={t("progressLabel")}
 				aria-valuemin={0}
 				aria-valuemax={STEPS.length}
 				aria-valuenow={done}
@@ -126,22 +98,22 @@ export function GettingStarted({ steps }: { steps: ChecklistSteps }) {
 								)}
 							>
 								{isDone && <LuCheck className="size-3" />}
-								<span className="sr-only">{isDone ? "Terminé" : "À faire"}</span>
+								<span className="sr-only">{isDone ? t("done") : t("todo")}</span>
 							</span>
 							<div className="min-w-0 flex-1 basis-52">
-								<p className={cn("text-sm font-medium", isDone && "text-muted-foreground line-through")}>{step.title}</p>
-								{!isDone && <p className="text-muted-foreground text-xs">{step.hint}</p>}
+								<p className={cn("text-sm font-medium", isDone && "text-muted-foreground line-through")}>{t(`${step.key}.title`)}</p>
+								{!isDone && <p className="text-muted-foreground text-xs">{t(`${step.key}.hint`)}</p>}
 							</div>
 							{!isDone && (
 								<div className="flex items-center gap-1">
 									{step.key === "hours" && (
 										<Button size="sm" variant="ghost" disabled={saving} onClick={() => post("hours")}>
-											C’est bon
+											{t("ok")}
 										</Button>
 									)}
 									<Button asChild size="sm" variant={isNext ? "default" : "outline"}>
 										<Link href={step.href}>
-											{step.action} {isNext && <LuArrowRight className="rtl:rotate-180" />}
+											{t(`${step.key}.action`)} {isNext && <LuArrowRight className="rtl:rotate-180" />}
 										</Link>
 									</Button>
 								</div>

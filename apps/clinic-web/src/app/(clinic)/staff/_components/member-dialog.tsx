@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { LuLoader, LuLock } from "react-icons/lu";
 import { toast } from "sonner";
@@ -68,6 +69,8 @@ function MemberForm({
 	onInvited: (member: Member, link: MemberLink) => void;
 }) {
 	const router = useRouter();
+	const t = useTranslations("team.form");
+	const common = useTranslations("common");
 	const editing = member !== null;
 	const singleSpace = team.spaces.length === 1;
 	/** A role is closed when the offer is full, unless the member already has it. */
@@ -77,7 +80,7 @@ function MemberForm({
 	const [role, setRole] = useState<StaffRole | null>(
 		member && member.role !== "owner"
 			? member.role
-			: (ROLES.find((r) => !roleClosed(r.value))?.value ?? null),
+			: (ROLES.find((r) => !roleClosed(r)) ?? null),
 	);
 	const [spaceIds, setSpaceIds] = useState<string[]>(
 		member ? member.spaceIds : singleSpace ? [team.spaces[0].id] : [],
@@ -97,10 +100,10 @@ function MemberForm({
 	const save = async (e: React.FormEvent) => {
 		e.preventDefault();
 		const next: Errors = {};
-		if (name.trim().length < 2) next.name = "2 caractères minimum.";
-		if (!editing && !/^\S+@\S+\.\S+$/.test(email.trim())) next.email = "Adresse e-mail invalide.";
-		if (spaceIds.length === 0) next.spaces = "Choisissez au moins un espace.";
-		if (!role) next.form = "Votre offre ne permet plus d’ajouter de membre.";
+		if (name.trim().length < 2) next.name = t("nameError");
+		if (!editing && !/^\S+@\S+\.\S+$/.test(email.trim())) next.email = t("emailError");
+		if (spaceIds.length === 0) next.spaces = t("spacesError");
+		if (!role) next.form = t("noRoom");
 		setErrors(next);
 		if (Object.keys(next).length > 0 || !role) return;
 
@@ -109,7 +112,7 @@ function MemberForm({
 			const body = { name, role, spaceIds };
 			if (editing) {
 				await api(`/team/${member.id}`, { method: "PUT", body: JSON.stringify(body) });
-				toast.success("Modifications enregistrées");
+				toast.success(t("saved"));
 			} else {
 				const res = await api<{ member: Member; link: MemberLink }>("/team", {
 					method: "POST",
@@ -121,7 +124,7 @@ function MemberForm({
 			router.refresh();
 		} catch (err) {
 			if (err instanceof ApiError && err.code === "EMAIL_TAKEN") setErrors({ email: err.message });
-			else setErrors({ form: err instanceof Error ? err.message : "Enregistrement impossible" });
+			else setErrors({ form: err instanceof Error ? err.message : t("saveError") });
 		} finally {
 			setSaving(false);
 		}
@@ -130,23 +133,21 @@ function MemberForm({
 	return (
 		<form onSubmit={save} noValidate className="grid gap-4">
 			<DialogHeader>
-				<DialogTitle>{editing ? `Modifier ${member.name}` : "Inviter un membre"}</DialogTitle>
+				<DialogTitle>{editing ? t("editTitle", { name: member.name }) : t("inviteTitle")}</DialogTitle>
 				<DialogDescription>
-					{editing
-						? "Son rôle décide de ce qu’il ou elle voit ; ses espaces, où il ou elle travaille."
-						: "Un e-mail lui permettra de choisir son mot de passe. Vous aurez aussi le lien à copier."}
+					{editing ? t("editHint") : t("inviteHint")}
 				</DialogDescription>
 			</DialogHeader>
 
 			<FieldGroup className="gap-4">
 				<div className="grid gap-4 sm:grid-cols-2">
 					<Field data-invalid={!!errors.name}>
-						<FieldLabel htmlFor="member-name">Nom complet</FieldLabel>
+						<FieldLabel htmlFor="member-name">{t("name")}</FieldLabel>
 						<Input
 							id="member-name"
 							autoFocus
 							maxLength={120}
-							placeholder="Ex. Dr Karim Benali"
+							placeholder={t("namePlaceholder")}
 							value={name}
 							aria-invalid={!!errors.name}
 							onChange={(e) => {
@@ -157,7 +158,7 @@ function MemberForm({
 						<FieldError>{errors.name}</FieldError>
 					</Field>
 					<Field data-invalid={!!errors.email}>
-						<FieldLabel htmlFor="member-email">E-mail</FieldLabel>
+						<FieldLabel htmlFor="member-email">{t("email")}</FieldLabel>
 						{editing ? (
 							<div className="relative">
 								<Input id="member-email" value={member.email} readOnly disabled className="pe-8" />
@@ -169,7 +170,7 @@ function MemberForm({
 								type="email"
 								autoComplete="off"
 								maxLength={200}
-								placeholder="nom@exemple.ma"
+								placeholder={t("emailPlaceholder")}
 								value={email}
 								aria-invalid={!!errors.email}
 								onChange={(e) => {
@@ -183,21 +184,21 @@ function MemberForm({
 				</div>
 
 				<FieldSet>
-					<FieldLegend variant="label">Rôle</FieldLegend>
-					<div role="radiogroup" aria-label="Rôle" className="grid gap-2 sm:grid-cols-2">
+					<FieldLegend variant="label">{t("role")}</FieldLegend>
+					<div role="radiogroup" aria-label={t("role")} className="grid gap-2 sm:grid-cols-2">
 						{ROLES.map((r) => {
-							const quota = quotaOf(team, r.value);
-							const disabled = roleClosed(r.value) || (lockedDoctor && r.value !== "doctor");
-							const selected = role === r.value;
+							const quota = quotaOf(team, r);
+							const disabled = roleClosed(r) || (lockedDoctor && r !== "doctor");
+							const selected = role === r;
 							return (
 								<button
-									key={r.value}
+									key={r}
 									type="button"
 									role="radio"
 									aria-checked={selected}
 									disabled={disabled}
 									onClick={() => {
-										setRole(r.value);
+										setRole(r);
 										clear("form");
 									}}
 									className={cn(
@@ -206,7 +207,7 @@ function MemberForm({
 									)}
 								>
 									<span className="flex items-center justify-between gap-2 text-sm font-medium">
-										{r.label}
+										{common(`roles.${r}`)}
 										{quota.max !== null && (
 											<span className="text-muted-foreground text-xs font-normal tabular-nums">
 												{quota.used}/{quota.max}
@@ -214,11 +215,11 @@ function MemberForm({
 										)}
 									</span>
 									<span className="text-muted-foreground text-xs leading-snug">
-										{roleClosed(r.value)
+										{roleClosed(r)
 											? quota.max === 0
-												? "Non compris dans votre offre."
-												: "Votre offre est complète pour ce rôle."
-											: r.description}
+												? t("notIncluded")
+												: t("roleFull")
+											: t(`${r}Hint`)}
 									</span>
 								</button>
 							);
@@ -226,16 +227,16 @@ function MemberForm({
 					</div>
 					{lockedDoctor && (
 						<FieldDescription>
-							Ses rendez-vous à venir doivent être déplacés ou annulés avant de changer son rôle.
+							{t("lockedDoctor")}
 						</FieldDescription>
 					)}
 				</FieldSet>
 
 				{!singleSpace && (
 					<FieldSet data-invalid={!!errors.spaces}>
-						<FieldLegend variant="label">Espaces</FieldLegend>
+						<FieldLegend variant="label">{t("spaces")}</FieldLegend>
 						<FieldDescription className="-mt-1">
-							Il ou elle ne voit que les patients et l’agenda de ces espaces.
+							{t("spacesHint")}
 						</FieldDescription>
 						<div className="grid gap-2 sm:grid-cols-2">
 							{team.spaces.map((s) => (
@@ -264,10 +265,10 @@ function MemberForm({
 
 			<DialogFooter>
 				<Button type="button" variant="outline" onClick={onDone}>
-					Annuler
+					{t("cancel")}
 				</Button>
 				<Button type="submit" disabled={saving}>
-					{saving && <LuLoader className="animate-spin" />} {editing ? "Enregistrer" : "Envoyer l’invitation"}
+					{saving && <LuLoader className="animate-spin" />} {editing ? t("save") : t("send")}
 				</Button>
 			</DialogFooter>
 		</form>

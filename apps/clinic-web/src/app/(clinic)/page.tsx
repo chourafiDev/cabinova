@@ -1,8 +1,9 @@
-import type { Metadata } from "next";
 import Link from "next/link";
 import { LuBanknote, LuCalendarCheck, LuStethoscope, LuUserPlus } from "react-icons/lu";
+import { pageTitle } from "@/i18n/titles";
 import type { DashboardData } from "@/lib/dashboard";
-import { mad } from "@/lib/payments";
+import { getFormat } from "@/lib/get-format";
+import { getTranslations } from "next-intl/server";
 import { apiGet } from "@/lib/server-api";
 import { getClinicState } from "@/lib/session";
 import { spaceLabel } from "@/lib/spaces";
@@ -16,7 +17,7 @@ import { WeekActivityChart } from "./_components/dashboard/week-activity-chart";
 import { WelcomeBanner } from "./_components/dashboard/welcome-banner";
 import { KpiCard } from "./_components/kpi-card";
 
-export const metadata: Metadata = { title: "Tableau de bord" };
+export const generateMetadata = () => pageTitle("dashboard");
 
 /**
  * The day at a glance, from the agenda and the patients of the current
@@ -35,6 +36,8 @@ export default async function DashboardPage({ searchParams }: PageProps<"/">) {
 	]);
 	const { kpis } = data;
 	const current = session.spaces?.current;
+	const t = await getTranslations("dashboard");
+	const format = await getFormat();
 
 	return (
 		<>
@@ -43,10 +46,10 @@ export default async function DashboardPage({ searchParams }: PageProps<"/">) {
 			{checklist?.steps && <GettingStarted steps={checklist.steps} />}
 
 			{isOwner && manySpaces && current && (
-				<nav className="bg-muted mb-3 flex w-fit rounded-lg p-0.5 text-sm" aria-label="Périmètre">
+				<nav className="bg-muted mb-3 flex w-fit rounded-lg p-0.5 text-sm" aria-label={t("scope")}>
 					{[
 						{ href: "/", label: spaceLabel(current), active: !all },
-						{ href: "/?espaces=tous", label: "Tous les espaces", active: all },
+						{ href: "/?espaces=tous", label: t("allSpaces"), active: all },
 					].map((tab) => (
 						<Link
 							key={tab.href}
@@ -66,48 +69,48 @@ export default async function DashboardPage({ searchParams }: PageProps<"/">) {
 			<section data-tour="kpis" className="mb-3 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
 				<KpiCard
 					icon={LuCalendarCheck}
-					title="Rendez-vous"
+					title={t("kpi.appointments")}
 					value={kpis.appointmentsToday}
-					period={`${kpis.upcomingToday} à venir`}
-					hint="Rendez-vous prévus aujourd’hui, hors annulations."
-					actions={[{ label: "Ouvrir l’agenda", href: "/appointments?view=day" }]}
+					period={t("kpi.upcoming", { count: kpis.upcomingToday })}
+					hint={t("kpi.appointmentsHint")}
+					actions={[{ label: t("kpi.openAgenda"), href: "/appointments?view=day" }]}
 				/>
 				<KpiCard
 					icon={LuStethoscope}
-					title="Patients vus"
+					title={t("kpi.seen")}
 					value={kpis.seenToday}
 					change={kpis.seenChange}
-					period="vs même jour, semaine dernière"
-					hint="Rendez-vous terminés aujourd’hui."
-					actions={[{ label: "Ouvrir l’agenda", href: "/appointments?view=day" }]}
+					period={t("kpi.sameDay")}
+					hint={t("kpi.seenHint")}
+					actions={[{ label: t("kpi.openAgenda"), href: "/appointments?view=day" }]}
 				/>
 				<KpiCard
 					icon={LuUserPlus}
-					title="Nouveaux patients"
+					title={t("kpi.newPatients")}
 					value={kpis.newPatientsMonth}
 					change={kpis.newPatientsChange}
-					period="Ce mois-ci"
-					hint="Dossiers créés ce mois-ci, comparés au mois dernier."
-					actions={[{ label: "Voir les patients", href: "/patients" }]}
+					period={t("kpi.thisMonth")}
+					hint={t("kpi.newPatientsHint")}
+					actions={[{ label: t("kpi.seePatients"), href: "/patients" }]}
 				/>
 				{data.cashier.received !== null ? (
 					<KpiCard
 						icon={LuBanknote}
-						title="Encaissé aujourd’hui"
-						value={mad(data.cashier.received)}
+						title={t("kpi.received")}
+						value={format.mad(data.cashier.received)}
 						change={data.cashier.receivedChange}
-						period="vs même jour, semaine dernière"
-						hint="Paiements reçus aujourd’hui moins les remboursements."
-						actions={[{ label: "Ouvrir les encaissements", href: "/payments" }]}
+						period={t("kpi.sameDay")}
+						hint={t("kpi.receivedHint")}
+						actions={[{ label: t("kpi.openPayments"), href: "/payments" }]}
 					/>
 				) : (
 					<KpiCard
 						icon={LuBanknote}
-						title="À encaisser"
+						title={t("kpi.toCollect")}
 						value={data.cashier.toCollect}
-						period={data.cashier.toCollect > 1 ? "visites terminées aujourd’hui" : "visite terminée aujourd’hui"}
-						hint="Visites terminées aujourd’hui qui ne sont pas encore entièrement réglées."
-						actions={[{ label: "Ouvrir la caisse du jour", href: "/payments" }]}
+						period={t("kpi.toCollectPeriod", { count: data.cashier.toCollect })}
+						hint={t("kpi.toCollectHint")}
+						actions={[{ label: t("kpi.openCashier"), href: "/payments" }]}
 					/>
 				)}
 			</section>

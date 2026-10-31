@@ -1,6 +1,8 @@
+import { useTranslations } from "next-intl";
 import { LuArmchair, LuStethoscope } from "react-icons/lu";
-import { type DashboardData, clock } from "@/lib/dashboard";
+import type { DashboardData } from "@/lib/dashboard";
 import { fullName } from "@/lib/patients";
+import { useFormat } from "@/lib/use-format";
 import { ChartCard } from "./chart-card";
 
 /** Who is with the doctor now, and who is waiting (in arrival order). */
@@ -9,34 +11,36 @@ export function WaitingRoom({ appointments }: { appointments: NonNullable<Dashbo
 	const waiting = appointments
 		.filter((a) => a.status === "arrived")
 		.sort((a, b) => (a.arrivedAt ?? "").localeCompare(b.arrivedAt ?? ""));
+	const t = useTranslations("dashboard.waitingRoom");
+	const format = useFormat();
 
 	return (
-		<ChartCard eyebrow="En direct" title="Salle d’attente">
+		<ChartCard eyebrow={t("eyebrow")} title={t("title")}>
 			<div className="grid gap-3">
 				<div className="rounded-lg bg-accent/60 p-3">
 					<p className="mb-1 flex items-center gap-1.5 text-xs text-primary">
-						<LuStethoscope className="size-3.5" /> En consultation
+						<LuStethoscope className="size-3.5" /> {t("current")}
 					</p>
 					{current.length > 0 ? (
 						current.map((a) => (
 							<div key={a.id}>
 								<p className="text-sm font-semibold">{fullName(a.patient)}</p>
 								<p className="text-xs text-muted-foreground">
-									RDV {clock(a.startsAt)} · {a.practitioner.name}
+									{t("appointmentAt", { time: format.clock(a.startsAt) })} · {a.practitioner.name}
 								</p>
 							</div>
 						))
 					) : (
-						<p className="text-sm text-muted-foreground">Personne pour le moment.</p>
+						<p className="text-sm text-muted-foreground">{t("nobody")}</p>
 					)}
 				</div>
 
 				<div>
 					<p className="mb-2 flex items-center gap-1.5 text-xs text-muted-foreground">
-						<LuArmchair className="size-3.5" /> {waiting.length} patient(s) en attente
+						<LuArmchair className="size-3.5" /> {t("waiting", { count: waiting.length })}
 					</p>
 					{waiting.length === 0 ? (
-						<p className="text-sm text-muted-foreground">La salle d’attente est vide.</p>
+						<p className="text-sm text-muted-foreground">{t("empty")}</p>
 					) : (
 						<ol className="grid gap-2">
 							{waiting.map((a, i) => (
@@ -47,7 +51,8 @@ export function WaitingRoom({ appointments }: { appointments: NonNullable<Dashbo
 									<div className="min-w-0 flex-1">
 										<p className="truncate text-sm font-medium">{fullName(a.patient)}</p>
 										<p className="truncate text-xs text-muted-foreground">
-											Arrivé(e) à {a.arrivedAt ? clock(a.arrivedAt) : "—"} · RDV {clock(a.startsAt)}
+											{t("arrivedAt", { time: a.arrivedAt ? format.clock(a.arrivedAt) : "—" })} ·{" "}
+											{t("appointmentAt", { time: format.clock(a.startsAt) })}
 										</p>
 									</div>
 								</li>

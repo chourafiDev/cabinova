@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { fmt } from "@/calendar/locale";
 
 import { parseISO } from "date-fns";
@@ -50,6 +51,7 @@ interface IProps {
 }
 
 export function AgendaEventCard({ event, eventCurrentDay, eventTotalDays }: IProps) {
+  const t = useTranslations("agenda");
   const { badgeVariant } = useCalendar();
 
   const startDate = parseISO(event.startDate);
@@ -80,10 +82,10 @@ export function AgendaEventCard({ event, eventCurrentDay, eventTotalDays }: IPro
             <p className="font-medium">
               {eventCurrentDay && eventTotalDays && (
                 <span className="me-1 text-xs">
-                  Jour {eventCurrentDay}/{eventTotalDays} •{" "}
+                  {t("multiDay", { day: eventCurrentDay, total: eventTotalDays })} •{" "}
                 </span>
               )}
-              {event.title}
+              <bdi>{event.title}</bdi>
             </p>
           </div>
 

@@ -46,6 +46,10 @@ function SheetOverlay({
   )
 }
 
+/** A side panel opening from the end of the page: the left in Arabic. */
+export const SHEET_AT_END =
+  "rtl:data-[side=right]:right-auto rtl:data-[side=right]:left-2 rtl:data-[side=right]:data-open:slide-in-from-left-10 rtl:data-[side=right]:data-closed:slide-out-to-left-10"
+
 function SheetContent({
   className,
   children,

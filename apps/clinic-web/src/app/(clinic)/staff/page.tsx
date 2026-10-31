@@ -1,11 +1,11 @@
-import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { pageTitle } from "@/i18n/titles";
 import { apiGet } from "@/lib/server-api";
 import { getClinicState } from "@/lib/session";
 import type { Team } from "@/lib/team";
 import { TeamManager } from "./_components/team-manager";
 
-export const metadata: Metadata = { title: "Équipe" };
+export const generateMetadata = () => pageTitle("staff");
 
 /** The responsible doctor's staff: invitations, roles, spaces, access. */
 export default async function StaffPage() {

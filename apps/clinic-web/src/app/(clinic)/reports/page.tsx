@@ -1,15 +1,14 @@
-import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { HiChartBar } from "react-icons/hi2";
+import { pageTitle } from "@/i18n/titles";
 import { COVERAGE_LABELS, type Coverage } from "@/lib/patients";
+import { getFormat } from "@/lib/get-format";
 import {
 	DEFAULT_PRESET,
-	formatRate,
-	periodLabel,
 	PRESETS,
 	type PresetKey,
 	type Report,
-	WEEKDAYS,
 } from "@/lib/reports";
 import { apiGet } from "@/lib/server-api";
 import { getClinicState } from "@/lib/session";
@@ -24,17 +23,15 @@ import { ReportsTabs } from "./_components/reports-tabs";
 import { RevenueChart, RevenueTable } from "./_components/revenue-chart";
 import { SeriesChart, SeriesTable } from "./_components/series-chart";
 import { StatCard } from "./_components/stat-card";
-import { mad, METHOD_LABELS } from "@/lib/payments";
 import { cn } from "@/lib/utils";
 
-export const metadata: Metadata = { title: "Statistiques" };
+export const generateMetadata = () => pageTitle("reports");
 
 const DAY = /^\d{4}-\d{2}-\d{2}$/;
 const today = () => new Intl.DateTimeFormat("en-CA", { timeZone: "Africa/Casablanca" }).format(new Date());
 const addDays = (day: string, n: number) =>
 	new Date(Date.parse(`${day}T00:00:00Z`) + n * 86_400_000).toISOString().slice(0, 10);
 const span = (from: string, to: string) => (Date.parse(to) - Date.parse(from)) / 86_400_000 + 1;
-const plural = (n: number, one: string, many: string) => `${n} ${n > 1 ? many : one}`;
 /** Rate change in points, e.g. 8 % → 5 % = -3 pts. */
 const points = (now: number | null, before: number | null) =>
 	now === null || before === null ? null : Math.round(now - before);
@@ -71,9 +68,16 @@ export default async function ReportsPage({ searchParams }: PageProps<"/reports"
 	const { activity, patients, period } = report;
 	const t = activity.totals;
 	const { revenue, affluence } = report;
+	const m = await getTranslations("reports");
+	const common = await getTranslations("common");
+	const methods = await getTranslations("payments.methods");
+	const format = await getFormat();
+	const { mad, rate: formatRate } = format;
+	const weekdays = format.weekdays("short");
+	const days = (count: number) => m("overview.days", { count });
 	const seenTotal = patients.sex.male + patients.sex.female;
 	const empty = t.appointments + t.cancelled === 0;
-	const bucketName = { day: "Jour", week: "Semaine", month: "Mois" }[period.bucket];
+	const bucketName = m(`buckets.${period.bucket}`);
 	const space = report.filters.space && report.filters.spaces.find((s) => s.id === report.filters.space);
 	const series = activity.series;
 	const busiest = affluence.heatmap.reduce<(typeof affluence.heatmap)[number] | null>(
@@ -86,12 +90,12 @@ export default async function ReportsPage({ searchParams }: PageProps<"/reports"
 	const tabs = [
 		{
 			key: "overview",
-			label: "Vue d’ensemble",
+			label: m("tabs.overview"),
 			content: (
 				<div className="grid items-stretch gap-4 lg:grid-cols-3">
 					<ChartPanel
-						title="Activité"
-						description={plural(t.appointments, "rendez-vous", "rendez-vous")}
+						title={m("overview.activity")}
+						description={m("overview.appointments", { count: t.appointments })}
 						className="lg:col-span-2"
 						chart={
 							<SeriesChart
@@ -110,17 +114,17 @@ export default async function ReportsPage({ searchParams }: PageProps<"/reports"
 							/>
 						}
 					/>
-					<Panel title="Points clés">
+					<Panel title={m("overview.keyPoints")}>
 						<dl className="divide-y text-sm">
 							{(
 								[
-									["Taux d’annulation", formatRate(t.cancellationRate)],
-									busiest && ["Heure de pointe", `${WEEKDAYS[busiest.weekday - 1]}. ${busiest.hour} h`],
+									[m("overview.cancellationRate"), formatRate(t.cancellationRate)],
+									busiest && [m("overview.peakHour"), m("overview.peakValue", { day: weekdays[busiest.weekday - 1], hour: busiest.hour })],
 									median !== null && [
-										"Délai de réservation",
-										median === 0 ? "Le jour même" : plural(median, "jour", "jours"),
+										m("overview.leadTime"),
+										median === 0 ? m("overview.sameDay") : days(median),
 									],
-									revenue && ["Reste dû", mad(revenue.outstanding.amount)],
+									revenue && [m("overview.outstanding"), mad(revenue.outstanding.amount)],
 								].filter(Boolean) as [string, string][]
 							).map(([label, value]) => (
 								<div key={label} className="flex items-baseline justify-between gap-3 py-3 first:pt-0 last:pb-0">
@@ -137,15 +141,15 @@ export default async function ReportsPage({ searchParams }: PageProps<"/reports"
 			? [
 					{
 						key: "revenue",
-						label: "Encaissements",
+						label: m("tabs.revenue"),
 						content: (
 							<>
 								<ChartPanel
-									title="Encaissé"
+									title={m("revenue.received")}
 									description={
 										[
-											revenue.totals.refunded > 0 && `${mad(revenue.totals.refunded)} remboursés`,
-											revenue.outstanding.amount > 0 && `${mad(revenue.outstanding.amount)} restent dus`,
+											revenue.totals.refunded > 0 && m("revenue.refunded", { amount: mad(revenue.totals.refunded) }),
+											revenue.outstanding.amount > 0 && m("revenue.outstanding", { amount: mad(revenue.outstanding.amount) }),
 										]
 											.filter(Boolean)
 											.join(" · ") || undefined
@@ -154,16 +158,16 @@ export default async function ReportsPage({ searchParams }: PageProps<"/reports"
 									table={<RevenueTable series={revenue.series} bucket={period.bucket} />}
 								/>
 								<div className={cn("grid items-start gap-4", revenue.byAct.length > 0 && "lg:grid-cols-2")}>
-									<Panel title="Par mode de paiement">
+									<Panel title={m("revenue.byMethod")}>
 										<Bars
-											rows={revenue.byMethod.map((m) => ({ key: m.method, label: METHOD_LABELS[m.method], value: m.net }))}
+											rows={revenue.byMethod.map((x) => ({ key: x.method, label: methods(x.method), value: x.net }))}
 											format={mad}
 											total={revenue.totals.net}
-											empty="Aucun paiement sur la période."
+											empty={m("revenue.noPayments")}
 										/>
 									</Panel>
 									{revenue.byAct.length > 0 && (
-										<Panel title="Par acte">
+										<Panel title={m("revenue.byAct")}>
 											<Bars
 												rows={revenue.byAct.map((a) => ({ key: a.label, label: a.label, detail: `× ${a.count}`, value: a.amount }))}
 												format={mad}
@@ -178,11 +182,11 @@ export default async function ReportsPage({ searchParams }: PageProps<"/reports"
 			: []),
 		{
 			key: "patients",
-			label: "Patients",
+			label: m("tabs.patients"),
 			content: (
 				<>
 					<ChartPanel
-						title="Patients vus"
+						title={m("patients.seen")}
 						chart={
 							<SeriesChart
 								series={series}
@@ -201,28 +205,28 @@ export default async function ReportsPage({ searchParams }: PageProps<"/reports"
 						}
 					/>
 					<div className="grid items-start gap-4 lg:grid-cols-3">
-						<Panel title="Sexe">
+						<Panel title={m("patients.sex")}>
 							<Bars
 								rows={[
-									{ key: "female", label: "Femmes", value: patients.sex.female },
-									{ key: "male", label: "Hommes", value: patients.sex.male },
+									{ key: "female", label: m("patients.women"), value: patients.sex.female },
+									{ key: "male", label: m("patients.men"), value: patients.sex.male },
 								]}
 								total={seenTotal}
 							/>
 						</Panel>
-						<Panel title="Âge">
+						<Panel title={m("patients.age")}>
 							<Bars
 								rows={patients.age
 									.filter((g) => g.key !== "unknown" || g.count > 0)
-									.map((g) => ({ key: g.key, label: g.label, value: g.count }))}
+									.map((g) => ({ key: g.key, label: m.has(`ages.${g.key}`) ? m(`ages.${g.key}`) : g.label, value: g.count }))}
 								total={seenTotal}
 							/>
 						</Panel>
-						<Panel title="Couverture">
+						<Panel title={m("patients.coverage")}>
 							<Bars
 								rows={patients.coverage.map((c) => ({
 									key: c.key,
-									label: COVERAGE_LABELS[c.key as Coverage] ?? c.key,
+									label: c.key in COVERAGE_LABELS ? common(`coverage.${c.key as Coverage}`) : c.key,
 									value: c.count,
 								}))}
 								total={seenTotal}
@@ -234,23 +238,23 @@ export default async function ReportsPage({ searchParams }: PageProps<"/reports"
 		},
 		{
 			key: "affluence",
-			label: "Affluence",
+			label: m("tabs.affluence"),
 			content: (
 				<div className="grid items-start gap-4 xl:grid-cols-3">
-					<Panel title="Par jour et par heure" description="Rendez-vous sur la période" className="xl:col-span-2">
+					<Panel title={m("affluence.byDayHour")} description={m("affluence.onPeriod")} className="xl:col-span-2">
 						<AffluenceHeatmap cells={affluence.heatmap} />
 					</Panel>
 					<Panel
-						title="Délai de réservation"
+						title={m("affluence.leadTime")}
 						description={
 							median !== null &&
 							(median === 0
-								? "La moitié des rendez-vous sont pris le jour même"
-								: `La moitié des rendez-vous sont pris ${plural(median, "jour", "jours")} à l’avance ou moins`)
+								? m("affluence.sameDayHint")
+								: m("affluence.daysHint", { days: days(median) }))
 						}
 					>
 						<Bars
-							rows={affluence.leadTimes.buckets.map((b) => ({ key: b.key, label: b.label, value: b.count }))}
+							rows={affluence.leadTimes.buckets.map((b) => ({ key: b.key, label: m.has(`leadTimes.${b.key}`) ? m(`leadTimes.${b.key}`) : b.label, value: b.count }))}
 							total={leadTotal}
 						/>
 					</Panel>
@@ -261,23 +265,23 @@ export default async function ReportsPage({ searchParams }: PageProps<"/reports"
 			? [
 					{
 						key: "team",
-						label: report.byPractitioner && report.bySpace ? "Médecins et espaces" : report.byPractitioner ? "Médecins" : "Espaces",
+						label: m(report.byPractitioner && report.bySpace ? "tabs.doctorsSpaces" : report.byPractitioner ? "tabs.doctors" : "tabs.spaces"),
 						content: (
 							<div className={cn("grid items-start gap-4", (report.bySpace || revenue) && "lg:grid-cols-2")}>
 								{report.byPractitioner && (
-									<Panel title="Consultations par médecin">
+									<Panel title={m("team.consultationsByDoctor")}>
 										<Bars
 											rows={report.byPractitioner.map((p) => ({
 												key: p.id,
 												label: p.name,
-												detail: `${plural(p.patients, "patient", "patients")} · ${formatRate(p.noShowRate)} d’absences`,
+												detail: `${m("team.patients", { count: p.patients })} · ${m("team.absences", { rate: formatRate(p.noShowRate) })}`,
 												value: p.completed,
 											}))}
 										/>
 									</Panel>
 								)}
 								{revenue && revenue.byPractitioner.length > 1 && (
-									<Panel title="Encaissé par médecin">
+									<Panel title={m("team.receivedByDoctor")}>
 										<Bars
 											rows={revenue.byPractitioner.map((p) => ({ key: p.id, label: p.name, value: p.net }))}
 											format={mad}
@@ -286,12 +290,12 @@ export default async function ReportsPage({ searchParams }: PageProps<"/reports"
 									</Panel>
 								)}
 								{report.bySpace && (
-									<Panel title="Consultations par espace">
+									<Panel title={m("team.consultationsBySpace")}>
 										<Bars
 											rows={report.bySpace.map((s) => ({
 												key: s.id,
 												label: spaceLabel(s),
-												detail: `${plural(s.newPatients, "nouveau patient", "nouveaux patients")} · ${formatRate(s.noShowRate)} d’absences`,
+												detail: `${m("team.newPatients", { count: s.newPatients })} · ${m("team.absences", { rate: formatRate(s.noShowRate) })}`,
 												value: s.completed,
 											}))}
 										/>
@@ -307,9 +311,9 @@ export default async function ReportsPage({ searchParams }: PageProps<"/reports"
 	return (
 		<div className="grid min-w-0 grid-cols-1 gap-5">
 			<header>
-				<h1 className="text-2xl font-semibold tracking-tight">Statistiques</h1>
+				<h1 className="text-2xl font-semibold tracking-tight">{m("title")}</h1>
 				<p className="text-muted-foreground text-sm">
-					{periodLabel(period.from, period.to)} · comparé aux {period.days} jours précédents
+					{format.period(period.from, period.to)} · {m("comparedTo", { days: period.days })}
 					{space && ` · ${spaceLabel(space)}`}
 				</p>
 			</header>
@@ -318,41 +322,41 @@ export default async function ReportsPage({ searchParams }: PageProps<"/reports"
 				<div className="flex flex-wrap gap-3">
 					{revenue && (
 						<StatCard
-							label="Encaissé"
+							label={m("cards.received")}
 							value={mad(revenue.totals.net)}
 							change={revenue.change}
-							hint="Paiements reçus sur la période, remboursements déduits."
+							hint={m("cards.receivedHint")}
 							trend={revenue.series.map((d) => d.net)}
 						/>
 					)}
 					<StatCard
-						label="Consultations"
+						label={m("cards.consultations")}
 						value={t.completed}
 						change={activity.change.completed}
-						hint="Rendez-vous marqués « vu » sur la période."
+						hint={m("cards.consultationsHint")}
 						trend={series.map((d) => d.completed)}
 					/>
 					<StatCard
-						label="Patients vus"
+						label={m("cards.seen")}
 						value={t.patients}
 						change={activity.change.patients}
-						hint="Patients différents vus au moins une fois sur la période."
+						hint={m("cards.seenHint")}
 						trend={series.map((d) => d.newPatients + d.returningPatients)}
 					/>
 					<StatCard
-						label="Nouveaux patients"
+						label={m("cards.newPatients")}
 						value={t.newPatients}
 						change={activity.change.newPatients}
-						hint="Patients dont la toute première consultation au cabinet a eu lieu sur la période."
+						hint={m("cards.newPatientsHint")}
 						trend={series.map((d) => d.newPatients)}
 					/>
 					<StatCard
-						label="Taux d’absence"
+						label={m("cards.noShowRate")}
 						value={formatRate(t.noShowRate)}
 						change={points(t.noShowRate, activity.previous.noShowRate)}
 						unit="pts"
 						invert
-						hint="Patients absents parmi les rendez-vous passés (vus + absents)."
+						hint={m("cards.noShowHint")}
 						trend={series.map((d) => (d.completed + d.noShow ? (d.noShow / (d.completed + d.noShow)) * 100 : 0))}
 					/>
 				</div>
@@ -360,9 +364,9 @@ export default async function ReportsPage({ searchParams }: PageProps<"/reports"
 				{empty ? (
 					<div className="bg-card flex flex-col items-center gap-2 rounded-xl border border-dashed px-6 py-16 text-center">
 						<HiChartBar className="text-muted-foreground size-6" />
-						<p className="font-medium">Aucun rendez-vous sur cette période</p>
+						<p className="font-medium">{m("empty.title")}</p>
 						<p className="text-muted-foreground max-w-sm text-sm">
-							Les statistiques se remplissent avec l’agenda : choisissez une autre période ou un autre espace.
+							{m("empty.hint")}
 						</p>
 					</div>
 				) : (

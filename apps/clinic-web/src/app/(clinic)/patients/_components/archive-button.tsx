@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { LuLoader } from "react-icons/lu";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -31,16 +32,17 @@ export function ArchiveDialog({
 	onDone: () => void;
 }) {
 	const [pending, setPending] = useState(false);
+	const t = useTranslations("patients.archive");
 
 	const run = async () => {
 		setPending(true);
 		try {
 			await api(`/patients/${patientId}/${archived ? "restore" : "archive"}`, { method: "POST" });
-			toast.success(archived ? "Dossier restauré" : "Dossier archivé");
+			toast.success(archived ? t("restored") : t("archived"));
 			onOpenChange(false);
 			onDone();
 		} catch (err) {
-			toast.error(err instanceof Error ? err.message : "Action impossible");
+			toast.error(err instanceof Error ? err.message : t("error"));
 		} finally {
 			setPending(false);
 		}
@@ -50,19 +52,17 @@ export function ArchiveDialog({
 		<Dialog open={open} onOpenChange={onOpenChange}>
 			<DialogContent className="sm:max-w-md">
 				<DialogHeader>
-					<DialogTitle>{archived ? `Restaurer le dossier de ${name} ?` : `Archiver le dossier de ${name} ?`}</DialogTitle>
+					<DialogTitle>{archived ? t("restoreTitle", { name }) : t("archiveTitle", { name })}</DialogTitle>
 					<DialogDescription>
-						{archived
-							? "Le dossier revient dans la liste des patients actifs et peut de nouveau être modifié."
-							: "Le dossier quitte la liste des patients actifs mais reste consultable dans « Archivés ». Il n’est jamais supprimé et peut être restauré à tout moment."}
+						{archived ? t("restoreHint") : t("archiveHint")}
 					</DialogDescription>
 				</DialogHeader>
 				<DialogFooter>
 					<Button variant="outline" onClick={() => onOpenChange(false)}>
-						Annuler
+						{t("cancel")}
 					</Button>
 					<Button onClick={run} disabled={pending}>
-						{pending && <LuLoader className="animate-spin" />} {archived ? "Restaurer" : "Archiver"}
+						{pending && <LuLoader className="animate-spin" />} {archived ? t("restore") : t("archive")}
 					</Button>
 				</DialogFooter>
 			</DialogContent>

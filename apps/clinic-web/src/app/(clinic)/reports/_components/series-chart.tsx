@@ -1,5 +1,6 @@
 "use client";
 
+import { useLocale, useTranslations } from "next-intl";
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
 import {
 	type ChartConfig,
@@ -7,7 +8,9 @@ import {
 	ChartTooltip,
 	ChartTooltipContent,
 } from "@/components/ui/chart";
-import { type Bucket, bucketLabel, bucketTitle, SERIES, type SeriesPoint } from "@/lib/reports";
+import { directionOf } from "@/i18n/config";
+import { type Bucket, SERIES, type SeriesPoint } from "@/lib/reports";
+import { useFormat } from "@/lib/use-format";
 
 type Key = keyof typeof SERIES & keyof SeriesPoint;
 
@@ -37,7 +40,10 @@ export function SeriesChart({
 	keys: Key[];
 	totals: Partial<Record<Key, number>>;
 }) {
-	const config = Object.fromEntries(keys.map((k) => [k, SERIES[k]])) satisfies ChartConfig;
+	const t = useTranslations("reports.series");
+	const format = useFormat();
+	const rtl = directionOf(useLocale()) === "rtl";
+	const config = Object.fromEntries(keys.map((k) => [k, { ...SERIES[k], label: t(k) }])) satisfies ChartConfig;
 	const top = keys.at(-1);
 
 	return (
@@ -47,32 +53,33 @@ export function SeriesChart({
 					<li key={k} className="grid gap-0.5">
 						<span className="text-muted-foreground flex items-center gap-1.5 text-xs">
 							<span className={`size-2 rounded-[2px] ${SWATCHES[k]}`} />
-							{SERIES[k].label}
+							{t(k)}
 						</span>
 						<span className="text-lg font-semibold tabular-nums">{totals[k] ?? 0}</span>
 					</li>
 				))}
 			</ul>
 			<ChartContainer config={config} className="aspect-auto h-64 w-full">
-				<BarChart data={series} barCategoryGap="25%" margin={{ top: 8, right: 0, left: -8, bottom: 0 }}>
+				<BarChart data={series} barCategoryGap="25%" margin={rtl ? { top: 8, right: -8, left: 0, bottom: 0 } : { top: 8, right: 0, left: -8, bottom: 0 }}>
 					<CartesianGrid vertical={false} />
 					<XAxis
 						dataKey="date"
+						reversed={rtl}
 						tickLine={false}
 						axisLine={false}
 						tickMargin={10}
 						minTickGap={16}
-						tickFormatter={(d: string) => bucketLabel(d, bucket)}
+						tickFormatter={(d: string) => format.bucketLabel(d, bucket)}
 						className="text-[10px]"
 					/>
-					<YAxis allowDecimals={false} tickLine={false} axisLine={false} width={40} />
+					<YAxis allowDecimals={false} tickLine={false} axisLine={false} width={40} orientation={rtl ? "right" : "left"} />
 					<ChartTooltip
 						cursor={{ fill: "var(--muted)", radius: 4 }}
 						content={
 							<ChartTooltipContent
 								indicator="line"
 								labelFormatter={(_, payload) => (
-									<span className="first-letter:uppercase">{bucketTitle(payload[0]?.payload.date, bucket)}</span>
+									<span className="first-letter:uppercase">{format.bucketTitle(payload[0]?.payload.date, bucket)}</span>
 								)}
 							/>
 						}
@@ -109,6 +116,8 @@ export function SeriesTable({
 	/** First column, e.g. "Jour". */
 	label: string;
 }) {
+	const t = useTranslations("reports.series");
+	const format = useFormat();
 	return (
 		<table className="w-full tabular-nums">
 			<thead className="bg-card sticky top-0">
@@ -116,7 +125,7 @@ export function SeriesTable({
 					<th className="py-2 text-start font-normal">{label}</th>
 					{keys.map((k) => (
 						<th key={k} className="py-2 text-end font-normal">
-							{SERIES[k].label}
+							{t(k)}
 						</th>
 					))}
 				</tr>
@@ -124,7 +133,7 @@ export function SeriesTable({
 			<tbody className="divide-y">
 				{series.map((d) => (
 					<tr key={d.date}>
-						<td className="py-2 first-letter:uppercase">{bucketTitle(d.date, bucket)}</td>
+						<td className="py-2 first-letter:uppercase">{format.bucketTitle(d.date, bucket)}</td>
 						{keys.map((k) => (
 							<td key={k} className="py-2 text-end">
 								{d[k]}

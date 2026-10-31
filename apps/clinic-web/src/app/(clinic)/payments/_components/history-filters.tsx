@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { HISTORY_PRESETS, type HistoryPreset, METHODS } from "@/lib/payments";
 import { spaceLabel } from "@/lib/spaces";
@@ -23,6 +24,7 @@ export function HistoryFilters({
 	spaces: { id: string; name: string; city: string | null }[];
 }) {
 	const router = useRouter();
+	const t = useTranslations("payments");
 	const go = (changes: Record<string, string | null>) => {
 		const params = new URLSearchParams({ vue: view, periode: preset });
 		if (space) params.set("espace", space);
@@ -36,7 +38,7 @@ export function HistoryFilters({
 
 	return (
 		<div className="flex flex-wrap items-center gap-2">
-			<div className="bg-muted flex rounded-lg p-0.5 text-sm" role="group" aria-label="Période">
+			<div className="bg-muted flex rounded-lg p-0.5 text-sm" role="group" aria-label={t("presets.label")}>
 				{HISTORY_PRESETS.map((p) => (
 					<button
 						key={p.key}
@@ -48,17 +50,17 @@ export function HistoryFilters({
 							preset === p.key ? "bg-background font-medium shadow-sm" : "text-muted-foreground hover:text-foreground",
 						)}
 					>
-						{p.label}
+						{t(`presets.${p.key}`)}
 					</button>
 				))}
 			</div>
 			{spaces.length > 1 && (
 				<Select value={space ?? ALL} onValueChange={(v) => go({ espace: v === ALL ? null : v, page: null })}>
-					<SelectTrigger size="sm" className="w-auto min-w-40" aria-label="Espace">
+					<SelectTrigger size="sm" className="w-auto min-w-40" aria-label={t("filters.space")}>
 						<SelectValue />
 					</SelectTrigger>
 					<SelectContent>
-						<SelectItem value={ALL}>Tous les espaces</SelectItem>
+						<SelectItem value={ALL}>{t("filters.allSpaces")}</SelectItem>
 						{spaces.map((s) => (
 							<SelectItem key={s.id} value={s.id}>
 								{spaceLabel(s)}
@@ -69,14 +71,14 @@ export function HistoryFilters({
 			)}
 			{view === "historique" && (
 				<Select value={method ?? ALL} onValueChange={(v) => go({ mode: v === ALL ? null : v, page: null })}>
-					<SelectTrigger size="sm" className="w-auto min-w-36" aria-label="Mode de paiement">
+					<SelectTrigger size="sm" className="w-auto min-w-36" aria-label={t("methods.label")}>
 						<SelectValue />
 					</SelectTrigger>
 					<SelectContent>
-						<SelectItem value={ALL}>Tous les modes</SelectItem>
+						<SelectItem value={ALL}>{t("methods.all")}</SelectItem>
 						{METHODS.map((m) => (
 							<SelectItem key={m.value} value={m.value}>
-								{m.label}
+								{t(`methods.${m.value}`)}
 							</SelectItem>
 						))}
 					</SelectContent>

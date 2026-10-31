@@ -1,3 +1,4 @@
+import { useTranslations } from "next-intl";
 import { LuCalendarRange, LuColumns2, LuGrid2X2, LuGrid3X3, LuList, LuPlus } from "react-icons/lu";
 
 import { Button } from "@/components/ui/button";
@@ -18,17 +19,18 @@ interface IProps {
   events: IEvent[];
 }
 
-const VIEWS: { view: TCalendarView; label: string; icon: React.ComponentType<{ strokeWidth?: number }> }[] = [
-  { view: "day", label: "Jour", icon: LuList },
-  { view: "week", label: "Semaine", icon: LuColumns2 },
-  { view: "month", label: "Mois", icon: LuGrid2X2 },
-  { view: "year", label: "Année", icon: LuGrid3X3 },
-  { view: "agenda", label: "Liste", icon: LuCalendarRange },
+const VIEWS: { view: TCalendarView; icon: React.ComponentType<{ strokeWidth?: number }> }[] = [
+  { view: "day", icon: LuList },
+  { view: "week", icon: LuColumns2 },
+  { view: "month", icon: LuGrid2X2 },
+  { view: "year", icon: LuGrid3X3 },
+  { view: "agenda", icon: LuCalendarRange },
 ];
 
 export function CalendarHeader({ view, events }: IProps) {
   const { setView, canWrite } = useCalendar();
   const { openCreate } = useAppointmentDialogs();
+  const t = useTranslations("agenda");
 
   return (
     // Sized on the agenda's own width (container query), not the window's:
@@ -43,18 +45,18 @@ export function CalendarHeader({ view, events }: IProps) {
       <div className="flex flex-col items-center gap-1.5 sm:flex-row sm:justify-between">
         <div className="flex w-full items-center gap-1.5">
           <div className="inline-flex">
-            {VIEWS.map(({ view: v, label, icon: Icon }, index) => (
+            {VIEWS.map(({ view: v, icon: Icon }, index) => (
               <Button
                 key={v}
                 type="button"
-                aria-label={`Vue ${label.toLowerCase()}`}
-                title={label}
+                aria-label={t("views.label", { view: t(`views.${v}`).toLowerCase() })}
+                title={t(`views.${v}`)}
                 size="icon"
                 variant={view === v ? "default" : "outline"}
                 onClick={() => setView(v)}
                 className={cn(
                   "[&_svg]:size-5",
-                  index === 0 ? "rounded-r-none" : index === VIEWS.length - 1 ? "-ml-px rounded-l-none" : "-ml-px rounded-none",
+                  index === 0 ? "rounded-e-none" : index === VIEWS.length - 1 ? "-ms-px rounded-s-none" : "-ms-px rounded-none",
                 )}
               >
                 <Icon strokeWidth={1.8} />
@@ -68,7 +70,7 @@ export function CalendarHeader({ view, events }: IProps) {
         {canWrite && (
           <Button type="button" className="w-full sm:w-auto" onClick={() => openCreate()}>
             <LuPlus />
-            Nouveau rendez-vous
+            {t("newAppointment")}
           </Button>
         )}
       </div>

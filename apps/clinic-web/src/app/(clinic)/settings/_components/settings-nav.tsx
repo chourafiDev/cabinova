@@ -2,14 +2,16 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
 import type { SettingsSection } from "@/lib/settings";
 import { cn } from "@/lib/utils";
 
 export function SettingsNav({ sections }: { sections: SettingsSection[] }) {
 	const pathname = usePathname();
+	const t = useTranslations("settings");
 	return (
 		<nav
-			aria-label="Sections des paramètres"
+			aria-label={t("sectionsLabel")}
 			className="-mx-1 flex gap-1 overflow-x-auto px-1 md:sticky md:top-20 md:mx-0 md:grid md:overflow-visible md:px-0"
 		>
 			{sections.map((s) => {
@@ -24,8 +26,8 @@ export function SettingsNav({ sections }: { sections: SettingsSection[] }) {
 							active ? "bg-muted text-foreground" : "text-muted-foreground hover:bg-muted/60 hover:text-foreground",
 						)}
 					>
-						<span className="text-sm font-medium">{s.label}</span>
-						<span className="text-muted-foreground hidden text-xs md:block">{s.hint}</span>
+						<span className="text-sm font-medium">{t(`sections.${s.key}.label`)}</span>
+						<span className="text-muted-foreground hidden text-xs md:block">{t(`sections.${s.key}.hint`)}</span>
 					</Link>
 				);
 			})}

@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useState } from "react";
 import type { DateRange } from "react-day-picker";
 import { LuCalendarRange, LuCheck } from "react-icons/lu";
@@ -8,8 +9,9 @@ import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { DEFAULT_PRESET, PRESETS, type PresetKey, periodLabel, type Report } from "@/lib/reports";
+import { DEFAULT_PRESET, PRESETS, type PresetKey, type Report } from "@/lib/reports";
 import { spaceLabel } from "@/lib/spaces";
+import { useFormat } from "@/lib/use-format";
 import { cn } from "@/lib/utils";
 import { useReportsNavigate } from "./reports-shell";
 
@@ -33,6 +35,9 @@ export function ReportsFilters({
 	const [range, setRange] = useState<DateRange | undefined>();
 	const [open, setOpen] = useState(false);
 	const mobile = useIsMobile();
+	const t = useTranslations("reports.filters");
+	const format = useFormat();
+	const periodLabel = format.period;
 
 	/** The current filters with these changes, as a URL (defaults left out). */
 	const href = (changes: Record<string, string | null>) => {
@@ -60,7 +65,7 @@ export function ReportsFilters({
 
 	return (
 		<div className="flex flex-wrap items-center gap-2">
-			<div className="bg-muted flex rounded-lg p-0.5 text-sm" role="group" aria-label="Période">
+			<div className="bg-muted flex rounded-lg p-0.5 text-sm" role="group" aria-label={t("period")}>
 				{PRESETS.map((p) => (
 					<button
 						key={p.key}
@@ -74,7 +79,7 @@ export function ReportsFilters({
 								: "text-muted-foreground hover:text-foreground",
 						)}
 					>
-						{p.label}
+						{t(p.key)}
 					</button>
 				))}
 			</div>
@@ -89,7 +94,7 @@ export function ReportsFilters({
 				<PopoverTrigger asChild>
 					<Button variant={preset === null ? "secondary" : "outline"} size="sm" className="h-8">
 						<LuCalendarRange />
-						{preset === null ? periodLabel(period.from, period.to) : "Personnalisée"}
+						{preset === null ? periodLabel(period.from, period.to) : t("custom")}
 					</Button>
 				</PopoverTrigger>
 				<PopoverContent align="start" className="w-auto p-0">
@@ -105,10 +110,10 @@ export function ReportsFilters({
 					/>
 					<div className="flex items-center justify-between gap-3 border-t p-3">
 						<span className="text-muted-foreground text-xs">
-							{range?.from ? periodLabel(day(range.from), day(range.to ?? range.from)) : "Choisissez deux dates"}
+							{range?.from ? periodLabel(day(range.from), day(range.to ?? range.from)) : t("pickDates")}
 						</span>
 						<Button size="sm" disabled={!range?.from} onClick={applyRange}>
-							<LuCheck /> Appliquer
+							<LuCheck /> {t("apply")}
 						</Button>
 					</div>
 				</PopoverContent>
@@ -116,11 +121,11 @@ export function ReportsFilters({
 
 			{filters.spaces.length > 1 && (
 				<Select value={filters.space ?? ALL} onValueChange={(v) => navigate(href({ espace: v === ALL ? null : v }))}>
-					<SelectTrigger size="sm" className="w-auto min-w-40" aria-label="Espace">
+					<SelectTrigger size="sm" className="w-auto min-w-40" aria-label={t("space")}>
 						<SelectValue />
 					</SelectTrigger>
 					<SelectContent>
-						<SelectItem value={ALL}>Tous les espaces</SelectItem>
+						<SelectItem value={ALL}>{t("allSpaces")}</SelectItem>
 						{filters.spaces.map((s) => (
 							<SelectItem key={s.id} value={s.id}>
 								{spaceLabel(s)}
@@ -136,14 +141,14 @@ export function ReportsFilters({
 						value={filters.practitioner ?? ALL}
 						onValueChange={(v) => navigate(href({ medecin: v === ALL ? null : v }))}
 					>
-						<SelectTrigger size="sm" className="w-auto min-w-40" aria-label="Médecin">
+						<SelectTrigger size="sm" className="w-auto min-w-40" aria-label={t("doctor")}>
 							<SelectValue />
 						</SelectTrigger>
 						<SelectContent>
-							<SelectItem value={ALL}>Tous les médecins</SelectItem>
+							<SelectItem value={ALL}>{t("allDoctors")}</SelectItem>
 							{filters.practitioners.map((p) => (
 								<SelectItem key={p.id} value={p.id}>
-									{p.id === userId ? `${p.name} (vous)` : p.name}
+									{p.id === userId ? t("you", { name: p.name }) : p.name}
 								</SelectItem>
 							))}
 						</SelectContent>
@@ -154,12 +159,12 @@ export function ReportsFilters({
 					value={filters.practitioner ? "mine" : ALL}
 					onValueChange={(v) => navigate(href({ medecin: v === ALL ? null : userId }))}
 				>
-					<SelectTrigger size="sm" className="w-auto min-w-40" aria-label="Rendez-vous">
+					<SelectTrigger size="sm" className="w-auto min-w-40" aria-label={t("appointments")}>
 						<SelectValue />
 					</SelectTrigger>
 					<SelectContent>
-						<SelectItem value={ALL}>Tout le cabinet</SelectItem>
-						<SelectItem value="mine">Mes rendez-vous</SelectItem>
+						<SelectItem value={ALL}>{t("wholeCabinet")}</SelectItem>
+						<SelectItem value="mine">{t("mine")}</SelectItem>
 					</SelectContent>
 				</Select>
 			)}

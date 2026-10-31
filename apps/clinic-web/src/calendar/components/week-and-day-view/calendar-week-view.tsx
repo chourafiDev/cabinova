@@ -1,4 +1,5 @@
-import { fmt, WEEK } from "@/calendar/locale";
+import { useTranslations } from "next-intl";
+import { useFmt, WEEK } from "@/calendar/locale";
 import { startOfWeek, addDays, parseISO, isSameDay, areIntervalsOverlapping } from "date-fns";
 
 import { useCalendar } from "@/calendar/contexts/calendar-context";
@@ -21,6 +22,8 @@ interface IProps {
 }
 
 export function CalendarWeekView({ singleDayEvents, multiDayEvents }: IProps) {
+  const fmt = useFmt();
+  const t = useTranslations("agenda");
   const { selectedDate, workingHours, visibleHours } = useCalendar();
 
   const { hours, earliestEventHour, latestEventHour } = getVisibleHours(visibleHours, singleDayEvents);
@@ -31,8 +34,8 @@ export function CalendarWeekView({ singleDayEvents, multiDayEvents }: IProps) {
   return (
     <>
       <div className="flex flex-col items-center justify-center border-b py-4 text-sm text-muted-foreground sm:hidden">
-        <p>La vue semaine n&apos;est pas disponible sur petit écran.</p>
-        <p>Passez en vue jour ou mois.</p>
+        <p>{t("smallScreen")}</p>
+        <p>{t("smallScreenHint")}</p>
       </div>
 
       <div className="hidden flex-col sm:flex">

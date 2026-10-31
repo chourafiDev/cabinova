@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { FaWhatsapp } from "react-icons/fa6";
 import { LuCheck, LuCircleAlert, LuCopy, LuMailCheck } from "react-icons/lu";
@@ -13,8 +14,8 @@ import {
 	DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { formatDate } from "@/lib/format";
 import type { Member, MemberLink } from "@/lib/team";
+import { useFormat } from "@/lib/use-format";
 
 /**
  * The link just issued (invitation or new password): shown once, since
@@ -39,11 +40,11 @@ export function LinkDialog({
 
 function LinkContent({ member, link, onDone }: { member: Member; link: MemberLink; onDone: () => void }) {
 	const [copied, setCopied] = useState(false);
+	const t = useTranslations("team.link");
+	const format = useFormat();
 	const invitation = link.kind === "invitation";
 	const sent = link.delivery === "sent";
-	const message = invitation
-		? `Bonjour ${member.name}, voici votre lien pour rejoindre le cabinet et choisir votre mot de passe : ${link.url}`
-		: `Bonjour ${member.name}, voici votre lien pour choisir un nouveau mot de passe : ${link.url}`;
+	const message = t(invitation ? "inviteMessage" : "passwordMessage", { name: member.name, url: link.url });
 
 	const copy = async () => {
 		await navigator.clipboard.writeText(link.url);
@@ -54,11 +55,9 @@ function LinkContent({ member, link, onDone }: { member: Member; link: MemberLin
 	return (
 		<>
 			<DialogHeader>
-				<DialogTitle>{invitation ? `${member.name} est invité(e)` : "Lien de mot de passe créé"}</DialogTitle>
+				<DialogTitle>{invitation ? t("invited", { name: member.name }) : t("passwordTitle")}</DialogTitle>
 				<DialogDescription>
-					{invitation
-						? "Il ou elle rejoint le cabinet en choisissant son mot de passe avec ce lien."
-						: "Son mot de passe actuel reste valable jusqu’à ce qu’il ou elle en choisisse un nouveau."}
+					{invitation ? t("inviteHint") : t("passwordHint")}
 				</DialogDescription>
 			</DialogHeader>
 
@@ -71,38 +70,36 @@ function LinkContent({ member, link, onDone }: { member: Member; link: MemberLin
 			>
 				{sent ? <LuMailCheck className="mt-0.5 size-4 shrink-0" /> : <LuCircleAlert className="mt-0.5 size-4 shrink-0" />}
 				<span>
-					{sent ? (
-						<>
-							E-mail envoyé à <strong className="font-medium">{member.email}</strong>.
-						</>
-					) : link.delivery === "logged" ? (
-						"L’envoi d’e-mails n’est pas configuré : transmettez-lui ce lien vous-même."
-					) : (
-						"L’e-mail n’a pas pu être envoyé : transmettez-lui ce lien vous-même."
-					)}
+					{sent
+						? t.rich("sent", {
+								email: member.email,
+								strong: (chunks) => <strong className="font-medium">{chunks}</strong>,
+							})
+						: link.delivery === "logged"
+							? t("notConfigured")
+							: t("failed")}
 				</span>
 			</p>
 
 			<div className="grid gap-2">
 				<div className="flex gap-2">
-					<Input value={link.url} readOnly aria-label="Lien" className="font-mono text-xs" onFocus={(e) => e.target.select()} />
+					<Input value={link.url} readOnly aria-label={t("label")} className="font-mono text-xs" onFocus={(e) => e.target.select()} />
 					<Button type="button" variant="outline" onClick={copy} className="shrink-0">
-						{copied ? <LuCheck /> : <LuCopy />} {copied ? "Copié" : "Copier"}
+						{copied ? <LuCheck /> : <LuCopy />} {copied ? t("copied") : t("copy")}
 					</Button>
 				</div>
 				<p className="text-muted-foreground text-xs">
-					Valable jusqu’au {formatDate(link.expiresAt)}, une seule fois. Ne le transmettez qu’à {member.name} : il donne
-					accès au cabinet.
+					{t("validity", { date: format.date(link.expiresAt), name: member.name })}
 				</p>
 			</div>
 
 			<DialogFooter>
 				<Button asChild variant="outline">
 					<a href={`https://wa.me/?text=${encodeURIComponent(message)}`} target="_blank" rel="noopener noreferrer">
-						<FaWhatsapp /> Envoyer par WhatsApp
+						<FaWhatsapp /> {t("whatsapp")}
 					</a>
 				</Button>
-				<Button onClick={onDone}>Terminé</Button>
+				<Button onClick={onDone}>{t("done")}</Button>
 			</DialogFooter>
 		</>
 	);

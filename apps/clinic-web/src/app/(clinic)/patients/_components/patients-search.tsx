@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { LuLoader, LuSearch } from "react-icons/lu";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState, useTransition } from "react";
@@ -13,6 +14,7 @@ export function PatientsSearch() {
 	const current = params.get("search") ?? "";
 	const [value, setValue] = useState(current);
 	const [pending, startTransition] = useTransition();
+	const t = useTranslations("patients.search");
 
 	useEffect(() => {
 		if (value.trim() === current) return;
@@ -33,8 +35,8 @@ export function PatientsSearch() {
 				type="search"
 				value={value}
 				onChange={(e) => setValue(e.target.value)}
-				placeholder="Nom, téléphone, CIN ou n° de dossier"
-				aria-label="Rechercher un patient"
+				placeholder={t("placeholder")}
+				aria-label={t("label")}
 				className="ps-8"
 			/>
 			{pending && (

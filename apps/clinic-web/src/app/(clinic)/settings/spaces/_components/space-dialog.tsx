@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { LuLoader } from "react-icons/lu";
 import { toast } from "sonner";
@@ -50,10 +51,12 @@ function SpaceForm({ space, onDone }: { space: ManagedSpace | null; onDone: () =
 	const [v, setV] = useState(() => fromSpace(space));
 	const [error, setError] = useState<string | null>(null);
 	const [saving, setSaving] = useState(false);
+	const t = useTranslations("settings.spaces");
+	const common = useTranslations("settings.common");
 
 	const save = async (e: React.FormEvent) => {
 		e.preventDefault();
-		if (v.name.trim().length < 2) return setError("Nom de l’espace : 2 caractères minimum.");
+		if (v.name.trim().length < 2) return setError(t("nameError"));
 		setSaving(true);
 		setError(null);
 		try {
@@ -62,13 +65,13 @@ function SpaceForm({ space, onDone }: { space: ManagedSpace | null; onDone: () =
 				body: JSON.stringify(v),
 			});
 			toast.success(
-				space ? "Espace enregistré" : `Espace « ${v.name.trim()} » créé`,
-				space ? undefined : { description: "Vous y travaillez maintenant : son agenda et ses patients sont vides." },
+				space ? t("saved") : t("created", { name: v.name.trim() }),
+				space ? undefined : { description: t("createdHint") },
 			);
 			onDone();
 			router.refresh();
 		} catch (err) {
-			setError(err instanceof Error ? err.message : "Enregistrement impossible");
+			setError(err instanceof Error ? err.message : common("saveError"));
 		} finally {
 			setSaving(false);
 		}
@@ -77,21 +80,19 @@ function SpaceForm({ space, onDone }: { space: ManagedSpace | null; onDone: () =
 	return (
 		<form onSubmit={save} noValidate className="grid gap-4">
 			<DialogHeader>
-				<DialogTitle>{space ? "Modifier l’espace" : "Nouvel espace"}</DialogTitle>
+				<DialogTitle>{space ? t("editTitle") : t("newTitle")}</DialogTitle>
 				<DialogDescription>
-					{space
-						? "Nom et coordonnées du site, visibles par son équipe."
-						: "Un site du cabinet (ex. une autre ville). Ses patients, son équipe et son agenda sont séparés des autres espaces."}
+					{space ? t("editHint") : t("newHint")}
 				</DialogDescription>
 			</DialogHeader>
 			<FieldGroup className="gap-4">
 				<Field data-invalid={!!error}>
-					<FieldLabel htmlFor="space-name">Nom</FieldLabel>
+					<FieldLabel htmlFor="space-name">{t("name")}</FieldLabel>
 					<Input
 						id="space-name"
 						autoFocus
 						maxLength={80}
-						placeholder="Ex. Marrakech Guéliz"
+						placeholder={t("namePlaceholder")}
 						value={v.name}
 						aria-invalid={!!error}
 						onChange={(e) => setV({ ...v, name: e.target.value })}
@@ -100,11 +101,11 @@ function SpaceForm({ space, onDone }: { space: ManagedSpace | null; onDone: () =
 				</Field>
 				<div className="grid gap-4 sm:grid-cols-2">
 					<Field>
-						<FieldLabel htmlFor="space-city">Ville</FieldLabel>
+						<FieldLabel htmlFor="space-city">{t("city")}</FieldLabel>
 						<Input id="space-city" maxLength={80} value={v.city} onChange={(e) => setV({ ...v, city: e.target.value })} />
 					</Field>
 					<Field>
-						<FieldLabel htmlFor="space-phone">Téléphone</FieldLabel>
+						<FieldLabel htmlFor="space-phone">{t("phone")}</FieldLabel>
 						<Input
 							id="space-phone"
 							type="tel"
@@ -114,7 +115,7 @@ function SpaceForm({ space, onDone }: { space: ManagedSpace | null; onDone: () =
 					</Field>
 				</div>
 				<Field>
-					<FieldLabel htmlFor="space-address">Adresse</FieldLabel>
+					<FieldLabel htmlFor="space-address">{t("address")}</FieldLabel>
 					<Input
 						id="space-address"
 						maxLength={300}
@@ -125,10 +126,10 @@ function SpaceForm({ space, onDone }: { space: ManagedSpace | null; onDone: () =
 			</FieldGroup>
 			<DialogFooter>
 				<Button type="button" variant="outline" onClick={onDone}>
-					Annuler
+					{common("cancel")}
 				</Button>
 				<Button type="submit" disabled={saving}>
-					{saving && <LuLoader className="animate-spin" />} {space ? "Enregistrer" : "Créer l’espace"}
+					{saving && <LuLoader className="animate-spin" />} {space ? common("save") : t("create")}
 				</Button>
 			</DialogFooter>
 		</form>

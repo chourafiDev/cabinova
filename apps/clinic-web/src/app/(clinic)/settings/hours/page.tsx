@@ -1,12 +1,12 @@
-import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { settingsTitle } from "@/i18n/titles";
 import { apiGet } from "@/lib/server-api";
 import { getClinicState } from "@/lib/session";
 import type { AgendaSettings, ManagedSpace } from "@/lib/settings";
 import { DefaultDurationCard } from "./_components/default-duration-card";
 import { OpeningHoursEditor } from "./_components/opening-hours-editor";
 
-export const metadata: Metadata = { title: "Horaires & agenda · Paramètres" };
+export const generateMetadata = () => settingsTitle("hours");
 
 /** Opening hours of one space (?espace=, default: the current one) and the cabinet's booking default. */
 export default async function HoursSettingsPage({ searchParams }: { searchParams: Promise<{ espace?: string }> }) {

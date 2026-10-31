@@ -1,16 +1,10 @@
+import { useTranslations } from "next-intl";
 import { LuSparkles } from "react-icons/lu";
-import { formatDate } from "@/lib/format";
 import type { ClinicSession } from "@/lib/session";
+import { useFormat } from "@/lib/use-format";
 import { cn } from "@/lib/utils";
 import { SubscriptionButton } from "../billing/subscription-button";
 import { ChartCard } from "./chart-card";
-
-const STATUS = {
-	trialing: "Essai gratuit",
-	active: "Abonnement actif",
-	past_due: "En attente de paiement",
-	cancelled: "Abonnement résilié",
-} as const;
 
 /** `warn`: turns red near the limit (storage); seats at their max are normal. */
 function Usage({
@@ -27,13 +21,15 @@ function Usage({
 	warn?: boolean;
 }) {
 	const ratio = max ? Math.min(used / max, 1) : 0;
+	const t = useTranslations("dashboard.subscription");
+	const format = useFormat();
 	return (
 		<div>
 			<div className="mb-1 flex items-baseline justify-between text-xs">
 				<span className="text-muted-foreground">{label}</span>
 				<span className="font-medium tabular-nums">
-					{used.toLocaleString("fr-MA")}
-					{unit} / {max === null ? "illimité" : `${max.toLocaleString("fr-MA")}${unit ?? ""}`}
+					{format.number(used)}
+					{unit} / {max === null ? t("unlimited") : `${format.number(max)}${unit ?? ""}`}
 				</span>
 			</div>
 			<div
@@ -63,27 +59,29 @@ export function SubscriptionCard({
 	canManage: boolean;
 }) {
 	const gb = (mb: number) => Math.round((mb / 1024) * 10) / 10;
+	const t = useTranslations("dashboard.subscription");
+	const format = useFormat();
 
 	return (
-		<ChartCard eyebrow="Mon abonnement" title={s.plan ? `Offre ${s.plan}` : "Aucune offre"} className="h-full">
+		<ChartCard eyebrow={t("eyebrow")} title={s.plan ? t("offer", { plan: s.plan }) : t("noOffer")} className="h-full">
 			<div className="grid gap-4">
 				<p className="flex items-start gap-2 rounded-lg bg-muted px-3 py-2 text-xs">
 					<LuSparkles className="mt-0.5 size-3.5 shrink-0 text-primary" />
 					<span>
-						<span className="font-medium">{s.status ? STATUS[s.status] : "Pas d’abonnement en cours"}</span>
+						<span className="font-medium">{s.status ? t(s.status) : t("noSubscription")}</span>
 						{s.status === "trialing" && s.trialEndsAt && (
-							<> jusqu’au {formatDate(s.trialEndsAt)}. Choisissez votre offre pour recevoir votre devis.</>
+							<> {t("until", { date: format.date(s.trialEndsAt) })} {t("chooseHint")}</>
 						)}
-						{s.status === "active" && s.currentPeriodEnd && <> jusqu’au {formatDate(s.currentPeriodEnd)}.</>}
+						{s.status === "active" && s.currentPeriodEnd && <> {t("until", { date: format.date(s.currentPeriodEnd) })}</>}
 					</span>
 				</p>
-				<Usage label="Médecins" used={s.doctors.used} max={s.doctors.max} />
-				<Usage label="Secrétaires" used={s.secretaries.used} max={s.secretaries.max} />
+				<Usage label={t("doctors")} used={s.doctors.used} max={s.doctors.max} />
+				<Usage label={t("secretaries")} used={s.secretaries.used} max={s.secretaries.max} />
 				<Usage
-					label="Stockage"
+					label={t("storage")}
 					used={gb(s.storage.usedMb ?? 0)}
 					max={s.storage.quotaMb === null ? null : gb(s.storage.quotaMb)}
-					unit=" Go"
+					unit={` ${t("gb")}`}
 					warn
 				/>
 				{canManage && <SubscriptionButton quotePending={s.quotePending} trialing={s.status === "trialing"} />}

@@ -1,10 +1,13 @@
-import { fmt } from "@/calendar/locale";
+import { useTranslations } from "next-intl";
+import { useFmt } from "@/calendar/locale";
 
 
 import { useCalendar } from "@/calendar/contexts/calendar-context";
 
 export function TodayButton() {
   const { setSelectedDate } = useCalendar();
+  const fmt = useFmt();
+  const t = useTranslations("agenda");
 
   const today = new Date();
   const handleClick = () => setSelectedDate(today);
@@ -13,7 +16,7 @@ export function TodayButton() {
     <button
       className="flex size-14 flex-col items-start overflow-hidden rounded-lg border focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
       onClick={handleClick}
-      aria-label="Aujourd'hui"
+      aria-label={t("today")}
     >
       <p className="flex h-6 w-full items-center justify-center bg-primary text-center text-xs font-semibold text-primary-foreground">
         {fmt(today, "MMM").toUpperCase()}

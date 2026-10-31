@@ -1,4 +1,5 @@
-import { fmt } from "@/calendar/locale";
+import { useTranslations } from "next-intl";
+import { useFmt } from "@/calendar/locale";
 import { useMemo } from "react";
 
 import { LuChevronLeft, LuChevronRight } from "react-icons/lu";
@@ -21,6 +22,8 @@ interface IProps {
 export function DateNavigator({ view, events }: IProps) {
   const { selectedDate, setSelectedDate } = useCalendar();
 
+  const fmt = useFmt();
+  const t = useTranslations("agenda");
   const month = fmt(selectedDate, "LLLL");
   const year = selectedDate.getFullYear();
 
@@ -36,18 +39,18 @@ export function DateNavigator({ view, events }: IProps) {
           {month} {year}
         </span>
         <Badge variant="outline" className="px-1.5">
-          {eventCount} rendez-vous
+          {t("count", { count: eventCount })}
         </Badge>
       </div>
 
       <div className="flex items-center gap-2">
-        <Button variant="outline" aria-label="Période précédente" className="size-6.5 px-0 [&_svg]:size-4.5" onClick={handlePrevious}>
+        <Button variant="outline" aria-label={t("previous")} className="size-6.5 px-0 [&_svg]:size-4.5" onClick={handlePrevious}>
           <LuChevronLeft className="rtl:rotate-180" />
         </Button>
 
-        <p className="text-sm text-muted-foreground">{rangeText(view, selectedDate)}</p>
+        <p className="text-sm text-muted-foreground">{rangeText(view, selectedDate, fmt)}</p>
 
-        <Button variant="outline" aria-label="Période suivante" className="size-6.5 px-0 [&_svg]:size-4.5" onClick={handleNext}>
+        <Button variant="outline" aria-label={t("next")} className="size-6.5 px-0 [&_svg]:size-4.5" onClick={handleNext}>
           <LuChevronRight className="rtl:rotate-180" />
         </Button>
       </div>

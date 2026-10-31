@@ -1,3 +1,4 @@
+import { getTranslations } from "next-intl/server";
 import { HiCog6Tooth } from "react-icons/hi2";
 import { getClinicState } from "@/lib/session";
 import { SETTINGS_SECTIONS } from "@/lib/settings";
@@ -8,6 +9,7 @@ export default async function SettingsLayout({ children }: { children: React.Rea
 	const state = await getClinicState();
 	const isOwner = state.status === "signed-in" && state.session.user.role === "owner";
 	const sections = SETTINGS_SECTIONS.filter((s) => isOwner || !s.ownerOnly);
+	const t = await getTranslations("settings");
 
 	return (
 		<div className="grid gap-4">
@@ -16,9 +18,9 @@ export default async function SettingsLayout({ children }: { children: React.Rea
 					<HiCog6Tooth className="size-4" />
 				</span>
 				<div>
-					<h1 className="text-lg font-semibold leading-tight">Paramètres</h1>
+					<h1 className="text-lg font-semibold leading-tight">{t("title")}</h1>
 					<p className="text-muted-foreground text-sm">
-						{isOwner ? "Votre compte, le cabinet, ses espaces et son agenda." : "Votre compte et vos appareils."}
+						{isOwner ? t("ownerHint") : t("staffHint")}
 					</p>
 				</div>
 			</header>

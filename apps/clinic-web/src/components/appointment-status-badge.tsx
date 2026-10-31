@@ -1,5 +1,6 @@
+import { useTranslations } from "next-intl";
 import { Badge } from "@/components/ui/badge";
-import { type AppointmentStatus, STATUS_LABELS } from "@/lib/appointments";
+import type { AppointmentStatus } from "@/lib/appointments";
 import { cn } from "@/lib/utils";
 
 const STATUS_BADGE: Record<AppointmentStatus, string> = {
@@ -13,9 +14,10 @@ const STATUS_BADGE: Record<AppointmentStatus, string> = {
 };
 
 export function AppointmentStatusBadge({ status }: { status: AppointmentStatus }) {
+	const t = useTranslations("common.appointmentStatus");
 	return (
 		<Badge variant="outline" className={cn("border-transparent", STATUS_BADGE[status])}>
-			{STATUS_LABELS[status]}
+			{t(status)}
 		</Badge>
 	);
 }

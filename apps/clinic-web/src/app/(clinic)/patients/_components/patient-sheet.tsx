@@ -2,9 +2,10 @@
 
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { parseAsString, useQueryStates } from "nuqs";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SHEET_AT_END, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { ApiError, api } from "@/lib/api-client";
 import type { Appointment } from "@/lib/appointments";
 import { EMPTY_PATIENT, formatFileNumber, fullName, type PatientFile, toInput } from "@/lib/patients";
@@ -29,6 +30,7 @@ const params = {
 export function PatientSheet({ medical }: { medical: boolean }) {
 	const router = useRouter();
 	const queryClient = useQueryClient();
+	const t = useTranslations("patients");
 	const [{ patient: id, nouveau, modifier }, setParams] = useQueryStates(params, { history: "push", scroll: false });
 	const creating = nouveau === "1";
 	const editing = !!id && modifier === "1";
@@ -57,12 +59,12 @@ export function PatientSheet({ medical }: { medical: boolean }) {
 
 	return (
 		<Sheet open={open} onOpenChange={(next) => !next && close()}>
-			<SheetContent className="w-full gap-0 data-[side=right]:sm:max-w-2xl">
+			<SheetContent className={`w-full gap-0 data-[side=right]:sm:max-w-2xl ${SHEET_AT_END}`}>
 				{creating ? (
 					<>
 						<SheetHeader className="border-b p-5">
-							<SheetTitle className="text-xl">Nouveau patient</SheetTitle>
-							<SheetDescription>Le n° de dossier est attribué à l’enregistrement.</SheetDescription>
+							<SheetTitle className="text-xl">{t("new")}</SheetTitle>
+							<SheetDescription>{t("sheet.newDescription")}</SheetDescription>
 						</SheetHeader>
 						<PatientForm
 							key="new"
@@ -80,19 +82,19 @@ export function PatientSheet({ medical }: { medical: boolean }) {
 				) : patient.isError ? (
 					<>
 						<SheetHeader className="border-b p-5">
-							<SheetTitle>Dossier introuvable</SheetTitle>
+							<SheetTitle>{t("sheet.notFound")}</SheetTitle>
 							<SheetDescription>
 								{patient.error instanceof ApiError && patient.error.status === 404
-									? "Ce patient n’existe pas dans cet espace."
-									: "Impossible de charger le dossier. Réessayez."}
+									? t("sheet.notInSpace")
+									: t("sheet.loadError")}
 							</SheetDescription>
 						</SheetHeader>
 					</>
 				) : !p ? (
 					<>
 						<SheetHeader className="sr-only">
-							<SheetTitle>Chargement du dossier</SheetTitle>
-							<SheetDescription>Patient</SheetDescription>
+							<SheetTitle>{t("sheet.loading")}</SheetTitle>
+							<SheetDescription>{t("sheet.patient")}</SheetDescription>
 						</SheetHeader>
 						<div className="grid gap-4 p-5">
 							<div className="flex items-center gap-3.5">
@@ -110,7 +112,7 @@ export function PatientSheet({ medical }: { medical: boolean }) {
 				) : editing ? (
 					<>
 						<SheetHeader className="border-b p-5">
-							<SheetTitle className="text-xl">Modifier le dossier</SheetTitle>
+							<SheetTitle className="text-xl">{t("sheet.editTitle")}</SheetTitle>
 							<SheetDescription>
 								{fullName(p)} · {formatFileNumber(p.fileNumber)}
 							</SheetDescription>

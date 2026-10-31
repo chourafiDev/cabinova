@@ -1,3 +1,4 @@
+import { useTranslations } from "next-intl";
 import Link from "next/link";
 import type { IconType } from "react-icons";
 import { LuArrowDown, LuArrowUp, LuEllipsisVertical, LuInfo } from "react-icons/lu";
@@ -20,7 +21,8 @@ export type KpiAction = { label: string; href: string };
  * null = nothing to compare with. `invert` when a rise is bad (losses, delays).
  */
 export function Change({ value, unit, invert }: { value: number | null; unit: "%" | "pts"; invert?: boolean }) {
-	if (value === null) return <span className="text-muted-foreground">Nouveau</span>;
+	const t = useTranslations("dashboard.kpi");
+	if (value === null) return <span className="text-muted-foreground">{t("new")}</span>;
 	const good = invert ? value < 0 : value > 0;
 	const bad = invert ? value > 0 : value < 0;
 	return (
@@ -32,7 +34,7 @@ export function Change({ value, unit, invert }: { value: number | null; unit: "%
 		>
 			{value > 0 ? <LuArrowUp className="size-3.5" /> : value < 0 ? <LuArrowDown className="size-3.5" /> : null}
 			{value > 0 ? "+" : ""}
-			{value} {unit}
+			{value} {unit === "pts" ? t("pts") : unit}
 		</span>
 	);
 }

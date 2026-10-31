@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { LuCopy, LuLoader, LuPlus, LuX } from "react-icons/lu";
 import { toast } from "sonner";
@@ -11,6 +12,7 @@ import { Switch } from "@/components/ui/switch";
 import { api } from "@/lib/api-client";
 import { type ManagedSpace, type OpeningHours, WEEK, openingHoursErrors, toMinutes } from "@/lib/settings";
 import { spaceLabel } from "@/lib/spaces";
+import { useFormat } from "@/lib/use-format";
 import { cn } from "@/lib/utils";
 import { SettingsCard } from "../../_components/settings-card";
 
@@ -31,6 +33,9 @@ export function OpeningHoursEditor({ space, spaces }: { space: ManagedSpace; spa
 	const [hours, setHours] = useState(space.openingHours);
 	const [saving, setSaving] = useState(false);
 	const errors = openingHoursErrors(hours);
+	const t = useTranslations("settings.hours");
+	const common = useTranslations("settings.common");
+	const dayNames = useFormat().weekdays("long");
 	const invalid = Object.keys(errors).length > 0;
 	const dirty = JSON.stringify(hours) !== JSON.stringify(saved);
 
@@ -52,7 +57,7 @@ export function OpeningHoursEditor({ space, spaces }: { space: ManagedSpace; spa
 	};
 	const copyMonday = () => {
 		setHours((h) => ({ ...h, ...Object.fromEntries(WORKDAYS.map((d) => [d, h["1"].map((p) => ({ ...p }))])) }));
-		toast.info("Horaires du lundi appliqués du mardi au vendredi");
+		toast.info(t("mondayCopied"));
 	};
 
 	const save = async () => {
@@ -64,10 +69,10 @@ export function OpeningHoursEditor({ space, spaces }: { space: ManagedSpace; spa
 			});
 			setSaved(res.openingHours);
 			setHours(res.openingHours);
-			toast.success(`Horaires de « ${space.name} » enregistrés`);
+			toast.success(t("saved", { name: space.name }));
 			router.refresh();
 		} catch (err) {
-			toast.error(err instanceof Error ? err.message : "Enregistrement impossible");
+			toast.error(err instanceof Error ? err.message : common("saveError"));
 		} finally {
 			setSaving(false);
 		}
@@ -75,15 +80,15 @@ export function OpeningHoursEditor({ space, spaces }: { space: ManagedSpace; spa
 
 	return (
 		<SettingsCard
-			title="Horaires d’ouverture"
-			description="L’agenda grise les heures de fermeture ; un rendez-vous en dehors reste possible, avec un avertissement."
+			title={t("title")}
+			description={t("description")}
 			action={
 				spaces.length > 1 && (
 					<Select
 						value={space.id}
 						onValueChange={(id) => router.push(`/settings/hours?espace=${id}`, { scroll: false })}
 					>
-						<SelectTrigger size="sm" className="w-56" aria-label="Espace">
+						<SelectTrigger size="sm" className="w-56" aria-label={common("space")}>
 							<SelectValue />
 						</SelectTrigger>
 						<SelectContent align="end">
@@ -99,23 +104,24 @@ export function OpeningHoursEditor({ space, spaces }: { space: ManagedSpace; spa
 			footer={
 				<>
 					<Button type="button" variant="ghost" size="sm" className="-ms-2" onClick={copyMonday}>
-						<LuCopy /> Copier le lundi du mardi au vendredi
+						<LuCopy /> {t("copyMonday")}
 					</Button>
 					<div className="flex items-center gap-2">
 						{dirty && (
 							<Button type="button" variant="ghost" size="sm" onClick={() => setHours(saved)}>
-								Annuler
+								{common("cancel")}
 							</Button>
 						)}
 						<Button size="sm" disabled={!dirty || invalid || saving} onClick={save}>
-							{saving && <LuLoader className="animate-spin" />} Enregistrer
+							{saving && <LuLoader className="animate-spin" />} {common("save")}
 						</Button>
 					</div>
 				</>
 			}
 		>
 			<ul className="divide-y rounded-lg border">
-				{WEEK.map(({ key, label }) => {
+				{WEEK.map((key, day) => {
+					const label = dayNames[day];
 					const periods = hours[key];
 					const open = periods.length > 0;
 					return (
@@ -124,9 +130,9 @@ export function OpeningHoursEditor({ space, spaces }: { space: ManagedSpace; spa
 								<Switch
 									checked={open}
 									onCheckedChange={(on) => setDay(key, on ? [{ from: "09:00", to: "18:00" }] : [])}
-									aria-label={`${label} : ${open ? "ouvert" : "fermé"}`}
+									aria-label={t("dayState", { day: label, state: open ? t("open") : t("closed") })}
 								/>
-								<span className={cn("text-sm font-medium", !open && "text-muted-foreground")}>{label}</span>
+								<span className={cn("text-sm font-medium capitalize", !open && "text-muted-foreground")}>{label}</span>
 							</label>
 							{open ? (
 								<div className="grid gap-1.5">
@@ -137,7 +143,7 @@ export function OpeningHoursEditor({ space, spaces }: { space: ManagedSpace; spa
 													type="time"
 													step={900}
 													value={p.from}
-													aria-label={`${label}, plage ${i + 1} : début`}
+													aria-label={t("periodStart", { day: label, index: i + 1 })}
 													className="h-8 w-[6.5rem]"
 													onChange={(e) =>
 														setDay(key, periods.map((q, j) => (j === i ? { ...q, from: e.target.value } : q)))
@@ -148,7 +154,7 @@ export function OpeningHoursEditor({ space, spaces }: { space: ManagedSpace; spa
 													type="time"
 													step={900}
 													value={p.to}
-													aria-label={`${label}, plage ${i + 1} : fin`}
+													aria-label={t("periodEnd", { day: label, index: i + 1 })}
 													className="h-8 w-[6.5rem]"
 													onChange={(e) =>
 														setDay(key, periods.map((q, j) => (j === i ? { ...q, to: e.target.value } : q)))
@@ -160,7 +166,7 @@ export function OpeningHoursEditor({ space, spaces }: { space: ManagedSpace; spa
 														variant="ghost"
 														size="icon"
 														className="text-muted-foreground size-7"
-														aria-label={`Retirer la plage ${i + 1} du ${label.toLowerCase()}`}
+														aria-label={t("removePeriod", { day: label.toLowerCase(), index: i + 1 })}
 														onClick={() => setDay(key, periods.filter((_, j) => j !== i))}
 													>
 														<LuX />
@@ -176,14 +182,14 @@ export function OpeningHoursEditor({ space, spaces }: { space: ManagedSpace; spa
 												className="text-muted-foreground h-8"
 												onClick={() => addPeriod(key)}
 											>
-												<LuPlus /> Plage
+												<LuPlus /> {t("addPeriod")}
 											</Button>
 										)}
 									</div>
-									{errors[key] && <p className="text-destructive text-xs">{errors[key]}</p>}
+									{errors[key] && <p className="text-destructive text-xs">{t(`errors.${errors[key]!}`)}</p>}
 								</div>
 							) : (
-								<span className="text-muted-foreground flex h-8 items-center text-sm">Fermé</span>
+								<span className="text-muted-foreground flex h-8 items-center text-sm">{common("closed")}</span>
 							)}
 						</li>
 					);

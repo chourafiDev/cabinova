@@ -1,5 +1,6 @@
-import type { Metadata } from "next";
 import { redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
+import { settingsTitle } from "@/i18n/titles";
 import { apiGet } from "@/lib/server-api";
 import { getClinicState } from "@/lib/session";
 import type { DeviceSession, TwoFactorStatus } from "@/lib/settings";
@@ -9,7 +10,7 @@ import { PasswordForm } from "./_components/password-form";
 import { ProfileForm } from "./_components/profile-form";
 import { TwoFactorCard } from "./_components/two-factor-card";
 
-export const metadata: Metadata = { title: "Mon profil · Paramètres" };
+export const generateMetadata = () => settingsTitle("profile");
 
 export default async function ProfileSettingsPage() {
 	const [state, sessions, twoFactor] = await Promise.all([
@@ -19,10 +20,11 @@ export default async function ProfileSettingsPage() {
 	]);
 	if (state.status !== "signed-in") redirect("/login");
 	const { user } = state.session;
+	const t = await getTranslations("common.roles");
 
 	return (
 		<>
-			<ProfileForm name={user.name} email={user.email} roleLabel={user.roleLabel} />
+			<ProfileForm name={user.name} email={user.email} roleLabel={t(user.role)} />
 			<LanguageCard />
 			<PasswordForm />
 			<TwoFactorCard status={twoFactor} />

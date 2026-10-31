@@ -1,4 +1,4 @@
-import { fmt, WEEK_DAYS_LETTER, weekdayIndex } from "@/calendar/locale";
+import { useFmt, useWeekDays, weekdayIndex } from "@/calendar/locale";
 import { useMemo } from "react";
 import { isSameDay, parseISO, getDaysInMonth, startOfMonth } from "date-fns";
 
@@ -16,6 +16,8 @@ interface IProps {
 export function YearViewMonth({ month, events }: IProps) {
   const { setSelectedDate, setView } = useCalendar();
 
+  const fmt = useFmt();
+  const weekDays = useWeekDays("EEEEE");
   const monthName = fmt(month, "LLLL");
 
   const daysInMonth = useMemo(() => {
@@ -46,7 +48,7 @@ export function YearViewMonth({ month, events }: IProps) {
 
       <div className="flex-1 space-y-2 rounded-b-lg border border-t-0 p-3">
         <div className="grid grid-cols-7 gap-x-0.5 text-center">
-          {WEEK_DAYS_LETTER.map((day, index) => (
+          {weekDays.map((day, index) => (
             <div key={index} className="text-xs font-medium text-muted-foreground">
               {day}
             </div>

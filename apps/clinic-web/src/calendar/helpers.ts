@@ -1,4 +1,4 @@
-import { fmt, WEEK } from "@/calendar/locale";
+import { type Fmt, WEEK } from "@/calendar/locale";
 import { addDays, addMonths, addWeeks, subDays, subMonths, subWeeks, isSameWeek, isSameDay, isSameMonth, startOfWeek, startOfMonth, endOfMonth, endOfWeek, parseISO, differenceInMinutes, eachDayOfInterval, startOfDay, differenceInDays, endOfYear, startOfYear, subYears, addYears, isSameYear, isWithinInterval } from "date-fns";
 
 import type { ICalendarCell, IEvent } from "@/calendar/interfaces";
@@ -6,7 +6,7 @@ import type { TCalendarView, TVisibleHours, TWorkingHours } from "@/calendar/typ
 
 // ================ Header helper functions ================ //
 
-export function rangeText(view: TCalendarView, date: Date) {
+export function rangeText(view: TCalendarView, date: Date, fmt: Fmt) {
   const formatString = "d MMM yyyy";
   let start: Date;
   let end: Date;

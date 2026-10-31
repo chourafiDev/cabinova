@@ -1,4 +1,5 @@
-import type { Metadata } from "next";
+import { getTranslations } from "next-intl/server";
+import { pageTitle } from "@/i18n/titles";
 import { type Practitioner } from "@/lib/appointments";
 import { apiGet } from "@/lib/server-api";
 import { getClinicState } from "@/lib/session";
@@ -6,7 +7,7 @@ import { type AgendaSettings, DEFAULT_OPENING_HOURS } from "@/lib/settings";
 import { spaceLabel } from "@/lib/spaces";
 import { Agenda } from "./_components/agenda";
 
-export const metadata: Metadata = { title: "Agenda" };
+export const generateMetadata = () => pageTitle("appointments");
 
 /** The current space's agenda. Every member of its staff books and moves appointments. */
 export default async function AppointmentsPage() {
@@ -16,12 +17,13 @@ export default async function AppointmentsPage() {
 		apiGet<AgendaSettings>("/settings/agenda"),
 	]);
 	const space = state.status === "signed-in" ? state.session.spaces?.current : undefined;
+	const t = await getTranslations("agenda");
 
 	return (
 		<div className="grid gap-3">
 			{space && (
 				<p className="text-muted-foreground text-sm">
-					Agenda de l’espace <span className="text-foreground font-medium">{spaceLabel(space)}</span>
+					{t("spaceAgenda")} <span className="text-foreground font-medium">{spaceLabel(space)}</span>
 				</p>
 			)}
 			<Agenda

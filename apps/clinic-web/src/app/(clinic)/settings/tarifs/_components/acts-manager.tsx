@@ -1,30 +1,33 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { LuArchive, LuArchiveRestore, LuCheck, LuLoader, LuPencil, LuPlus, LuX } from "react-icons/lu";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { api } from "@/lib/api-client";
-import { type Act, mad, parseMad, toInput } from "@/lib/payments";
+import { type Act, parseMad, toInput } from "@/lib/payments";
+import { useFormat } from "@/lib/use-format";
 import { SettingsCard } from "../../_components/settings-card";
 
 /** Tarifs: acts and their price; archived ones stay on past visits. */
 export function ActsManager({ acts }: { acts: Act[] }) {
 	const [editing, setEditing] = useState<string | "new" | null>(acts.length === 0 ? "new" : null);
+	const t = useTranslations("settings.acts");
 	const active = acts.filter((a) => a.active);
 	const archived = acts.filter((a) => !a.active);
 
 	return (
 		<>
 			<SettingsCard
-				title="Tarifs"
-				description="Les actes proposés à l’encaissement, avec leur prix. Le prix reste modifiable visite par visite ; changer un tarif ne modifie pas les visites déjà encaissées."
+				title={t("title")}
+				description={t("description")}
 				action={
 					editing !== "new" && (
 						<Button size="sm" onClick={() => setEditing("new")}>
-							<LuPlus /> Nouvel acte
+							<LuPlus /> {t("new")}
 						</Button>
 					)
 				}
@@ -40,13 +43,13 @@ export function ActsManager({ acts }: { acts: Act[] }) {
 					)}
 					{active.length === 0 && editing !== "new" && (
 						<li className="text-muted-foreground px-3 py-6 text-center text-sm">
-							Aucun tarif : ajoutez vos actes (consultation, contrôle, ECG…).
+							{t("empty")}
 						</li>
 					)}
 				</ul>
 			</SettingsCard>
 			{archived.length > 0 && (
-				<SettingsCard title="Tarifs archivés" description="Plus proposés à l’encaissement ; les visites passées les gardent.">
+				<SettingsCard title={t("archivedTitle")} description={t("archivedHint")}>
 					<ul className="divide-y rounded-lg border">
 						{archived.map((a) => (
 							<ActRow key={a.id} act={a} />
@@ -61,14 +64,17 @@ export function ActsManager({ acts }: { acts: Act[] }) {
 function ActRow({ act, onEdit }: { act: Act; onEdit?: () => void }) {
 	const router = useRouter();
 	const [pending, setPending] = useState(false);
+	const t = useTranslations("settings.acts");
+	const common = useTranslations("settings.common");
+	const { mad } = useFormat();
 	const toggle = async () => {
 		setPending(true);
 		try {
 			await api(`/acts/${act.id}/${act.active ? "archive" : "restore"}`, { method: "POST" });
-			toast.success(act.active ? `« ${act.name} » archivé` : `« ${act.name} » rétabli`);
+			toast.success(t(act.active ? "archivedDone" : "restoredDone", { name: act.name }));
 			router.refresh();
 		} catch (err) {
-			toast.error(err instanceof Error ? err.message : "Action impossible");
+			toast.error(err instanceof Error ? err.message : common("error"));
 		} finally {
 			setPending(false);
 		}
@@ -81,7 +87,7 @@ function ActRow({ act, onEdit }: { act: Act; onEdit?: () => void }) {
 			<span className="text-sm tabular-nums">{mad(act.price)}</span>
 			<span className="flex gap-1">
 				{onEdit && (
-					<Button variant="ghost" size="icon" className="size-8" aria-label={`Modifier ${act.name}`} onClick={onEdit}>
+					<Button variant="ghost" size="icon" className="size-8" aria-label={t("editLabel", { name: act.name })} onClick={onEdit}>
 						<LuPencil />
 					</Button>
 				)}
@@ -90,8 +96,8 @@ function ActRow({ act, onEdit }: { act: Act; onEdit?: () => void }) {
 					size="icon"
 					className="text-muted-foreground size-8"
 					disabled={pending}
-					aria-label={act.active ? `Archiver ${act.name}` : `Rétablir ${act.name}`}
-					title={act.active ? "Archiver" : "Rétablir"}
+					aria-label={t(act.active ? "archiveLabel" : "restoreLabel", { name: act.name })}
+					title={act.active ? t("archive") : t("restore")}
 					onClick={toggle}
 				>
 					{pending ? <LuLoader className="animate-spin" /> : act.active ? <LuArchive /> : <LuArchiveRestore />}
@@ -107,12 +113,14 @@ function ActForm({ act, onDone }: { act?: Act; onDone: () => void }) {
 	const [price, setPrice] = useState(act ? toInput(act.price) : "");
 	const [error, setError] = useState<string | null>(null);
 	const [saving, setSaving] = useState(false);
+	const t = useTranslations("settings.acts");
+	const common = useTranslations("settings.common");
 
 	const save = async (e: React.FormEvent) => {
 		e.preventDefault();
 		const value = parseMad(price);
-		if (name.trim().length < 2) return setError("Nom de l’acte : 2 caractères minimum.");
-		if (value === null) return setError("Prix invalide (ex. 250 ou 250,50).");
+		if (name.trim().length < 2) return setError(t("nameError"));
+		if (value === null) return setError(t("priceError"));
 		setSaving(true);
 		setError(null);
 		try {
@@ -120,11 +128,11 @@ function ActForm({ act, onDone }: { act?: Act; onDone: () => void }) {
 				method: act ? "PUT" : "POST",
 				body: JSON.stringify({ name, price: value }),
 			});
-			toast.success(act ? "Tarif enregistré" : `« ${name.trim()} » ajouté`);
+			toast.success(act ? t("saved") : t("added", { name: name.trim() }));
 			onDone();
 			router.refresh();
 		} catch (err) {
-			setError(err instanceof Error ? err.message : "Enregistrement impossible");
+			setError(err instanceof Error ? err.message : common("saveError"));
 		} finally {
 			setSaving(false);
 		}
@@ -138,8 +146,8 @@ function ActForm({ act, onDone }: { act?: Act; onDone: () => void }) {
 						autoFocus
 						value={name}
 						maxLength={120}
-						placeholder="Ex. Consultation"
-						aria-label="Nom de l’acte"
+						placeholder={t("namePlaceholder")}
+						aria-label={t("nameLabel")}
 						onChange={(e) => setName(e.target.value)}
 						className="h-8 min-w-40 flex-1"
 					/>
@@ -148,16 +156,16 @@ function ActForm({ act, onDone }: { act?: Act; onDone: () => void }) {
 							inputMode="decimal"
 							value={price}
 							placeholder="250"
-							aria-label="Prix en MAD"
+							aria-label={t("priceLabel")}
 							onChange={(e) => setPrice(e.target.value)}
 							className="h-8 pe-11 text-end tabular-nums"
 						/>
 						<span className="text-muted-foreground pointer-events-none absolute end-2.5 top-1/2 -translate-y-1/2 text-xs">MAD</span>
 					</div>
-					<Button type="button" variant="ghost" size="icon" className="size-8" aria-label="Annuler" onClick={onDone}>
+					<Button type="button" variant="ghost" size="icon" className="size-8" aria-label={common("cancel")} onClick={onDone}>
 						<LuX />
 					</Button>
-					<Button type="submit" size="icon" className="size-8" disabled={saving} aria-label="Enregistrer">
+					<Button type="submit" size="icon" className="size-8" disabled={saving} aria-label={common("save")}>
 						{saving ? <LuLoader className="animate-spin" /> : <LuCheck />}
 					</Button>
 				</div>

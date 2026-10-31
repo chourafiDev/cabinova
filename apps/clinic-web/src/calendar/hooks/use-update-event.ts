@@ -1,4 +1,5 @@
 import { useQueryClient } from "@tanstack/react-query";
+import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 
 import { ApiError, api } from "@/lib/api-client";
@@ -12,6 +13,7 @@ import type { IEvent } from "@/calendar/interfaces";
  */
 export function useUpdateEvent() {
   const queryClient = useQueryClient();
+  const t = useTranslations("agenda");
 
   const save = async (event: IEvent, allowOverlap: boolean): Promise<void> => {
     try {
@@ -27,14 +29,14 @@ export function useUpdateEvent() {
           allowOverlap,
         }),
       });
-      toast.success("Rendez-vous déplacé");
+      toast.success(t("moved"));
     } catch (err) {
       if (err instanceof ApiError && err.code === "SLOT_TAKEN") {
         toast.error(err.message, {
-          action: { label: "Déplacer quand même", onClick: () => void save(event, true) },
+          action: { label: t("moveAnyway"), onClick: () => void save(event, true) },
         });
       } else {
-        toast.error(err instanceof Error ? err.message : "Déplacement impossible");
+        toast.error(err instanceof Error ? err.message : t("moveError"));
       }
     } finally {
       await queryClient.invalidateQueries({ queryKey: APPOINTMENTS_KEY });

@@ -1,3 +1,4 @@
+import { useTranslations } from "next-intl";
 import { fmt } from "@/calendar/locale";
 import { cva } from "class-variance-authority";
 import { endOfDay, isSameDay, parseISO, startOfDay } from "date-fns";
@@ -58,6 +59,7 @@ interface IProps extends Omit<VariantProps<typeof eventBadgeVariants>, "color" |
 }
 
 export function MonthEventBadge({ event, cellDate, eventCurrentDay, eventTotalDays, className, position: propPosition }: IProps) {
+  const t = useTranslations("agenda");
   const { badgeVariant } = useCalendar();
 
   const itemStart = startOfDay(parseISO(event.startDate));
@@ -109,10 +111,10 @@ export function MonthEventBadge({ event, cellDate, eventCurrentDay, eventTotalDa
               <p className="flex-1 truncate font-semibold">
                 {eventCurrentDay && (
                   <span className="text-xs">
-                    Jour {eventCurrentDay}/{eventTotalDays} •{" "}
+                    {t("multiDay", { day: eventCurrentDay ?? 0, total: eventTotalDays ?? 0 })} •{" "}
                   </span>
                 )}
-                {event.title}
+                <bdi>{event.title}</bdi>
               </p>
             )}
           </div>

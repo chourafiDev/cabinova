@@ -122,5 +122,41 @@
     "createError": "تعذر الإنشاء",
     "cancel": "إلغاء",
     "create": "إنشاء الفضاء"
-  }
+  },
+  "age": "{age} سنة",
+  "stats": "الإحصائيات",
+  "appointmentStatus": {
+    "scheduled": "مبرمج",
+    "confirmed": "مؤكد",
+    "arrived": "في قاعة الانتظار",
+    "in_consultation": "في الاستشارة",
+    "completed": "منتهٍ",
+    "no_show": "غائب",
+    "cancelled": "ملغى"
+  },
+  "notFound": {
+    "title": "الصفحة غير موجودة",
+    "message": "هذه الصفحة غير موجودة أو تم نقلها.",
+    "back": "العودة إلى لوحة التحكم"
+  },
+  "sex": {
+    "male": "ذكر",
+    "female": "أنثى"
+  },
+  "coverage": {
+    "none": "بدون",
+    "cnss": "CNSS (AMO)",
+    "cnops": "CNOPS",
+    "amo_tadamon": "AMO تضامن",
+    "far": "FAR",
+    "private": "تأمين خاص"
+  },
+  "pagination": {
+    "label": "ترقيم الصفحات",
+    "page": "الصفحة {page} من {total}",
+    "previous": "السابقة",
+    "next": "التالية"
+  },
+  "breadcrumb": "مسار التنقل",
+  "toasts": "الإشعارات"
 }

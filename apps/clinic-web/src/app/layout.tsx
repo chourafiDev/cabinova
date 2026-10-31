@@ -41,6 +41,7 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function RootLayout({ children }: LayoutProps<"/">) {
   const locale = await getLocale();
   const dir = directionOf(locale);
+  const t = await getTranslations("common");
 
   return (
     <html
@@ -63,7 +64,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
               <TooltipProvider>{children}</TooltipProvider>
             </QueryProvider>
           </NuqsAdapter>
-          <Toaster dir={dir} />
+          <Toaster dir={dir} containerAriaLabel={t("toasts")} />
         </ThemeProvider>
         </DirectionProvider>
         </NextIntlClientProvider>

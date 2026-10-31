@@ -1,4 +1,4 @@
-import { fmt } from "@/calendar/locale";
+import { useFmt } from "@/calendar/locale";
 import { differenceInDays, parseISO, startOfDay } from "date-fns";
 
 import { AgendaEventCard } from "@/calendar/components/agenda-view/agenda-event-card";
@@ -12,6 +12,7 @@ interface IProps {
 }
 
 export function AgendaDayGroup({ date, events, multiDayEvents }: IProps) {
+  const fmt = useFmt();
   const sortedEvents = [...events].sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
 
   return (

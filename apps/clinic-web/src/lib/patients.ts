@@ -60,36 +60,38 @@ export function formatPhone(phone: string | null) {
 }
 
 const optional = (max: number) => z.string().trim().max(max);
-const phone = z
-	.string()
-	.trim()
-	.refine((v) => !v || /^\+?\d{9,15}$/.test(v.replace(/(?!^\+)\D/g, "")), "Téléphone invalide");
 
 /** Patient form. Empty strings mean "not provided" (the API stores null). */
-export const patientSchema = z.object({
-	lastName: z.string().trim().min(1, "Nom requis").max(80),
-	firstName: z.string().trim().min(1, "Prénom requis").max(80),
-	sex: z.enum(["male", "female"], { error: "Sexe requis" }),
-	birthDate: z
-		.string()
-		.refine((v) => !v || (v >= "1900-01-01" && v <= new Date().toISOString().slice(0, 10)), "Date invalide"),
-	cin: z
+export function patientSchemaOf(t: (key: "phone" | "lastName" | "firstName" | "sex" | "date" | "cin" | "email") => string) {
+	const phone = z
 		.string()
 		.trim()
-		.toUpperCase()
-		.refine((v) => !v || /^[A-Z]{1,2}\d{1,7}$/.test(v), "CIN invalide (ex. BK123456)"),
-	phone,
-	email: z.union([z.literal(""), z.email("E-mail invalide")]),
-	address: optional(300),
-	city: optional(80),
-	coverage: z.enum(Object.keys(COVERAGE_LABELS) as [Coverage, ...Coverage[]]),
-	coverageNumber: optional(50),
-	insurer: optional(120),
-	emergencyContactName: optional(120),
-	emergencyContactPhone: phone,
-	notes: optional(2000),
-});
-export type PatientInput = z.infer<typeof patientSchema>;
+		.refine((v) => !v || /^\+?\d{9,15}$/.test(v.replace(/(?!^\+)\D/g, "")), t("phone"));
+	return z.object({
+		lastName: z.string().trim().min(1, t("lastName")).max(80),
+		firstName: z.string().trim().min(1, t("firstName")).max(80),
+		sex: z.enum(["male", "female"], { error: t("sex") }),
+		birthDate: z
+			.string()
+			.refine((v) => !v || (v >= "1900-01-01" && v <= new Date().toISOString().slice(0, 10)), t("date")),
+		cin: z
+			.string()
+			.trim()
+			.toUpperCase()
+			.refine((v) => !v || /^[A-Z]{1,2}\d{1,7}$/.test(v), t("cin")),
+		phone,
+		email: z.union([z.literal(""), z.email(t("email"))]),
+		address: optional(300),
+		city: optional(80),
+		coverage: z.enum(Object.keys(COVERAGE_LABELS) as [Coverage, ...Coverage[]]),
+		coverageNumber: optional(50),
+		insurer: optional(120),
+		emergencyContactName: optional(120),
+		emergencyContactPhone: phone,
+		notes: optional(2000),
+	});
+}
+export type PatientInput = z.infer<ReturnType<typeof patientSchemaOf>>;
 
 export const EMPTY_PATIENT: PatientInput = {
 	lastName: "",
@@ -145,13 +147,13 @@ export type MedicalProfile = {
 
 /** The text fields of the medical profile, in display order. */
 export const PROFILE_FIELDS = [
-	{ name: "allergies", label: "Allergies", placeholder: "Médicaments, aliments… ou « Aucune connue »", alert: true },
-	{ name: "currentTreatments", label: "Traitements en cours", placeholder: "Médicament, dose, fréquence" },
-	{ name: "chronicConditions", label: "Maladies chroniques", placeholder: "Diabète, HTA, asthme…" },
-	{ name: "medicalHistory", label: "Antécédents médicaux" },
-	{ name: "surgicalHistory", label: "Antécédents chirurgicaux" },
-	{ name: "familyHistory", label: "Antécédents familiaux" },
-] as const satisfies readonly { name: keyof MedicalProfile; label: string; placeholder?: string; alert?: boolean }[];
+	{ name: "allergies", placeholder: true, alert: true },
+	{ name: "currentTreatments", placeholder: true },
+	{ name: "chronicConditions", placeholder: true },
+	{ name: "medicalHistory" },
+	{ name: "surgicalHistory" },
+	{ name: "familyHistory" },
+] as const satisfies readonly { name: keyof MedicalProfile; placeholder?: boolean; alert?: boolean }[];
 
 /** GET /patients/:id — `medicalProfile` only for doctors (undefined otherwise, null when empty). */
 export type PatientFile = Patient & { medicalProfile?: MedicalProfile | null };

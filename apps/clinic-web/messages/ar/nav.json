@@ -15,5 +15,15 @@
     "staff": "الفريق",
     "settings": "الإعدادات"
   },
-  "home": "{cabinet} — لوحة التحكم"
+  "home": "{cabinet} — لوحة التحكم",
+  "titles": {
+    "settings": "{page} · الإعدادات",
+    "activity": "سجل النشاط",
+    "tarifs": "الأسعار",
+    "spaces": "الفضاءات",
+    "sessions": "الجلسات النشطة",
+    "cabinet": "العيادة",
+    "profile": "ملفي الشخصي",
+    "hours": "أوقات العمل والمواعيد"
+  }
 }

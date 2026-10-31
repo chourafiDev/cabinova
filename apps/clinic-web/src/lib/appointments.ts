@@ -25,16 +25,6 @@ export const APPOINTMENT_STATUSES = [
 ] as const;
 export type AppointmentStatus = (typeof APPOINTMENT_STATUSES)[number];
 
-export const STATUS_LABELS: Record<AppointmentStatus, string> = {
-	scheduled: "Planifié",
-	confirmed: "Confirmé",
-	arrived: "En salle d'attente",
-	in_consultation: "En consultation",
-	completed: "Terminé",
-	no_show: "Absent",
-	cancelled: "Annulé",
-};
-
 /** Event colour on the agenda = status. */
 export const STATUS_COLORS: Record<AppointmentStatus, TEventColor> = {
 	scheduled: "blue",
@@ -107,5 +97,9 @@ export function visibleRange(view: TCalendarView, date: Date) {
 export const DURATIONS = [10, 15, 20, 30, 45, 60, 90, 120];
 
 /** 30 → "30 min", 90 → "1 h 30". */
-export const durationLabel = (min: number) =>
-	min < 60 ? `${min} min` : `${Math.floor(min / 60)} h${min % 60 ? ` ${String(min % 60).padStart(2, "0")}` : ""}`;
+export function durationLabel(min: number, locale = "fr-MA") {
+	const [minutes, hours] = locale.startsWith("ar") ? ["د", "س"] : ["min", "h"];
+	if (min < 60) return `${min} ${minutes}`;
+	const rest = min % 60;
+	return `${Math.floor(min / 60)} ${hours}${rest ? ` ${String(rest).padStart(2, "0")}` : ""}`;
+}

@@ -2,6 +2,7 @@
 
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { useState } from "react";
 import {
 	LuCircleCheck,
@@ -29,18 +30,16 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { api } from "@/lib/api-client";
-import { formatDate } from "@/lib/format";
 import { formatFileNumber } from "@/lib/patients";
 import {
 	type Account,
 	type Act,
-	mad,
-	METHOD_LABELS,
 	METHODS,
 	type PaymentMethod,
 	parseMad,
 	toInput,
 } from "@/lib/payments";
+import { useFormat } from "@/lib/use-format";
 import { cn } from "@/lib/utils";
 
 /** Queries a checkout refreshes (desk, patient file, visit). */
@@ -56,7 +55,6 @@ const rowOf = (item: { actId: string | null; label: string; unitPrice: number; q
 	price: toInput(item.unitPrice),
 	quantity: item.quantity,
 });
-const time = (iso: string) => formatDate(iso, { day: undefined, month: undefined, year: undefined, hour: "2-digit", minute: "2-digit" });
 
 /**
  * Encaisser a visit: its acts (from the price list, prices adjustable),
@@ -94,13 +92,14 @@ function Checkout({
 		queryFn: () => api<Account>(`/appointments/${appointmentId}/account`),
 	});
 	const acts = useQuery({ queryKey: ["acts"], queryFn: () => api<Act[]>("/acts") });
+	const t = useTranslations("payments.checkout");
 
 	if (!account.data || !acts.data) {
 		return (
 			<div className="grid gap-4">
 				<DialogHeader>
-					<DialogTitle>Encaisser</DialogTitle>
-					<DialogDescription>Chargement de la visite…</DialogDescription>
+					<DialogTitle>{t("title")}</DialogTitle>
+					<DialogDescription>{t("loading")}</DialogDescription>
 				</DialogHeader>
 				<Skeleton className="h-32" />
 				{account.error && <p className="text-destructive text-sm">{account.error.message}</p>}
@@ -132,6 +131,10 @@ function CheckoutForm({
 	const [error, setError] = useState<string | null>(null);
 	const [saving, setSaving] = useState(false);
 	const [paid, setPaid] = useState<{ id: string; receiptNumber: string | null; amount: number } | null>(null);
+	const t = useTranslations("payments.checkout");
+	const payments = useTranslations("payments");
+	const format = useFormat();
+	const { mad } = format;
 
 	const prices = rows.map((r) => parseMad(r.price));
 	const invalid = rows.some((r, i) => prices[i] === null || !r.label.trim());
@@ -159,10 +162,10 @@ function CheckoutForm({
 
 	const save = async (withPayment: boolean) => {
 		setError(null);
-		if (rows.length === 0) return setError("Ajoutez au moins un acte.");
-		if (invalid) return setError("Vérifiez les actes : chaque ligne a un libellé et un prix.");
-		if (withPayment && (amountValue === null || amountValue <= 0)) return setError("Montant invalide.");
-		if (withPayment && amountValue! > remaining) return setError(`Le montant dépasse le reste à payer (${mad(remaining)}).`);
+		if (rows.length === 0) return setError(t("addAct"));
+		if (invalid) return setError(t("checkActs"));
+		if (withPayment && (amountValue === null || amountValue <= 0)) return setError(t("invalidAmount"));
+		if (withPayment && amountValue! > remaining) return setError(t("tooMuch", { amount: mad(remaining) }));
 		setSaving(true);
 		try {
 			const res = await api<Account & { paymentId: string | null }>(`/appointments/${visit.id}/checkout`, {
@@ -185,11 +188,11 @@ function CheckoutForm({
 				const payment = res.payments.find((p) => p.id === res.paymentId)!;
 				setPaid({ id: payment.id, receiptNumber: payment.receiptNumber, amount: payment.amount });
 			} else {
-				toast.success("Actes enregistrés");
+				toast.success(t("actsSaved"));
 				onDone();
 			}
 		} catch (err) {
-			setError(err instanceof Error ? err.message : "Enregistrement impossible");
+			setError(err instanceof Error ? err.message : t("saveError"));
 		} finally {
 			setSaving(false);
 		}
@@ -201,26 +204,26 @@ function CheckoutForm({
 		return (
 			<div className="grid gap-5">
 				<DialogHeader>
-					<DialogTitle className="sr-only">Paiement enregistré</DialogTitle>
-					<DialogDescription className="sr-only">Le reçu est prêt à imprimer.</DialogDescription>
+					<DialogTitle className="sr-only">{t("paidTitle")}</DialogTitle>
+					<DialogDescription className="sr-only">{t("receiptReady")}</DialogDescription>
 				</DialogHeader>
 				<div className="flex flex-col items-center gap-2 py-4 text-center">
 					<span className="flex size-12 items-center justify-center rounded-full bg-emerald-50 text-emerald-600 dark:bg-emerald-500/15 dark:text-emerald-300">
 						<LuCircleCheck className="size-6" />
 					</span>
-					<p className="text-lg font-semibold">{mad(paid.amount)} encaissés</p>
+					<p className="text-lg font-semibold">{t("received", { amount: mad(paid.amount) })}</p>
 					<p className="text-muted-foreground text-sm">
-						{patientName} · reçu <span className="font-mono">{paid.receiptNumber}</span>
-						{account.balance > 0 ? ` · reste ${mad(account.balance)}` : " · visite réglée"}
+						{patientName} · {t("receipt")} <span className="font-mono">{paid.receiptNumber}</span>
+						{account.balance > 0 ? ` · ${t("remaining", { amount: mad(account.balance) })}` : ` · ${t("settled")}`}
 					</p>
 				</div>
 				<DialogFooter>
 					<Button variant="outline" onClick={onDone}>
-						Terminé
+						{t("finish")}
 					</Button>
 					<Button asChild>
 						<a href={`/receipts/${paid.id}`} target="_blank" rel="noopener">
-							<LuPrinter /> Imprimer le reçu
+							<LuPrinter /> {t("print")}
 						</a>
 					</Button>
 				</DialogFooter>
@@ -235,10 +238,10 @@ function CheckoutForm({
 	return (
 		<div className="grid gap-5">
 			<DialogHeader>
-				<DialogTitle>Encaisser · {patientName}</DialogTitle>
+				<DialogTitle>{t("titleFor", { name: patientName })}</DialogTitle>
 				<DialogDescription>
 					<span className="first-letter:uppercase">
-						{formatDate(visit.startsAt, { weekday: "long", year: undefined, hour: "2-digit", minute: "2-digit" })}
+						{format.date(visit.startsAt, { weekday: "long", year: undefined, hour: "2-digit", minute: "2-digit" })}
 					</span>{" "}
 					· {visit.practitioner.name} · {formatFileNumber(visit.patient.fileNumber)}
 				</DialogDescription>
@@ -247,19 +250,19 @@ function CheckoutForm({
 			{locked && (
 				<p className="bg-muted text-muted-foreground flex items-start gap-2 rounded-lg p-3 text-sm">
 					<LuLock className="mt-0.5 size-4 shrink-0" />
-					La caisse du jour est clôturée : plus aucun paiement aujourd’hui dans cet espace.
+					{t("locked")}
 				</p>
 			)}
 
 			<section className="grid gap-2">
-				<h3 className="text-sm font-medium">Actes</h3>
+				<h3 className="text-sm font-medium">{t("acts")}</h3>
 				{rows.length > 0 && (
 					<ul className="grid gap-2">
 						{rows.map((r, i) => (
 							<li key={r.key} className="grid grid-cols-[minmax(0,1fr)_3.5rem_6rem_2rem] items-center gap-2">
 								<Input
 									value={r.label}
-									aria-label="Libellé"
+									aria-label={t("label")}
 									maxLength={120}
 									onChange={(e) => setRow(r.key, { label: e.target.value })}
 									className="h-9"
@@ -269,7 +272,7 @@ function CheckoutForm({
 									min={1}
 									max={99}
 									value={r.quantity}
-									aria-label="Quantité"
+									aria-label={t("quantity")}
 									onChange={(e) => setRow(r.key, { quantity: Math.min(99, Math.max(1, Number(e.target.value) || 1)) })}
 									className="h-9 text-center tabular-nums"
 								/>
@@ -277,7 +280,7 @@ function CheckoutForm({
 									<Input
 										inputMode="decimal"
 										value={r.price}
-										aria-label="Prix unitaire en MAD"
+										aria-label={t("unitPrice")}
 										aria-invalid={prices[i] === null}
 										onChange={(e) => setRow(r.key, { price: e.target.value })}
 										className="h-9 pe-10 text-end tabular-nums"
@@ -291,7 +294,7 @@ function CheckoutForm({
 									variant="ghost"
 									size="icon"
 									className="text-muted-foreground size-8"
-									aria-label={`Retirer ${r.label}`}
+									aria-label={t("remove", { label: r.label })}
 									onClick={() => setRows((all) => all.filter((x) => x.key !== r.key))}
 								>
 									<LuX />
@@ -313,29 +316,29 @@ function CheckoutForm({
 						className="text-muted-foreground h-7 font-normal"
 						onClick={() => setRows((all) => [...all, rowOf({ actId: null, label: "", unitPrice: 0, quantity: 1 })])}
 					>
-						<LuPlus /> Ligne libre
+						<LuPlus /> {t("freeLine")}
 					</Button>
 				</div>
 				{acts.length === 0 && (
 					<p className="text-muted-foreground text-xs">
-						{owner ? "Ajoutez vos tarifs dans Paramètres › Tarifs pour les retrouver ici." : "Aucun tarif enregistré : saisissez une ligne libre."}
+						{owner ? t("noActsOwner") : t("noActs")}
 					</p>
 				)}
 			</section>
 
 			<dl className="bg-muted/50 grid gap-1.5 rounded-lg p-3 text-sm">
 				<div className="flex justify-between">
-					<dt className="text-muted-foreground">Total</dt>
+					<dt className="text-muted-foreground">{t("total")}</dt>
 					<dd className="font-medium tabular-nums">{mad(total)}</dd>
 				</div>
 				{account.paid !== 0 && (
 					<div className="flex justify-between">
-						<dt className="text-muted-foreground">Déjà payé</dt>
+						<dt className="text-muted-foreground">{t("alreadyPaid")}</dt>
 						<dd className="tabular-nums">{mad(account.paid)}</dd>
 					</div>
 				)}
 				<div className="flex justify-between border-t pt-1.5">
-					<dt className="font-medium">{remaining < 0 ? "Trop-perçu (à rembourser)" : "Reste à payer"}</dt>
+					<dt className="font-medium">{remaining < 0 ? t("overpaid") : t("due")}</dt>
 					<dd className="font-semibold tabular-nums">{mad(Math.abs(remaining))}</dd>
 				</div>
 			</dl>
@@ -353,8 +356,8 @@ function CheckoutForm({
 
 			{!locked && remaining > 0 && (
 				<section className="grid gap-3">
-					<h3 className="text-sm font-medium">Paiement</h3>
-					<div className="flex flex-wrap gap-1.5" role="radiogroup" aria-label="Mode de paiement">
+					<h3 className="text-sm font-medium">{t("payment")}</h3>
+					<div className="flex flex-wrap gap-1.5" role="radiogroup" aria-label={payments("methods.label")}>
 						{METHODS.map((m) => (
 							<button
 								key={m.value}
@@ -369,7 +372,7 @@ function CheckoutForm({
 										: "bg-background text-muted-foreground hover:text-foreground",
 								)}
 							>
-								{m.label}
+								{payments(`methods.${m.value}`)}
 							</button>
 						))}
 					</div>
@@ -378,7 +381,7 @@ function CheckoutForm({
 							<Input
 								inputMode="decimal"
 								value={amountText}
-								aria-label="Montant reçu en MAD"
+								aria-label={t("amountReceived")}
 								aria-invalid={amountText !== "" && amountValue === null}
 								onChange={(e) => setAmount(e.target.value)}
 								className="pe-12 text-end text-base font-medium tabular-nums"
@@ -391,13 +394,13 @@ function CheckoutForm({
 							<Input
 								value={reference}
 								maxLength={80}
-								placeholder={`${methodInfo.reference} (facultatif)`}
+								placeholder={payments("references.optional", { label: payments(`references.${method as "card"}`) })}
 								onChange={(e) => setReference(e.target.value)}
 							/>
 						)}
 					</div>
 					{amountValue !== null && amountValue < remaining && amountValue > 0 && (
-						<p className="text-muted-foreground text-xs">Paiement partiel : il restera {mad(remaining - amountValue)} à payer.</p>
+						<p className="text-muted-foreground text-xs">{t("partial", { amount: mad(remaining - amountValue) })}</p>
 					)}
 				</section>
 			)}
@@ -412,21 +415,21 @@ function CheckoutForm({
 				{!locked && remaining > 0 ? (
 					<>
 						<Button type="button" variant="outline" disabled={saving || !changed} onClick={() => save(false)}>
-							Enregistrer sans encaisser
+							{t("saveOnly")}
 						</Button>
 						<Button type="button" disabled={saving} onClick={() => save(true)}>
-							{saving ? <LuLoader className="animate-spin" /> : <LuReceipt />} Encaisser{" "}
+							{saving ? <LuLoader className="animate-spin" /> : <LuReceipt />} {t("collect")}{" "}
 							{amountValue ? mad(amountValue) : ""}
 						</Button>
 					</>
 				) : (
 					<>
 						<Button type="button" variant="outline" onClick={onDone}>
-							Fermer
+							{t("close")}
 						</Button>
 						{changed && (
 							<Button type="button" disabled={saving} onClick={() => save(false)}>
-								{saving && <LuLoader className="animate-spin" />} Enregistrer les actes
+								{saving && <LuLoader className="animate-spin" />} {t("saveActs")}
 							</Button>
 						)}
 					</>
@@ -448,16 +451,20 @@ function Movements({
 }) {
 	const [cancelling, setCancelling] = useState<string | null>(null);
 	const [refunding, setRefunding] = useState(false);
+	const t = useTranslations("payments.movements");
+	const methods = useTranslations("payments.methods");
+	const format = useFormat();
+	const { mad, clock: time } = format;
 	const owner = user.role === "owner";
 	const canRefund = owner && !account.dayClosed && account.paid > 0 && account.chargeId;
 
 	return (
 		<section className="grid gap-2">
 			<div className="flex items-center justify-between gap-2">
-				<h3 className="text-sm font-medium">Paiements</h3>
+				<h3 className="text-sm font-medium">{t("payments")}</h3>
 				{canRefund && !refunding && (
 					<Button type="button" variant="ghost" size="sm" className="h-7" onClick={() => setRefunding(true)}>
-						<LuUndo2 /> Rembourser
+						<LuUndo2 /> {t("refund")}
 					</Button>
 				)}
 			</div>
@@ -470,40 +477,44 @@ function Movements({
 								{mad(p.amount)}
 							</span>
 							<span className="text-muted-foreground">
-								{p.kind === "refund" ? "Remboursement" : METHOD_LABELS[p.method]}
-								{p.kind === "refund" && ` (${METHOD_LABELS[p.method].toLowerCase()})`}
+								{p.kind === "refund" ? t("refundLabel") : methods(p.method)}
+								{p.kind === "refund" && ` (${methods(p.method).toLowerCase()})`}
 								{p.reference && ` · ${p.reference}`} · {time(p.receivedAt)}
 								{p.receivedBy && ` · ${p.receivedBy}`}
 							</span>
 							{p.cancelledAt && (
 								<Badge variant="outline" className="font-normal">
-									Annulé
+									{t("cancelled")}
 								</Badge>
 							)}
 							<span className="ms-auto flex items-center gap-1">
 								{p.receiptNumber && !p.cancelledAt && (
 									<Button asChild variant="ghost" size="sm" className="h-7 font-mono text-xs">
-										<a href={`/receipts/${p.id}`} target="_blank" rel="noopener" title="Imprimer le reçu">
+										<a href={`/receipts/${p.id}`} target="_blank" rel="noopener" title={t("print")}>
 											<LuPrinter /> {p.receiptNumber}
 										</a>
 									</Button>
 								)}
 								{!p.cancelledAt && !p.locked && (owner || p.receivedById === user.id) && cancelling !== p.id && (
 									<Button type="button" variant="ghost" size="sm" className="text-muted-foreground h-7" onClick={() => setCancelling(p.id)}>
-										Annuler
+										{t("cancel")}
 									</Button>
 								)}
 							</span>
 						</div>
 						{(p.cancelReason || p.reason) && (
 							<p className="text-muted-foreground text-xs">
-								{p.cancelledAt ? `Annulé${p.cancelledBy ? ` par ${p.cancelledBy}` : ""} : ${p.cancelReason}` : `Motif : ${p.reason}`}
+								{p.cancelledAt
+									? p.cancelledBy
+										? t("cancelledByReason", { name: p.cancelledBy, reason: p.cancelReason ?? "" })
+										: t("cancelledReason", { reason: p.cancelReason ?? "" })
+									: t("reason", { reason: p.reason ?? "" })}
 							</p>
 						)}
 						{cancelling === p.id && (
 							<ReasonForm
-								label="Raison de l’annulation"
-								action="Annuler le paiement"
+								label={t("cancelLabel")}
+								action={t("cancelAction")}
 								onCancel={() => setCancelling(null)}
 								onSubmit={async (reason) => {
 									const next = await api<Account>(`/payments/${p.id}/cancel`, {
@@ -511,7 +522,7 @@ function Movements({
 										body: JSON.stringify({ reason }),
 									});
 									setCancelling(null);
-									toast.success("Paiement annulé");
+									toast.success(t("paymentCancelled"));
 									await onChange(next);
 								}}
 							/>
@@ -527,7 +538,7 @@ function Movements({
 					onCancel={() => setRefunding(false)}
 					onDone={async (next) => {
 						setRefunding(false);
-						toast.success("Remboursement enregistré");
+						toast.success(t("refunded"));
 						await onChange(next);
 					}}
 				/>
@@ -549,17 +560,18 @@ function ReasonForm({
 }) {
 	const [reason, setReason] = useState("");
 	const [pending, setPending] = useState(false);
+	const t = useTranslations("payments.movements");
 	return (
 		<form
 			className="flex flex-wrap gap-2"
 			onSubmit={async (e) => {
 				e.preventDefault();
-				if (reason.trim().length < 3) return toast.error("Indiquez la raison (3 caractères minimum).");
+				if (reason.trim().length < 3) return toast.error(t("reasonRequired"));
 				setPending(true);
 				try {
 					await onSubmit(reason.trim());
 				} catch (err) {
-					toast.error(err instanceof Error ? err.message : "Action impossible");
+					toast.error(err instanceof Error ? err.message : t("error"));
 				} finally {
 					setPending(false);
 				}
@@ -567,7 +579,7 @@ function ReasonForm({
 		>
 			<Input autoFocus value={reason} maxLength={300} placeholder={label} aria-label={label} onChange={(e) => setReason(e.target.value)} className="h-8 min-w-48 flex-1" />
 			<Button type="button" variant="ghost" size="sm" className="h-8" onClick={onCancel}>
-				Retour
+				{t("back")}
 			</Button>
 			<Button type="submit" variant="destructive" size="sm" className="h-8" disabled={pending}>
 				{pending && <LuLoader className="animate-spin" />} {action}
@@ -594,14 +606,17 @@ function RefundForm({
 	const [reason, setReason] = useState("");
 	const [pending, setPending] = useState(false);
 	const value = parseMad(amount);
+	const t = useTranslations("payments.movements");
+	const methods = useTranslations("payments.methods");
+	const { mad } = useFormat();
 
 	return (
 		<form
 			className="bg-muted/40 grid gap-2 rounded-lg border p-3"
 			onSubmit={async (e) => {
 				e.preventDefault();
-				if (value === null || value <= 0 || value > max) return toast.error(`Montant entre 0 et ${mad(max)}.`);
-				if (reason.trim().length < 3) return toast.error("Indiquez la raison (3 caractères minimum).");
+				if (value === null || value <= 0 || value > max) return toast.error(t("amountRange", { max: mad(max) }));
+				if (reason.trim().length < 3) return toast.error(t("reasonRequired"));
 				setPending(true);
 				try {
 					await onDone(
@@ -611,38 +626,38 @@ function RefundForm({
 						}),
 					);
 				} catch (err) {
-					toast.error(err instanceof Error ? err.message : "Remboursement impossible");
+					toast.error(err instanceof Error ? err.message : t("refundError"));
 				} finally {
 					setPending(false);
 				}
 			}}
 		>
-			<p className="text-sm font-medium">Rembourser le patient</p>
+			<p className="text-sm font-medium">{t("refundTitle")}</p>
 			<div className="grid gap-2 sm:grid-cols-2">
 				<div className="relative">
-					<Input inputMode="decimal" value={amount} aria-label="Montant remboursé en MAD" onChange={(e) => setAmount(e.target.value)} className="h-8 pe-12 text-end tabular-nums" />
+					<Input inputMode="decimal" value={amount} aria-label={t("refundAmount")} onChange={(e) => setAmount(e.target.value)} className="h-8 pe-12 text-end tabular-nums" />
 					<span className="text-muted-foreground pointer-events-none absolute end-3 top-1/2 -translate-y-1/2 text-xs">MAD</span>
 				</div>
 				<Select value={method} onValueChange={(v) => setMethod(v as PaymentMethod)}>
-					<SelectTrigger size="sm" aria-label="Mode de remboursement" className="w-full">
+					<SelectTrigger size="sm" aria-label={t("refundMethod")} className="w-full">
 						<SelectValue />
 					</SelectTrigger>
 					<SelectContent>
 						{METHODS.map((m) => (
 							<SelectItem key={m.value} value={m.value}>
-								{m.label}
+								{methods(m.value)}
 							</SelectItem>
 						))}
 					</SelectContent>
 				</Select>
 			</div>
-			<Input value={reason} maxLength={300} placeholder="Raison du remboursement" aria-label="Raison du remboursement" onChange={(e) => setReason(e.target.value)} className="h-8" />
+			<Input value={reason} maxLength={300} placeholder={t("refundReason")} aria-label={t("refundReason")} onChange={(e) => setReason(e.target.value)} className="h-8" />
 			<div className="flex justify-end gap-2">
 				<Button type="button" variant="ghost" size="sm" onClick={onCancel}>
-					Retour
+					{t("back")}
 				</Button>
 				<Button type="submit" size="sm" disabled={pending}>
-					{pending && <LuLoader className="animate-spin" />} Rembourser {value ? mad(value) : ""}
+					{pending && <LuLoader className="animate-spin" />} {t("refund")} {value ? mad(value) : ""}
 				</Button>
 			</div>
 		</form>

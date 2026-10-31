@@ -122,5 +122,41 @@
     "createError": "Création impossible",
     "cancel": "Annuler",
     "create": "Créer l’espace"
-  }
+  },
+  "age": "{age} ans",
+  "stats": "Statistiques",
+  "appointmentStatus": {
+    "scheduled": "Planifié",
+    "confirmed": "Confirmé",
+    "arrived": "En salle d’attente",
+    "in_consultation": "En consultation",
+    "completed": "Terminé",
+    "no_show": "Absent",
+    "cancelled": "Annulé"
+  },
+  "notFound": {
+    "title": "Page introuvable",
+    "message": "Cette page n’existe pas ou a été déplacée.",
+    "back": "Retour au tableau de bord"
+  },
+  "sex": {
+    "male": "Homme",
+    "female": "Femme"
+  },
+  "coverage": {
+    "none": "Aucune",
+    "cnss": "CNSS (AMO)",
+    "cnops": "CNOPS",
+    "amo_tadamon": "AMO Tadamon",
+    "far": "FAR",
+    "private": "Assurance privée"
+  },
+  "pagination": {
+    "label": "Pagination",
+    "page": "Page {page} sur {total}",
+    "previous": "Précédente",
+    "next": "Suivante"
+  },
+  "breadcrumb": "Fil d’Ariane",
+  "toasts": "Notifications"
 }

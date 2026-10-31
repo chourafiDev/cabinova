@@ -1,11 +1,11 @@
-import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { settingsTitle } from "@/i18n/titles";
 import { apiGet } from "@/lib/server-api";
 import { getClinicState } from "@/lib/session";
 import type { TeamSession } from "@/lib/settings";
 import { TeamSessions } from "./_components/team-sessions";
 
-export const metadata: Metadata = { title: "Sessions actives · Paramètres" };
+export const generateMetadata = () => settingsTitle("sessions");
 
 /** Who is signed in, on what, and since when: for the responsible doctor. */
 export default async function SessionsPage() {

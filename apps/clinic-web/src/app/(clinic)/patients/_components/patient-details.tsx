@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { differenceInMinutes } from "date-fns";
+import { useTranslations } from "next-intl";
 import { LuArchive, LuArchiveRestore, LuCalendarClock, LuCalendarPlus, LuContactRound, LuEllipsis, LuIdCard, LuMail, LuMapPin, LuPencil, LuPhone, LuShieldCheck, LuStickyNote, LuTriangleAlert } from "react-icons/lu";
 import { useState } from "react";
 import { AppointmentStatusBadge } from "@/components/appointment-status-badge";
@@ -16,9 +17,9 @@ import {
 import { SheetDescription, SheetTitle } from "@/components/ui/sheet";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { Appointment } from "@/lib/appointments";
-import { clock } from "@/lib/dashboard";
-import { formatDate, initials } from "@/lib/format";
-import { ageOf, COVERAGE_LABELS, formatFileNumber, formatPhone, fullName, type PatientFile, SEX_LABELS } from "@/lib/patients";
+import { initials } from "@/lib/format";
+import { ageOf, formatFileNumber, formatPhone, fullName, type PatientFile } from "@/lib/patients";
+import { useFormat } from "@/lib/use-format";
 import { cn } from "@/lib/utils";
 import { ArchiveDialog } from "./archive-button";
 import { PatientBalance, PatientPayments } from "./patient-payments";
@@ -28,10 +29,8 @@ import { MedicalProfile } from "./medical-profile-card";
 const now = () => Date.now();
 const ACTIVE = new Set(["scheduled", "confirmed", "arrived", "in_consultation"]);
 
-const dayLabel = (iso: string) =>
-	formatDate(iso, { weekday: "long", day: "numeric", month: "long", year: undefined });
-const monthShort = (iso: string) => formatDate(iso, { month: "short", day: undefined, year: undefined }).replace(".", "");
-const dayNumber = (iso: string) => formatDate(iso, { day: "numeric", month: undefined, year: undefined });
+const dayLabel = (format: ReturnType<typeof useFormat>, iso: string) =>
+	format.date(iso, { weekday: "long", day: "numeric", month: "long", year: undefined });
 
 /** Header of the file: identity at a glance, one-click contact, main actions. */
 export function PatientHeader({
@@ -45,6 +44,8 @@ export function PatientHeader({
 }) {
 	const age = ageOf(patient.birthDate);
 	const archived = patient.archivedAt !== null;
+	const t = useTranslations("patients.details");
+	const common = useTranslations("common");
 
 	return (
 		<div className="grid gap-4 border-b p-5 pe-12">
@@ -60,19 +61,19 @@ export function PatientHeader({
 				<div className="grid min-w-0 gap-1">
 					<SheetTitle className="flex flex-wrap items-center gap-2 text-xl leading-tight font-semibold">
 						<span className="truncate">{fullName(patient)}</span>
-						{archived && <Badge variant="secondary">Archivé</Badge>}
+						{archived && <Badge variant="secondary">{t("archived")}</Badge>}
 					</SheetTitle>
 					<SheetDescription className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm">
 						<span className="font-mono text-xs tabular-nums">{formatFileNumber(patient.fileNumber)}</span>
 						<span aria-hidden>·</span>
 						<span>
-							{SEX_LABELS[patient.sex]}
-							{age !== null && `, ${age} ans`}
+							{common(`sex.${patient.sex}`)}
+							{age !== null && `, ${common("age", { age })}`}
 						</span>
 						{patient.coverage !== "none" && (
 							<>
 								<span aria-hidden>·</span>
-								<span>{COVERAGE_LABELS[patient.coverage]}</span>
+								<span>{common(`coverage.${patient.coverage}`)}</span>
 							</>
 						)}
 					</SheetDescription>
@@ -105,27 +106,27 @@ export function PatientHeader({
 			<div className="flex items-center gap-2">
 				{archived ? (
 					<Button variant="outline" size="sm" onClick={onArchive}>
-						<LuArchiveRestore /> Restaurer le dossier
+						<LuArchiveRestore /> {t("restore")}
 					</Button>
 				) : (
 					<>
 						<Button asChild size="sm">
 							<Link href={`/appointments?book=${patient.id}`}>
-								<LuCalendarPlus /> Prendre rendez-vous
+								<LuCalendarPlus /> {t("book")}
 							</Link>
 						</Button>
 						<Button variant="outline" size="sm" onClick={onEdit}>
-							<LuPencil /> Modifier
+							<LuPencil /> {t("edit")}
 						</Button>
 						<DropdownMenu>
 							<DropdownMenuTrigger asChild>
-								<Button variant="ghost" size="icon-sm" aria-label="Plus d’actions" className="ms-auto">
+								<Button variant="ghost" size="icon-sm" aria-label={t("moreActions")} className="ms-auto">
 									<LuEllipsis />
 								</Button>
 							</DropdownMenuTrigger>
 							<DropdownMenuContent align="end" className="min-w-44">
 								<DropdownMenuItem onSelect={onArchive}>
-									<LuArchive /> Archiver le dossier
+									<LuArchive /> {t("archive")}
 								</DropdownMenuItem>
 							</DropdownMenuContent>
 						</DropdownMenu>
@@ -149,6 +150,7 @@ function InfoCard({
 	onComplete?: () => void;
 }) {
 	const filled = rows.filter(([, v]) => v);
+	const t = useTranslations("patients.details");
 	return (
 		<section className="rounded-xl border p-4">
 			<h3 className="text-muted-foreground mb-3 flex items-center gap-2 text-xs font-medium">
@@ -157,12 +159,12 @@ function InfoCard({
 			</h3>
 			{filled.length === 0 ? (
 				<p className="text-muted-foreground text-sm">
-					Non renseigné
+					{t("notProvided")}
 					{onComplete && (
 						<>
 							{" · "}
 							<button type="button" onClick={onComplete} className="text-primary font-medium hover:underline">
-								Compléter
+								{t("complete")}
 							</button>
 						</>
 					)}
@@ -182,6 +184,7 @@ function InfoCard({
 }
 
 function DateTile({ iso, muted }: { iso: string; muted?: boolean }) {
+	const format = useFormat();
 	return (
 		<span
 			className={cn(
@@ -189,22 +192,24 @@ function DateTile({ iso, muted }: { iso: string; muted?: boolean }) {
 				muted ? "bg-muted/50 text-muted-foreground" : "bg-background",
 			)}
 		>
-			<span className="text-[10px] uppercase">{monthShort(iso)}</span>
-			<span className="text-base font-semibold tabular-nums">{dayNumber(iso)}</span>
+			<span className="text-[10px] uppercase">{format.date(iso, { month: "short", day: undefined, year: undefined }).replace(".", "")}</span>
+			<span className="text-base font-semibold tabular-nums">{format.date(iso, { day: "numeric", month: undefined, year: undefined })}</span>
 		</span>
 	);
 }
 
 function AppointmentRow({ a, muted }: { a: Appointment; muted?: boolean }) {
+	const t = useTranslations("patients.details");
+	const format = useFormat();
 	return (
 		<li className="flex items-center gap-3 py-2.5">
 			<DateTile iso={a.startsAt} muted={muted} />
 			<div className="min-w-0 flex-1">
 				<p className="truncate text-sm font-medium first-letter:uppercase">
-					{dayLabel(a.startsAt)} · {clock(a.startsAt)}
+					{dayLabel(format, a.startsAt)} · {format.clock(a.startsAt)}
 				</p>
 				<p className="text-muted-foreground truncate text-xs">
-					{[a.practitioner.name, a.reason, `${differenceInMinutes(new Date(a.endsAt), new Date(a.startsAt))} min`]
+					{[a.practitioner.name, a.reason, t("minutes", { count: differenceInMinutes(new Date(a.endsAt), new Date(a.startsAt)) })]
 						.filter(Boolean)
 						.join(" · ")}
 				</p>
@@ -233,6 +238,9 @@ export function PatientDetails({
 	onChanged: () => void;
 }) {
 	const [archiving, setArchiving] = useState(false);
+	const t = useTranslations("patients.details");
+	const common = useTranslations("common");
+	const format = useFormat();
 	const at = now();
 	const list = appointments ?? [];
 	const upcoming = list
@@ -259,10 +267,10 @@ export function PatientDetails({
 			<Tabs defaultValue="overview" className="min-h-0 flex-1 gap-0">
 				<TabsList variant="line" className="w-full justify-start gap-4 border-b px-5">
 					<TabsTrigger value="overview" className="flex-none px-0">
-						Aperçu
+						{t("tabs.overview")}
 					</TabsTrigger>
 					<TabsTrigger value="appointments" className="flex-none px-0">
-						Rendez-vous
+						{t("tabs.appointments")}
 						{list.length > 0 && (
 							<span className="bg-muted text-muted-foreground rounded-full px-1.5 text-[11px] tabular-nums">
 								{list.length}
@@ -270,12 +278,12 @@ export function PatientDetails({
 						)}
 					</TabsTrigger>
 					<TabsTrigger value="payments" className="flex-none px-0">
-						Paiements
+						{t("tabs.payments")}
 					</TabsTrigger>
 					{medical && (
 						<TabsTrigger value="medical" className="flex-none px-0">
-							Antécédents
-							{allergies && <span className="size-1.5 rounded-full bg-red-500" aria-label="allergies connues" />}
+							{t("tabs.medical")}
+							{allergies && <span className="size-1.5 rounded-full bg-red-500" aria-label={t("knownAllergies")} />}
 						</TabsTrigger>
 					)}
 				</TabsList>
@@ -284,15 +292,14 @@ export function PatientDetails({
 					<div className="grid gap-3">
 						{archived && (
 							<p className="bg-muted/60 rounded-xl px-4 py-3 text-sm">
-								Dossier archivé le {formatDate(patient.archivedAt!)} : consultable, mais plus modifiable. Restaurez-le pour
-								le modifier ou prendre rendez-vous.
+								{t("archivedOn", { date: format.date(patient.archivedAt!) })}
 							</p>
 						)}
 						{allergies && (
 							<div className="flex items-start gap-3 rounded-xl border border-red-200 bg-red-50 p-4 text-red-900">
 								<LuTriangleAlert className="mt-0.5 size-4 shrink-0" />
 								<div className="min-w-0">
-									<p className="text-sm font-semibold">Allergies</p>
+									<p className="text-sm font-semibold">{t("allergies")}</p>
 									<p className="text-sm whitespace-pre-line">{allergies}</p>
 								</div>
 							</div>
@@ -303,14 +310,14 @@ export function PatientDetails({
 						<section className="rounded-xl border p-4">
 							<h3 className="text-muted-foreground mb-3 flex items-center gap-2 text-xs font-medium">
 								<LuCalendarClock className="size-3.5" />
-								Prochain rendez-vous
+								{t("nextAppointment")}
 							</h3>
 							{next ? (
 								<div className="flex items-center gap-3">
 									<DateTile iso={next.startsAt} />
 									<div className="min-w-0 flex-1">
 										<p className="truncate font-medium first-letter:uppercase">
-											{dayLabel(next.startsAt)} à {clock(next.startsAt)}
+											{t("nextAt", { day: dayLabel(format, next.startsAt), time: format.clock(next.startsAt) })}
 										</p>
 										<p className="text-muted-foreground truncate text-sm">
 											{[next.practitioner.name, next.reason].filter(Boolean).join(" · ")}
@@ -320,7 +327,7 @@ export function PatientDetails({
 								</div>
 							) : (
 								<p className="text-muted-foreground text-sm">
-									Aucun rendez-vous prévu
+									{t("noAppointment")}
 									{!archived && (
 										<>
 											{" · "}
@@ -328,7 +335,7 @@ export function PatientDetails({
 												href={`/appointments?book=${patient.id}`}
 												className="text-primary font-medium hover:underline"
 											>
-												En planifier un
+												{t("planOne")}
 											</Link>
 										</>
 									)}
@@ -339,40 +346,40 @@ export function PatientDetails({
 						<div className="grid gap-3 sm:grid-cols-2">
 							<InfoCard
 								icon={LuIdCard}
-								title="Identité"
+								title={t("identity")}
 								onComplete={complete}
 								rows={[
-									["Date de naissance", patient.birthDate && formatDate(patient.birthDate)],
-									["CIN", patient.cin && <span className="font-mono">{patient.cin}</span>],
+									[t("birthDate"), patient.birthDate && format.date(patient.birthDate)],
+									[t("cin"), patient.cin && <span className="font-mono">{patient.cin}</span>],
 								]}
 							/>
 							<InfoCard
 								icon={LuMapPin}
-								title="Adresse"
+								title={t("address")}
 								onComplete={complete}
 								rows={[
-									["Adresse", patient.address],
-									["Ville", patient.city],
+									[t("address"), patient.address],
+									[t("city"), patient.city],
 								]}
 							/>
 							<InfoCard
 								icon={LuShieldCheck}
-								title="Couverture"
+								title={t("coverage")}
 								onComplete={complete}
 								rows={[
-									["Régime", patient.coverage !== "none" && COVERAGE_LABELS[patient.coverage]],
-									["Assureur", patient.insurer],
-									["N° d’immatriculation", patient.coverageNumber],
+									[t("scheme"), patient.coverage !== "none" && common(`coverage.${patient.coverage}`)],
+									[t("insurer"), patient.insurer],
+									[t("registration"), patient.coverageNumber],
 								]}
 							/>
 							<InfoCard
 								icon={LuContactRound}
-								title="Contact d’urgence"
+								title={t("emergency")}
 								onComplete={complete}
 								rows={[
-									["Nom et lien", patient.emergencyContactName],
+									[t("nameAndLink"), patient.emergencyContactName],
 									[
-										"Téléphone",
+										t("phone"),
 										patient.emergencyContactPhone && (
 											<a href={`tel:${patient.emergencyContactPhone}`} className="tabular-nums hover:underline">
 												{formatPhone(patient.emergencyContactPhone)}
@@ -387,15 +394,15 @@ export function PatientDetails({
 							<section className="rounded-xl border p-4">
 								<h3 className="text-muted-foreground mb-2 flex items-center gap-2 text-xs font-medium">
 									<LuStickyNote className="size-3.5" />
-									Note administrative
+									{t("note")}
 								</h3>
 								<p className="text-sm whitespace-pre-line">{patient.notes}</p>
 							</section>
 						)}
 
 						<p className="text-muted-foreground pt-1 text-xs">
-							Dossier créé le {formatDate(patient.createdAt)}
-							{patient.updatedAt !== patient.createdAt && ` · modifié le ${formatDate(patient.updatedAt)}`}
+							{t("createdOn", { date: format.date(patient.createdAt) })}
+							{patient.updatedAt !== patient.createdAt && ` · ${t("updatedOn", { date: format.date(patient.updatedAt) })}`}
 						</p>
 					</div>
 				</TabsContent>
@@ -404,11 +411,11 @@ export function PatientDetails({
 					{list.length === 0 ? (
 						<div className="flex flex-col items-center gap-3 py-12 text-center">
 							<LuCalendarClock className="text-muted-foreground size-6" />
-							<p className="text-muted-foreground text-sm">Aucun rendez-vous pour ce patient.</p>
+							<p className="text-muted-foreground text-sm">{t("noAppointments")}</p>
 							{!archived && (
 								<Button asChild size="sm" variant="outline">
 									<Link href={`/appointments?book=${patient.id}`}>
-										<LuCalendarPlus /> Prendre rendez-vous
+										<LuCalendarPlus /> {t("book")}
 									</Link>
 								</Button>
 							)}
@@ -417,7 +424,7 @@ export function PatientDetails({
 						<div className="grid gap-5">
 							{upcoming.length > 0 && (
 								<section>
-									<h3 className="text-muted-foreground mb-1 text-xs font-medium">À venir · {upcoming.length}</h3>
+									<h3 className="text-muted-foreground mb-1 text-xs font-medium">{t("upcoming", { count: upcoming.length })}</h3>
 									<ul className="divide-y">
 										{upcoming.map((a) => (
 											<AppointmentRow key={a.id} a={a} />
@@ -427,7 +434,7 @@ export function PatientDetails({
 							)}
 							{past.length > 0 && (
 								<section>
-									<h3 className="text-muted-foreground mb-1 text-xs font-medium">Historique · {past.length}</h3>
+									<h3 className="text-muted-foreground mb-1 text-xs font-medium">{t("history", { count: past.length })}</h3>
 									<ul className="divide-y">
 										{past.map((a) => (
 											<AppointmentRow key={a.id} a={a} muted />

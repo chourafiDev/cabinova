@@ -2,6 +2,7 @@
 
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
+import { useTranslations } from "next-intl";
 import { parseAsIsoDate, parseAsString, parseAsStringEnum, useQueryStates } from "nuqs";
 import { useMemo } from "react";
 
@@ -40,6 +41,7 @@ export function Agenda({
 }) {
 	const [{ view, date, practitioner, book }, setParams] = useQueryStates(searchParams, { history: "replace" });
 	const selectedDate = useMemo(() => date ?? new Date(), [date]);
+	const t = useTranslations("agenda");
 	const range = visibleRange(view, selectedDate);
 
 	const { data, isFetching, isError } = useQuery({
@@ -74,7 +76,7 @@ export function Agenda({
 			<AppointmentDialogsProvider>
 				{book && canWrite && <BookFromUrl patientId={book} onDone={() => setParams({ book: null })} />}
 				{isError && (
-					<p className="text-destructive mb-2 text-sm">Impossible de charger les rendez-vous. Réessayez.</p>
+					<p className="text-destructive mb-2 text-sm">{t("loadError")}</p>
 				)}
 				<div className="flex items-start gap-3">
 					<div className={cn("min-w-0 flex-1 transition-opacity", isFetching && "opacity-70")}>

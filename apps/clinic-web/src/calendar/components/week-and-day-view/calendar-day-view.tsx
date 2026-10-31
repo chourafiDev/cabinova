@@ -1,4 +1,4 @@
-import { fmt } from "@/calendar/locale";
+import { useFmt } from "@/calendar/locale";
 import { useEffect, useState } from "react";
 import { LuCalendar, LuClock, LuUser } from "react-icons/lu";
 import { parseISO, areIntervalsOverlapping } from "date-fns";
@@ -24,6 +24,7 @@ interface IProps {
 }
 
 export function CalendarDayView({ singleDayEvents, multiDayEvents }: IProps) {
+  const fmt = useFmt();
   const { selectedDate, setSelectedDate, users, visibleHours, workingHours } = useCalendar();
   const [, setCurrentTime] = useState(new Date());
 

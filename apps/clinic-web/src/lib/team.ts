@@ -43,25 +43,7 @@ export type MemberLink = {
 	kind: "invitation" | "password";
 };
 
-export const ROLES: { value: StaffRole; label: string; description: string }[] = [
-	{
-		value: "doctor",
-		label: "Médecin",
-		description: "Agenda, patients et dossiers médicaux (antécédents). Peut recevoir des rendez-vous.",
-	},
-	{
-		value: "secretary",
-		label: "Secrétaire",
-		description: "Agenda et dossiers administratifs des patients, sans accès aux antécédents.",
-	},
-];
-
-export const STATUS_LABELS: Record<MemberStatus, string> = {
-	active: "Actif",
-	invited: "Invitation envoyée",
-	expired: "Invitation expirée",
-	disabled: "Désactivé",
-};
+export const ROLES: StaffRole[] = ["doctor", "secretary"];
 
 /** The quota a role uses. */
 export const quotaOf = (team: Team, role: StaffRole) =>

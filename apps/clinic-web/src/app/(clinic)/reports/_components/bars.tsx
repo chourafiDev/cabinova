@@ -1,3 +1,4 @@
+import { useTranslations } from "next-intl";
 import { MAGNITUDE } from "@/lib/reports";
 
 /**
@@ -9,15 +10,16 @@ export function Bars({
 	rows,
 	format = (v) => String(v),
 	total,
-	empty = "Aucune donnée sur la période.",
+	empty,
 }: {
 	rows: { key: string; label: React.ReactNode; value: number; detail?: string }[];
 	format?: (value: number) => string;
 	total?: number;
 	empty?: string;
 }) {
+	const t = useTranslations("reports.empty");
 	const max = Math.max(0, ...rows.map((r) => r.value));
-	if (max === 0) return <p className="text-muted-foreground py-6 text-center text-sm">{empty}</p>;
+	if (max === 0) return <p className="text-muted-foreground py-6 text-center text-sm">{empty ?? t("noData")}</p>;
 	return (
 		<ul className="grid min-w-0 grid-cols-1 gap-3">
 			{rows.map((r) => (

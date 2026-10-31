@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { useState } from "react";
 import {
 	LuArchive,
@@ -40,23 +41,22 @@ import { cn } from "@/lib/utils";
 import { SettingsCard } from "../../_components/settings-card";
 import { SpaceDialog } from "./space-dialog";
 
-const plural = (n: number, one: string, many: string) => `${n} ${n > 1 ? many : one}`;
-
 /** Owner: the cabinet's spaces (sites), open ones first. */
 export function SpacesManager({ spaces, currentId }: { spaces: ManagedSpace[]; currentId: string | null }) {
 	const [editing, setEditing] = useState<ManagedSpace | "new" | null>(null);
 	const [closing, setClosing] = useState<ManagedSpace | null>(null);
+	const t = useTranslations("settings.spaces");
 	const open = spaces.filter((s) => s.active);
 	const closed = spaces.filter((s) => !s.active);
 
 	return (
 		<>
 			<SettingsCard
-				title="Espaces"
-				description="Chaque espace est un site du cabinet (ex. une ville) : ses patients, son équipe et son agenda sont séparés des autres."
+				title={t("title")}
+				description={t("description")}
 				action={
 					<Button size="sm" onClick={() => setEditing("new")}>
-						<LuPlus /> Nouvel espace
+						<LuPlus /> {t("newTitle")}
 					</Button>
 				}
 			>
@@ -76,8 +76,8 @@ export function SpacesManager({ spaces, currentId }: { spaces: ManagedSpace[]; c
 
 			{closed.length > 0 && (
 				<SettingsCard
-					title="Espaces fermés"
-					description="Leurs données sont conservées. Rouvrez un espace pour que son équipe y retravaille."
+					title={t("closedTitle")}
+					description={t("closedHint")}
 				>
 					<ul className="grid gap-3">
 						{closed.map((s) => (
@@ -112,15 +112,17 @@ function SpaceRow({
 }) {
 	const router = useRouter();
 	const [reopening, setReopening] = useState(false);
+	const t = useTranslations("settings.spaces");
+	const common = useTranslations("settings.common");
 
 	const reopen = async () => {
 		setReopening(true);
 		try {
 			await api(`/spaces/${s.id}/reopen`, { method: "POST" });
-			toast.success(`Espace « ${s.name} » rouvert`);
+			toast.success(t("reopened", { name: s.name }));
 			router.refresh();
 		} catch (err) {
-			toast.error(err instanceof Error ? err.message : "Réouverture impossible");
+			toast.error(err instanceof Error ? err.message : t("reopenError"));
 		} finally {
 			setReopening(false);
 		}
@@ -141,12 +143,12 @@ function SpaceRow({
 					<span className="font-medium leading-tight">{s.name}</span>
 					{current && (
 						<Badge variant="outline" className="border-transparent bg-primary/10 font-normal text-primary">
-							Espace actuel
+							{t("current")}
 						</Badge>
 					)}
 					{!s.active && (
 						<Badge variant="outline" className="font-normal">
-							Fermé
+							{common("closed")}
 						</Badge>
 					)}
 				</div>
@@ -162,27 +164,27 @@ function SpaceRow({
 				)}
 				<p className="text-muted-foreground flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs">
 					<span className="inline-flex items-center gap-1">
-						<LuUsers className="size-3" /> {plural(s.patients, "patient", "patients")}
+						<LuUsers className="size-3" /> {t("patients", { count: s.patients })}
 					</span>
 					<span className="inline-flex items-center gap-1">
-						<LuCalendarClock className="size-3" /> {plural(s.upcomingAppointments, "RDV à venir", "RDV à venir")}
+						<LuCalendarClock className="size-3" /> {t("upcoming", { count: s.upcomingAppointments })}
 					</span>
 				</p>
 			</div>
 			{s.active ? (
 				<DropdownMenu>
 					<DropdownMenuTrigger asChild>
-						<Button variant="ghost" size="icon" className="size-8" aria-label={`Actions pour ${s.name}`}>
+						<Button variant="ghost" size="icon" className="size-8" aria-label={t("actionsFor", { name: s.name })}>
 							<LuEllipsis />
 						</Button>
 					</DropdownMenuTrigger>
 					<DropdownMenuContent align="end" className="min-w-48">
 						<DropdownMenuItem onSelect={onEdit}>
-							<LuPencil /> Modifier
+							<LuPencil /> {common("edit")}
 						</DropdownMenuItem>
 						<DropdownMenuItem asChild>
 							<Link href={`/settings/hours?espace=${s.id}`}>
-								<LuClock /> Horaires d’ouverture
+								<LuClock /> {t("hours")}
 							</Link>
 						</DropdownMenuItem>
 						<DropdownMenuSeparator />
@@ -190,15 +192,15 @@ function SpaceRow({
 							variant="destructive"
 							disabled={!canClose}
 							onSelect={onClose}
-							title={canClose ? undefined : "Le cabinet doit garder au moins un espace ouvert"}
+							title={canClose ? undefined : t("keepOne")}
 						>
-							<LuArchive /> Fermer l’espace
+							<LuArchive /> {t("close")}
 						</DropdownMenuItem>
 					</DropdownMenuContent>
 				</DropdownMenu>
 			) : (
 				<Button variant="outline" size="sm" disabled={reopening} onClick={reopen}>
-					{reopening ? <LuLoader className="animate-spin" /> : <LuArchiveRestore />} Rouvrir
+					{reopening ? <LuLoader className="animate-spin" /> : <LuArchiveRestore />} {t("reopen")}
 				</Button>
 			)}
 		</li>
@@ -209,17 +211,19 @@ function SpaceRow({
 function CloseSpaceDialog({ space, onOpenChange }: { space: ManagedSpace | null; onOpenChange: (open: boolean) => void }) {
 	const router = useRouter();
 	const [pending, setPending] = useState(false);
+	const t = useTranslations("settings.spaces");
+	const common = useTranslations("settings.common");
 
 	const close = async () => {
 		if (!space) return;
 		setPending(true);
 		try {
 			await api(`/spaces/${space.id}/close`, { method: "POST" });
-			toast.success(`Espace « ${space.name} » fermé`);
+			toast.success(t("closed", { name: space.name }));
 			onOpenChange(false);
 			router.refresh();
 		} catch (err) {
-			toast.error(err instanceof Error ? err.message : "Fermeture impossible");
+			toast.error(err instanceof Error ? err.message : t("closeError"));
 		} finally {
 			setPending(false);
 		}
@@ -229,24 +233,22 @@ function CloseSpaceDialog({ space, onOpenChange }: { space: ManagedSpace | null;
 		<Dialog open={space !== null} onOpenChange={onOpenChange}>
 			<DialogContent className="sm:max-w-md">
 				<DialogHeader>
-					<DialogTitle>Fermer « {space?.name} » ?</DialogTitle>
+					<DialogTitle>{t("closeTitle", { name: space?.name ?? "" })}</DialogTitle>
 					<DialogDescription>
-						Ses patients et rendez-vous sont conservés, mais plus personne ne pourra y travailler jusqu’à sa
-						réouverture.
+						{t("closeHint")}
 						{space && space.upcomingAppointments > 0 && (
 							<span className="text-foreground mt-2 block font-medium">
-								Attention : {plural(space.upcomingAppointments, "rendez-vous à venir", "rendez-vous à venir")} dans cet
-								espace.
+								{t("closeWarning", { count: space.upcomingAppointments })}
 							</span>
 						)}
 					</DialogDescription>
 				</DialogHeader>
 				<DialogFooter>
 					<Button variant="outline" onClick={() => onOpenChange(false)}>
-						Annuler
+						{common("cancel")}
 					</Button>
 					<Button variant="destructive" disabled={pending} onClick={close}>
-						{pending && <LuLoader className="animate-spin" />} Fermer l’espace
+						{pending && <LuLoader className="animate-spin" />} {t("close")}
 					</Button>
 				</DialogFooter>
 			</DialogContent>

@@ -27,7 +27,7 @@ export type DashboardData = {
 };
 
 /** "09:30", Moroccan time. */
-export const clock = (iso: string) =>
-	new Intl.DateTimeFormat("fr-MA", { timeZone: "Africa/Casablanca", hour: "2-digit", minute: "2-digit" }).format(
+export const clock = (iso: string, locale = "fr-MA") =>
+	new Intl.DateTimeFormat(locale, { timeZone: "Africa/Casablanca", hour: "2-digit", minute: "2-digit" }).format(
 		new Date(iso),
 	);

@@ -1,43 +1,57 @@
-import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { useTranslations } from "next-intl";
+import { getTranslations } from "next-intl/server";
 import { LuChevronLeft, LuChevronRight, LuShieldAlert } from "react-icons/lu";
+import { settingsTitle } from "@/i18n/titles";
 import { Button } from "@/components/ui/button";
 import {
 	ACTIVITY_CATEGORIES,
 	type ActivityEntry,
 	type ActivityPage,
-	activityDetail,
-	activityVerb,
+	actionKey,
 	isFailedLogin,
 } from "@/lib/activity";
-import { formatDate } from "@/lib/format";
+import { getFormat } from "@/lib/get-format";
 import { apiGet } from "@/lib/server-api";
 import { getClinicState } from "@/lib/session";
+import { useFormat } from "@/lib/use-format";
 import { SettingsCard } from "../_components/settings-card";
 import { ActivityFilters } from "./_components/activity-filters";
 
-export const metadata: Metadata = { title: "Journal d’activité · Paramètres" };
+export const generateMetadata = () => settingsTitle("activity");
 
-const clock = new Intl.DateTimeFormat("fr-MA", { hour: "2-digit", minute: "2-digit", timeZone: "Africa/Casablanca" });
 const dayKey = new Intl.DateTimeFormat("en-CA", { timeZone: "Africa/Casablanca" });
 
 function Entry({ entry }: { entry: ActivityEntry }) {
+	const t = useTranslations("settings.activity");
+	const status = useTranslations("common.appointmentStatus");
+	const format = useFormat();
 	const failed = isFailedLogin(entry.action);
-	const detail = activityDetail(entry);
+	const key = actionKey(entry.action);
+	const detail =
+		entry.action === "appointment.status" && status.has(entry.detail as "completed")
+			? status(entry.detail as "completed")
+			: entry.action === "team.two_factor_required" && entry.detail
+				? t(entry.detail === "true" ? "required" : "optional")
+				: entry.detail;
 	return (
 		<li className="flex items-baseline gap-3 py-2.5 text-sm">
 			<time dateTime={entry.createdAt} className="text-muted-foreground w-11 shrink-0 text-xs tabular-nums">
-				{clock.format(new Date(entry.createdAt))}
+				{format.clock(entry.createdAt)}
 			</time>
 			{failed ? (
 				<p className="min-w-0 text-amber-800">
 					<LuShieldAlert className="me-1 inline size-3.5" />
-					Connexion refusée pour <span className="font-medium">{entry.target}</span>
+					{t.rich("failedLogin", {
+						target: entry.target ?? "",
+						strong: (chunks) => <span className="font-medium">{chunks}</span>,
+					})}
 				</p>
 			) : (
 				<p className="min-w-0">
-					<span className="font-medium">{entry.actorName ?? "Compte supprimé"}</span> {activityVerb(entry.action)}
+					<span className="font-medium">{entry.actorName ?? t("deletedAccount")}</span>{" "}
+					{t.has(`actions.${key}`) ? t(`actions.${key}`) : entry.action}
 					{entry.target && <span className="font-medium"> {entry.target}</span>}
 					{detail && <span className="text-muted-foreground"> · {detail}</span>}
 				</p>
@@ -52,7 +66,7 @@ export default async function ActivityPage({ searchParams }: PageProps<"/setting
 	if (state.status !== "signed-in" || state.session.user.role !== "owner") notFound();
 	const params = await searchParams;
 	const one = (v: string | string[] | undefined) => (typeof v === "string" && v ? v : undefined);
-	const category = ACTIVITY_CATEGORIES.some((c) => c.key === params.categorie) ? one(params.categorie) : undefined;
+	const category = ACTIVITY_CATEGORIES.some((c) => c === params.categorie) ? one(params.categorie) : undefined;
 	const userId = one(params.membre);
 	const search = one(params.recherche)?.trim();
 	const page = Math.max(1, Number(one(params.page)) || 1);
@@ -73,22 +87,25 @@ export default async function ActivityPage({ searchParams }: PageProps<"/setting
 		return `/settings/activity?${next}`;
 	};
 	const days = Map.groupBy(data, (e) => dayKey.format(new Date(e.createdAt)));
+	const t = await getTranslations("settings.activity");
+	const common = await getTranslations("common");
+	const format = await getFormat();
 
 	return (
 		<SettingsCard
-			title="Journal d’activité"
-			description="Qui a fait quoi dans le cabinet, conservé un an. Il ne contient aucune donnée médicale."
+			title={t("title")}
+			description={t("description")}
 		>
 			<div className="grid gap-4">
 				<ActivityFilters category={category} userId={userId} search={search} people={people} />
 				{data.length === 0 ? (
-					<p className="text-muted-foreground py-10 text-center text-sm">Aucune activité pour ces filtres.</p>
+					<p className="text-muted-foreground py-10 text-center text-sm">{t("empty")}</p>
 				) : (
 					<div className="grid gap-4">
 						{[...days].map(([day, entries]) => (
 							<section key={day}>
 								<h3 className="text-muted-foreground bg-muted/50 rounded-md px-2 py-1 text-xs font-medium first-letter:uppercase">
-									{formatDate(`${day}T12:00:00`, { weekday: "long", month: "long" })}
+									{format.date(`${day}T12:00:00`, { weekday: "long", month: "long" })}
 								</h3>
 								<ul className="divide-y">
 									{entries.map((e) => (
@@ -100,12 +117,12 @@ export default async function ActivityPage({ searchParams }: PageProps<"/setting
 					</div>
 				)}
 				{pageCount > 1 && (
-					<nav className="flex items-center justify-between gap-3 text-sm" aria-label="Pagination">
+					<nav className="flex items-center justify-between gap-3 text-sm" aria-label={common("pagination.label")}>
 						<span className="text-muted-foreground">
-							Page {page} sur {pageCount} · {total} entrées
+							{common("pagination.page", { page, total: pageCount })} · {t("entries", { total })}
 						</span>
 						<span className="flex gap-1">
-							<Button asChild={page > 1} size="icon" variant="outline" className="size-8" disabled={page <= 1} aria-label="Page précédente">
+							<Button asChild={page > 1} size="icon" variant="outline" className="size-8" disabled={page <= 1} aria-label={t("previous")}>
 								{page > 1 ? (
 									<Link href={href(page - 1)} scroll={false}>
 										<LuChevronLeft className="rtl:rotate-180" />
@@ -120,7 +137,7 @@ export default async function ActivityPage({ searchParams }: PageProps<"/setting
 								variant="outline"
 								className="size-8"
 								disabled={page >= pageCount}
-								aria-label="Page suivante"
+								aria-label={t("next")}
 							>
 								{page < pageCount ? (
 									<Link href={href(page + 1)} scroll={false}>

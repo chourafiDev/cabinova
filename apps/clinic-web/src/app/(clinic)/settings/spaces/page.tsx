@@ -1,11 +1,11 @@
-import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { settingsTitle } from "@/i18n/titles";
 import { apiGet } from "@/lib/server-api";
 import { getClinicState } from "@/lib/session";
 import type { ManagedSpace } from "@/lib/settings";
 import { SpacesManager } from "./_components/spaces-manager";
 
-export const metadata: Metadata = { title: "Espaces · Paramètres" };
+export const generateMetadata = () => settingsTitle("spaces");
 
 export default async function SpacesSettingsPage() {
 	const state = await getClinicState();

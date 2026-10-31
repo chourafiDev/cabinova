@@ -1,11 +1,11 @@
-import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { settingsTitle } from "@/i18n/titles";
 import type { Act } from "@/lib/payments";
 import { apiGet } from "@/lib/server-api";
 import { getClinicState } from "@/lib/session";
 import { ActsManager } from "./_components/acts-manager";
 
-export const metadata: Metadata = { title: "Tarifs · Paramètres" };
+export const generateMetadata = () => settingsTitle("tarifs");
 
 /** The responsible doctor's price list, offered when checking out a visit. */
 export default async function TarifsSettingsPage() {

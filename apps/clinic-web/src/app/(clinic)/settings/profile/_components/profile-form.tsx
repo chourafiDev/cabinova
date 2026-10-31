@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { LuLoader, LuLock } from "react-icons/lu";
 import { toast } from "sonner";
@@ -20,10 +21,12 @@ export function ProfileForm({ name, email, roleLabel }: { name: string; email: s
 	const [error, setError] = useState<string | null>(null);
 	const [saving, setSaving] = useState(false);
 	const dirty = value.trim() !== saved;
+	const t = useTranslations("settings.profile");
+	const common = useTranslations("settings.common");
 
 	const save = async (e: React.FormEvent) => {
 		e.preventDefault();
-		if (value.trim().length < 2) return setError("2 caractères minimum.");
+		if (value.trim().length < 2) return setError(common("nameError"));
 		setSaving(true);
 		setError(null);
 		try {
@@ -33,10 +36,10 @@ export function ProfileForm({ name, email, roleLabel }: { name: string; email: s
 			});
 			setSaved(res.name);
 			setValue(res.name);
-			toast.success("Profil enregistré");
+			toast.success(t("saved"));
 			router.refresh();
 		} catch (err) {
-			setError(err instanceof Error ? err.message : "Enregistrement impossible");
+			setError(err instanceof Error ? err.message : common("saveError"));
 		} finally {
 			setSaving(false);
 		}
@@ -45,13 +48,13 @@ export function ProfileForm({ name, email, roleLabel }: { name: string; email: s
 	return (
 		<form onSubmit={save} noValidate>
 			<SettingsCard
-				title="Profil"
-				description="Votre nom apparaît dans l’agenda, sur les rendez-vous et dans l’équipe."
+				title={t("title")}
+				description={t("description")}
 				footer={
 					<>
-						<p className="text-muted-foreground text-xs">Visible par l’équipe du cabinet.</p>
+						<p className="text-muted-foreground text-xs">{t("visible")}</p>
 						<Button type="submit" size="sm" disabled={!dirty || saving}>
-							{saving && <LuLoader className="animate-spin" />} Enregistrer
+							{saving && <LuLoader className="animate-spin" />} {common("save")}
 						</Button>
 					</>
 				}
@@ -72,7 +75,7 @@ export function ProfileForm({ name, email, roleLabel }: { name: string; email: s
 					</div>
 					<div className="grid gap-4 sm:grid-cols-2">
 						<Field data-invalid={!!error}>
-							<FieldLabel htmlFor="profile-name">Nom complet</FieldLabel>
+							<FieldLabel htmlFor="profile-name">{t("name")}</FieldLabel>
 							<Input
 								id="profile-name"
 								value={value}
@@ -83,12 +86,12 @@ export function ProfileForm({ name, email, roleLabel }: { name: string; email: s
 							<FieldError>{error}</FieldError>
 						</Field>
 						<Field>
-							<FieldLabel htmlFor="profile-email">E-mail de connexion</FieldLabel>
+							<FieldLabel htmlFor="profile-email">{t("email")}</FieldLabel>
 							<div className="relative">
 								<Input id="profile-email" value={email} readOnly disabled className="pe-9" />
 								<LuLock className="text-muted-foreground absolute end-3 top-1/2 size-3.5 -translate-y-1/2" />
 							</div>
-							<FieldDescription>Pour le changer, contactez le support Cabinova.</FieldDescription>
+							<FieldDescription>{t("emailHint")}</FieldDescription>
 						</Field>
 					</div>
 				</div>

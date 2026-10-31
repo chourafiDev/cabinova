@@ -1,20 +1,22 @@
+import { useTranslations } from "next-intl";
 import { LuMapPin } from "react-icons/lu";
 import type { DashboardData } from "@/lib/dashboard";
 import { ChartCard } from "./chart-card";
 
 /** Every-space view: today and this month, space by space. */
 export function SpacesOverview({ spaces }: { spaces: NonNullable<DashboardData["bySpace"]> }) {
+	const t = useTranslations("dashboard");
 	return (
-		<ChartCard eyebrow="Tous les espaces" title="Par espace">
+		<ChartCard eyebrow={t("allSpaces")} title={t("spaces.title")}>
 			<div className="-mx-2 overflow-x-auto">
 				<table className="w-full text-sm tabular-nums">
 					<thead>
 						<tr className="text-muted-foreground text-xs">
-							<th className="px-2 py-1.5 text-start font-normal">Espace</th>
-							<th className="px-2 py-1.5 text-end font-normal">RDV aujourd’hui</th>
-							<th className="px-2 py-1.5 text-end font-normal">En attente</th>
-							<th className="px-2 py-1.5 text-end font-normal">Vus</th>
-							<th className="px-2 py-1.5 text-end font-normal">Nouveaux patients (mois)</th>
+							<th className="px-2 py-1.5 text-start font-normal">{t("spaces.space")}</th>
+							<th className="px-2 py-1.5 text-end font-normal">{t("spaces.today")}</th>
+							<th className="px-2 py-1.5 text-end font-normal">{t("spaces.waiting")}</th>
+							<th className="px-2 py-1.5 text-end font-normal">{t("spaces.seen")}</th>
+							<th className="px-2 py-1.5 text-end font-normal">{t("spaces.newPatients")}</th>
 						</tr>
 					</thead>
 					<tbody className="divide-y">

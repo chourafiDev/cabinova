@@ -1,14 +1,15 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { LuLoader, LuLogOut, LuMonitor, LuSmartphone } from "react-icons/lu";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { api } from "@/lib/api-client";
-import { formatDate } from "@/lib/format";
 import { type DeviceSession, describeDevice } from "@/lib/settings";
+import { useFormat } from "@/lib/use-format";
 import { SettingsCard } from "../../_components/settings-card";
 
 /** Where this person is signed in; any other device can be signed out. */
@@ -16,15 +17,18 @@ export function DevicesCard({ sessions }: { sessions: DeviceSession[] }) {
 	const router = useRouter();
 	const [pending, setPending] = useState<string | null>(null);
 	const others = sessions.filter((s) => !s.current).length;
+	const t = useTranslations("settings.devices");
+	const common = useTranslations("settings.common");
+	const format = useFormat();
 
 	const revoke = async (id: string | "others") => {
 		setPending(id);
 		try {
 			await api(id === "others" ? "/settings/sessions" : `/settings/sessions/${id}`, { method: "DELETE" });
-			toast.success(id === "others" ? "Autres appareils déconnectés" : "Appareil déconnecté");
+			toast.success(id === "others" ? t("allSignedOut") : common("deviceSignedOut"));
 			router.refresh();
 		} catch (err) {
-			toast.error(err instanceof Error ? err.message : "Déconnexion impossible");
+			toast.error(err instanceof Error ? err.message : common("signOutError"));
 		} finally {
 			setPending(null);
 		}
@@ -32,19 +36,19 @@ export function DevicesCard({ sessions }: { sessions: DeviceSession[] }) {
 
 	return (
 		<SettingsCard
-			title="Appareils connectés"
-			description="Un appareil que vous ne reconnaissez pas ? Déconnectez-le, puis changez votre mot de passe."
+			title={t("title")}
+			description={t("description")}
 			action={
 				others > 0 && (
 					<Button variant="outline" size="sm" disabled={pending !== null} onClick={() => revoke("others")}>
-						{pending === "others" ? <LuLoader className="animate-spin" /> : <LuLogOut />} Déconnecter les autres
+						{pending === "others" ? <LuLoader className="animate-spin" /> : <LuLogOut />} {t("signOutOthers")}
 					</Button>
 				)
 			}
 		>
 			<ul className="divide-y rounded-lg border">
 				{sessions.map((s) => {
-					const device = describeDevice(s.userAgent);
+					const device = describeDevice(s.userAgent, { unknown: common("unknownDevice"), browser: common("browser") });
 					const Icon = device.mobile ? LuSmartphone : LuMonitor;
 					return (
 						<li key={s.id} className="flex items-center gap-3 px-3 py-2.5">
@@ -56,12 +60,12 @@ export function DevicesCard({ sessions }: { sessions: DeviceSession[] }) {
 									{device.label}
 									{s.current && (
 										<Badge variant="outline" className="border-transparent bg-emerald-500/10 font-normal text-emerald-700 dark:text-emerald-400">
-											Cet appareil
+											{common("thisDevice")}
 										</Badge>
 									)}
 								</span>
 								<span className="text-muted-foreground truncate text-xs">
-									Connecté le {formatDate(s.createdAt, { month: "short", hour: "2-digit", minute: "2-digit" })}
+									{common("connectedOn", { date: format.date(s.createdAt, { month: "short", hour: "2-digit", minute: "2-digit" }) })}
 									{s.ip && ` · ${s.ip}`}
 								</span>
 							</div>
@@ -73,7 +77,7 @@ export function DevicesCard({ sessions }: { sessions: DeviceSession[] }) {
 									disabled={pending !== null}
 									onClick={() => revoke(s.id)}
 								>
-									{pending === s.id ? <LuLoader className="animate-spin" /> : <LuLogOut />} Déconnecter
+									{pending === s.id ? <LuLoader className="animate-spin" /> : <LuLogOut />} {common("signOut")}
 								</Button>
 							)}
 						</li>

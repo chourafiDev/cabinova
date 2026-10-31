@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { LuGlobe, LuLoader, LuLock } from "react-icons/lu";
 import { toast } from "sonner";
@@ -36,13 +37,15 @@ export function CabinetForm({ initial }: { initial: CabinetIdentity }) {
 	const [v, setV] = useState(saved);
 	const [errors, setErrors] = useState<Partial<Record<Key, string>>>({});
 	const [saving, setSaving] = useState(false);
+	const t = useTranslations("settings.cabinet");
+	const common = useTranslations("settings.common");
 	const dirty = (Object.keys(v) as Key[]).some((k) => v[k].trim() !== saved[k]);
 
 	const save = async (e: React.FormEvent) => {
 		e.preventDefault();
 		const next: Partial<Record<Key, string>> = {};
-		if (v.name.trim().length < 2) next.name = "2 caractères minimum.";
-		if (!EMAIL.test(v.email.trim())) next.email = "Adresse e-mail invalide.";
+		if (v.name.trim().length < 2) next.name = common("nameError");
+		if (!EMAIL.test(v.email.trim())) next.email = common("emailError");
 		setErrors(next);
 		if (Object.keys(next).length) return;
 
@@ -52,12 +55,12 @@ export function CabinetForm({ initial }: { initial: CabinetIdentity }) {
 			const form = toForm(res);
 			setSaved(form);
 			setV(form);
-			toast.success("Informations du cabinet enregistrées");
+			toast.success(t("saved"));
 			router.refresh();
 		} catch (err) {
 			if (err instanceof ApiError && err.code === "NAME_TAKEN") setErrors({ name: err.message });
 			else if (err instanceof ApiError && err.code === "EMAIL_TAKEN") setErrors({ email: err.message });
-			else toast.error(err instanceof Error ? err.message : "Enregistrement impossible");
+			else toast.error(err instanceof Error ? err.message : common("saveError"));
 		} finally {
 			setSaving(false);
 		}
@@ -83,15 +86,15 @@ export function CabinetForm({ initial }: { initial: CabinetIdentity }) {
 	return (
 		<form onSubmit={save} noValidate className="grid gap-4">
 			<SettingsCard
-				title="Informations du cabinet"
-				description="Le nom s’affiche sur la page de connexion, dans l’application et sur les documents."
+				title={t("title")}
+				description={t("description")}
 				footer={
 					<>
 						<p className="text-muted-foreground text-xs">
-							Aussi visibles par l’équipe Cabinova (facturation, support).
+							{t("visible")}
 						</p>
 						<Button type="submit" size="sm" disabled={!dirty || saving}>
-							{saving && <LuLoader className="animate-spin" />} Enregistrer
+							{saving && <LuLoader className="animate-spin" />} {common("save")}
 						</Button>
 					</>
 				}
@@ -99,35 +102,35 @@ export function CabinetForm({ initial }: { initial: CabinetIdentity }) {
 				<div className="grid gap-6">
 					<div className="grid gap-4 sm:grid-cols-2">
 						<div className="sm:col-span-2">
-							{input("name", "Nom du cabinet", { maxLength: 120, placeholder: "Ex. Cabinet Atlas Santé" })}
+							{input("name", t("name"), { maxLength: 120, placeholder: t("namePlaceholder") })}
 						</div>
-						{input("legalName", "Raison sociale", { maxLength: 160 }, "Si différente du nom (factures).")}
-						{input("specialty", "Spécialité", { maxLength: 80, placeholder: "Ex. Médecine générale" })}
+						{input("legalName", t("legalName"), { maxLength: 160 }, t("legalHint"))}
+						{input("specialty", t("specialty"), { maxLength: 80, placeholder: t("specialtyPlaceholder") })}
 					</div>
 					<div className="grid gap-4 border-t pt-5 sm:grid-cols-2">
-						<p className="text-sm font-medium sm:col-span-2">Coordonnées</p>
-						<div className="sm:col-span-2">{input("address", "Adresse", { maxLength: 300 })}</div>
-						{input("city", "Ville", { maxLength: 80 })}
-						{input("phone", "Téléphone", { type: "tel", maxLength: 30, placeholder: "05 35 00 00 00" })}
+						<p className="text-sm font-medium sm:col-span-2">{t("contact")}</p>
+						<div className="sm:col-span-2">{input("address", t("address"), { maxLength: 300 })}</div>
+						{input("city", t("city"), { maxLength: 80 })}
+						{input("phone", t("phone"), { type: "tel", maxLength: 30, placeholder: "05 35 00 00 00" })}
 						<div className="sm:col-span-2">
 							{input(
 								"email",
-								"E-mail du cabinet",
+								t("email"),
 								{ type: "email", maxLength: 200 },
-								"Reçoit les factures et les messages de Cabinova.",
+								t("emailHint"),
 							)}
 						</div>
 					</div>
 				</div>
 			</SettingsCard>
 
-			<SettingsCard title="Adresse web" description="L’adresse où votre équipe se connecte.">
+			<SettingsCard title={t("webTitle")} description={t("webHint")}>
 				<div className="bg-muted/50 flex items-center gap-2 rounded-lg border px-3 py-2 text-sm">
 					<LuGlobe className="text-muted-foreground size-4" />
-					<span className="font-mono">{initial.subdomain}.cabinova.ma</span>
-					<LuLock className="text-muted-foreground ms-auto size-3.5" aria-label="Non modifiable" />
+					<span dir="ltr" className="font-mono">{initial.subdomain}.cabinova.ma</span>
+					<LuLock className="text-muted-foreground ms-auto size-3.5" aria-label={t("locked")} />
 				</div>
-				<p className="text-muted-foreground mt-2 text-xs">Pour la changer, contactez le support Cabinova.</p>
+				<p className="text-muted-foreground mt-2 text-xs">{t("webContact")}</p>
 			</SettingsCard>
 		</form>
 	);

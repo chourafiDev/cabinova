@@ -1,6 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useTranslations } from "next-intl";
 import { LuChevronDown, LuContactRound, LuLoader, LuMapPin, LuPhone, LuPlus, LuShieldCheck, LuStickyNote } from "react-icons/lu";
 import { useState } from "react";
 import { Controller, type FieldErrors, useForm, useWatch } from "react-hook-form";
@@ -17,7 +18,7 @@ import {
 	type Coverage,
 	type Patient,
 	type PatientInput,
-	patientSchema,
+	patientSchemaOf,
 	SEX_LABELS,
 	type Sex,
 } from "@/lib/patients";
@@ -64,6 +65,7 @@ function OptionalSection({
 	onToggle: () => void;
 	children: React.ReactNode;
 }) {
+	const t = useTranslations("patients.form");
 	return (
 		<section className={cn("rounded-xl border transition-colors", open && "bg-muted/30")}>
 			<button
@@ -77,7 +79,7 @@ function OptionalSection({
 				</span>
 				<span className="grid min-w-0 flex-1">
 					<span className="text-sm font-medium">{title}</span>
-					{!open && <span className="text-muted-foreground truncate text-xs">{summary ?? "Facultatif"}</span>}
+					{!open && <span className="text-muted-foreground truncate text-xs">{summary ?? t("optional")}</span>}
 				</span>
 				{open ? (
 					<LuChevronDown className="text-muted-foreground size-4 rotate-180 transition-transform" />
@@ -109,8 +111,11 @@ export function PatientForm({
 	onSaved: (patient: Patient, next: "file" | "book") => void;
 	onCancel: () => void;
 }) {
+	const t = useTranslations("patients.form");
+	const common = useTranslations("common");
+	const errorText = useTranslations("patients.errors");
 	const form = useForm<PatientInput>({
-		resolver: zodResolver(patientSchema),
+		resolver: zodResolver(patientSchemaOf(errorText)),
 		defaultValues,
 		mode: "onTouched",
 	});
@@ -134,14 +139,14 @@ export function PatientForm({
 					method: patientId ? "PUT" : "POST",
 					body: JSON.stringify(input),
 				});
-				toast.success(patientId ? "Dossier enregistré" : `Dossier n° ${patient.fileNumber} créé`);
+				toast.success(patientId ? t("saved") : t("created", { number: patient.fileNumber }));
 				onSaved(patient, next);
 			} catch (err) {
 				if (err instanceof ApiError && err.code === "CIN_TAKEN") {
 					form.setError("cin", { message: err.message });
 					return;
 				}
-				toast.error(err instanceof Error ? err.message : "Enregistrement impossible");
+				toast.error(err instanceof Error ? err.message : t("saveError"));
 			}
 		});
 
@@ -164,7 +169,7 @@ export function PatientForm({
 
 	const coverageSummary =
 		values.coverage && values.coverage !== "none"
-			? [COVERAGE_LABELS[values.coverage], values.insurer, values.coverageNumber].filter(Boolean).join(" · ")
+			? [common(`coverage.${values.coverage}`), values.insurer, values.coverageNumber].filter(Boolean).join(" · ")
 			: undefined;
 
 	return (
@@ -183,8 +188,8 @@ export function PatientForm({
 			<div className="grid min-h-0 flex-1 content-start gap-6 overflow-y-auto p-5">
 				<section className="grid gap-4">
 					<div className="grid gap-4 sm:grid-cols-2">
-						{input("lastName", "Nom", { required: true, autoComplete: "off", autoFocus: !patientId })}
-						{input("firstName", "Prénom", { required: true, autoComplete: "off" })}
+						{input("lastName", t("lastName"), { required: true, autoComplete: "off", autoFocus: !patientId })}
+						{input("firstName", t("firstName"), { required: true, autoComplete: "off" })}
 					</div>
 					<div className="grid gap-4 sm:grid-cols-2">
 						<Controller
@@ -192,8 +197,8 @@ export function PatientForm({
 							name="sex"
 							render={({ field }) => (
 								<Field data-invalid={!!errors.sex}>
-									<Label required>Sexe</Label>
-									<div role="radiogroup" aria-label="Sexe" className="bg-muted grid h-9 grid-cols-2 rounded-lg p-0.5">
+									<Label required>{t("sex")}</Label>
+									<div role="radiogroup" aria-label={t("sex")} className="bg-muted grid h-9 grid-cols-2 rounded-lg p-0.5">
 										{(Object.keys(SEX_LABELS) as Sex[]).map((value) => (
 											<button
 												key={value}
@@ -207,7 +212,7 @@ export function PatientForm({
 													field.value === value ? "bg-background shadow-sm" : "text-muted-foreground hover:text-foreground",
 												)}
 											>
-												{SEX_LABELS[value]}
+												{common(`sex.${value}`)}
 											</button>
 										))}
 									</div>
@@ -217,9 +222,9 @@ export function PatientForm({
 						/>
 						<Field data-invalid={!!errors.birthDate}>
 							<div className="flex items-center justify-between gap-2">
-								<Label htmlFor="birthDate">Date de naissance</Label>
+								<Label htmlFor="birthDate">{t("birthDate")}</Label>
 								{age !== null && (
-									<span className="bg-muted text-muted-foreground rounded-full px-2 text-xs tabular-nums">{age} ans</span>
+									<span className="bg-muted text-muted-foreground rounded-full px-2 text-xs tabular-nums">{common("age", { age })}</span>
 								)}
 							</div>
 							<Input
@@ -234,7 +239,7 @@ export function PatientForm({
 					</div>
 					<div className="grid gap-4 sm:grid-cols-2">
 						<Field data-invalid={!!errors.phone}>
-							<Label htmlFor="phone">Téléphone</Label>
+							<Label htmlFor="phone">{t("phone")}</Label>
 							<div className="relative">
 								<LuPhone className="text-muted-foreground pointer-events-none absolute start-3 top-1/2 size-4 -translate-y-1/2" />
 								<Input
@@ -249,30 +254,30 @@ export function PatientForm({
 							</div>
 							<FieldError errors={[errors.phone]} />
 						</Field>
-						{input("cin", "CIN", { placeholder: "BK123456", className: "uppercase" })}
+						{input("cin", t("cin"), { placeholder: "BK123456", className: "uppercase" })}
 					</div>
 				</section>
 
 				<div className="grid gap-2">
-					<p className="text-muted-foreground text-xs font-medium">Informations complémentaires</p>
+					<p className="text-muted-foreground text-xs font-medium">{t("more")}</p>
 
 					<OptionalSection
 						icon={LuMapPin}
-						title="Adresse et e-mail"
+						title={t("addressTitle")}
 						summary={[values.address, values.city, values.email].filter(Boolean).join(" · ") || undefined}
 						open={isOpen("address")}
 						onToggle={() => toggle("address")}
 					>
 						<div className="grid gap-4 sm:grid-cols-[2fr_1fr]">
-							{input("address", "Adresse")}
-							{input("city", "Ville")}
+							{input("address", t("address"))}
+							{input("city", t("city"))}
 						</div>
-						{input("email", "E-mail", { type: "email", placeholder: "nom@exemple.ma" })}
+						{input("email", t("email"), { type: "email", placeholder: t("emailPlaceholder") })}
 					</OptionalSection>
 
 					<OptionalSection
 						icon={LuShieldCheck}
-						title="Couverture médicale"
+						title={t("coverageTitle")}
 						summary={coverageSummary}
 						open={isOpen("coverage")}
 						onToggle={() => toggle("coverage")}
@@ -282,8 +287,8 @@ export function PatientForm({
 							name="coverage"
 							render={({ field }) => (
 								<Field>
-									<Label>Régime</Label>
-									<div role="radiogroup" aria-label="Régime" className="flex flex-wrap gap-1.5">
+									<Label>{t("scheme")}</Label>
+									<div role="radiogroup" aria-label={t("scheme")} className="flex flex-wrap gap-1.5">
 										{(Object.keys(COVERAGE_LABELS) as Coverage[]).map((value) => (
 											<button
 												key={value}
@@ -298,7 +303,7 @@ export function PatientForm({
 														: "bg-background text-muted-foreground hover:text-foreground",
 												)}
 											>
-												{COVERAGE_LABELS[value]}
+												{common(`coverage.${value}`)}
 											</button>
 										))}
 									</div>
@@ -308,28 +313,28 @@ export function PatientForm({
 						{values.coverage !== "none" && (
 							<div className="grid gap-4 sm:grid-cols-2">
 								{values.coverage === "private" &&
-									input("insurer", "Assureur", { placeholder: "Saham, Wafa, AXA…" })}
-								{input("coverageNumber", "N° d’immatriculation")}
+									input("insurer", t("insurer"), { placeholder: t("insurerPlaceholder") })}
+								{input("coverageNumber", t("registration"))}
 							</div>
 						)}
 					</OptionalSection>
 
 					<OptionalSection
 						icon={LuContactRound}
-						title="Contact d’urgence"
+						title={t("emergency")}
 						summary={[values.emergencyContactName, values.emergencyContactPhone].filter(Boolean).join(" · ") || undefined}
 						open={isOpen("emergency")}
 						onToggle={() => toggle("emergency")}
 					>
 						<div className="grid gap-4 sm:grid-cols-2">
-							{input("emergencyContactName", "Nom et lien", { placeholder: "Ahmed (époux)" })}
-							{input("emergencyContactPhone", "Téléphone", { type: "tel", inputMode: "tel" })}
+							{input("emergencyContactName", t("nameAndLink"), { placeholder: t("nameAndLinkPlaceholder") })}
+							{input("emergencyContactPhone", t("phone"), { type: "tel", inputMode: "tel" })}
 						</div>
 					</OptionalSection>
 
 					<OptionalSection
 						icon={LuStickyNote}
-						title="Note administrative"
+						title={t("note")}
 						summary={values.notes || undefined}
 						open={isOpen("notes")}
 						onToggle={() => toggle("notes")}
@@ -338,7 +343,7 @@ export function PatientForm({
 							<Textarea
 								id="notes"
 								rows={3}
-								placeholder="Informations pratiques pour l’accueil. Jamais médicales : elles vont dans les antécédents."
+								placeholder={t("notePlaceholder")}
 								aria-invalid={!!errors.notes}
 								{...form.register("notes")}
 							/>
@@ -350,25 +355,25 @@ export function PatientForm({
 
 			<div className="flex items-center gap-2 border-t px-5 py-3">
 				<p className="text-muted-foreground me-auto hidden text-xs sm:block">
-					<span className="text-primary">*</span> obligatoire ·{" "}
-					<kbd className="font-mono">{modifier}+↵</kbd> pour enregistrer
+					<span className="text-primary">*</span> {t("required")} ·{" "}
+					<kbd className="font-mono">{modifier}+↵</kbd> {t("toSave")}
 				</p>
 				<Button type="button" variant="ghost" onClick={onCancel}>
-					Annuler
+					{t("cancel")}
 				</Button>
 				{patientId ? (
 					<Button type="submit" disabled={isSubmitting || !isDirty}>
 						{isSubmitting && <LuLoader className="animate-spin" />}
-						Enregistrer
+						{t("save")}
 					</Button>
 				) : (
 					<>
 						<Button type="button" variant="outline" disabled={isSubmitting} onClick={submit("book")}>
-							Créer et prendre RDV
+							{t("createAndBook")}
 						</Button>
 						<Button type="submit" disabled={isSubmitting}>
 							{isSubmitting && <LuLoader className="animate-spin" />}
-							Créer le dossier
+							{t("create")}
 						</Button>
 					</>
 				)}

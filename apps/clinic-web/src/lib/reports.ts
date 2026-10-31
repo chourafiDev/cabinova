@@ -116,29 +116,36 @@ export const MAGNITUDE = "#724e91";
 const noon = (day: string) => `${day}T12:00:00`;
 
 /** A bucket's short axis label: "8 sept.", "7 sept." (week of) or "sept. 26". */
-export function bucketLabel(date: string, bucket: Bucket) {
-	if (bucket === "month") return formatDate(noon(date), { day: undefined, month: "short", year: "2-digit" });
-	return formatDate(noon(date), { month: "short", year: undefined });
+export function bucketLabel(date: string, bucket: Bucket, locale = "fr-MA") {
+	if (bucket === "month") return formatDate(noon(date), { day: undefined, month: "short", year: "2-digit" }, locale);
+	return formatDate(noon(date), { month: "short", year: undefined }, locale);
 }
 
 /** The same, spelled out for tooltips and tables. */
-export function bucketTitle(date: string, bucket: Bucket) {
-	if (bucket === "month") return formatDate(noon(date), { day: undefined, month: "long" });
-	const day = formatDate(noon(date), { weekday: bucket === "day" ? "long" : undefined, month: "long" });
-	return bucket === "week" ? `Semaine du ${day}` : day;
+export function bucketTitle(date: string, bucket: Bucket, locale = "fr-MA") {
+	if (bucket === "month") return formatDate(noon(date), { day: undefined, month: "long" }, locale);
+	const day = formatDate(noon(date), { weekday: bucket === "day" ? "long" : undefined, month: "long" }, locale);
+	if (bucket !== "week") return day;
+	return locale.startsWith("ar") ? `أسبوع ${day}` : `Semaine du ${day}`;
 }
 
 /** "1 – 30 septembre 2026", "15 août – 13 sept. 2026". */
-export function periodLabel(from: string, to: string) {
+export function periodLabel(from: string, to: string, locale = "fr-MA") {
 	const sameYear = from.slice(0, 4) === to.slice(0, 4);
 	const sameMonth = sameYear && from.slice(5, 7) === to.slice(5, 7);
 	const start = sameMonth
-		? formatDate(noon(from), { month: undefined, year: undefined })
-		: formatDate(noon(from), { month: "short", year: sameYear ? undefined : "numeric" });
-	return `${start} – ${formatDate(noon(to), { month: sameMonth ? "long" : "short" })}`;
+		? formatDate(noon(from), { month: undefined, year: undefined }, locale)
+		: formatDate(noon(from), { month: "short", year: sameYear ? undefined : "numeric" }, locale);
+	return `${start} – ${formatDate(noon(to), { month: sameMonth ? "long" : "short" }, locale)}`;
 }
 
-export const formatRate = (rate: number | null) =>
-	rate === null ? "—" : `${rate.toLocaleString("fr-MA", { maximumFractionDigits: 1 })} %`;
+export const formatRate = (rate: number | null, locale = "fr-MA") =>
+	rate === null ? "—" : `${rate.toLocaleString(locale, { maximumFractionDigits: 1 })} %`;
 
-export const WEEKDAYS = ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"];
+const MONDAY = Date.UTC(2024, 0, 1);
+
+/** Monday → Sunday. */
+export const weekdays = (locale: string, width: "short" | "long") =>
+	Array.from({ length: 7 }, (_, i) =>
+		new Intl.DateTimeFormat(locale, { weekday: width, timeZone: "UTC" }).format(MONDAY + i * 86_400_000),
+	).map((day) => day.replace(".", ""));

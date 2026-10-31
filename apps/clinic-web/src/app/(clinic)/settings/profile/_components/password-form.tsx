@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { LuEye, LuEyeOff, LuLoader } from "react-icons/lu";
 import { toast } from "sonner";
@@ -21,13 +22,14 @@ export function PasswordForm() {
 	const [visible, setVisible] = useState(false);
 	const [saving, setSaving] = useState(false);
 	const complete = v.current && v.next && v.confirm;
+	const t = useTranslations("settings.password");
 
 	const save = async (e: React.FormEvent) => {
 		e.preventDefault();
 		const next: Errors = {};
-		if (v.next.length < 8) next.next = "Au moins 8 caractères.";
-		else if (v.next === v.current) next.next = "Choisissez un mot de passe différent de l’actuel.";
-		if (v.confirm !== v.next) next.confirm = "Les deux mots de passe ne correspondent pas.";
+		if (v.next.length < 8) next.next = t("tooShort");
+		else if (v.next === v.current) next.next = t("same");
+		if (v.confirm !== v.next) next.confirm = t("mismatch");
 		setErrors(next);
 		if (Object.keys(next).length) return;
 
@@ -38,11 +40,11 @@ export function PasswordForm() {
 				body: JSON.stringify({ currentPassword: v.current, newPassword: v.next }),
 			});
 			setV(EMPTY);
-			toast.success("Mot de passe modifié", { description: "Vos autres appareils ont été déconnectés." });
+			toast.success(t("changed"), { description: t("changedHint") });
 			router.refresh();
 		} catch (err) {
 			if (err instanceof ApiError && err.code === "WRONG_PASSWORD") setErrors({ current: err.message });
-			else toast.error(err instanceof Error ? err.message : "Modification impossible");
+			else toast.error(err instanceof Error ? err.message : t("error"));
 		} finally {
 			setSaving(false);
 		}
@@ -69,27 +71,27 @@ export function PasswordForm() {
 	return (
 		<form onSubmit={save} noValidate>
 			<SettingsCard
-				title="Mot de passe"
-				description="Après le changement, vos autres appareils sont déconnectés ; celui-ci reste connecté."
+				title={t("title")}
+				description={t("description")}
 				action={
 					<Button type="button" variant="ghost" size="sm" onClick={() => setVisible((x) => !x)}>
-						{visible ? <LuEyeOff /> : <LuEye />} {visible ? "Masquer" : "Afficher"}
+						{visible ? <LuEyeOff /> : <LuEye />} {visible ? t("hide") : t("show")}
 					</Button>
 				}
 				footer={
 					<>
-						<p className="text-muted-foreground text-xs">8 caractères minimum. Une phrase est plus sûre qu’un mot.</p>
+						<p className="text-muted-foreground text-xs">{t("hint")}</p>
 						<Button type="submit" size="sm" disabled={!complete || saving}>
-							{saving && <LuLoader className="animate-spin" />} Changer le mot de passe
+							{saving && <LuLoader className="animate-spin" />} {t("submit")}
 						</Button>
 					</>
 				}
 			>
 				<div className="grid gap-4">
-					<div className="sm:max-w-[calc(50%-0.5rem)]">{field("current", "Mot de passe actuel", "current-password")}</div>
+					<div className="sm:max-w-[calc(50%-0.5rem)]">{field("current", t("current"), "current-password")}</div>
 					<div className="grid gap-4 sm:grid-cols-2">
-						{field("next", "Nouveau mot de passe", "new-password")}
-						{field("confirm", "Confirmer", "new-password")}
+						{field("next", t("next"), "new-password")}
+						{field("confirm", t("confirm"), "new-password")}
 					</div>
 				</div>
 			</SettingsCard>

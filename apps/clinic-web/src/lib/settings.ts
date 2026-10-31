@@ -52,28 +52,20 @@ export const DEFAULT_OPENING_HOURS: OpeningHours = {
 	"6": [{ from: "08:00", to: "13:00" }],
 };
 
-export type SettingsSection = { href: string; label: string; hint: string; ownerOnly?: boolean };
+export type SettingsSection = { href: string; key: "profile" | "cabinet" | "spaces" | "hours" | "tarifs" | "sessions" | "activity"; ownerOnly?: boolean };
 
 export const SETTINGS_SECTIONS: SettingsSection[] = [
-	{ href: "/settings/profile", label: "Mon profil", hint: "Nom, mot de passe, appareils" },
-	{ href: "/settings/cabinet", label: "Cabinet", hint: "Nom, coordonnées", ownerOnly: true },
-	{ href: "/settings/spaces", label: "Espaces", hint: "Sites du cabinet", ownerOnly: true },
-	{ href: "/settings/hours", label: "Horaires & agenda", hint: "Ouverture, durée des RDV", ownerOnly: true },
-	{ href: "/settings/tarifs", label: "Tarifs", hint: "Actes et honoraires", ownerOnly: true },
-	{ href: "/settings/sessions", label: "Sessions actives", hint: "Appareils de l’équipe", ownerOnly: true },
-	{ href: "/settings/activity", label: "Journal d’activité", hint: "Qui a fait quoi", ownerOnly: true },
+	{ href: "/settings/profile", key: "profile" },
+	{ href: "/settings/cabinet", key: "cabinet", ownerOnly: true },
+	{ href: "/settings/spaces", key: "spaces", ownerOnly: true },
+	{ href: "/settings/hours", key: "hours", ownerOnly: true },
+	{ href: "/settings/tarifs", key: "tarifs", ownerOnly: true },
+	{ href: "/settings/sessions", key: "sessions", ownerOnly: true },
+	{ href: "/settings/activity", key: "activity", ownerOnly: true },
 ];
 
 /** Days in the order a French week is read (Monday first), as OpeningHours keys. */
-export const WEEK: { key: keyof OpeningHours; label: string; short: string }[] = [
-	{ key: "1", label: "Lundi", short: "Lun" },
-	{ key: "2", label: "Mardi", short: "Mar" },
-	{ key: "3", label: "Mercredi", short: "Mer" },
-	{ key: "4", label: "Jeudi", short: "Jeu" },
-	{ key: "5", label: "Vendredi", short: "Ven" },
-	{ key: "6", label: "Samedi", short: "Sam" },
-	{ key: "0", label: "Dimanche", short: "Dim" },
-];
+export const WEEK: (keyof OpeningHours)[] = ["1", "2", "3", "4", "5", "6", "0"];
 
 /** "HH:MM" → minutes since midnight. */
 export const toMinutes = (time: string) => {
@@ -82,9 +74,11 @@ export const toMinutes = (time: string) => {
 };
 
 /** "9 h – 13 h, 15 h – 19 h", "8 h 30 – 12 h" or "Fermé". */
-export function formatPeriods(periods: { from: string; to: string }[]) {
-	if (!periods.length) return "Fermé";
+export function formatPeriods(periods: { from: string; to: string }[], locale = "fr-MA") {
+	const arabic = locale.startsWith("ar");
+	if (!periods.length) return arabic ? "مغلق" : "Fermé";
 	const time = (t: string) => {
+		if (arabic) return t;
 		const [h, m] = t.split(":");
 		return m === "00" ? `${Number(h)} h` : `${Number(h)} h ${m}`;
 	};
@@ -93,19 +87,19 @@ export function formatPeriods(periods: { from: string; to: string }[]) {
 
 /** Problems the API would refuse, per day key, to show next to the day. */
 export function openingHoursErrors(hours: OpeningHours) {
-	const errors: Partial<Record<keyof OpeningHours, string>> = {};
-	for (const { key } of WEEK) {
+	const errors: Partial<Record<keyof OpeningHours, "missing" | "order" | "overlap">> = {};
+	for (const key of WEEK) {
 		const periods = [...hours[key]].sort((a, b) => a.from.localeCompare(b.from));
-		if (periods.some((p) => !p.from || !p.to)) errors[key] = "Heure manquante.";
-		else if (periods.some((p) => p.from >= p.to)) errors[key] = "Chaque plage doit finir après son début.";
-		else if (periods.some((p, i) => i > 0 && p.from < periods[i - 1].to)) errors[key] = "Les plages se chevauchent.";
+		if (periods.some((p) => !p.from || !p.to)) errors[key] = "missing";
+		else if (periods.some((p) => p.from >= p.to)) errors[key] = "order";
+		else if (periods.some((p, i) => i > 0 && p.from < periods[i - 1].to)) errors[key] = "overlap";
 	}
 	return errors;
 }
 
 /** "Chrome · macOS" from a user agent; good enough to recognise one's devices. */
-export function describeDevice(userAgent: string | null) {
-	if (!userAgent) return { label: "Appareil inconnu", mobile: false };
+export function describeDevice(userAgent: string | null, names: { unknown: string; browser: string }) {
+	if (!userAgent) return { label: names.unknown, mobile: false };
 	const browser = /Edg\//.test(userAgent)
 		? "Edge"
 		: /OPR\//.test(userAgent)
@@ -116,7 +110,7 @@ export function describeDevice(userAgent: string | null) {
 					? "Chrome"
 					: /Safari\//.test(userAgent)
 						? "Safari"
-						: "Navigateur";
+						: names.browser;
 	const os = /iPhone|iPad/.test(userAgent)
 		? "iOS"
 		: /Android/.test(userAgent)

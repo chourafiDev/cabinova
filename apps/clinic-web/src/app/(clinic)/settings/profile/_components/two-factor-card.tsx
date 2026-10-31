@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { LuKeyRound, LuLoader, LuShieldCheck, LuShieldOff, LuSmartphone } from "react-icons/lu";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -18,8 +19,8 @@ import {
 import { Field, FieldError, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { api } from "@/lib/api-client";
-import { formatDate } from "@/lib/format";
 import type { TwoFactorStatus } from "@/lib/settings";
+import { useFormat } from "@/lib/use-format";
 import { SettingsCard } from "../../_components/settings-card";
 
 /** Asks for a code (app or backup) before a sensitive change. */
@@ -41,6 +42,8 @@ function CodeDialog({
 	const [code, setCode] = useState("");
 	const [error, setError] = useState<string | null>(null);
 	const [pending, setPending] = useState(false);
+	const t = useTranslations("settings.twoFactor");
+	const common = useTranslations("settings.common");
 	return (
 		<Dialog open onOpenChange={(o) => !o && onClose()}>
 			<DialogContent className="sm:max-w-sm">
@@ -53,7 +56,7 @@ function CodeDialog({
 						try {
 							await onConfirm(code);
 						} catch (err) {
-							setError(err instanceof Error ? err.message : "Code incorrect");
+							setError(err instanceof Error ? err.message : t("invalid"));
 							setPending(false);
 						}
 					}}
@@ -63,13 +66,13 @@ function CodeDialog({
 						<DialogDescription>{description}</DialogDescription>
 					</DialogHeader>
 					<Field data-invalid={!!error}>
-						<FieldLabel htmlFor="confirm-code">Code de l’application ou de secours</FieldLabel>
+						<FieldLabel htmlFor="confirm-code">{t("code")}</FieldLabel>
 						<Input id="confirm-code" autoFocus autoComplete="one-time-code" className="font-mono" value={code} onChange={(e) => setCode(e.target.value)} />
 						<FieldError errors={error ? [{ message: error }] : []} />
 					</Field>
 					<DialogFooter>
 						<Button type="button" variant="outline" onClick={onClose}>
-							Annuler
+							{common("cancel")}
 						</Button>
 						<Button type="submit" variant={destructive ? "destructive" : "default"} disabled={pending || code.trim().length < 6}>
 							{pending && <LuLoader className="animate-spin" />} {action}
@@ -87,6 +90,8 @@ export function TwoFactorCard({ status }: { status: TwoFactorStatus }) {
 	const [setup, setSetup] = useState(false);
 	const [codes, setCodes] = useState<string[] | null>(null);
 	const [dialog, setDialog] = useState<"disable" | "regenerate" | null>(null);
+	const t = useTranslations("settings.twoFactor");
+	const format = useFormat();
 
 	const finish = () => {
 		setSetup(false);
@@ -98,16 +103,16 @@ export function TwoFactorCard({ status }: { status: TwoFactorStatus }) {
 		<SettingsCard
 			title={
 				<span className="flex items-center gap-2">
-					Double authentification
+					{t("title")}
 					<Badge
 						variant="outline"
 						className={status.enabled ? "border-transparent bg-emerald-50 text-emerald-700" : "border-transparent bg-amber-50 text-amber-800"}
 					>
-						{status.enabled ? "Activée" : "Désactivée"}
+						{status.enabled ? t("enabled") : t("disabled")}
 					</Badge>
 				</span>
 			}
-			description="Un code de votre téléphone, en plus du mot de passe, à chaque connexion."
+			description={t("description")}
 		>
 			{codes ? (
 				<RecoveryCodes codes={codes} onDone={finish} />
@@ -118,26 +123,25 @@ export function TwoFactorCard({ status }: { status: TwoFactorStatus }) {
 					<div className="flex items-start gap-3 text-sm">
 						<LuShieldCheck className="mt-0.5 size-5 shrink-0 text-emerald-600" />
 						<p>
-							Votre compte est protégé.
-							{status.enabledAt && ` Activée le ${formatDate(status.enabledAt)}.`}
-							{status.required && " Votre cabinet l’exige pour toute l’équipe."}
+							{t("protected")}
+							{status.enabledAt && ` ${t("enabledOn", { date: format.date(status.enabledAt) })}`}
+							{status.required && ` ${t("required")}`}
 						</p>
 					</div>
 					<div className="bg-muted/50 flex items-center gap-3 rounded-lg px-3 py-2 text-sm">
 						<LuKeyRound className="text-muted-foreground size-4" />
 						<span className="flex-1">
-							{status.recoveryCodesLeft} code{status.recoveryCodesLeft > 1 ? "s" : ""} de secours restant
-							{status.recoveryCodesLeft > 1 ? "s" : ""}
+							{t("codesLeft", { count: status.recoveryCodesLeft })}
 						</span>
-						{status.recoveryCodesLeft <= 3 && <span className="text-xs text-amber-700">Pensez à en générer de nouveaux</span>}
+						{status.recoveryCodesLeft <= 3 && <span className="text-xs text-amber-700">{t("renewHint")}</span>}
 					</div>
 					<div className="flex flex-wrap gap-2">
 						<Button variant="outline" size="sm" onClick={() => setDialog("regenerate")}>
-							<LuKeyRound /> Nouveaux codes de secours
+							<LuKeyRound /> {t("newCodes")}
 						</Button>
 						{!status.required && (
 							<Button variant="ghost" size="sm" className="text-destructive" onClick={() => setDialog("disable")}>
-								<LuShieldOff /> Désactiver
+								<LuShieldOff /> {t("disable")}
 							</Button>
 						)}
 					</div>
@@ -146,11 +150,11 @@ export function TwoFactorCard({ status }: { status: TwoFactorStatus }) {
 				<div className="grid gap-4">
 					<div className="flex items-start gap-3 text-sm">
 						<LuSmartphone className="text-muted-foreground mt-0.5 size-5 shrink-0" />
-						<p>Votre compte donne accès à des données de patients : c’est fortement recommandé.</p>
+						<p>{t("recommended")}</p>
 					</div>
 					<div>
 						<Button onClick={() => setSetup(true)}>
-							<LuShieldCheck /> Activer la double authentification
+							<LuShieldCheck /> {t("enable")}
 						</Button>
 					</div>
 				</div>
@@ -158,14 +162,14 @@ export function TwoFactorCard({ status }: { status: TwoFactorStatus }) {
 
 			{dialog === "disable" && (
 				<CodeDialog
-					title="Désactiver la double authentification ?"
-					description="Votre compte ne sera plus protégé que par le mot de passe."
-					action="Désactiver"
+					title={t("disableTitle")}
+					description={t("disableHint")}
+					action={t("disable")}
 					destructive
 					onClose={() => setDialog(null)}
 					onConfirm={async (c) => {
 						await api("/auth/2fa/disable", { method: "POST", body: JSON.stringify({ code: c }) });
-						toast.success("Double authentification désactivée");
+						toast.success(t("disabledDone"));
 						setDialog(null);
 						router.refresh();
 					}}
@@ -173,9 +177,9 @@ export function TwoFactorCard({ status }: { status: TwoFactorStatus }) {
 			)}
 			{dialog === "regenerate" && (
 				<CodeDialog
-					title="Nouveaux codes de secours"
-					description="Les anciens codes ne fonctionneront plus."
-					action="Générer"
+					title={t("newCodes")}
+					description={t("newCodesHint")}
+					action={t("generate")}
 					onClose={() => setDialog(null)}
 					onConfirm={async (c) => {
 						const result = await api<{ recoveryCodes: string[] }>("/auth/2fa/recovery-codes", {

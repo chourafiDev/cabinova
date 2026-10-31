@@ -1,19 +1,18 @@
-import type { Metadata } from "next";
 import Link from "next/link";
 import { LuChevronLeft, LuChevronRight, LuPlus, LuUsers } from "react-icons/lu";
 import { Suspense } from "react";
+import { getTranslations } from "next-intl/server";
+import { pageTitle } from "@/i18n/titles";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { formatDate } from "@/lib/format";
+import { getFormat } from "@/lib/get-format";
 import {
 	ageOf,
-	COVERAGE_LABELS,
 	isMedicalRole,
 	formatFileNumber,
 	formatPhone,
 	fullName,
 	type PatientsPage,
-	SEX_LABELS,
 } from "@/lib/patients";
 import { apiGet } from "@/lib/server-api";
 import { getClinicState } from "@/lib/session";
@@ -22,11 +21,11 @@ import { cn } from "@/lib/utils";
 import { PatientSheet } from "./_components/patient-sheet";
 import { PatientsSearch } from "./_components/patients-search";
 
-export const metadata: Metadata = { title: "Patients" };
+export const generateMetadata = () => pageTitle("patients");
 
 const PER_PAGE = 20;
-const STATUSES = { active: "Actifs", archived: "Archivés" } as const;
-type Status = keyof typeof STATUSES;
+const STATUSES = ["active", "archived"] as const;
+type Status = (typeof STATUSES)[number];
 
 /** The space's patients: search, active / archived, 20 per page. A patient opens in a sheet over the list. */
 export default async function PatientsPage({ searchParams }: PageProps<"/patients">) {
@@ -44,6 +43,9 @@ export default async function PatientsPage({ searchParams }: PageProps<"/patient
 	]);
 	const space = state.status === "signed-in" ? state.session.spaces?.current : undefined;
 	const medical = state.status === "signed-in" && isMedicalRole(state.session.user.role);
+	const t = await getTranslations("patients");
+	const common = await getTranslations("common");
+	const format = await getFormat();
 
 	const href = (changes: Record<string, string | null>) => {
 		const next = new URLSearchParams({ ...(status !== "active" && { status }), ...(search && { search }), page: String(page) });
@@ -65,25 +67,24 @@ export default async function PatientsPage({ searchParams }: PageProps<"/patient
 						<LuUsers className="size-4" />
 					</span>
 					<div>
-						<h1 className="text-lg font-semibold leading-tight">Patients</h1>
+						<h1 className="text-lg font-semibold leading-tight">{t("title")}</h1>
 						<p className="text-muted-foreground text-sm">
-							{total} patient{total > 1 ? "s" : ""} {status === "archived" ? "archivé" : "actif"}
-							{total > 1 ? "s" : ""}
-							{search && ` pour « ${search} »`}
+							{t(status === "archived" ? "countArchived" : "countActive", { count: total })}
+							{search && ` ${t("forSearch", { search })}`}
 							{space && ` · ${spaceLabel(space)}`}
 						</p>
 					</div>
 				</div>
 				<Button asChild>
 					<Link href={href({ nouveau: "1" })} scroll={false}>
-						<LuPlus /> Nouveau patient
+						<LuPlus /> {t("new")}
 					</Link>
 				</Button>
 			</header>
 
 			<div className="flex flex-wrap items-center justify-between gap-3">
-				<nav className="bg-muted flex rounded-lg p-0.5 text-sm" aria-label="Statut">
-					{(Object.keys(STATUSES) as Status[]).map((s) => (
+				<nav className="bg-muted flex rounded-lg p-0.5 text-sm" aria-label={t("status.label")}>
+					{STATUSES.map((s) => (
 						<Link
 							key={s}
 							href={href({ status: s === "active" ? null : s, page: null })}
@@ -93,7 +94,7 @@ export default async function PatientsPage({ searchParams }: PageProps<"/patient
 								status === s ? "bg-background font-medium shadow-sm" : "text-muted-foreground hover:text-foreground",
 							)}
 						>
-							{STATUSES[s]}
+							{t(`status.${s}`)}
 						</Link>
 					))}
 				</nav>
@@ -107,19 +108,15 @@ export default async function PatientsPage({ searchParams }: PageProps<"/patient
 					<div className="flex flex-col items-center gap-2 px-6 py-16 text-center">
 						<LuUsers className="text-muted-foreground size-6" />
 						<p className="font-medium">
-							{search ? "Aucun patient trouvé" : status === "archived" ? "Aucun dossier archivé" : "Aucun patient pour l’instant"}
+							{t(search ? "empty.search" : `empty.${status}`)}
 						</p>
 						<p className="text-muted-foreground max-w-sm text-sm">
-							{search
-								? "Vérifiez l’orthographe, ou cherchez par téléphone, CIN ou n° de dossier."
-								: status === "archived"
-									? "Les dossiers archivés apparaissent ici ; ils ne sont jamais supprimés."
-									: "Créez le premier dossier pour commencer."}
+							{t(search ? "empty.searchHint" : `empty.${status}Hint`)}
 						</p>
 						{!search && status === "active" && (
 							<Button asChild size="sm" className="mt-2">
 								<Link href={href({ nouveau: "1" })} scroll={false}>
-									<LuPlus /> Nouveau patient
+									<LuPlus /> {t("new")}
 								</Link>
 							</Button>
 						)}
@@ -128,12 +125,12 @@ export default async function PatientsPage({ searchParams }: PageProps<"/patient
 					<Table>
 						<TableHeader>
 							<TableRow>
-								<TableHead className="w-28">Dossier</TableHead>
-								<TableHead>Patient</TableHead>
-								<TableHead className="hidden md:table-cell">Téléphone</TableHead>
-								<TableHead className="hidden lg:table-cell">CIN</TableHead>
-								<TableHead className="hidden lg:table-cell">Couverture</TableHead>
-								<TableHead className="hidden xl:table-cell">Créé le</TableHead>
+								<TableHead className="w-28">{t("table.file")}</TableHead>
+								<TableHead>{t("table.patient")}</TableHead>
+								<TableHead className="hidden md:table-cell">{t("table.phone")}</TableHead>
+								<TableHead className="hidden lg:table-cell">{t("table.cin")}</TableHead>
+								<TableHead className="hidden lg:table-cell">{t("table.coverage")}</TableHead>
+								<TableHead className="hidden xl:table-cell">{t("table.created")}</TableHead>
 							</TableRow>
 						</TableHeader>
 						<TableBody>
@@ -154,14 +151,14 @@ export default async function PatientsPage({ searchParams }: PageProps<"/patient
 												{fullName(p)}
 											</Link>
 											<p className="text-muted-foreground text-xs">
-												{[SEX_LABELS[p.sex], age !== null && `${age} ans`, p.city].filter(Boolean).join(" · ")}
+												{[common(`sex.${p.sex}`), age !== null && common("age", { age }), p.city].filter(Boolean).join(" · ")}
 											</p>
 										</TableCell>
 										<TableCell className="hidden tabular-nums md:table-cell">{formatPhone(p.phone) || "—"}</TableCell>
 										<TableCell className="hidden font-mono text-xs lg:table-cell">{p.cin ?? "—"}</TableCell>
-										<TableCell className="hidden lg:table-cell">{COVERAGE_LABELS[p.coverage]}</TableCell>
+										<TableCell className="hidden lg:table-cell">{common(`coverage.${p.coverage}`)}</TableCell>
 										<TableCell className="text-muted-foreground hidden xl:table-cell">
-											{formatDate(p.createdAt, { month: "short" })}
+											{format.date(p.createdAt, { month: "short" })}
 										</TableCell>
 									</TableRow>
 								);
@@ -172,18 +169,18 @@ export default async function PatientsPage({ searchParams }: PageProps<"/patient
 			</div>
 
 			{pageCount > 1 && (
-				<nav className="flex items-center justify-end gap-2 text-sm" aria-label="Pagination">
+				<nav className="flex items-center justify-end gap-2 text-sm" aria-label={common("pagination.label")}>
 					<span className="text-muted-foreground me-2">
-						Page {page} sur {pageCount}
+						{common("pagination.page", { page, total: pageCount })}
 					</span>
 					<Button asChild variant="outline" size="sm" aria-disabled={page <= 1} className={cn(page <= 1 && "pointer-events-none opacity-50")}>
 						<Link href={href({ page: String(page - 1) })}>
-							<LuChevronLeft className="rtl:rotate-180" /> Précédente
+							<LuChevronLeft className="rtl:rotate-180" /> {common("pagination.previous")}
 						</Link>
 					</Button>
 					<Button asChild variant="outline" size="sm" aria-disabled={page >= pageCount} className={cn(page >= pageCount && "pointer-events-none opacity-50")}>
 						<Link href={href({ page: String(page + 1) })}>
-							Suivante <LuChevronRight className="rtl:rotate-180" />
+							{common("pagination.next")} <LuChevronRight className="rtl:rotate-180" />
 						</Link>
 					</Button>
 				</nav>

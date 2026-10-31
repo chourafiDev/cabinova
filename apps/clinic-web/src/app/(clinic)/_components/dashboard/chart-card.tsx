@@ -1,3 +1,4 @@
+import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 
 /**
@@ -6,7 +7,7 @@ import { cn } from "@/lib/utils";
  * statistic so the grid reads as one system.
  */
 export function ChartCard({
-	eyebrow = "Statistiques",
+	eyebrow,
 	title,
 	headline,
 	action,
@@ -21,11 +22,12 @@ export function ChartCard({
 	className?: string;
 	children: React.ReactNode;
 }) {
+	const t = useTranslations("common");
 	return (
 		<section className={cn("flex min-w-0 flex-col rounded-xl border bg-card p-5", className)}>
 			<header className="mb-4 flex flex-wrap items-start justify-between gap-3 border-b pb-4">
 				<div className="grid gap-0.5">
-					<span className="text-xs text-muted-foreground">{eyebrow}</span>
+					<span className="text-xs text-muted-foreground">{eyebrow ?? t("stats")}</span>
 					<h2 className="text-base font-semibold leading-tight">{title}</h2>
 					{headline && <div className="mt-1">{headline}</div>}
 				</div>

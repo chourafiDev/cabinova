@@ -5,7 +5,7 @@ import { useCalendar } from "@/calendar/contexts/calendar-context";
 import { DayCell } from "@/calendar/components/month-view/day-cell";
 
 import { getCalendarCells, calculateMonthEventPositions } from "@/calendar/helpers";
-import { WEEK_DAYS_SHORT } from "@/calendar/locale";
+import { useWeekDays } from "@/calendar/locale";
 
 import type { IEvent } from "@/calendar/interfaces";
 
@@ -22,6 +22,7 @@ export function CalendarMonthView({ singleDayEvents, multiDayEvents }: IProps) {
 
   const cells = useMemo(() => getCalendarCells(selectedDate), [selectedDate]);
 
+  const weekDays = useWeekDays("EEE");
   const eventPositions = useMemo(
     () => calculateMonthEventPositions(multiDayEvents, singleDayEvents, selectedDate),
     [multiDayEvents, singleDayEvents, selectedDate]
@@ -29,8 +30,8 @@ export function CalendarMonthView({ singleDayEvents, multiDayEvents }: IProps) {
 
   return (
     <div>
-      <div className="grid grid-cols-7 divide-x">
-        {WEEK_DAYS_SHORT.map(day => (
+      <div className="grid grid-cols-7 divide-x rtl:divide-x-reverse">
+        {weekDays.map(day => (
           <div key={day} className="flex items-center justify-center py-2">
             <span className="text-xs font-medium text-muted-foreground">{day}</span>
           </div>

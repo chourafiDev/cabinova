@@ -15,5 +15,15 @@
     "staff": "Équipe",
     "settings": "Paramètres"
   },
-  "home": "{cabinet} — tableau de bord"
+  "home": "{cabinet} — tableau de bord",
+  "titles": {
+    "settings": "{page} · Paramètres",
+    "activity": "Journal d’activité",
+    "tarifs": "Tarifs",
+    "spaces": "Espaces",
+    "sessions": "Sessions actives",
+    "cabinet": "Cabinet",
+    "profile": "Mon profil",
+    "hours": "Horaires & agenda"
+  }
 }

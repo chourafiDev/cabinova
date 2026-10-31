@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useEffect, useRef } from "react";
 import { toast } from "sonner";
 
@@ -11,18 +12,19 @@ import type { Patient } from "@/lib/patients";
 export function BookFromUrl({ patientId, onDone }: { patientId: string; onDone: () => void }) {
 	const { openCreate } = useAppointmentDialogs();
 	const started = useRef(false);
+	const t = useTranslations("agenda");
 
 	useEffect(() => {
 		if (started.current) return;
 		started.current = true;
 		api<Patient>(`/patients/${patientId}`)
 			.then((p) => {
-				if (p.archivedAt) toast.error("Ce dossier est archivé : restaurez-le pour prendre rendez-vous.");
+				if (p.archivedAt) toast.error(t("archived"));
 				else openCreate(undefined, undefined, p);
 			})
-			.catch(() => toast.error("Patient introuvable."))
+			.catch(() => toast.error(t("patientNotFound")))
 			.finally(onDone);
-	}, [patientId, openCreate, onDone]);
+	}, [patientId, openCreate, onDone, t]);
 
 	return null;
 }

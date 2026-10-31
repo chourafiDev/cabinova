@@ -2,6 +2,7 @@
 
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { LuCalendarCheck, LuCircleCheck, LuLoader, LuLock, LuReceipt, LuTriangleAlert } from "react-icons/lu";
 import { toast } from "sonner";
@@ -24,28 +25,28 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { api } from "@/lib/api-client";
 import type { AppointmentStatus } from "@/lib/appointments";
-import { formatDate } from "@/lib/format";
 import { formatFileNumber } from "@/lib/patients";
-import { type Desk, mad, METHOD_LABELS, type PaymentMethod, parseMad } from "@/lib/payments";
+import { type Desk, type PaymentMethod, parseMad } from "@/lib/payments";
+import { useFormat } from "@/lib/use-format";
 import { cn } from "@/lib/utils";
 import { CheckoutDialog } from "./checkout-dialog";
 
-const time = (iso: string) => formatDate(iso, { day: undefined, month: undefined, year: undefined, hour: "2-digit", minute: "2-digit" });
-
 /** How a visit stands: nothing billed yet, settled, partly paid, owed. */
 function Settlement({ total, paid, balance }: { total: number | null; paid: number; balance: number | null }) {
+	const t = useTranslations("payments.settlement");
+	const { mad } = useFormat();
 	const tone = (className: string, label: string) => (
 		<Badge variant="outline" className={cn("border-transparent font-normal", className)}>
 			{label}
 		</Badge>
 	);
-	if (total === null || balance === null) return tone("bg-muted text-muted-foreground", "À facturer");
-	if (total === 0) return tone("bg-muted text-muted-foreground", "Gratuit");
-	if (balance === 0) return tone("bg-emerald-50 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300", "Réglé");
-	if (balance < 0) return tone("bg-sky-50 text-sky-700 dark:bg-sky-500/15 dark:text-sky-300", `Trop-perçu ${mad(-balance)}`);
+	if (total === null || balance === null) return tone("bg-muted text-muted-foreground", t("toBill"));
+	if (total === 0) return tone("bg-muted text-muted-foreground", t("free"));
+	if (balance === 0) return tone("bg-emerald-50 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300", t("settled"));
+	if (balance < 0) return tone("bg-sky-50 text-sky-700 dark:bg-sky-500/15 dark:text-sky-300", t("overpaid", { amount: mad(-balance) }));
 	return tone(
 		"bg-amber-50 text-amber-800 dark:bg-amber-500/15 dark:text-amber-300",
-		paid > 0 ? `Reste ${mad(balance)}` : `À encaisser ${mad(balance)}`,
+		paid > 0 ? t("remaining", { amount: mad(balance) }) : t("toCollect", { amount: mad(balance) }),
 	);
 }
 
@@ -58,6 +59,9 @@ export function CashDesk({ spaceName }: { spaceName: string | null }) {
 	const desk = useQuery({ queryKey: ["desk"], queryFn: () => api<Desk>("/cashier/today") });
 	const [checkout, setCheckout] = useState<string | null>(null);
 	const [closing, setClosing] = useState(false);
+	const t = useTranslations("payments.desk");
+	const format = useFormat();
+	const { mad, clock: time } = format;
 
 	if (!desk.data) {
 		return (
@@ -74,42 +78,44 @@ export function CashDesk({ spaceName }: { spaceName: string | null }) {
 		<div className="grid gap-4">
 			<div className="bg-card flex flex-wrap items-center justify-between gap-3 rounded-xl border p-4">
 				<div>
-					<p className="font-medium first-letter:uppercase">{formatDate(`${day}T12:00:00`, { weekday: "long", year: undefined })}</p>
+					<p className="font-medium first-letter:uppercase">{format.date(`${day}T12:00:00`, { weekday: "long", year: undefined })}</p>
 					<p className="text-muted-foreground text-sm">
 						{closed
-							? `Caisse clôturée à ${time(closed.closedAt)}${closed.closedBy ? ` par ${closed.closedBy}` : ""}`
-							: `Caisse ouverte${spaceName ? ` · ${spaceName}` : ""}`}
+							? closed.closedBy
+								? t("closedAtBy", { time: time(closed.closedAt), name: closed.closedBy })
+								: t("closedAt", { time: time(closed.closedAt) })
+							: `${t("open")}${spaceName ? ` · ${spaceName}` : ""}`}
 					</p>
 				</div>
 				{closed ? (
 					<Badge variant="outline" className="gap-1.5 font-normal">
-						<LuLock className="size-3" /> Clôturée
+						<LuLock className="size-3" /> {t("closed")}
 					</Badge>
 				) : (
 					<Button variant="outline" onClick={() => setClosing(true)}>
-						<LuLock /> Clôturer la caisse
+						<LuLock /> {t("close")}
 					</Button>
 				)}
 			</div>
 
 			<section className="bg-card overflow-hidden rounded-xl border">
-				<h2 className="border-b px-4 py-3 text-sm font-semibold">Visites du jour</h2>
+				<h2 className="border-b px-4 py-3 text-sm font-semibold">{t("visits")}</h2>
 				{visits.length === 0 ? (
 					<div className="flex flex-col items-center gap-2 px-6 py-12 text-center">
 						<LuCalendarCheck className="text-muted-foreground size-6" />
-						<p className="font-medium">Aucun rendez-vous aujourd’hui</p>
-						<p className="text-muted-foreground text-sm">Les visites de l’agenda apparaissent ici pour être encaissées.</p>
+						<p className="font-medium">{t("noVisits")}</p>
+						<p className="text-muted-foreground text-sm">{t("noVisitsHint")}</p>
 					</div>
 				) : (
 					<Table>
 						<TableHeader>
 							<TableRow>
-								<TableHead className="w-16">Heure</TableHead>
-								<TableHead>Patient</TableHead>
-								<TableHead className="hidden md:table-cell">Médecin</TableHead>
-								<TableHead className="hidden lg:table-cell">Rendez-vous</TableHead>
-								<TableHead className="text-end">Montant</TableHead>
-								<TableHead>Règlement</TableHead>
+								<TableHead className="w-16">{t("time")}</TableHead>
+								<TableHead>{t("patient")}</TableHead>
+								<TableHead className="hidden md:table-cell">{t("doctor")}</TableHead>
+								<TableHead className="hidden lg:table-cell">{t("appointment")}</TableHead>
+								<TableHead className="text-end">{t("amount")}</TableHead>
+								<TableHead>{t("settlement")}</TableHead>
 								<TableHead className="w-28" />
 							</TableRow>
 						</TableHeader>
@@ -137,10 +143,10 @@ export function CashDesk({ spaceName }: { spaceName: string | null }) {
 											<Button size="sm" variant={owed && !closed ? "default" : "outline"} onClick={() => setCheckout(v.id)}>
 												{owed && !closed ? (
 													<>
-														<LuReceipt /> Encaisser
+														<LuReceipt /> {t("collect")}
 													</>
 												) : (
-													"Voir"
+													t("view")
 												)}
 											</Button>
 										</TableCell>
@@ -155,23 +161,23 @@ export function CashDesk({ spaceName }: { spaceName: string | null }) {
 			{unpaid.length > 0 && (
 				<section className="bg-card overflow-hidden rounded-xl border">
 					<div className="border-b px-4 py-3">
-						<h2 className="text-sm font-semibold">Impayés</h2>
-						<p className="text-muted-foreground text-xs">Visites passées qui n’ont pas été entièrement réglées.</p>
+						<h2 className="text-sm font-semibold">{t("unpaid")}</h2>
+						<p className="text-muted-foreground text-xs">{t("unpaidHint")}</p>
 					</div>
 					<Table>
 						<TableHeader>
 							<TableRow>
-								<TableHead>Visite</TableHead>
-								<TableHead>Patient</TableHead>
-								<TableHead className="hidden md:table-cell">Médecin</TableHead>
-								<TableHead className="text-end">Reste à payer</TableHead>
+								<TableHead>{t("visit")}</TableHead>
+								<TableHead>{t("patient")}</TableHead>
+								<TableHead className="hidden md:table-cell">{t("doctor")}</TableHead>
+								<TableHead className="text-end">{t("due")}</TableHead>
 								<TableHead className="w-28" />
 							</TableRow>
 						</TableHeader>
 						<TableBody>
 							{unpaid.map((v) => (
 								<TableRow key={v.id}>
-									<TableCell className="tabular-nums">{formatDate(v.startsAt, { month: "short" })}</TableCell>
+									<TableCell className="tabular-nums">{format.date(v.startsAt, { month: "short" })}</TableCell>
 									<TableCell>
 										<div className="font-medium">
 											{v.patient.firstName} {v.patient.lastName}
@@ -182,9 +188,9 @@ export function CashDesk({ spaceName }: { spaceName: string | null }) {
 									<TableCell className="text-end font-medium tabular-nums">{mad(v.balance)}</TableCell>
 									<TableCell className="text-end">
 										<Button size="sm" variant={closed ? "outline" : "default"} onClick={() => setCheckout(v.id)}>
-											{closed ? "Voir" : (
+											{closed ? t("view") : (
 												<>
-													<LuReceipt /> Encaisser
+													<LuReceipt /> {t("collect")}
 												</>
 											)}
 										</Button>
@@ -221,11 +227,14 @@ function CloseDialog({ open, onOpenChange, owner }: { open: boolean; onOpenChang
 	const [error, setError] = useState<string | null>(null);
 	const [pending, setPending] = useState(false);
 	const [result, setResult] = useState<CloseResult | null>(null);
+	const t = useTranslations("payments.closing");
+	const methods = useTranslations("payments.methods");
+	const { mad } = useFormat();
 
 	const close = async (e: React.FormEvent) => {
 		e.preventDefault();
 		const value = parseMad(counted || "");
-		if (value === null) return setError("Saisissez le montant compté (0 s’il n’y a pas d’espèces).");
+		if (value === null) return setError(t("countError"));
 		setPending(true);
 		setError(null);
 		try {
@@ -237,11 +246,11 @@ function CloseDialog({ open, onOpenChange, owner }: { open: boolean; onOpenChang
 			router.refresh();
 			if (owner) setResult(res);
 			else {
-				toast.success("Caisse clôturée");
+				toast.success(t("done"));
 				onOpenChange(false);
 			}
 		} catch (err) {
-			setError(err instanceof Error ? err.message : "Clôture impossible");
+			setError(err instanceof Error ? err.message : t("error"));
 		} finally {
 			setPending(false);
 		}
@@ -263,22 +272,22 @@ function CloseDialog({ open, onOpenChange, owner }: { open: boolean; onOpenChang
 				{result?.expected ? (
 					<div className="grid gap-4">
 						<DialogHeader>
-							<DialogTitle>Caisse clôturée</DialogTitle>
-							<DialogDescription>Plus aucun paiement ne peut être saisi aujourd’hui dans cet espace.</DialogDescription>
+							<DialogTitle>{t("done")}</DialogTitle>
+							<DialogDescription>{t("doneHint")}</DialogDescription>
 						</DialogHeader>
 						<dl className="grid gap-1.5 text-sm">
 							{(Object.keys(result.expected) as PaymentMethod[]).map((m) => (
 								<div key={m} className="flex justify-between">
-									<dt className="text-muted-foreground">{METHOD_LABELS[m]} attendu</dt>
+									<dt className="text-muted-foreground">{t("expected", { method: methods(m) })}</dt>
 									<dd className="tabular-nums">{mad(result.expected![m])}</dd>
 								</div>
 							))}
 							<div className="flex justify-between border-t pt-1.5">
-								<dt className="text-muted-foreground">Espèces comptées</dt>
+								<dt className="text-muted-foreground">{t("countedCash")}</dt>
 								<dd className="tabular-nums">{mad(result.countedCash!)}</dd>
 							</div>
 							<div className="flex items-center justify-between font-medium">
-								<dt>Écart</dt>
+								<dt>{t("difference")}</dt>
 								<dd className="flex items-center gap-1.5 tabular-nums">
 									{result.difference === 0 ? (
 										<LuCircleCheck className="size-4 text-emerald-600" />
@@ -291,20 +300,19 @@ function CloseDialog({ open, onOpenChange, owner }: { open: boolean; onOpenChang
 							</div>
 						</dl>
 						<DialogFooter>
-							<Button onClick={() => onOpenChange(false)}>Terminé</Button>
+							<Button onClick={() => onOpenChange(false)}>{t("finish")}</Button>
 						</DialogFooter>
 					</div>
 				) : (
 					<form onSubmit={close} noValidate className="grid gap-4">
 						<DialogHeader>
-							<DialogTitle>Clôturer la caisse du jour</DialogTitle>
+							<DialogTitle>{t("title")}</DialogTitle>
 							<DialogDescription>
-								Comptez les espèces encaissées aujourd’hui (sans le fond de caisse) et saisissez le total. Une fois la
-								caisse clôturée, plus aucun paiement ni annulation n’est possible pour aujourd’hui.
+								{t("description")}
 							</DialogDescription>
 						</DialogHeader>
 						<Field data-invalid={!!error}>
-							<FieldLabel htmlFor="counted-cash">Espèces comptées</FieldLabel>
+							<FieldLabel htmlFor="counted-cash">{t("countedCash")}</FieldLabel>
 							<div className="relative">
 								<Input
 									id="counted-cash"
@@ -321,20 +329,20 @@ function CloseDialog({ open, onOpenChange, owner }: { open: boolean; onOpenChang
 								</span>
 							</div>
 							{!owner && (
-								<FieldDescription>Le médecin responsable verra l’écart éventuel avec les paiements enregistrés.</FieldDescription>
+								<FieldDescription>{t("ownerSees")}</FieldDescription>
 							)}
 							{error && <p className="text-destructive text-sm">{error}</p>}
 						</Field>
 						<Field>
-							<FieldLabel htmlFor="close-note">Note (facultatif)</FieldLabel>
+							<FieldLabel htmlFor="close-note">{t("note")}</FieldLabel>
 							<Textarea id="close-note" value={note} maxLength={500} rows={2} onChange={(e) => setNote(e.target.value)} />
 						</Field>
 						<DialogFooter>
 							<Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-								Annuler
+								{t("cancel")}
 							</Button>
 							<Button type="submit" disabled={pending}>
-								{pending ? <LuLoader className="animate-spin" /> : <LuLock />} Clôturer
+								{pending ? <LuLoader className="animate-spin" /> : <LuLock />} {t("submit")}
 							</Button>
 						</DialogFooter>
 					</form>

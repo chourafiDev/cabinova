@@ -161,12 +161,12 @@ export type Receipt = Movement & {
 	};
 };
 
-const whole = new Intl.NumberFormat("fr-MA", { maximumFractionDigits: 0 });
-const cents = new Intl.NumberFormat("fr-MA", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-
 /** 25000 → "250 MAD", 25050 → "250,50 MAD", 125000 → "1.250 MAD" (like the platform). */
-export const mad = (centimes: number) =>
-	`${(centimes % 100 === 0 ? whole : cents).format(centimes / 100)} MAD`;
+export const mad = (centimes: number, locale = "fr-MA") =>
+	`${new Intl.NumberFormat(locale, {
+		minimumFractionDigits: centimes % 100 === 0 ? 0 : 2,
+		maximumFractionDigits: centimes % 100 === 0 ? 0 : 2,
+	}).format(centimes / 100)} MAD`;
 
 /** What an amount field holds, never grouped: 125000 → "1250", 25050 → "250,50". */
 export const toInput = (centimes: number) =>

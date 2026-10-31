@@ -1,6 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
+import { useTranslations } from "next-intl";
 import { LuCheck, LuChevronsUpDown, LuLoader } from "react-icons/lu";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -29,6 +30,7 @@ export function PatientPicker({
 }) {
 	const [open, setOpen] = useState(false);
 	const [search, setSearch] = useState("");
+	const t = useTranslations("agenda.picker");
 	const setSearchDebounced = useDebouncedCallback(setSearch, 250);
 
 	const { data, isFetching } = useQuery({
@@ -53,7 +55,7 @@ export function PatientPicker({
 					className={cn("w-full justify-between font-normal", !value && "text-muted-foreground")}
 				>
 					<span className="truncate">
-						{value ? `${fullName(value)} · ${formatFileNumber(value.fileNumber)}` : "Rechercher un patient…"}
+						{value ? `${fullName(value)} · ${formatFileNumber(value.fileNumber)}` : t("placeholder")}
 					</span>
 					<LuChevronsUpDown className="size-4 shrink-0 opacity-50" />
 				</Button>
@@ -61,10 +63,10 @@ export function PatientPicker({
 			<PopoverContent className="w-(--radix-popover-trigger-width) p-0" align="start">
 				{/* Server-side search: cmdk must not filter again. */}
 				<Command shouldFilter={false}>
-					<CommandInput placeholder="Nom, téléphone, CIN, n° de dossier…" onValueChange={setSearchDebounced} />
+					<CommandInput placeholder={t("search")} onValueChange={setSearchDebounced} />
 					<CommandList>
 						<CommandEmpty>
-							{isFetching ? <LuLoader className="mx-auto size-4 animate-spin" /> : "Aucun patient trouvé."}
+							{isFetching ? <LuLoader className="mx-auto size-4 animate-spin" /> : t("empty")}
 						</CommandEmpty>
 						<CommandGroup>
 							{data?.data.map((p) => (
