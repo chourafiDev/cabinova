@@ -81,6 +81,8 @@ export const users = pgTable(
     inviteTokenHash: text('invite_token_hash').unique(),
     inviteExpiresAt: timestamp('invite_expires_at', { withTimezone: true }),
     lastLoginAt: timestamp('last_login_at', { withTimezone: true }),
+    /** Their interface language; null follows the cabinet's. */
+    locale: text('locale'),
     /** First-sign-in product tour finished or skipped (clinic app). */
     tourCompletedAt: timestamp('tour_completed_at', { withTimezone: true }),
     /**

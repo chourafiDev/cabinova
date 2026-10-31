@@ -79,7 +79,7 @@ export function AgendaEventCard({ event, eventCurrentDay, eventTotalDays }: IPro
 
             <p className="font-medium">
               {eventCurrentDay && eventTotalDays && (
-                <span className="mr-1 text-xs">
+                <span className="me-1 text-xs">
                   Jour {eventCurrentDay}/{eventTotalDays} •{" "}
                 </span>
               )}

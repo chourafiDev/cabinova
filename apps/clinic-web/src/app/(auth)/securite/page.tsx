@@ -14,6 +14,7 @@ export default async function SecurityPage() {
 	return (
 		<AuthCard
 			cabinet={found.cabinet}
+			languages={false}
 			title="Sécurisez votre compte"
 			description="Votre cabinet exige la double authentification. Elle prend une minute."
 		>

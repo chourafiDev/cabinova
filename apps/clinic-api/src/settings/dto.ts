@@ -94,6 +94,11 @@ export class UpdateCabinetDto {
   email: string;
 }
 
+export class UpdateLanguageDto {
+  @IsIn(['fr', 'ar'])
+  locale: 'fr' | 'ar';
+}
+
 export class OpeningHoursDto {
   /** Checked in depth by parseOpeningHours. */
   @IsObject()

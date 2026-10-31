@@ -4,6 +4,7 @@ import { apiGet } from "@/lib/server-api";
 import { getClinicState } from "@/lib/session";
 import type { DeviceSession, TwoFactorStatus } from "@/lib/settings";
 import { DevicesCard } from "./_components/devices-card";
+import { LanguageCard } from "./_components/language-card";
 import { PasswordForm } from "./_components/password-form";
 import { ProfileForm } from "./_components/profile-form";
 import { TwoFactorCard } from "./_components/two-factor-card";
@@ -22,6 +23,7 @@ export default async function ProfileSettingsPage() {
 	return (
 		<>
 			<ProfileForm name={user.name} email={user.email} roleLabel={user.roleLabel} />
+			<LanguageCard />
 			<PasswordForm />
 			<TwoFactorCard status={twoFactor} />
 			<DevicesCard sessions={sessions} />

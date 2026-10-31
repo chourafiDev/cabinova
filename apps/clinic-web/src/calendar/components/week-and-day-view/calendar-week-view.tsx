@@ -42,10 +42,10 @@ export function CalendarWeekView({ singleDayEvents, multiDayEvents }: IProps) {
           {/* Week header */}
           <div className="relative z-20 flex border-b">
             <div className="w-18"></div>
-            <div className="grid flex-1 grid-cols-7 divide-x border-l">
+            <div className="grid flex-1 grid-cols-7 divide-x border-s">
               {weekDays.map((day, index) => (
                 <span key={index} className="py-2 text-center text-xs font-medium text-muted-foreground">
-                  {fmt(day, "EEE")} <span className="ml-1 font-semibold text-foreground">{fmt(day, "d")}</span>
+                  {fmt(day, "EEE")} <span className="ms-1 font-semibold text-foreground">{fmt(day, "d")}</span>
                 </span>
               ))}
             </div>
@@ -58,7 +58,7 @@ export function CalendarWeekView({ singleDayEvents, multiDayEvents }: IProps) {
             <div className="relative w-18">
               {hours.map((hour, index) => (
                 <div key={hour} className="relative" style={{ height: "96px" }}>
-                  <div className="absolute -top-3 right-2 flex h-6 items-center">
+                  <div className="absolute -top-3 end-2 flex h-6 items-center">
                     {index !== 0 && <span className="text-xs text-muted-foreground">{fmt(new Date().setHours(hour, 0, 0, 0), "HH:mm")}</span>}
                   </div>
                 </div>
@@ -66,7 +66,7 @@ export function CalendarWeekView({ singleDayEvents, multiDayEvents }: IProps) {
             </div>
 
             {/* Week grid */}
-            <div className="relative flex-1 border-l">
+            <div className="relative flex-1 border-s">
               <div className="grid grid-cols-7 divide-x">
                 {weekDays.map((day, dayIndex) => {
                   const dayEvents = singleDayEvents.filter(event => isSameDay(parseISO(event.startDate), day) || isSameDay(parseISO(event.endDate), day));

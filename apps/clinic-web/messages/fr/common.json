@@ -1,0 +1,10 @@
+{
+  "language": {
+    "title": "Langue",
+    "description": "La langue de l’application pour votre compte. Elle ne change pas celle de votre équipe.",
+    "label": "Langue de l’interface",
+    "saved": "Langue enregistrée",
+    "error": "Enregistrement impossible",
+    "switcher": "Changer de langue"
+  }
+}

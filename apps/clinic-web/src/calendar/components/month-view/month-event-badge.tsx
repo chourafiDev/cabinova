@@ -36,9 +36,9 @@ const eventBadgeVariants = cva(
         "gray-dot": "bg-neutral-50 dark:bg-neutral-900 [&_.event-dot]:fill-neutral-600",
       },
       multiDayPosition: {
-        first: "relative z-10 mr-0 w-[calc(100%_-_3px)] rounded-r-none border-r-0 [&>span]:mr-2.5",
+        first: "relative z-10 me-0 w-[calc(100%_-_3px)] rounded-e-none border-e-0 [&>span]:me-2.5",
         middle: "relative z-10 mx-0 w-[calc(100%_+_1px)] rounded-none border-x-0",
-        last: "ml-0 rounded-l-none border-l-0",
+        last: "ms-0 rounded-s-none border-s-0",
         none: "",
       },
     },

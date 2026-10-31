@@ -56,7 +56,7 @@ export function CalendarDayView({ singleDayEvents, multiDayEvents }: IProps) {
           {/* Day header */}
           <div className="relative z-20 flex border-b">
             <div className="w-18"></div>
-            <span className="flex-1 border-l py-2 text-center text-xs font-medium text-muted-foreground">
+            <span className="flex-1 border-s py-2 text-center text-xs font-medium text-muted-foreground">
               {fmt(selectedDate, "EEE")} <span className="font-semibold text-foreground">{fmt(selectedDate, "d")}</span>
             </span>
           </div>
@@ -68,7 +68,7 @@ export function CalendarDayView({ singleDayEvents, multiDayEvents }: IProps) {
             <div className="relative w-18">
               {hours.map((hour, index) => (
                 <div key={hour} className="relative" style={{ height: "96px" }}>
-                  <div className="absolute -top-3 right-2 flex h-6 items-center">
+                  <div className="absolute -top-3 end-2 flex h-6 items-center">
                     {index !== 0 && <span className="text-xs text-muted-foreground">{fmt(new Date().setHours(hour, 0, 0, 0), "HH:mm")}</span>}
                   </div>
                 </div>
@@ -76,7 +76,7 @@ export function CalendarDayView({ singleDayEvents, multiDayEvents }: IProps) {
             </div>
 
             {/* Day grid */}
-            <div className="relative flex-1 border-l">
+            <div className="relative flex-1 border-s">
               <div className="relative">
                 {hours.map((hour, index) => {
                   const isDisabled = !isWorkingHour(selectedDate, hour, workingHours);
@@ -129,7 +129,7 @@ export function CalendarDayView({ singleDayEvents, multiDayEvents }: IProps) {
         </ScrollArea>
       </div>
 
-      <div className="hidden w-64 divide-y border-l md:block">
+      <div className="hidden w-64 divide-y border-s md:block">
         <Calendar className="mx-auto w-fit" mode="single" selected={selectedDate} onSelect={setSelectedDate} />
 
         <div className="flex-1 space-y-3">

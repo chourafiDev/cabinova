@@ -281,6 +281,13 @@
   transition: background-color 120ms, box-shadow 120ms;
 }
 
+/* Arabic: its own font first, the Latin one for names and figures in Latin. */
+html[lang="ar"],
+html[lang="ar"] .font-sans,
+html[lang="ar"] .font-heading {
+  font-family: var(--font-arabic), var(--font-sans), sans-serif;
+}
+
 /* Agenda: hatched background of closed hours (big-calendar). */
 @utility bg-calendar-disabled-hour {
   background-image: repeating-linear-gradient(-60deg, var(--border) 0 0.5px, transparent 0.5px 8px);

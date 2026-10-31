@@ -253,6 +253,7 @@ export class AuthController {
         role: user.role,
         roleLabel: ROLE_LABELS[user.role] ?? user.role,
         twoFactorSetupRequired: user.twoFactorSetupRequired,
+        locale: await this.auth.localeOf(db, user.id),
       },
       cabinet: {
         name: tenant.name,

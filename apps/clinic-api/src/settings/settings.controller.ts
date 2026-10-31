@@ -23,6 +23,7 @@ import type { ClinicContext } from '../tenancy/tenancy.service.js';
 import { CabinetService } from './cabinet.service.js';
 import {
   ChangePasswordDto,
+  UpdateLanguageDto,
   UpdateAgendaSettingsDto,
   UpdateCabinetDto,
   UpdateProfileDto,
@@ -51,6 +52,20 @@ export class SettingsController {
       [user.id, dto.name],
     );
     return rows[0];
+  }
+
+  /** Each person's own language; the rest of the team keeps theirs. */
+  @Put('language')
+  async updateLanguage(
+    @Clinic() { db }: ClinicContext,
+    @CurrentUser() user: ClinicUser,
+    @Body() dto: UpdateLanguageDto,
+  ) {
+    await db.query(
+      'update users set locale = $2, updated_at = now() where id = $1',
+      [user.id, dto.locale],
+    );
+    return { locale: dto.locale };
   }
 
   @Throttle({ default: { limit: 5, ttl: 60_000 } })

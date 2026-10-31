@@ -1,5 +1,6 @@
 "use client";
 
+import { useLocale } from "next-intl";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -14,6 +15,7 @@ import {
 	SidebarMenuButton,
 	SidebarMenuItem,
 } from "@/components/ui/sidebar";
+import { directionOf } from "@/i18n/config";
 import type { ClinicSession } from "@/lib/session";
 import { HelpCard } from "./help-card";
 import { SpaceSwitcher } from "./space-switcher";
@@ -35,7 +37,7 @@ export function AppSidebar({
 	const active = findNavItem(pathname);
 
 	return (
-		<Sidebar collapsible="icon" variant="inset">
+		<Sidebar collapsible="icon" variant="inset" side={directionOf(useLocale()) === "rtl" ? "right" : "left"}>
 			<SidebarHeader>
 				{spaces ? (
 					<SpaceSwitcher cabinet={cabinet} spaces={spaces} subscription={subscription} isOwner={isOwner} />

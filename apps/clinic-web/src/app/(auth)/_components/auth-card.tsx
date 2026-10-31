@@ -1,3 +1,4 @@
+import { LanguageSwitcher } from "@/components/language-switcher";
 import type { CabinetInfo } from "@/lib/session";
 
 /** Centered auth layout: the cabinet's mark and name, title, description, form. */
@@ -5,11 +6,14 @@ export function AuthCard({
 	cabinet,
 	title,
 	description,
+	languages = true,
 	children,
 }: {
 	cabinet: CabinetInfo;
 	title: string;
 	description: React.ReactNode;
+	/** Off once someone is signed in: their account decides the language. */
+	languages?: boolean;
 	children?: React.ReactNode;
 }) {
 	return (
@@ -30,6 +34,7 @@ export function AuthCard({
 					<p className="text-muted-foreground text-center mt-1 text-base">{description}</p>
 					{children}
 				</div>
+				{languages && <LanguageSwitcher className="mb-4" />}
 				<p className="text-xs text-muted-foreground">Propulsé par Cabinova</p>
 			</div>
 		</main>

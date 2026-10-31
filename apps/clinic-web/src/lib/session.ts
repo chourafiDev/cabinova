@@ -11,6 +11,8 @@ export type ClinicSession = {
 		roleLabel: string;
 		/** The cabinet requires 2FA and this account hasn't set it up. */
 		twoFactorSetupRequired: boolean;
+		/** Their own language, else the cabinet's. */
+		locale: string;
 	};
 	cabinet: { name: string; specialty: string | null; city: string | null; subdomain: string };
 	subscription: {

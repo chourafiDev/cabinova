@@ -39,6 +39,16 @@ export class AuthService {
       : null;
   }
 
+  /** Their own language, else the cabinet's. */
+  async localeOf(db: Pool, userId: string) {
+    const { rows } = await db.query<{ locale: string }>(
+      `select coalesce(u.locale, s.locale) as locale
+         from users u, clinic_settings s where u.id = $1 and s.id = 1`,
+      [userId],
+    );
+    return rows[0]?.locale ?? 'fr';
+  }
+
   /** New session; returns the raw token for the cookie (only its hash is stored). */
   async createSession(
     db: Pool,
