@@ -1,6 +1,6 @@
 "use client";
 
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -35,6 +35,8 @@ export function AppSidebar({
 	const isOwner = role === "owner";
 	const pathname = usePathname();
 	const active = findNavItem(pathname);
+	const t = useTranslations("nav");
+	const tc = useTranslations("common");
 
 	return (
 		<Sidebar collapsible="icon" variant="inset" side={directionOf(useLocale()) === "rtl" ? "right" : "left"}>
@@ -45,7 +47,7 @@ export function AppSidebar({
 					<SidebarMenu>
 						<SidebarMenuItem>
 							<SidebarMenuButton size="lg" asChild>
-								<Link href="/" aria-label={`${cabinet.name} — tableau de bord`}>
+								<Link href="/" aria-label={t("home", { cabinet: cabinet.name })}>
 									<span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary text-sm font-semibold text-primary-foreground">
 										{cabinet.name.replace(/^cabinet\s+/i, "").charAt(0).toUpperCase()}
 									</span>
@@ -64,19 +66,19 @@ export function AppSidebar({
 
 			<SidebarContent data-tour="nav">
 				{navGroups.map((group) => (
-					<SidebarGroup key={group.label}>
-						<SidebarGroupLabel>{group.label}</SidebarGroupLabel>
+					<SidebarGroup key={group.key}>
+						<SidebarGroupLabel>{t(`groups.${group.key}`)}</SidebarGroupLabel>
 						<SidebarMenu>
 							{visibleNavItems(group.items, role).map((item) => (
 								<SidebarMenuItem key={item.href}>
-									<SidebarMenuButton asChild isActive={active?.href === item.href} tooltip={item.title}>
+									<SidebarMenuButton asChild isActive={active?.href === item.href} tooltip={t(`items.${item.key}`)}>
 										<Link href={item.href}>
 											<item.icon />
-											<span>{item.title}</span>
+											<span>{t(`items.${item.key}`)}</span>
 										</Link>
 									</SidebarMenuButton>
 									{item.soon && (
-										<SidebarMenuBadge className="text-[10px] font-normal text-muted-foreground">Bientôt</SidebarMenuBadge>
+										<SidebarMenuBadge className="text-[10px] font-normal text-muted-foreground">{tc("soon")}</SidebarMenuBadge>
 									)}
 								</SidebarMenuItem>
 							))}

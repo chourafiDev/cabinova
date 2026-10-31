@@ -1,0 +1,19 @@
+{
+  "groups": {
+    "cabinet": "Cabinet",
+    "management": "Gestion",
+    "administration": "Administration"
+  },
+  "items": {
+    "dashboard": "Tableau de bord",
+    "appointments": "Agenda",
+    "patients": "Patients",
+    "consultations": "Consultations",
+    "prescriptions": "Ordonnances",
+    "payments": "Encaissements",
+    "reports": "Statistiques",
+    "staff": "Équipe",
+    "settings": "Paramètres"
+  },
+  "home": "{cabinet} — tableau de bord"
+}

@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { LuCheck, LuCopy, LuDownload, LuLoader } from 'react-icons/lu';
 import QRCode from 'qrcode';
 import { useEffect, useState } from 'react';
@@ -18,14 +19,13 @@ export function RecoveryCodes({
   onDone: () => void;
 }) {
   const text = codes.join('\n');
+  const t = useTranslations('auth.setup');
   return (
     <div className="grid gap-3">
       <p className="text-sm">
-        Gardez ces codes de secours en lieu sûr. Chacun permet de se connecter
-        une fois si vous perdez votre téléphone.{' '}
-        <strong>Ils ne seront plus affichés.</strong>
+        {t('codesIntro')} <strong>{t('codesOnce')}</strong>
       </p>
-      <ol className="bg-muted/40 grid grid-cols-2 gap-2 rounded-lg border p-3 font-mono text-sm">
+      <ol dir="ltr" className="bg-muted/40 grid grid-cols-2 gap-2 rounded-lg border p-3 font-mono text-sm">
         {codes.map((c) => (
           <li key={c}>{c}</li>
         ))}
@@ -37,10 +37,10 @@ export function RecoveryCodes({
           size="sm"
           onClick={async () => {
             await navigator.clipboard.writeText(text);
-            toast.success('Codes copiés');
+            toast.success(t('copied'));
           }}
         >
-          <LuCopy /> Copier
+          <LuCopy /> {t('copy')}
         </Button>
         <Button
           type="button"
@@ -48,7 +48,7 @@ export function RecoveryCodes({
           size="sm"
           onClick={() => {
             const url = URL.createObjectURL(
-              new Blob([`Cabinova — codes de secours\n\n${text}\n`], {
+              new Blob([`${t('fileTitle')}\n\n${text}\n`], {
                 type: 'text/plain',
               })
             );
@@ -60,10 +60,10 @@ export function RecoveryCodes({
             URL.revokeObjectURL(url);
           }}
         >
-          <LuDownload /> Télécharger
+          <LuDownload /> {t('download')}
         </Button>
         <Button type="button" size="sm" className="ms-auto" onClick={onDone}>
-          <LuCheck /> J’ai enregistré mes codes
+          <LuCheck /> {t('saved')}
         </Button>
       </div>
     </div>
@@ -87,6 +87,7 @@ export function TwoFactorSetup({
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
   const [codes, setCodes] = useState<string[] | null>(null);
+  const t = useTranslations('auth.setup');
 
   useEffect(() => {
     let cancelled = false;
@@ -106,14 +107,12 @@ export function TwoFactorSetup({
       .catch(
         (err) =>
           !cancelled &&
-          setError(
-            err instanceof Error ? err.message : 'Configuration impossible'
-          )
+          setError(err instanceof Error ? err.message : t('setupError'))
       );
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [t]);
 
   const confirm = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -128,9 +127,9 @@ export function TwoFactorSetup({
         }
       );
       setCodes(result.recoveryCodes);
-      toast.success('Double authentification activée');
+      toast.success(t('enabled'));
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Code incorrect');
+      setError(err instanceof Error ? err.message : t('invalid'));
     } finally {
       setPending(false);
     }
@@ -154,29 +153,27 @@ export function TwoFactorSetup({
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={qr ?? ''}
-            alt="QR code à scanner avec l’application d’authentification"
+            alt={t('qrAlt')}
             className="size-[200px] rounded-lg border bg-white p-1"
           />
         </div>
         <div className="grid content-start gap-4">
           <ol className="grid gap-1.5 text-sm">
             <li>
-              <strong>1.</strong> Scannez le QR code avec Google Authenticator,
-              Microsoft Authenticator, 1Password…
+              <strong>1.</strong> {t('step1')}
             </li>
             <li>
-              <strong>2.</strong> Saisissez le code à 6 chiffres affiché pour
-              Cabinova.
+              <strong>2.</strong> {t('step2')}
             </li>
           </ol>
           <Field>
-            <FieldLabel>Impossible de scanner ? Clé à saisir</FieldLabel>
-            <code className="bg-muted rounded-md px-2 py-1.5 text-xs break-all">
+            <FieldLabel>{t('manualKey')}</FieldLabel>
+            <code dir="ltr" className="bg-muted rounded-md px-2 py-1.5 text-xs break-all">
               {setup.secret.match(/.{1,4}/g)?.join(' ')}
             </code>
           </Field>
           <Field data-invalid={!!error}>
-            <FieldLabel htmlFor="enable-code">Code de vérification</FieldLabel>
+            <FieldLabel htmlFor="enable-code">{t('code')}</FieldLabel>
             <Input
               id="enable-code"
               autoFocus
@@ -192,11 +189,11 @@ export function TwoFactorSetup({
           </Field>
           <div className="flex gap-2">
             <Button type="submit" disabled={pending || code.length !== 6}>
-              {pending && <LuLoader className="animate-spin" />} Activer
+              {pending && <LuLoader className="animate-spin" />} {t('enable')}
             </Button>
             {onCancel && (
               <Button type="button" variant="ghost" onClick={onCancel}>
-                Annuler
+                {t('cancel')}
               </Button>
             )}
           </div>

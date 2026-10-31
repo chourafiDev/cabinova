@@ -52,7 +52,7 @@ export default async function ClinicLayout({ children }: LayoutProps<'/'>) {
           <KeyboardShortcuts
             navigation={allNavItems
               .filter((i) => i.shortcut)
-              .map((i) => ({ key: i.shortcut!, label: i.title, href: i.href }))}
+              .map((i) => ({ key: i.shortcut!, name: i.key, href: i.href }))}
           />
           {/* useSearchParams (replay link): client-only. */}
           <Suspense fallback={null}>

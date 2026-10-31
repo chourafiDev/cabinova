@@ -13,7 +13,8 @@ import {
 } from "react-icons/hi2";
 
 export type NavItem = {
-  title: string;
+  /** In messages/<locale>/nav.json, under items. */
+  key: string;
   href: string;
   icon: IconType;
   /** Not built yet: shown with a "Bientôt" placeholder page. */
@@ -24,29 +25,29 @@ export type NavItem = {
   roles?: string[];
 };
 
-export const navGroups: { label: string; items: NavItem[] }[] = [
+export const navGroups: { key: string; items: NavItem[] }[] = [
   {
-    label: "Cabinet",
+    key: "cabinet",
     items: [
-      { title: "Tableau de bord", href: "/", icon: HiSquares2X2, shortcut: "d" },
-      { title: "Agenda", href: "/appointments", icon: HiCalendarDays, shortcut: "a" },
-      { title: "Patients", href: "/patients", icon: HiUsers, shortcut: "p" },
-      { title: "Consultations", href: "/consultations", icon: HiClipboardDocumentList, shortcut: "c", soon: true },
-      { title: "Ordonnances", href: "/prescriptions", icon: HiDocumentText, shortcut: "o", soon: true },
+      { key: "dashboard", href: "/", icon: HiSquares2X2, shortcut: "d" },
+      { key: "appointments", href: "/appointments", icon: HiCalendarDays, shortcut: "a" },
+      { key: "patients", href: "/patients", icon: HiUsers, shortcut: "p" },
+      { key: "consultations", href: "/consultations", icon: HiClipboardDocumentList, shortcut: "c", soon: true },
+      { key: "prescriptions", href: "/prescriptions", icon: HiDocumentText, shortcut: "o", soon: true },
     ],
   },
   {
-    label: "Gestion",
+    key: "management",
     items: [
-      { title: "Encaissements", href: "/payments", icon: HiBanknotes, shortcut: "e" },
-      { title: "Statistiques", href: "/reports", icon: HiChartBar, roles: ["owner", "doctor"] },
+      { key: "payments", href: "/payments", icon: HiBanknotes, shortcut: "e" },
+      { key: "reports", href: "/reports", icon: HiChartBar, roles: ["owner", "doctor"] },
     ],
   },
   {
-    label: "Administration",
+    key: "administration",
     items: [
-      { title: "Équipe", href: "/staff", icon: HiIdentification, roles: ["owner"] },
-      { title: "Paramètres", href: "/settings", icon: HiCog6Tooth },
+      { key: "staff", href: "/staff", icon: HiIdentification, roles: ["owner"] },
+      { key: "settings", href: "/settings", icon: HiCog6Tooth },
     ],
   },
 ];

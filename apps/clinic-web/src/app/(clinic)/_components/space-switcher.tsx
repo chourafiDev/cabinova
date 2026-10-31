@@ -12,6 +12,7 @@ import {
 	LuTags,
 	LuUsers,
 } from "react-icons/lu";
+import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
@@ -45,13 +46,13 @@ import { SubscriptionDialog } from "./billing/subscription-dialog";
 const initial = (name: string) => name.replace(/^(cabinet|espace)\s+/i, "").charAt(0).toUpperCase();
 
 const MANAGE = [
-	{ href: "/settings/cabinet", label: "Le cabinet", icon: LuBuilding2 },
-	{ href: "/settings/hours", label: "Horaires d’ouverture", icon: LuClock },
-	{ href: "/settings/tarifs", label: "Tarifs", icon: LuTags },
-	{ href: "/settings/spaces", label: "Espaces", icon: LuMapPin },
+	{ href: "/settings/cabinet", label: "cabinet", icon: LuBuilding2 },
+	{ href: "/settings/hours", label: "hours", icon: LuClock },
+	{ href: "/settings/tarifs", label: "tarifs", icon: LuTags },
+	{ href: "/settings/spaces", label: "spacesLink", icon: LuMapPin },
 ];
 
-const STATUS = { trialing: "Essai gratuit", past_due: "En attente de paiement" } as const;
+const STATUS = { trialing: "trialing", past_due: "pastDue" } as const;
 
 /**
  * Top of the sidebar: the cabinet and the space you work in, its offer, and
@@ -74,10 +75,12 @@ export function SpaceSwitcher({
 	const [pending, setPending] = useState<string | null>(null);
 	const [creating, setCreating] = useState(false);
 	const [billing, setBilling] = useState(false);
+	const t = useTranslations("common.space");
 	const { current } = spaces;
+	const status = STATUS[subscription.status as keyof typeof STATUS];
 	// Staff don't see the cabinet's billing: what the cabinet is, instead.
 	const offerLine = isOwner
-		? [subscription.plan ? `Offre ${subscription.plan}` : "Aucune offre", STATUS[subscription.status as keyof typeof STATUS]]
+		? [subscription.plan ? t("offer", { plan: subscription.plan }) : t("noOffer"), status && t(status)]
 				.filter(Boolean)
 				.join(" · ")
 		: (cabinet.specialty ?? cabinet.city ?? `${cabinet.subdomain}.cabinova.ma`);
@@ -87,11 +90,11 @@ export function SpaceSwitcher({
 		setPending(space.id);
 		try {
 			const href = await switchSpace(space.id, pathname);
-			toast.success(`Espace : ${space.name}`);
+			toast.success(t("changed", { space: space.name }));
 			router.push(href);
 			router.refresh();
 		} catch (err) {
-			toast.error(err instanceof Error ? err.message : "Changement impossible");
+			toast.error(err instanceof Error ? err.message : t("switchError"));
 		} finally {
 			setPending(null);
 		}
@@ -105,7 +108,7 @@ export function SpaceSwitcher({
 						<SidebarMenuButton
 							size="lg"
 							className="data-[state=open]:bg-sidebar-accent"
-							aria-label={`${cabinet.name}, espace ${current.name} — changer d’espace`}
+							aria-label={t("switch", { cabinet: cabinet.name, space: current.name })}
 						>
 							<span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary text-sm font-semibold text-primary-foreground">
 								{initial(cabinet.name)}
@@ -137,10 +140,10 @@ export function SpaceSwitcher({
 												className="text-muted-foreground w-fit shrink-0 rounded-sm p-1 text-xs underline underline-offset-2 focus:text-brand focus:bg-transparent"
 											>
 												{subscription.quotePending
-													? "Voir mon devis"
+													? t("seeQuote")
 													: subscription.status === "trialing"
-														? "Choisir mon offre"
-														: "Gérer"}
+														? t("chooseOffer")
+														: t("manage")}
 											</DropdownMenuItem>
 										</>
 									)}
@@ -151,20 +154,20 @@ export function SpaceSwitcher({
 						<div className={cn("grid gap-2 px-2 pt-1 pb-3", isOwner && "grid-cols-2")}>
 							<DropdownMenuItem asChild className="h-9 justify-center gap-2 rounded-lg border">
 								<Link href="/settings">
-									<LuSettings className="size-4" /> Paramètres
+									<LuSettings className="size-4" /> {t("settings")}
 								</Link>
 							</DropdownMenuItem>
 							{isOwner && (
 								<DropdownMenuItem asChild className="h-9 justify-center gap-2 rounded-lg border">
 									<Link href="/staff">
-										<LuUsers className="size-4" /> Équipe
+										<LuUsers className="size-4" /> {t("team")}
 									</Link>
 								</DropdownMenuItem>
 							)}
 						</div>
 
 						<DropdownMenuSeparator />
-						<DropdownMenuLabel className="text-muted-foreground px-2 text-xs font-normal">Espaces</DropdownMenuLabel>
+						<DropdownMenuLabel className="text-muted-foreground px-2 text-xs font-normal">{t("spaces")}</DropdownMenuLabel>
 						{spaces.spaces.map((space) => (
 							<DropdownMenuItem key={space.id} onSelect={() => choose(space)} className="gap-2">
 								<p className="!text-brand text-brand bg-muted flex size-6 shrink-0 items-center justify-center rounded-md text-xs font-medium">
@@ -185,11 +188,11 @@ export function SpaceSwitcher({
 						{isOwner && (
 							<>
 								<DropdownMenuSeparator />
-								<DropdownMenuLabel className="text-muted-foreground px-2 text-xs font-normal">Gérer</DropdownMenuLabel>
+								<DropdownMenuLabel className="text-muted-foreground px-2 text-xs font-normal">{t("manageTitle")}</DropdownMenuLabel>
 								{MANAGE.map((item) => (
 									<DropdownMenuItem key={item.href} asChild className="gap-2.5">
 										<Link href={item.href}>
-											<item.icon className="text-muted-foreground size-4" /> {item.label}
+											<item.icon className="text-muted-foreground size-4" /> {t(item.label)}
 										</Link>
 									</DropdownMenuItem>
 								))}
@@ -198,7 +201,7 @@ export function SpaceSwitcher({
 										onSelect={() => setCreating(true)}
 										className="h-9 justify-center gap-2 rounded-lg border"
 									>
-										<LuPlus className="size-4" /> Nouvel espace
+										<LuPlus className="size-4" /> {t("new")}
 									</DropdownMenuItem>
 								</div>
 							</>
@@ -218,21 +221,22 @@ function NewSpaceDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (
 	const [v, setV] = useState({ name: "", city: "", address: "", phone: "" });
 	const [error, setError] = useState<string | null>(null);
 	const [saving, setSaving] = useState(false);
+	const t = useTranslations("common.space");
 
 	const save = async (e: React.FormEvent) => {
 		e.preventDefault();
-		if (v.name.trim().length < 2) return setError("Nom de l’espace : 2 caractères minimum.");
+		if (v.name.trim().length < 2) return setError(t("nameError"));
 		setSaving(true);
 		setError(null);
 		try {
 			await api("/spaces", { method: "POST", body: JSON.stringify(v) });
-			toast.success(`Espace « ${v.name.trim()} » créé`);
+			toast.success(t("created", { name: v.name.trim() }));
 			onOpenChange(false);
 			setV({ name: "", city: "", address: "", phone: "" });
 			router.push("/");
 			router.refresh();
 		} catch (err) {
-			setError(err instanceof Error ? err.message : "Création impossible");
+			setError(err instanceof Error ? err.message : t("createError"));
 		} finally {
 			setSaving(false);
 		}
@@ -243,30 +247,29 @@ function NewSpaceDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (
 			<DialogContent className="sm:max-w-md">
 				<form onSubmit={save} className="grid gap-4">
 					<DialogHeader>
-						<DialogTitle>Nouvel espace</DialogTitle>
+						<DialogTitle>{t("new")}</DialogTitle>
 						<DialogDescription>
-							Un site du cabinet (ex. une autre ville). Ses patients, son équipe et son agenda sont séparés des autres
-							espaces.
+							{t("newDescription")}
 						</DialogDescription>
 					</DialogHeader>
 					<FieldGroup className="gap-4">
 						<Field>
-							<FieldLabel htmlFor="space-name">Nom</FieldLabel>
+							<FieldLabel htmlFor="space-name">{t("name")}</FieldLabel>
 							<Input
 								id="space-name"
 								autoFocus
-								placeholder="Ex. Marrakech Guéliz"
+								placeholder={t("namePlaceholder")}
 								value={v.name}
 								onChange={(e) => setV({ ...v, name: e.target.value })}
 							/>
 						</Field>
 						<div className="grid gap-4 sm:grid-cols-2">
 							<Field>
-								<FieldLabel htmlFor="space-city">Ville</FieldLabel>
+								<FieldLabel htmlFor="space-city">{t("city")}</FieldLabel>
 								<Input id="space-city" value={v.city} onChange={(e) => setV({ ...v, city: e.target.value })} />
 							</Field>
 							<Field>
-								<FieldLabel htmlFor="space-phone">Téléphone</FieldLabel>
+								<FieldLabel htmlFor="space-phone">{t("phone")}</FieldLabel>
 								<Input
 									id="space-phone"
 									type="tel"
@@ -276,7 +279,7 @@ function NewSpaceDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (
 							</Field>
 						</div>
 						<Field>
-							<FieldLabel htmlFor="space-address">Adresse</FieldLabel>
+							<FieldLabel htmlFor="space-address">{t("address")}</FieldLabel>
 							<Input id="space-address" value={v.address} onChange={(e) => setV({ ...v, address: e.target.value })} />
 						</Field>
 					</FieldGroup>
@@ -287,10 +290,10 @@ function NewSpaceDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (
 					)}
 					<DialogFooter>
 						<Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-							Annuler
+							{t("cancel")}
 						</Button>
 						<Button type="submit" disabled={saving}>
-							{saving && <LuLoader className="animate-spin" />} Créer l’espace
+							{saving && <LuLoader className="animate-spin" />} {t("create")}
 						</Button>
 					</DialogFooter>
 				</form>

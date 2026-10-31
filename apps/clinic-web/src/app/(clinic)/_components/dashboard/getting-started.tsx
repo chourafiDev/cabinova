@@ -141,7 +141,7 @@ export function GettingStarted({ steps }: { steps: ChecklistSteps }) {
 									)}
 									<Button asChild size="sm" variant={isNext ? "default" : "outline"}>
 										<Link href={step.href}>
-											{step.action} {isNext && <LuArrowRight />}
+											{step.action} {isNext && <LuArrowRight className="rtl:rotate-180" />}
 										</Link>
 									</Button>
 								</div>

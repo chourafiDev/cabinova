@@ -54,6 +54,26 @@ describe('clinic: language', () => {
     expect(await localeOf(owner)).toBe('fr');
   });
 
+  it('keeps a language picked before sign-in, unless one is already chosen', async () => {
+    await cab(owner)
+      .put('/settings/language')
+      .send({ locale: 'ar', onlyIfUnset: true })
+      .expect(200);
+    expect(await localeOf(owner)).toBe('ar');
+
+    await cab(owner)
+      .put('/settings/language')
+      .send({ locale: 'fr', onlyIfUnset: true })
+      .expect(200);
+    expect(await localeOf(owner)).toBe('ar');
+
+    await cab(owner)
+      .put('/settings/language')
+      .send({ locale: 'fr' })
+      .expect(200);
+    expect(await localeOf(owner)).toBe('fr');
+  });
+
   it('refuses a language the app does not have', async () => {
     await cab(owner)
       .put('/settings/language')

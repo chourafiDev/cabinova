@@ -6,5 +6,121 @@
     "saved": "Langue enregistrée",
     "error": "Enregistrement impossible",
     "switcher": "Changer de langue"
+  },
+  "close": "Fermer",
+  "soon": "Bientôt",
+  "toggleMenu": "Afficher ou masquer le menu",
+  "menu": "Menu",
+  "menuDescription": "Navigation du cabinet.",
+  "support": "Contacter le support Cabinova",
+  "footer": "Cabinova · Vos données médicales sont hébergées dans la base dédiée de votre cabinet.",
+  "poweredBy": "Propulsé par Cabinova",
+  "appDescription": "Votre cabinet médical en ligne.",
+  "help": {
+    "title": "Besoin d’aide ?",
+    "description": "L’équipe Cabinova répond à vos questions.",
+    "action": "Contacter le support"
+  },
+  "roles": {
+    "owner": "Médecin responsable",
+    "doctor": "Médecin",
+    "secretary": "Secrétaire"
+  },
+  "userMenu": {
+    "profile": "Mon profil",
+    "tour": "Revoir la visite",
+    "signOut": "Se déconnecter"
+  },
+  "theme": {
+    "label": "Thème de l’interface",
+    "title": "Thème",
+    "light": "Clair",
+    "dark": "Sombre",
+    "system": "Système"
+  },
+  "unavailable": {
+    "TENANT_SUSPENDED": "Accès suspendu",
+    "TENANT_NOT_READY": "Cabinet en préparation",
+    "SERVICE_UNAVAILABLE": "Service indisponible",
+    "TENANT_OUTDATED": "Mise à jour en cours",
+    "default": "Cabinet introuvable"
+  },
+  "soonPage": {
+    "message": "Cette section arrive bientôt.",
+    "back": "Retour au tableau de bord"
+  },
+  "palette": {
+    "open": "Ouvrir la palette de commandes",
+    "trigger": "Aller à…",
+    "title": "Palette de commandes",
+    "description": "Aller à une page ou lancer une action",
+    "placeholder": "Aller à une page ou lancer une action…",
+    "empty": "Aucun résultat pour « {term} ».",
+    "pages": "Pages",
+    "actions": "Actions",
+    "goToSpace": "Aller à l’espace {space}",
+    "tour": "Revoir la visite guidée",
+    "themeLight": "Thème clair",
+    "themeDark": "Thème sombre",
+    "themeSystem": "Thème du système",
+    "shortcuts": "Raccourcis clavier",
+    "signOut": "Se déconnecter",
+    "navigate": "naviguer",
+    "select": "ouvrir",
+    "escape": "Échap",
+    "dismiss": "fermer"
+  },
+  "shortcuts": {
+    "title": "Raccourcis clavier",
+    "description": "Inactifs pendant la saisie dans un champ.",
+    "general": "Général",
+    "navigation": "Navigation",
+    "openPalette": "Ouvrir la palette de commandes",
+    "search": "Rechercher",
+    "toggleSidebar": "Afficher ou masquer le menu latéral",
+    "show": "Afficher les raccourcis",
+    "closeWindow": "Fermer une fenêtre",
+    "then": "puis",
+    "hint": "puis une lettre…",
+    "hintList": "(? pour la liste)"
+  },
+  "notifications": {
+    "title": "Notifications",
+    "unread": "Notifications, {count} non lues",
+    "readAll": "Tout marquer comme lu",
+    "empty": "Aucune notification pour le moment.",
+    "unreadDot": "Non lue"
+  },
+  "space": {
+    "switch": "{cabinet}, espace {space} — changer d’espace",
+    "changed": "Espace : {space}",
+    "switchError": "Changement impossible",
+    "offer": "Offre {plan}",
+    "noOffer": "Aucune offre",
+    "trialing": "Essai gratuit",
+    "pastDue": "En attente de paiement",
+    "seeQuote": "Voir mon devis",
+    "chooseOffer": "Choisir mon offre",
+    "manage": "Gérer",
+    "settings": "Paramètres",
+    "team": "Équipe",
+    "spaces": "Espaces",
+    "manageTitle": "Gérer",
+    "cabinet": "Le cabinet",
+    "hours": "Horaires d’ouverture",
+    "tarifs": "Tarifs",
+    "spacesLink": "Espaces",
+    "new": "Nouvel espace",
+    "newDescription": "Un site du cabinet (ex. une autre ville). Ses patients, son équipe et son agenda sont séparés des autres espaces.",
+    "name": "Nom",
+    "namePlaceholder": "Ex. Marrakech Guéliz",
+    "city": "Ville",
+    "phone": "Téléphone",
+    "address": "Adresse",
+    "nameError": "Nom de l’espace : 2 caractères minimum.",
+    "created": "Espace « {name} » créé",
+    "createError": "Création impossible",
+    "cancel": "Annuler",
+    "create": "Créer l’espace"
   }
 }

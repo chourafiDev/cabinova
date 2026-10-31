@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { LuLoader, LuMailCheck } from "react-icons/lu";
 import Link from "next/link";
 import { useState } from "react";
@@ -12,6 +13,7 @@ export function ForgotPasswordForm() {
 	const [sent, setSent] = useState<string | null>(null);
 	const [error, setError] = useState<string | null>(null);
 	const [pending, setPending] = useState(false);
+	const t = useTranslations("auth");
 
 	async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
 		e.preventDefault();
@@ -22,11 +24,7 @@ export function ForgotPasswordForm() {
 			await api("/auth/forgot-password", { method: "POST", body: JSON.stringify({ email }) });
 			setSent(email);
 		} catch (err) {
-			setError(
-				err instanceof ApiError && err.status === 429
-					? "Trop de demandes. Patientez une minute puis réessayez."
-					: "Une erreur est survenue. Réessayez.",
-			);
+			setError(err instanceof ApiError && err.status === 429 ? t("forgot.tooMany") : t("forgot.error"));
 		} finally {
 			setPending(false);
 		}
@@ -37,11 +35,10 @@ export function ForgotPasswordForm() {
 			<div className="mt-10 grid gap-6 text-center">
 				<LuMailCheck className="text-primary mx-auto size-8" />
 				<p className="text-sm">
-					Si un compte existe pour <strong>{sent}</strong>, un lien vient de partir. Il est valable 1 heure. Pensez à
-					vérifier vos courriers indésirables.
+					{t.rich("forgot.sent", { email: sent, strong: (chunks) => <strong>{chunks}</strong> })}
 				</p>
 				<Link href="/login" className="text-sm font-medium hover:underline">
-					Retour à la connexion
+					{t("forgot.back")}
 				</Link>
 			</div>
 		);
@@ -50,14 +47,14 @@ export function ForgotPasswordForm() {
 	return (
 		<form onSubmit={onSubmit} className="mt-10 grid gap-6">
 			<div className="grid gap-2">
-				<AuthLabel htmlFor="email">Adresse e-mail</AuthLabel>
+				<AuthLabel htmlFor="email">{t("email")}</AuthLabel>
 				<Input
 					id="email"
 					name="email"
 					type="email"
 					autoFocus
 					autoComplete="email"
-					placeholder="Entrez votre adresse e-mail"
+					placeholder={t("emailPlaceholder")}
 					required
 					className={authInputClass}
 				/>
@@ -69,10 +66,10 @@ export function ForgotPasswordForm() {
 			)}
 			<Button type="submit" disabled={pending} className={authButtonClass}>
 				{pending && <LuLoader className="size-4 animate-spin" />}
-				Envoyer le lien
+				{t("forgot.submit")}
 			</Button>
 			<Link href="/login" className="text-muted-foreground hover:text-foreground text-center text-sm">
-				Retour à la connexion
+				{t("forgot.back")}
 			</Link>
 		</form>
 	);

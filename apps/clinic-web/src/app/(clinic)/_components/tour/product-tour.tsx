@@ -3,8 +3,10 @@
 import "driver.js/dist/driver.css";
 import "./product-tour.css";
 import { type DriveStep, driver } from "driver.js";
+import { useLocale, useTranslations } from "next-intl";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef } from "react";
+import { directionOf } from "@/i18n/config";
 import { api } from "@/lib/api-client";
 
 /** URL that replays the tour (user menu "Revoir la visite"). */
@@ -16,56 +18,52 @@ const visible = (selector: string) => {
 	return !!el && el.getClientRects().length > 0;
 };
 
-function steps(firstName: string): DriveStep[] {
+function steps(firstName: string, t: (key: string, values?: Record<string, string>) => string, rtl: boolean): DriveStep[] {
 	const all: (DriveStep & { element?: string })[] = [
 		{
 			popover: {
-				title: `Bienvenue, ${firstName} 👋`,
-				description:
-					"Voici l’espace de votre cabinet sur Cabinova. Une minute pour en faire le tour, vous pourrez la revoir depuis votre menu.",
+				title: t("welcomeTitle", { name: firstName }),
+				description: t("welcome"),
 			},
 		},
 		{
 			element: '[data-tour="nav"]',
 			popover: {
-				title: "Votre cabinet, module par module",
-				description:
-					"Agenda, patients, consultations, ordonnances : tout se trouve ici. Les modules marqués « Bientôt » arrivent prochainement.",
-				side: "right",
+				title: t("navTitle"),
+				description: t("nav"),
+				side: rtl ? "left" : "right",
 				align: "start",
 			},
 		},
 		{
 			element: '[data-tour="kpis"]',
 			popover: {
-				title: "Votre journée en un coup d’œil",
-				description: "Rendez-vous du jour, patients vus, nouveaux patients et encaissements, comparés à la semaine dernière.",
+				title: t("kpisTitle"),
+				description: t("kpis"),
 				side: "bottom",
 			},
 		},
 		{
 			element: '[data-tour="appointments"]',
 			popover: {
-				title: "Rendez-vous et salle d’attente",
-				description:
-					"Suivez qui arrive, qui attend et qui est en consultation, en temps réel. Ouvrez l’agenda pour planifier.",
+				title: t("appointmentsTitle"),
+				description: t("appointments"),
 				side: "top",
 			},
 		},
 		{
 			element: '[data-tour="subscription"]',
 			popover: {
-				title: "Votre offre",
-				description: "Votre période d’essai, les places de votre équipe et l’espace de stockage utilisé.",
+				title: t("subscriptionTitle"),
+				description: t("subscription"),
 				side: "top",
 			},
 		},
 		{
 			element: '[data-tour="account"]',
 			popover: {
-				title: "Votre compte",
-				description:
-					"Thème clair ou sombre, déconnexion, et « Revoir la visite ». Une question ? Le support Cabinova est en bas du menu.",
+				title: t("accountTitle"),
+				description: t("account"),
 				side: "bottom",
 				align: "end",
 			},
@@ -84,6 +82,8 @@ export function ProductTour({ autoStart, firstName }: { autoStart: boolean; firs
 	const searchParams = useSearchParams();
 	const router = useRouter();
 	const started = useRef(false);
+	const t = useTranslations("tour");
+	const rtl = directionOf(useLocale()) === "rtl";
 	const replay = searchParams.get("visite") === "1";
 
 	useEffect(() => {
@@ -97,14 +97,14 @@ export function ProductTour({ autoStart, firstName }: { autoStart: boolean; firs
 			started.current = true;
 			if (replay) router.replace("/", { scroll: false });
 			const tour = driver({
-				steps: steps(firstName),
+				steps: steps(firstName, t as never, rtl),
 				popoverClass: "cabinova-tour",
 				showProgress: true,
 				progressText: "{{current}} / {{total}}",
-				nextBtnText: "Suivant",
-				prevBtnText: "Précédent",
-				doneBtnText: "C’est parti",
-				closeBtnLabel: "Passer la visite",
+				nextBtnText: t("next"),
+				prevBtnText: t("prev"),
+				doneBtnText: t("done"),
+				closeBtnLabel: t("skip"),
 				stagePadding: 6,
 				stageRadius: 12,
 				overlayOpacity: 0.55,
@@ -117,7 +117,7 @@ export function ProductTour({ autoStart, firstName }: { autoStart: boolean; firs
 			tour.drive();
 		}, 600);
 		return () => clearTimeout(timer);
-	}, [pathname, autoStart, replay, firstName, router]);
+	}, [pathname, autoStart, replay, firstName, router, t, rtl]);
 
 	return null;
 }

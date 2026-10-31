@@ -178,12 +178,12 @@ export default async function PatientsPage({ searchParams }: PageProps<"/patient
 					</span>
 					<Button asChild variant="outline" size="sm" aria-disabled={page <= 1} className={cn(page <= 1 && "pointer-events-none opacity-50")}>
 						<Link href={href({ page: String(page - 1) })}>
-							<LuChevronLeft /> Précédente
+							<LuChevronLeft className="rtl:rotate-180" /> Précédente
 						</Link>
 					</Button>
 					<Button asChild variant="outline" size="sm" aria-disabled={page >= pageCount} className={cn(page >= pageCount && "pointer-events-none opacity-50")}>
 						<Link href={href({ page: String(page + 1) })}>
-							Suivante <LuChevronRight />
+							Suivante <LuChevronRight className="rtl:rotate-180" />
 						</Link>
 					</Button>
 				</nav>

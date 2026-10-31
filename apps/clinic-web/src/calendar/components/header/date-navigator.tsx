@@ -42,13 +42,13 @@ export function DateNavigator({ view, events }: IProps) {
 
       <div className="flex items-center gap-2">
         <Button variant="outline" aria-label="Période précédente" className="size-6.5 px-0 [&_svg]:size-4.5" onClick={handlePrevious}>
-          <LuChevronLeft />
+          <LuChevronLeft className="rtl:rotate-180" />
         </Button>
 
         <p className="text-sm text-muted-foreground">{rangeText(view, selectedDate)}</p>
 
         <Button variant="outline" aria-label="Période suivante" className="size-6.5 px-0 [&_svg]:size-4.5" onClick={handleNext}>
-          <LuChevronRight />
+          <LuChevronRight className="rtl:rotate-180" />
         </Button>
       </div>
     </div>

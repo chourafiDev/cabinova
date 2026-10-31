@@ -1,6 +1,7 @@
 "use client";
 
 import { LuCompass, LuKeyboard, LuLifeBuoy, LuLogOut, LuMapPin, LuMonitor, LuMoon, LuSearch, LuSun } from "react-icons/lu";
+import { useTranslations } from "next-intl";
 import { useTheme } from "next-themes";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -43,6 +44,9 @@ export function CommandPalette({ spaces, role }: { spaces: ClinicSession["spaces
 	const modifier = useModifierLabel();
 	const [open, setOpen] = useState(false);
 	const [input, setInput] = useState("");
+	const t = useTranslations("common.palette");
+	const tn = useTranslations("nav.items");
+	const tc = useTranslations("common");
 
 	useEffect(() => {
 		const onKey = (e: KeyboardEvent) => {
@@ -80,7 +84,7 @@ export function CommandPalette({ spaces, role }: { spaces: ClinicSession["spaces
 		.filter((s) => s.id !== spaces?.current.id)
 		.map((s) => ({
 			id: `space-${s.id}`,
-			label: `Aller à l’espace ${spaceLabel(s)}`,
+			label: t("goToSpace", { space: spaceLabel(s) }),
 			icon: LuMapPin,
 			keywords: "changer espace site succursale",
 			run: () =>
@@ -92,16 +96,16 @@ export function CommandPalette({ spaces, role }: { spaces: ClinicSession["spaces
 		}));
 	const actions: Action[] = [
 		...spaceActions,
-		{ id: "tour", label: "Revoir la visite guidée", icon: LuCompass, keywords: "aide découvrir tutoriel", run: () => go(TOUR_REPLAY_HREF) },
-		{ id: "theme-light", label: "Thème clair", icon: LuSun, keywords: "apparence mode jour", run: () => pick(() => setTheme("light")) },
-		{ id: "theme-dark", label: "Thème sombre", icon: LuMoon, keywords: "apparence mode nuit dark", run: () => pick(() => setTheme("dark")) },
-		{ id: "theme-system", label: "Thème du système", icon: LuMonitor, keywords: "apparence automatique", run: () => pick(() => setTheme("system")) },
-		{ id: "shortcuts", label: "Raccourcis clavier", icon: LuKeyboard, keywords: "aide touches clavier", run: () => pick(() => window.dispatchEvent(new Event(SHORTCUTS_HELP_EVENT))) },
-		{ id: "support", label: "Contacter le support Cabinova", icon: LuLifeBuoy, keywords: "aide question problème", run: () => pick(() => (window.location.href = "mailto:support@cabinova.ma")) },
-		{ id: "sign-out", label: "Se déconnecter", icon: LuLogOut, keywords: "déconnexion quitter", run: () => pick(signOut) },
+		{ id: "tour", label: t("tour"), icon: LuCompass, keywords: "aide découvrir tutoriel", run: () => go(TOUR_REPLAY_HREF) },
+		{ id: "theme-light", label: t("themeLight"), icon: LuSun, keywords: "apparence mode jour", run: () => pick(() => setTheme("light")) },
+		{ id: "theme-dark", label: t("themeDark"), icon: LuMoon, keywords: "apparence mode nuit dark", run: () => pick(() => setTheme("dark")) },
+		{ id: "theme-system", label: t("themeSystem"), icon: LuMonitor, keywords: "apparence automatique", run: () => pick(() => setTheme("system")) },
+		{ id: "shortcuts", label: t("shortcuts"), icon: LuKeyboard, keywords: "aide touches clavier", run: () => pick(() => window.dispatchEvent(new Event(SHORTCUTS_HELP_EVENT))) },
+		{ id: "support", label: tc("support"), icon: LuLifeBuoy, keywords: "aide question problème", run: () => pick(() => (window.location.href = "mailto:support@cabinova.ma")) },
+		{ id: "sign-out", label: t("signOut"), icon: LuLogOut, keywords: "déconnexion quitter", run: () => pick(signOut) },
 	];
 	const term = fold(input.trim());
-	const pages = visibleNavItems(allNavItems, role).filter((item) => !term || fold(item.title).includes(term));
+	const pages = visibleNavItems(allNavItems, role).filter((item) => !term || fold(tn(item.key)).includes(term));
 	const visibleActions = actions.filter((a) => !term || fold(`${a.label} ${a.keywords ?? ""}`).includes(term));
 
 	return (
@@ -110,10 +114,10 @@ export function CommandPalette({ spaces, role }: { spaces: ClinicSession["spaces
 				type="button"
 				onClick={() => setOpen(true)}
 				className="text-muted-foreground hover:bg-muted flex h-9 items-center gap-2 rounded-lg border bg-background px-2.5 text-sm transition-colors sm:w-56"
-				aria-label="Ouvrir la palette de commandes"
+				aria-label={t("open")}
 			>
 				<LuSearch className="size-4 shrink-0" />
-				<span className="hidden flex-1 text-start sm:inline">Aller à…</span>
+				<span className="hidden flex-1 text-start sm:inline">{t("trigger")}</span>
 				<kbd className="bg-muted pointer-events-none hidden h-5 items-center rounded px-1.5 font-mono text-[10px] font-medium sm:inline-flex">
 					{modifier} K
 				</kbd>
@@ -125,21 +129,21 @@ export function CommandPalette({ spaces, role }: { spaces: ClinicSession["spaces
 					setOpen(next);
 					if (!next) setInput("");
 				}}
-				title="Palette de commandes"
-				description="Aller à une page ou lancer une action"
+				title={t("title")}
+				description={t("description")}
 				className="sm:max-w-lg"
 			>
 				<Command shouldFilter={false}>
-					<CommandInput value={input} onValueChange={setInput} placeholder="Aller à une page ou lancer une action…" />
+					<CommandInput value={input} onValueChange={setInput} placeholder={t("placeholder")} />
 					<CommandList className="max-h-[min(60vh,420px)]">
-						<CommandEmpty>Aucun résultat pour « {input.trim()} ».</CommandEmpty>
+						<CommandEmpty>{t("empty", { term: input.trim() })}</CommandEmpty>
 						{pages.length > 0 && (
-							<CommandGroup heading="Pages">
+							<CommandGroup heading={t("pages")}>
 								{pages.map((item) => (
 									<CommandItem key={item.href} value={`page-${item.href}`} onSelect={() => go(item.href)}>
 										<item.icon className="text-muted-foreground" />
-										{item.title}
-										{item.soon && <span className="text-muted-foreground text-xs">Bientôt</span>}
+										{tn(item.key)}
+										{item.soon && <span className="text-muted-foreground text-xs">{tc("soon")}</span>}
 										{item.shortcut && (
 											<CommandShortcut className="flex gap-1">
 												<Kbd>G</Kbd>
@@ -151,7 +155,7 @@ export function CommandPalette({ spaces, role }: { spaces: ClinicSession["spaces
 							</CommandGroup>
 						)}
 						{visibleActions.length > 0 && (
-							<CommandGroup heading="Actions">
+							<CommandGroup heading={t("actions")}>
 								{visibleActions.map((a) => (
 									<CommandItem key={a.id} value={`action-${a.id}`} onSelect={a.run}>
 										<a.icon className="text-muted-foreground" />
@@ -163,13 +167,13 @@ export function CommandPalette({ spaces, role }: { spaces: ClinicSession["spaces
 					</CommandList>
 					<div className="text-muted-foreground flex items-center gap-3 border-t px-3 py-2 text-[11px]">
 						<span>
-							<kbd className="font-mono">↑↓</kbd> naviguer
+							<kbd className="font-mono">↑↓</kbd> {t("navigate")}
 						</span>
 						<span>
-							<kbd className="font-mono">↵</kbd> ouvrir
+							<kbd className="font-mono">↵</kbd> {t("select")}
 						</span>
 						<span>
-							<kbd className="font-mono">Échap</kbd> fermer
+							<kbd className="font-mono">{t("escape")}</kbd> {t("dismiss")}
 						</span>
 					</div>
 				</Command>

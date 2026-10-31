@@ -249,12 +249,12 @@ async function HistoryView({
 							<span className="flex gap-1">
 								<Button asChild variant="outline" size="icon" className="size-8" aria-disabled={h.page <= 1}>
 									<Link href={pageHref(Math.max(1, h.page - 1))} aria-label="Page précédente" scroll={false}>
-										<LuChevronLeft />
+										<LuChevronLeft className="rtl:rotate-180" />
 									</Link>
 								</Button>
 								<Button asChild variant="outline" size="icon" className="size-8" aria-disabled={h.page >= h.pageCount}>
 									<Link href={pageHref(Math.min(h.pageCount, h.page + 1))} aria-label="Page suivante" scroll={false}>
-										<LuChevronRight />
+										<LuChevronRight className="rtl:rotate-180" />
 									</Link>
 								</Button>
 							</span>

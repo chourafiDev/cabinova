@@ -1,5 +1,6 @@
 import { Transform } from 'class-transformer';
 import {
+  IsBoolean,
   IsEmail,
   IsIn,
   IsInt,
@@ -97,6 +98,11 @@ export class UpdateCabinetDto {
 export class UpdateLanguageDto {
   @IsIn(['fr', 'ar'])
   locale: 'fr' | 'ar';
+
+  /** From the sign-in pages: never overrides a language already chosen. */
+  @IsOptional()
+  @IsBoolean()
+  onlyIfUnset?: boolean;
 }
 
 export class OpeningHoursDto {

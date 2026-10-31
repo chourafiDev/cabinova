@@ -1,11 +1,12 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { Fragment, useEffect, useRef, useState } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
-/** A destination reachable with "G" then a letter. */
-export type NavShortcut = { key: string; label: string; href: string };
+/** A destination reachable with "G" then a letter; `name` is in nav.json. */
+export type NavShortcut = { key: string; name: string; href: string };
 
 /** Window event that opens the shortcuts sheet (from the command palette). */
 export const SHORTCUTS_HELP_EVENT = "cabinova:shortcuts-help";
@@ -48,6 +49,8 @@ export function KeyboardShortcuts({ navigation }: { navigation: NavShortcut[] })
 	const [helpOpen, setHelpOpen] = useState(false);
 	const [pendingG, setPendingG] = useState(false);
 	const gAt = useRef(0);
+	const t = useTranslations("common.shortcuts");
+	const tn = useTranslations("nav.items");
 
 	useEffect(() => {
 		let clear: ReturnType<typeof setTimeout> | undefined;
@@ -90,18 +93,18 @@ export function KeyboardShortcuts({ navigation }: { navigation: NavShortcut[] })
 
 	const groups: { title: string; rows: { keys: string[]; label: string }[] }[] = [
 		{
-			title: "Général",
+			title: t("general"),
 			rows: [
-				{ keys: [modifier, "K"], label: "Ouvrir la palette de commandes" },
-				{ keys: ["/"], label: "Rechercher" },
-				{ keys: [modifier, "B"], label: "Afficher ou masquer le menu latéral" },
-				{ keys: ["?"], label: "Afficher les raccourcis" },
-				{ keys: ["Échap"], label: "Fermer une fenêtre" },
+				{ keys: [modifier, "K"], label: t("openPalette") },
+				{ keys: ["/"], label: t("search") },
+				{ keys: [modifier, "B"], label: t("toggleSidebar") },
+				{ keys: ["?"], label: t("show") },
+				{ keys: ["Esc"], label: t("closeWindow") },
 			],
 		},
 		{
-			title: "Navigation",
-			rows: navigation.map((n) => ({ keys: ["G", n.key.toUpperCase()], label: n.label })),
+			title: t("navigation"),
+			rows: navigation.map((n) => ({ keys: ["G", n.key.toUpperCase()], label: tn(n.name) })),
 		},
 	];
 
@@ -112,14 +115,14 @@ export function KeyboardShortcuts({ navigation }: { navigation: NavShortcut[] })
 				aria-hidden
 				className={`bg-popover text-popover-foreground pointer-events-none fixed bottom-4 left-1/2 z-50 flex -translate-x-1/2 items-center gap-2 rounded-lg border px-3 py-1.5 text-xs shadow-lg transition-opacity duration-150 ${pendingG ? "opacity-100" : "opacity-0"}`}
 			>
-				<Kbd>G</Kbd> puis une lettre… <span className="text-muted-foreground">(? pour la liste)</span>
+				<Kbd>G</Kbd> {t("hint")} <span className="text-muted-foreground">{t("hintList")}</span>
 			</div>
 
 			<Dialog open={helpOpen} onOpenChange={setHelpOpen}>
 				<DialogContent className="sm:max-w-md">
 					<DialogHeader>
-						<DialogTitle>Raccourcis clavier</DialogTitle>
-						<DialogDescription>Inactifs pendant la saisie dans un champ.</DialogDescription>
+						<DialogTitle>{t("title")}</DialogTitle>
+						<DialogDescription>{t("description")}</DialogDescription>
 					</DialogHeader>
 					<div className="grid gap-5">
 						{groups
@@ -135,7 +138,7 @@ export function KeyboardShortcuts({ navigation }: { navigation: NavShortcut[] })
 													{row.keys.map((k, i) => (
 														<Fragment key={k}>
 															{i > 0 && row.keys[0] === "G" && (
-																<span className="text-muted-foreground text-xs">puis</span>
+																<span className="text-muted-foreground text-xs">{t("then")}</span>
 															)}
 															<Kbd>{k}</Kbd>
 														</Fragment>

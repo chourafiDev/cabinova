@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { LuLoader } from "react-icons/lu";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -8,6 +9,7 @@ import { PasswordInput } from "@/components/password-input";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
+import { adoptLocale } from "@/i18n/config";
 import { ApiError, api } from "@/lib/api-client";
 import { AuthLabel, authButtonClass, authInputClass } from "../_components/auth-fields";
 
@@ -20,6 +22,14 @@ export function LoginForm({ next }: { next: string }) {
 	const [challenge, setChallenge] = useState<string | null>(null);
 	const [useBackup, setUseBackup] = useState(false);
 	const [code, setCode] = useState("");
+	const t = useTranslations("auth");
+	const signedIn = async () => {
+		await adoptLocale((locale) =>
+			api("/settings/language", { method: "PUT", body: JSON.stringify({ locale, onlyIfUnset: true }) }),
+		);
+		router.replace(next);
+		router.refresh();
+	};
 
 	async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
 		e.preventDefault();
@@ -43,15 +53,10 @@ export function LoginForm({ next }: { next: string }) {
 			}
 		} catch (err) {
 			setPending(false);
-			setError(
-				err instanceof ApiError && err.status === 429
-					? "Trop de tentatives. Patientez une minute puis réessayez."
-					: "E-mail ou mot de passe incorrect.",
-			);
+			setError(err instanceof ApiError && err.status === 429 ? t("login.tooMany") : t("login.invalid"));
 			return;
 		}
-		router.replace(next);
-		router.refresh();
+		await signedIn();
 	}
 
 	async function onVerify(e: React.FormEvent) {
@@ -65,30 +70,23 @@ export function LoginForm({ next }: { next: string }) {
 			setCode("");
 			if (err instanceof ApiError && err.code === "CHALLENGE_EXPIRED") {
 				setChallenge(null);
-				setError(err.message);
+				setError(t("twoFactor.expired"));
 				return;
 			}
-			setError(
-				err instanceof ApiError && err.status === 429
-					? "Trop de tentatives. Patientez une minute puis réessayez."
-					: "Code incorrect.",
-			);
+			setError(err instanceof ApiError && err.status === 429 ? t("login.tooMany") : t("twoFactor.invalid"));
 			return;
 		}
-		router.replace(next);
-		router.refresh();
+		await signedIn();
 	}
 
 	if (challenge) {
 		return (
 			<form onSubmit={onVerify} className="mt-10 grid gap-6">
 				<p className="text-muted-foreground text-center text-sm">
-					{useBackup
-						? "Saisissez l’un de vos codes de secours. Chaque code ne fonctionne qu’une fois."
-						: "Ouvrez votre application d’authentification et saisissez le code à 6 chiffres affiché pour Cabinova."}
+					{useBackup ? t("twoFactor.backup") : t("twoFactor.app")}
 				</p>
 				<div className="grid gap-2">
-					<AuthLabel htmlFor="code">{useBackup ? "Code de secours" : "Code de vérification"}</AuthLabel>
+					<AuthLabel htmlFor="code">{useBackup ? t("twoFactor.backupLabel") : t("twoFactor.codeLabel")}</AuthLabel>
 					<Input
 						id="code"
 						autoFocus
@@ -107,7 +105,7 @@ export function LoginForm({ next }: { next: string }) {
 				)}
 				<Button type="submit" disabled={pending || (useBackup ? code.trim().length < 6 : code.length !== 6)} className={authButtonClass}>
 					{pending && <LuLoader className="size-4 animate-spin" />}
-					Vérifier
+					{t("twoFactor.verify")}
 				</Button>
 				<button
 					type="button"
@@ -118,7 +116,7 @@ export function LoginForm({ next }: { next: string }) {
 						setError(null);
 					}}
 				>
-					{useBackup ? "Utiliser l’application" : "Utiliser un code de secours"}
+					{useBackup ? t("twoFactor.useApp") : t("twoFactor.useBackup")}
 				</button>
 			</form>
 		);
@@ -127,36 +125,36 @@ export function LoginForm({ next }: { next: string }) {
 	return (
 		<form onSubmit={onSubmit} className="mt-10 grid gap-6">
 			<div className="grid gap-2">
-				<AuthLabel htmlFor="email">Adresse e-mail</AuthLabel>
+				<AuthLabel htmlFor="email">{t("email")}</AuthLabel>
 				<Input
 					id="email"
 					name="email"
 					type="email"
 					autoComplete="email"
-					placeholder="Entrez votre adresse e-mail"
+					placeholder={t("emailPlaceholder")}
 					required
 					className={authInputClass}
 				/>
 			</div>
 			<div className="grid gap-2">
 				<div className="flex items-baseline justify-between gap-3">
-					<AuthLabel htmlFor="password">Mot de passe</AuthLabel>
+					<AuthLabel htmlFor="password">{t("password")}</AuthLabel>
 					<Link href="/forgot-password" className="text-muted-foreground hover:text-foreground text-sm">
-						Mot de passe oublié ?
+						{t("login.forgot")}
 					</Link>
 				</div>
 				<PasswordInput
 					id="password"
 					name="password"
 					autoComplete="current-password"
-					placeholder="Entrez votre mot de passe"
+					placeholder={t("passwordPlaceholder")}
 					required
 					className={authInputClass}
 				/>
 			</div>
 			<label className="text-muted-foreground flex items-center gap-2.5 text-sm">
 				<Checkbox checked={remember} onCheckedChange={(v) => setRemember(v === true)} />
-				Se souvenir de moi
+				{t("login.remember")}
 			</label>
 			{error && (
 				<p role="alert" className="text-destructive -mt-2 text-sm">
@@ -165,10 +163,10 @@ export function LoginForm({ next }: { next: string }) {
 			)}
 			<Button type="submit" disabled={pending} className={authButtonClass}>
 				{pending && <LuLoader className="size-4 animate-spin" />}
-				{pending ? "Connexion…" : "Se connecter"}
+				{pending ? t("login.pending") : t("login.submit")}
 			</Button>
 			<p className="text-muted-foreground text-center text-sm">
-				Pas encore d&apos;accès ? Utilisez le lien d&apos;invitation reçu par e-mail.
+				{t("login.noAccess")}
 			</p>
 		</form>
 	);

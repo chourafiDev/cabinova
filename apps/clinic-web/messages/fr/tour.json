@@ -1,0 +1,18 @@
+{
+  "next": "Suivant",
+  "prev": "Précédent",
+  "done": "C’est parti",
+  "skip": "Passer la visite",
+  "welcomeTitle": "Bienvenue, {name} 👋",
+  "welcome": "Voici l’espace de votre cabinet sur Cabinova. Une minute pour en faire le tour, vous pourrez la revoir depuis votre menu.",
+  "navTitle": "Votre cabinet, module par module",
+  "nav": "Agenda, patients, consultations, ordonnances : tout se trouve ici. Les modules marqués « Bientôt » arrivent prochainement.",
+  "kpisTitle": "Votre journée en un coup d’œil",
+  "kpis": "Rendez-vous du jour, patients vus, nouveaux patients et encaissements, comparés à la semaine dernière.",
+  "appointmentsTitle": "Rendez-vous et salle d’attente",
+  "appointments": "Suivez qui arrive, qui attend et qui est en consultation, en temps réel. Ouvrez l’agenda pour planifier.",
+  "subscriptionTitle": "Votre offre",
+  "subscription": "Votre période d’essai, les places de votre équipe et l’espace de stockage utilisé.",
+  "accountTitle": "Votre compte",
+  "account": "Thème clair ou sombre, déconnexion, et « Revoir la visite ». Une question ? Le support Cabinova est en bas du menu."
+}

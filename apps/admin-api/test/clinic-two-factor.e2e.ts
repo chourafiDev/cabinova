@@ -154,6 +154,12 @@ describe('clinic: two-factor sign-in', () => {
     const { body: me } = await cab(secretary).get('/auth/me').expect(200);
     expect(me.user.twoFactorSetupRequired).toBe(true);
 
+    // The language picked on the sign-in page still follows them.
+    await cab(secretary)
+      .put('/settings/language')
+      .send({ locale: 'ar', onlyIfUnset: true })
+      .expect(200);
+
     const { body } = await cab(secretary).post('/auth/2fa/setup').expect(200);
     await cab(secretary)
       .post('/auth/2fa/enable')

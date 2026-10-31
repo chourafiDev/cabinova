@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { usePathname } from "next/navigation";
 import { Breadcrumb, BreadcrumbItem, BreadcrumbList, BreadcrumbPage } from "@/components/ui/breadcrumb";
 import { Separator } from "@/components/ui/separator";
@@ -13,7 +14,8 @@ import { UserMenu } from "./user-menu";
 
 export function SiteHeader({ user, spaces }: { user: ClinicSession["user"]; spaces: ClinicSession["spaces"] }) {
   const pathname = usePathname();
-  const title = findNavItem(pathname)?.title ?? "Tableau de bord";
+  const t = useTranslations("nav.items");
+  const title = t(findNavItem(pathname)?.key ?? "dashboard");
 
   return (
     <header className="sticky top-0 z-10 flex h-14 shrink-0 items-center gap-2 border-b bg-background px-4 md:rounded-t-xl">

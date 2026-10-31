@@ -1,0 +1,19 @@
+{
+  "groups": {
+    "cabinet": "العيادة",
+    "management": "التسيير",
+    "administration": "الإدارة"
+  },
+  "items": {
+    "dashboard": "لوحة التحكم",
+    "appointments": "المواعيد",
+    "patients": "المرضى",
+    "consultations": "الاستشارات",
+    "prescriptions": "الوصفات الطبية",
+    "payments": "المداخيل",
+    "reports": "الإحصائيات",
+    "staff": "الفريق",
+    "settings": "الإعدادات"
+  },
+  "home": "{cabinet} — لوحة التحكم"
+}

@@ -108,10 +108,10 @@ export default async function ActivityPage({ searchParams }: PageProps<"/setting
 							<Button asChild={page > 1} size="icon" variant="outline" className="size-8" disabled={page <= 1} aria-label="Page précédente">
 								{page > 1 ? (
 									<Link href={href(page - 1)} scroll={false}>
-										<LuChevronLeft />
+										<LuChevronLeft className="rtl:rotate-180" />
 									</Link>
 								) : (
-									<LuChevronLeft />
+									<LuChevronLeft className="rtl:rotate-180" />
 								)}
 							</Button>
 							<Button
@@ -124,10 +124,10 @@ export default async function ActivityPage({ searchParams }: PageProps<"/setting
 							>
 								{page < pageCount ? (
 									<Link href={href(page + 1)} scroll={false}>
-										<LuChevronRight />
+										<LuChevronRight className="rtl:rotate-180" />
 									</Link>
 								) : (
-									<LuChevronRight />
+									<LuChevronRight className="rtl:rotate-180" />
 								)}
 							</Button>
 						</span>

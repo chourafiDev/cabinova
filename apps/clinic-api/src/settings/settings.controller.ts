@@ -16,7 +16,7 @@ import type { Request } from 'express';
 import { AuthService } from '../auth/auth.service.js';
 import { Activity } from '../activity/activity.decorator.js';
 import type { ClinicUser } from '../auth/auth.types.js';
-import { CurrentUser } from '../auth/decorators.js';
+import { AllowBeforeTwoFactor, CurrentUser } from '../auth/decorators.js';
 import { assertOwner } from '../auth/roles.js';
 import { Clinic } from '../tenancy/decorators.js';
 import type { ClinicContext } from '../tenancy/tenancy.service.js';
@@ -55,6 +55,7 @@ export class SettingsController {
   }
 
   /** Each person's own language; the rest of the team keeps theirs. */
+  @AllowBeforeTwoFactor()
   @Put('language')
   async updateLanguage(
     @Clinic() { db }: ClinicContext,
@@ -62,8 +63,9 @@ export class SettingsController {
     @Body() dto: UpdateLanguageDto,
   ) {
     await db.query(
-      'update users set locale = $2, updated_at = now() where id = $1',
-      [user.id, dto.locale],
+      `update users set locale = $2, updated_at = now()
+        where id = $1 and ($3 = false or locale is null)`,
+      [user.id, dto.locale, dto.onlyIfUnset ?? false],
     );
     return { locale: dto.locale };
   }

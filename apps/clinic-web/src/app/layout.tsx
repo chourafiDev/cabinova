@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 import { Geist_Mono, IBM_Plex_Sans_Arabic, Instrument_Sans } from "next/font/google";
 import { NextIntlClientProvider } from "next-intl";
-import { getLocale } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
 import { DirectionProvider } from "@/components/direction-provider";
 import { Toaster } from "@/components/ui/sonner";
@@ -29,11 +29,14 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-export const metadata: Metadata = {
-  title: { template: "%s · Cabinova", default: "Cabinova" },
-  description: "Votre cabinet médical en ligne.",
-  robots: { index: false, follow: false },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("common");
+  return {
+    title: { template: "%s · Cabinova", default: "Cabinova" },
+    description: t("appDescription"),
+    robots: { index: false, follow: false },
+  };
+}
 
 export default async function RootLayout({ children }: LayoutProps<"/">) {
   const locale = await getLocale();

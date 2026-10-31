@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { LuCheck, LuCopy, LuExternalLink, LuFileText, LuLoader, LuMail } from "react-icons/lu";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
@@ -7,7 +8,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { api } from "@/lib/api-client";
-import { formatDate, formatMad } from "@/lib/format";
+import { useFormat } from "@/lib/use-format";
 import { cn } from "@/lib/utils";
 
 /** GET /billing/summary (clinic-api), responsible doctor only. */
@@ -48,16 +49,7 @@ type Plan = {
 };
 type Period = "monthly" | "annual";
 
-const PERIOD = { monthly: "mois", annual: "an" } as const;
-const plural = (n: number, word: string) => `${n} ${word}${n > 1 ? "s" : ""}`;
-const limits = (p: Plan) =>
-	[
-		p.maxDoctors === null ? "Médecins illimités" : plural(p.maxDoctors, "médecin"),
-		p.maxSecretaries === null ? "secrétaires illimitées" : plural(p.maxSecretaries, "secrétaire"),
-		p.storageQuotaMb !== null && `${Math.round(p.storageQuotaMb / 1024)} Go`,
-	]
-		.filter(Boolean)
-		.join(" · ");
+const PERIOD = { monthly: "perMonth", annual: "perYear" } as const;
 
 /** "000000000000000000000000" → "000 000 0000000000000000 00" (Moroccan RIB layout). */
 const formatRib = (rib: string) =>
@@ -65,12 +57,13 @@ const formatRib = (rib: string) =>
 
 function CopyButton({ value, label }: { value: string; label: string }) {
 	const [copied, setCopied] = useState(false);
+	const t = useTranslations("billing.dialog");
 	return (
 		<Button
 			size="icon"
 			variant="ghost"
 			className="size-7"
-			aria-label={`Copier ${label}`}
+			aria-label={t("copyLabel", { what: label })}
 			onClick={() =>
 				navigator.clipboard
 					.writeText(value)
@@ -78,7 +71,7 @@ function CopyButton({ value, label }: { value: string; label: string }) {
 						setCopied(true);
 						setTimeout(() => setCopied(false), 1500);
 					})
-					.catch(() => toast.error("Copie impossible : sélectionnez le texte."))
+					.catch(() => toast.error(t("copyError")))
 			}
 		>
 			{copied ? <LuCheck /> : <LuCopy />}
@@ -99,6 +92,16 @@ function OfferPicker({
 	const [planKey, setPlanKey] = useState(summary.planKey ?? summary.plans[0]?.key ?? "");
 	const [period, setPeriod] = useState<Period>(summary.billingPeriod ?? "monthly");
 	const [saving, setSaving] = useState(false);
+	const t = useTranslations("billing.dialog");
+	const format = useFormat();
+	const limits = (p: Plan) =>
+		[
+			p.maxDoctors === null ? t("unlimitedDoctors") : t("doctors", { count: p.maxDoctors }),
+			p.maxSecretaries === null ? t("unlimitedSecretaries") : t("secretaries", { count: p.maxSecretaries }),
+			p.storageQuotaMb !== null && t("storage", { gb: Math.round(p.storageQuotaMb / 1024) }),
+		]
+			.filter(Boolean)
+			.join(" · ");
 
 	const submit = async () => {
 		setSaving(true);
@@ -108,13 +111,13 @@ function OfferPicker({
 				body: JSON.stringify({ planKey, billingPeriod: period }),
 			});
 			if (quote.delivery === "failed") {
-				toast.warning(`Devis ${quote.number} créé, mais l’e-mail n’est pas parti : il reste disponible ici.`);
+				toast.warning(t("quoteUnsent", { number: quote.number }));
 			} else {
-				toast.success(`Devis ${quote.number} envoyé par e-mail`);
+				toast.success(t("quoteSent", { number: quote.number }));
 			}
 			onDone();
 		} catch (err) {
-			toast.error(err instanceof Error ? err.message : "Envoi du devis impossible");
+			toast.error(err instanceof Error ? err.message : t("quoteError"));
 		} finally {
 			setSaving(false);
 		}
@@ -122,7 +125,7 @@ function OfferPicker({
 
 	return (
 		<div className="grid gap-3">
-			<div className="bg-muted flex gap-1 rounded-lg p-[3px]" role="radiogroup" aria-label="Période">
+			<div className="bg-muted flex gap-1 rounded-lg p-[3px]" role="radiogroup" aria-label={t("period")}>
 				{(["monthly", "annual"] as const).map((p) => (
 					<button
 						key={p}
@@ -135,11 +138,11 @@ function OfferPicker({
 							period === p && "bg-background text-foreground shadow-sm",
 						)}
 					>
-						{p === "monthly" ? "Mensuel" : "Annuel"}
+						{p === "monthly" ? t("monthly") : t("annual")}
 					</button>
 				))}
 			</div>
-			<div className="grid gap-2" role="radiogroup" aria-label="Offre">
+			<div className="grid gap-2" role="radiogroup" aria-label={t("offerLabel")}>
 				{summary.plans.map((p) => (
 					<button
 						key={p.key}
@@ -155,8 +158,8 @@ function OfferPicker({
 						<span className="flex items-baseline justify-between gap-2">
 							<span className="font-semibold">{p.name}</span>
 							<span className="font-semibold tabular-nums">
-								{formatMad(period === "annual" ? p.priceAnnual : p.priceMonthly)}
-								<span className="text-muted-foreground font-normal"> / {PERIOD[period]}</span>
+								{format.mad(period === "annual" ? p.priceAnnual : p.priceMonthly)}
+								<span className="text-muted-foreground font-normal"> / {t(PERIOD[period])}</span>
 							</span>
 						</span>
 						<span className="text-muted-foreground mt-0.5 block text-xs">{limits(p)}</span>
@@ -166,11 +169,11 @@ function OfferPicker({
 			<div className="flex gap-2">
 				{onCancel && (
 					<Button variant="outline" onClick={onCancel} disabled={saving}>
-						Retour
+						{t("back")}
 					</Button>
 				)}
 				<Button className="flex-1" onClick={submit} disabled={saving || !planKey}>
-					{saving && <LuLoader className="animate-spin" />} Recevoir mon devis
+					{saving && <LuLoader className="animate-spin" />} {t("requestQuote")}
 				</Button>
 			</div>
 		</div>
@@ -183,13 +186,16 @@ export function SubscriptionDialog({ open, onOpenChange }: { open: boolean; onOp
 	const [summary, setSummary] = useState<BillingSummary | null>(null);
 	const [error, setError] = useState<string | null>(null);
 	const [changing, setChanging] = useState(false);
+	const t = useTranslations("billing.dialog");
+	const format = useFormat();
+	const bold = (chunks: React.ReactNode) => <span className="text-foreground">{chunks}</span>;
 
 	const load = useCallback(
 		() =>
 			api<BillingSummary>("/billing/summary")
 				.then(setSummary)
-				.catch((err) => setError(err instanceof Error ? err.message : "Chargement impossible")),
-		[],
+				.catch((err) => setError(err instanceof Error ? err.message : t("loadError"))),
+		[t],
 	);
 
 	useEffect(() => {
@@ -206,17 +212,15 @@ export function SubscriptionDialog({ open, onOpenChange }: { open: boolean; onOp
 		<Dialog open={open} onOpenChange={onOpenChange}>
 			<DialogContent className="max-h-[90svh] overflow-y-auto sm:max-w-md">
 				<DialogHeader>
-					<DialogTitle>{picking ? "Choisir mon offre" : "Votre abonnement"}</DialogTitle>
+					<DialogTitle>{picking ? t("pickTitle") : t("title")}</DialogTitle>
 					<DialogDescription>
-						{picking
-							? "Vous recevez un devis par e-mail. Votre abonnement démarre à réception du paiement."
-							: "Paiement par virement bancaire, facture envoyée par e-mail."}
+						{picking ? t("pickDescription") : t("description")}
 					</DialogDescription>
 				</DialogHeader>
 
 				{!s && !error && (
 					<p className="text-muted-foreground flex items-center gap-2 py-6 text-sm">
-						<LuLoader className="size-4 animate-spin" /> Chargement…
+						<LuLoader className="size-4 animate-spin" /> {t("loading")}
 					</p>
 				)}
 				{error && <p className="text-destructive py-4 text-sm">{error}</p>}
@@ -225,8 +229,7 @@ export function SubscriptionDialog({ open, onOpenChange }: { open: boolean; onOp
 					<div className="grid gap-4 text-sm">
 						{s.status === "trialing" && s.trialEndsAt && (
 							<p className="text-muted-foreground">
-								Essai gratuit jusqu’au <span className="text-foreground">{formatDate(s.trialEndsAt)}</span>. Payer avant
-								cette date ne vous fait perdre aucun jour d’essai.
+								{t.rich("trialUntil", { date: format.date(s.trialEndsAt), strong: bold })}
 							</p>
 						)}
 						<OfferPicker
@@ -245,19 +248,19 @@ export function SubscriptionDialog({ open, onOpenChange }: { open: boolean; onOp
 					<div className="grid gap-4 text-sm">
 						{!quote && (
 							<div className="rounded-xl border p-4">
-								<p className="text-muted-foreground text-xs">Votre offre</p>
+								<p className="text-muted-foreground text-xs">{t("yourOffer")}</p>
 								<p className="mt-0.5 flex items-baseline justify-between gap-2">
-									<span className="text-base font-semibold">{s.plan ? `Offre ${s.plan}` : "Aucune offre"}</span>
+									<span className="text-base font-semibold">{s.plan ? t("offer", { plan: s.plan }) : t("noOffer")}</span>
 									{s.nextAmount !== null && s.billingPeriod && (
 										<span className="font-semibold tabular-nums">
-											{formatMad(s.nextAmount)}
-											<span className="text-muted-foreground font-normal"> / {PERIOD[s.billingPeriod]}</span>
+											{format.mad(s.nextAmount)}
+											<span className="text-muted-foreground font-normal"> / {t(PERIOD[s.billingPeriod])}</span>
 										</span>
 									)}
 								</p>
 								{s.status === "active" && s.currentPeriodEnd && (
 									<p className="text-muted-foreground mt-2">
-										Actif jusqu’au <span className="text-foreground">{formatDate(s.currentPeriodEnd)}</span>.
+										{t.rich("activeUntil", { date: format.date(s.currentPeriodEnd), strong: bold })}
 									</p>
 								)}
 							</div>
@@ -265,21 +268,21 @@ export function SubscriptionDialog({ open, onOpenChange }: { open: boolean; onOp
 
 						{quote && (
 							<div className="rounded-xl border p-4">
-								<p className="text-muted-foreground text-xs">Devis à régler</p>
+								<p className="text-muted-foreground text-xs">{t("quoteToPay")}</p>
 								<p className="mt-0.5 flex items-baseline justify-between gap-2">
 									<span className="font-semibold">{quote.number}</span>
-									<span className="font-semibold tabular-nums">{formatMad(quote.amount)}</span>
+									<span className="font-semibold tabular-nums">{format.mad(quote.amount)}</span>
 								</p>
 								<p className="text-muted-foreground mt-1">{quote.description}</p>
-								<p className="text-muted-foreground">À régler avant le {formatDate(quote.dueAt)}</p>
+								<p className="text-muted-foreground">{t("payBefore", { date: format.date(quote.dueAt) })}</p>
 								<div className="mt-3 flex flex-wrap gap-2">
 									<Button asChild size="sm" variant="outline">
 										<a href={`/devis/${quote.id}`} target="_blank" rel="noreferrer">
-											<LuExternalLink /> Voir le devis
+											<LuExternalLink /> {t("seeQuote")}
 										</a>
 									</Button>
 									<Button size="sm" variant="ghost" onClick={() => setChanging(true)}>
-										Changer d’offre
+										{t("changeOffer")}
 									</Button>
 								</div>
 							</div>
@@ -288,83 +291,86 @@ export function SubscriptionDialog({ open, onOpenChange }: { open: boolean; onOp
 						{invoice && (
 							<div className="rounded-xl border p-4">
 								<p className="text-muted-foreground text-xs">
-									{invoice.status === "overdue" ? "Facture en retard" : "Facture à régler"}
+									{invoice.status === "overdue" ? t("invoiceLate") : t("invoiceToPay")}
 								</p>
 								<p className="mt-0.5 flex items-baseline justify-between gap-2">
 									<span className="font-semibold">{invoice.number}</span>
-									<span className="font-semibold tabular-nums">{formatMad(invoice.amount)}</span>
+									<span className="font-semibold tabular-nums">{format.mad(invoice.amount)}</span>
 								</p>
-								<p className="text-muted-foreground mt-1">Échéance : {formatDate(invoice.dueAt)}</p>
+								<p className="text-muted-foreground mt-1">{t("dueDate", { date: format.date(invoice.dueAt) })}</p>
 							</div>
 						)}
 
 						{(quote || invoice) && s.payTo && (
 							<div className="rounded-xl border p-4">
-								<p className="text-muted-foreground mb-2 text-xs">Virement à</p>
+								<p className="text-muted-foreground mb-2 text-xs">{t("transferTo")}</p>
 								<dl className="grid gap-1.5">
 									{s.payTo.accountHolder && (
 										<div className="flex justify-between gap-3">
-											<dt className="text-muted-foreground">Titulaire</dt>
+											<dt className="text-muted-foreground">{t("holder")}</dt>
 											<dd className="text-end">{s.payTo.accountHolder}</dd>
 										</div>
 									)}
 									{s.payTo.bankName && (
 										<div className="flex justify-between gap-3">
-											<dt className="text-muted-foreground">Banque</dt>
+											<dt className="text-muted-foreground">{t("bank")}</dt>
 											<dd className="text-end">{s.payTo.bankName}</dd>
 										</div>
 									)}
 									<div className="flex items-center justify-between gap-3">
-										<dt className="text-muted-foreground">RIB</dt>
+										<dt className="text-muted-foreground">{t("rib")}</dt>
 										<dd className="flex items-center gap-1 font-mono text-xs">
 											{formatRib(s.payTo.rib)}
-											<CopyButton value={s.payTo.rib} label="le RIB" />
+											<CopyButton value={s.payTo.rib} label={t("theRib")} />
 										</dd>
 									</div>
 									{reference && (
 										<div className="flex items-center justify-between gap-3">
-											<dt className="text-muted-foreground">Référence</dt>
+											<dt className="text-muted-foreground">{t("reference")}</dt>
 											<dd className="flex items-center gap-1 font-mono text-xs">
 												{reference}
-												<CopyButton value={reference} label="la référence" />
+												<CopyButton value={reference} label={t("theReference")} />
 											</dd>
 										</div>
 									)}
 								</dl>
 								{reference && (
 									<p className="text-muted-foreground mt-2 text-xs">
-										Indiquez la référence dans le libellé du virement : votre paiement est reconnu plus vite.
+										{t("referenceHint")}
 									</p>
 								)}
 							</div>
 						)}
 						{(quote || invoice) && !s.payTo && (
 							<p className="text-muted-foreground text-xs">
-								Les coordonnées bancaires figurent {quote ? "sur le devis" : "sur la facture"} reçu{quote ? "" : "e"} par
-								e-mail.
+								{quote ? t("bankOnQuote") : t("bankOnInvoice")}
 							</p>
 						)}
 
 						{quote && (
 							<p className="bg-muted text-muted-foreground rounded-lg px-3 py-2 text-xs">
-								Après le virement, envoyez votre <span className="text-foreground font-medium">avis de virement</span>{" "}
-								{s.proofEmail ? (
-									<>
-										à{" "}
-										<a className="text-foreground underline" href={`mailto:${s.proofEmail}?subject=${encodeURIComponent(`Paiement du devis ${quote.number}`)}`}>
-											{s.proofEmail}
-										</a>
-									</>
-								) : (
-									"en réponse à l’e-mail du devis"
-								)}
-								. Nous créons votre facture et votre abonnement démarre.
+								{s.proofEmail
+									? t.rich("afterTransfer", {
+											email: s.proofEmail,
+											strong: (chunks) => <span className="text-foreground font-medium">{chunks}</span>,
+											link: (chunks) => (
+												<a
+													className="text-foreground underline"
+													href={`mailto:${s.proofEmail}?subject=${encodeURIComponent(t("proofSubject", { number: quote.number }))}`}
+												>
+													{chunks}
+												</a>
+											),
+										})
+									: t.rich("afterTransferReply", {
+											strong: (chunks) => <span className="text-foreground font-medium">{chunks}</span>,
+										})}
 							</p>
 						)}
 
 						{s.invoices.length > 0 && (
 							<div>
-								<p className="text-muted-foreground mb-1 text-xs">Mes factures</p>
+								<p className="text-muted-foreground mb-1 text-xs">{t("invoices")}</p>
 								<ul className="divide-y rounded-xl border">
 									{s.invoices.map((i) => (
 										<li key={i.id}>
@@ -376,8 +382,8 @@ export function SubscriptionDialog({ open, onOpenChange }: { open: boolean; onOp
 											>
 												<LuFileText className="text-muted-foreground size-4" />
 												<span className="flex-1 font-mono text-xs">{i.number}</span>
-												<span className="text-muted-foreground text-xs">{formatDate(i.issuedAt)}</span>
-												<span className="font-medium tabular-nums">{formatMad(i.amount)}</span>
+												<span className="text-muted-foreground text-xs">{format.date(i.issuedAt)}</span>
+												<span className="font-medium tabular-nums">{format.mad(i.amount)}</span>
 											</a>
 										</li>
 									))}
@@ -388,7 +394,7 @@ export function SubscriptionDialog({ open, onOpenChange }: { open: boolean; onOp
 						{!s.canRequestQuote && (
 							<Button asChild variant="outline" className="w-full">
 								<a href="mailto:support@cabinova.ma?subject=Changer%20d%E2%80%99offre">
-									<LuMail /> Changer d’offre ? Écrivez-nous
+									<LuMail /> {t("contact")}
 								</a>
 							</Button>
 						)}

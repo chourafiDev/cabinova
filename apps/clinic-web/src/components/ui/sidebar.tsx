@@ -3,6 +3,7 @@
 import * as React from "react"
 import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "cn"
+import { useTranslations } from "next-intl"
 import { Direction, Slot } from "radix-ui"
 
 import { useIsMobile } from "@/hooks/use-mobile"
@@ -162,6 +163,7 @@ function Sidebar({
   variant?: "sidebar" | "floating" | "inset"
   collapsible?: "offcanvas" | "icon" | "none"
 }) {
+  const t = useTranslations("common")
   const { isMobile, state, openMobile, setOpenMobile } = useSidebar()
 
   if (collapsible === "none") {
@@ -196,8 +198,8 @@ function Sidebar({
           side={side}
         >
           <SheetHeader className="sr-only">
-            <SheetTitle>Menu</SheetTitle>
-            <SheetDescription>Navigation de l&apos;administration.</SheetDescription>
+            <SheetTitle>{t("menu")}</SheetTitle>
+            <SheetDescription>{t("menuDescription")}</SheetDescription>
           </SheetHeader>
           <div className="flex h-full w-full flex-col">{children}</div>
         </SheetContent>
@@ -256,6 +258,7 @@ function SidebarTrigger({
   onClick,
   ...props
 }: React.ComponentProps<typeof Button>) {
+  const t = useTranslations("common")
   const { toggleSidebar } = useSidebar()
 
   return (
@@ -272,7 +275,7 @@ function SidebarTrigger({
       {...props}
     >
       <LuPanelLeft className="rtl:rotate-180" />
-      <span className="sr-only">Afficher ou masquer le menu</span>
+      <span className="sr-only">{t("toggleMenu")}</span>
     </Button>
   )
 }

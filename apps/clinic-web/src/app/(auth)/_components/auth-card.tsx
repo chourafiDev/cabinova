@@ -1,3 +1,4 @@
+import { useTranslations } from "next-intl";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import type { CabinetInfo } from "@/lib/session";
 
@@ -16,6 +17,7 @@ export function AuthCard({
 	languages?: boolean;
 	children?: React.ReactNode;
 }) {
+	const t = useTranslations("common");
 	return (
 		<main className="bg-background min-h-screen flex items-center justify-center">
 			<div className="flex w-full max-w-md flex-col items-center px-6 py-8 sm:px-10">
@@ -35,7 +37,7 @@ export function AuthCard({
 					{children}
 				</div>
 				{languages && <LanguageSwitcher className="mb-4" />}
-				<p className="text-xs text-muted-foreground">Propulsé par Cabinova</p>
+				<p className="text-xs text-muted-foreground">{t("poweredBy")}</p>
 			</div>
 		</main>
 	);

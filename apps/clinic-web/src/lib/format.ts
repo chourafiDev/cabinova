@@ -1,8 +1,8 @@
 // Always Moroccan time: the same on the server and in the browser.
 const TIME_ZONE = "Africa/Casablanca";
 
-export function formatDate(date: Date | string | number, opts: Intl.DateTimeFormatOptions = {}) {
-  return new Intl.DateTimeFormat("fr-MA", {
+export function formatDate(date: Date | string | number, opts: Intl.DateTimeFormatOptions = {}, locale = "fr-MA") {
+  return new Intl.DateTimeFormat(locale, {
     timeZone: TIME_ZONE,
     day: "numeric",
     month: "long",
@@ -12,8 +12,8 @@ export function formatDate(date: Date | string | number, opts: Intl.DateTimeForm
 }
 
 /** 125000 → "1 250 MAD" (amounts are in centimes, like the platform). */
-export function formatMad(centimes: number) {
-  return `${new Intl.NumberFormat("fr-MA", { maximumFractionDigits: 0 }).format(centimes / 100)} MAD`;
+export function formatMad(centimes: number, locale = "fr-MA") {
+  return `${new Intl.NumberFormat(locale, { maximumFractionDigits: 0 }).format(centimes / 100)} MAD`;
 }
 
 /** "Fatima Zahra El Idrissi" → "FE" */

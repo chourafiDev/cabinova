@@ -6,5 +6,121 @@
     "saved": "تم حفظ اللغة",
     "error": "تعذر الحفظ",
     "switcher": "تغيير اللغة"
+  },
+  "close": "إغلاق",
+  "soon": "قريبًا",
+  "toggleMenu": "إظهار القائمة أو إخفاؤها",
+  "menu": "القائمة",
+  "menuDescription": "التنقل في العيادة.",
+  "support": "الاتصال بدعم Cabinova",
+  "footer": "Cabinova · بياناتكم الطبية مستضافة في قاعدة البيانات الخاصة بعيادتكم.",
+  "poweredBy": "بدعم من Cabinova",
+  "appDescription": "عيادتكم الطبية عبر الإنترنت.",
+  "help": {
+    "title": "هل تحتاج إلى مساعدة؟",
+    "description": "فريق Cabinova يجيب عن أسئلتكم.",
+    "action": "الاتصال بالدعم"
+  },
+  "roles": {
+    "owner": "الطبيب المسؤول",
+    "doctor": "طبيب",
+    "secretary": "سكرتيرة"
+  },
+  "userMenu": {
+    "profile": "ملفي الشخصي",
+    "tour": "إعادة الجولة التعريفية",
+    "signOut": "تسجيل الخروج"
+  },
+  "theme": {
+    "label": "مظهر الواجهة",
+    "title": "المظهر",
+    "light": "فاتح",
+    "dark": "داكن",
+    "system": "حسب النظام"
+  },
+  "unavailable": {
+    "TENANT_SUSPENDED": "الوصول موقوف",
+    "TENANT_NOT_READY": "العيادة قيد الإعداد",
+    "SERVICE_UNAVAILABLE": "الخدمة غير متاحة",
+    "TENANT_OUTDATED": "جارٍ التحديث",
+    "default": "العيادة غير موجودة"
+  },
+  "soonPage": {
+    "message": "هذا القسم قادم قريبًا.",
+    "back": "العودة إلى لوحة التحكم"
+  },
+  "palette": {
+    "open": "فتح لوحة الأوامر",
+    "trigger": "الانتقال إلى…",
+    "title": "لوحة الأوامر",
+    "description": "الانتقال إلى صفحة أو تنفيذ إجراء",
+    "placeholder": "الانتقال إلى صفحة أو تنفيذ إجراء…",
+    "empty": "لا توجد نتائج لـ « {term} ».",
+    "pages": "الصفحات",
+    "actions": "الإجراءات",
+    "goToSpace": "الانتقال إلى الفضاء {space}",
+    "tour": "إعادة الجولة التعريفية",
+    "themeLight": "المظهر الفاتح",
+    "themeDark": "المظهر الداكن",
+    "themeSystem": "مظهر النظام",
+    "shortcuts": "اختصارات لوحة المفاتيح",
+    "signOut": "تسجيل الخروج",
+    "navigate": "التنقل",
+    "select": "فتح",
+    "escape": "Esc",
+    "dismiss": "إغلاق"
+  },
+  "shortcuts": {
+    "title": "اختصارات لوحة المفاتيح",
+    "description": "غير مفعلة أثناء الكتابة في حقل.",
+    "general": "عام",
+    "navigation": "التنقل",
+    "openPalette": "فتح لوحة الأوامر",
+    "search": "بحث",
+    "toggleSidebar": "إظهار القائمة الجانبية أو إخفاؤها",
+    "show": "عرض الاختصارات",
+    "closeWindow": "إغلاق نافذة",
+    "then": "ثم",
+    "hint": "ثم حرف…",
+    "hintList": "(? لعرض القائمة)"
+  },
+  "notifications": {
+    "title": "الإشعارات",
+    "unread": "الإشعارات، {count} غير مقروءة",
+    "readAll": "تعليم الكل كمقروء",
+    "empty": "لا توجد إشعارات حاليًا.",
+    "unreadDot": "غير مقروء"
+  },
+  "space": {
+    "switch": "{cabinet}، الفضاء {space} — تغيير الفضاء",
+    "changed": "الفضاء: {space}",
+    "switchError": "تعذر التغيير",
+    "offer": "باقة {plan}",
+    "noOffer": "لا توجد باقة",
+    "trialing": "فترة تجريبية مجانية",
+    "pastDue": "في انتظار الدفع",
+    "seeQuote": "عرض عرض السعر",
+    "chooseOffer": "اختيار باقتي",
+    "manage": "إدارة",
+    "settings": "الإعدادات",
+    "team": "الفريق",
+    "spaces": "الفضاءات",
+    "manageTitle": "إدارة",
+    "cabinet": "العيادة",
+    "hours": "أوقات العمل",
+    "tarifs": "الأسعار",
+    "spacesLink": "الفضاءات",
+    "new": "فضاء جديد",
+    "newDescription": "موقع تابع للعيادة (مثلًا في مدينة أخرى). مرضاه وفريقه ومواعيده منفصلة عن باقي الفضاءات.",
+    "name": "الاسم",
+    "namePlaceholder": "مثال: مراكش جيليز",
+    "city": "المدينة",
+    "phone": "الهاتف",
+    "address": "العنوان",
+    "nameError": "اسم الفضاء: حرفان على الأقل.",
+    "created": "تم إنشاء الفضاء « {name} »",
+    "createError": "تعذر الإنشاء",
+    "cancel": "إلغاء",
+    "create": "إنشاء الفضاء"
   }
 }
