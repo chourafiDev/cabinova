@@ -94,6 +94,8 @@ export class ReportsService {
     if (days < 1 || days > MAX_DAYS) {
       throw new BadRequestException({
         code: 'INVALID_PERIOD',
+        key: 'INVALID_RANGE',
+        params: { max: MAX_DAYS },
         message: `Choisissez une période d’un jour à ${MAX_DAYS} jours.`,
       });
     }

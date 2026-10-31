@@ -204,6 +204,9 @@ export class PaymentsService {
       if (dto.payment.amount > balance) {
         throw new BadRequestException({
           code: 'OVERPAYMENT',
+          ...(balance > 0
+            ? { params: { amount: mad(balance) } }
+            : { key: 'ALREADY_SETTLED' }),
           message:
             balance > 0
               ? `Le montant dépasse le reste à payer (${mad(balance)}).`
@@ -303,6 +306,7 @@ export class PaymentsService {
       if (dto.amount > paid) {
         throw new BadRequestException({
           code: 'REFUND_TOO_HIGH',
+          params: { amount: mad(paid) },
           message: `Le remboursement dépasse ce qui a été payé (${mad(paid)}).`,
         });
       }

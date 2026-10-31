@@ -65,7 +65,10 @@ export class AppointmentsService {
 
   async list(db: Pool, spaceId: string, query: ListAppointmentsQuery) {
     if (!query.patientId && (!query.from || !query.to)) {
-      throw new BadRequestException('Indiquez une période (from, to).');
+      throw new BadRequestException({
+        code: 'PERIOD_REQUIRED',
+        message: 'Indiquez une période (from, to).',
+      });
     }
     const where = ['a.space_id = $1'];
     const params: unknown[] = [spaceId];
@@ -327,6 +330,11 @@ export class AppointmentsService {
     if (conflict) {
       throw new ConflictException({
         code: 'SLOT_TAKEN',
+        params: {
+          from: time(conflict.starts_at),
+          to: time(conflict.ends_at),
+          space: conflict.space,
+        },
         message: `Le praticien a déjà un rendez-vous de ${time(conflict.starts_at)} à ${time(conflict.ends_at)} (${conflict.space}).`,
       });
     }

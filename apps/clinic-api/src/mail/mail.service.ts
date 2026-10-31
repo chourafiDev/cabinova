@@ -4,6 +4,7 @@ import {
   button,
   escapeHtml,
   layout,
+  type MailLocale,
   quoteEmail,
 } from '@cabinova/mail';
 import { Injectable, Logger } from '@nestjs/common';
@@ -33,6 +34,12 @@ const DEFAULTS = {
 };
 type Platform = typeof DEFAULTS;
 const CACHE_MS = 30_000;
+
+const ROLES_AR: Record<string, string> = {
+  owner: 'طبيب مسؤول',
+  doctor: 'طبيب',
+  secretary: 'سكرتيرة',
+};
 
 /** Delivered by Resend, only logged (no key), or refused by Resend. */
 export type Delivery = 'sent' | 'logged' | 'failed';
@@ -69,9 +76,25 @@ export class MailService {
     name: string;
     cabinetName: string;
     invitedBy: string;
+    role: string;
     roleLabel: string;
     url: string;
+    locale: MailLocale;
   }) {
+    if (to.locale === 'ar') {
+      return this.send({
+        to: to.email,
+        locale: 'ar',
+        subject: `${to.invitedBy} يدعوك للانضمام إلى ${to.cabinetName} على {{PLATFORM}}`,
+        body: `
+          <p>مرحبًا ${escapeHtml(to.name)}،</p>
+          <p>أضافك ${escapeHtml(to.invitedBy)} إلى فريق <strong>${escapeHtml(to.cabinetName)}</strong> على {{PLATFORM}}، بصفة ${escapeHtml(ROLES_AR[to.role] ?? to.roleLabel)}.</p>
+          <p>اختر كلمة المرور للوصول إلى العيادة:</p>
+          ${button(to.url, 'اختيار كلمة المرور')}
+          <p style="color:#6b7280;font-size:12px">هذا الرابط صالح لمدة 7 أيام ولمرة واحدة فقط.</p>
+        `,
+      });
+    }
     return this.send({
       to: to.email,
       subject: `${to.invitedBy} vous invite à rejoindre ${to.cabinetName} sur {{PLATFORM}}`,
@@ -91,7 +114,21 @@ export class MailService {
     name: string;
     cabinetName: string;
     url: string;
+    locale: MailLocale;
   }) {
+    if (to.locale === 'ar') {
+      return this.send({
+        to: to.email,
+        locale: 'ar',
+        subject: `كلمة مرور جديدة — ${to.cabinetName}`,
+        body: `
+          <p>مرحبًا ${escapeHtml(to.name)}،</p>
+          <p>يرسل لك الطبيب المسؤول عن <strong>${escapeHtml(to.cabinetName)}</strong> رابطًا لاختيار كلمة مرور جديدة.</p>
+          ${button(to.url, 'اختيار كلمة مرور جديدة')}
+          <p style="color:#6b7280;font-size:12px">هذا الرابط صالح لمدة 7 أيام ولمرة واحدة فقط. تبقى كلمة مرورك الحالية صالحة إلى أن تختار كلمة جديدة.</p>
+        `,
+      });
+    }
     return this.send({
       to: to.email,
       subject: `Nouveau mot de passe — ${to.cabinetName}`,
@@ -110,7 +147,21 @@ export class MailService {
     name: string;
     cabinetName: string;
     url: string;
+    locale: MailLocale;
   }) {
+    if (to.locale === 'ar') {
+      return this.send({
+        to: to.email,
+        locale: 'ar',
+        subject: `أعد تعيين كلمة المرور — ${to.cabinetName}`,
+        body: `
+          <p>مرحبًا ${escapeHtml(to.name)}،</p>
+          <p>طلبت كلمة مرور جديدة لـ <strong>${escapeHtml(to.cabinetName)}</strong>.</p>
+          ${button(to.url, 'اختيار كلمة مرور جديدة')}
+          <p style="color:#6b7280;font-size:12px">هذا الرابط صالح لمدة ساعة واحدة ولمرة واحدة فقط. إذا لم تطلب ذلك، تجاهل هذه الرسالة: كلمة مرورك لن تتغير.</p>
+        `,
+      });
+    }
     return this.send({
       to: to.email,
       subject: `Réinitialisez votre mot de passe — ${to.cabinetName}`,
@@ -124,7 +175,24 @@ export class MailService {
   }
 
   /** Lost phone: the owner turned off this member's two-factor sign-in. */
-  sendTwoFactorReset(to: { email: string; name: string; cabinetName: string }) {
+  sendTwoFactorReset(to: {
+    email: string;
+    name: string;
+    cabinetName: string;
+    locale: MailLocale;
+  }) {
+    if (to.locale === 'ar') {
+      return this.send({
+        to: to.email,
+        locale: 'ar',
+        subject: `أُعيد تعيين المصادقة الثنائية — ${to.cabinetName}`,
+        body: `
+          <p>مرحبًا ${escapeHtml(to.name)}،</p>
+          <p>أعاد الطبيب المسؤول عن <strong>${escapeHtml(to.cabinetName)}</strong> تعيين المصادقة الثنائية الخاصة بك. يمكنك تسجيل الدخول بكلمة المرور ثم إعدادها من جديد.</p>
+          <p style="color:#6b7280;font-size:12px">إذا لم تطلب ذلك، أخبره دون تأخير.</p>
+        `,
+      });
+    }
     return this.send({
       to: to.email,
       subject: `Double authentification réinitialisée — ${to.cabinetName}`,
@@ -138,7 +206,7 @@ export class MailService {
 
   /** The devis the doctor just asked for. */
   sendQuote(to: Parameters<typeof quoteEmail>[0] & { email: string }) {
-    return this.send({ to: to.email, ...quoteEmail(to) });
+    return this.send({ to: to.email, locale: to.locale, ...quoteEmail(to) });
   }
 
   async supportEmail() {
@@ -149,6 +217,7 @@ export class MailService {
     to: string;
     subject: string;
     body: string;
+    locale?: MailLocale;
   }): Promise<Delivery> {
     try {
       const { general, email, branding } = await this.platform();
@@ -157,17 +226,21 @@ export class MailService {
         branding.logo && this.logoOrigin
           ? `${this.logoOrigin}/api/branding/logo?v=${createHash('sha256').update(branding.logo).digest('hex').slice(0, 10)}`
           : null;
-      const html = layout(message.body, {
-        name,
-        color: branding.primaryColor,
-        logoUrl,
-        footer: [
-          email.signature,
-          [general.supportEmail, general.supportPhone, general.websiteUrl]
-            .filter(Boolean)
-            .join(' · ') || null,
-        ],
-      })
+      const html = layout(
+        message.body,
+        {
+          name,
+          color: branding.primaryColor,
+          logoUrl,
+          footer: [
+            email.signature,
+            [general.supportEmail, general.supportPhone, general.websiteUrl]
+              .filter(Boolean)
+              .join(' · ') || null,
+          ],
+        },
+        message.locale,
+      )
         .replaceAll('{{PLATFORM}}', escapeHtml(name))
         .replaceAll('{{BRAND}}', branding.primaryColor);
       const subject = message.subject.replaceAll('{{PLATFORM}}', name);

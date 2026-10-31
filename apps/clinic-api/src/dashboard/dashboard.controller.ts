@@ -36,6 +36,7 @@ export class DashboardController {
       if (user.role !== 'owner') {
         throw new ForbiddenException({
           code: 'OWNER_ONLY',
+          key: 'OWNER_ONLY_SPACES',
           message:
             'La vue de tous les espaces est réservée au médecin responsable.',
         });

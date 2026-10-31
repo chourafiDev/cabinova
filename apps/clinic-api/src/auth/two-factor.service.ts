@@ -148,6 +148,7 @@ export class TwoFactorService {
     if (result.expired || result.attemptsLeft <= 0) {
       throw new UnauthorizedException({
         code: 'CHALLENGE_EXPIRED',
+        ...(!result.expired && { key: 'TOO_MANY_CODES' }),
         message: result.expired
           ? 'Session de connexion expirée. Saisissez à nouveau votre mot de passe.'
           : 'Trop de codes incorrects. Saisissez à nouveau votre mot de passe.',

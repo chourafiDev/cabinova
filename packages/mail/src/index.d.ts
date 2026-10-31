@@ -1,3 +1,5 @@
+export type MailLocale = 'fr' | 'ar';
+
 export declare function escapeHtml(value: string): string;
 
 /** A call-to-action link in the brand colour ({{BRAND}}, filled by the sender). */
@@ -16,11 +18,31 @@ export declare function layout(
     /** Lines under the message (signature, support contact); null for internal alerts. */
     footer: (string | null)[] | null;
   },
+  locale?: MailLocale,
+): string;
+
+/** Centimes as MAD, in the reader's language. */
+export declare function money(centimes: number, locale?: MailLocale): string;
+
+/** A long date in Moroccan time, in the reader's language. */
+export declare function longDate(date: Date, locale?: MailLocale): string;
+
+/** The account to pay by transfer, or a line saying support will send it. */
+export declare function bankDetails(
+  bank: {
+    accountHolder: string;
+    bankName: string;
+    rib: string;
+    swift?: string | null;
+  } | null,
+  reference: string,
+  locale?: MailLocale,
 ): string;
 
 /** The devis e-mail: subject and body, to wrap in the sender's own layout. */
 export declare function quoteEmail(quote: {
   kind: 'request' | 'trial_end' | 'reminder' | 'suspension_warning' | 'suspended';
+  locale?: MailLocale;
   name: string;
   tenantName: string;
   number: string;

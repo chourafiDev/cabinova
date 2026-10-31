@@ -11,5 +11,8 @@
     },
     "./package.json": "./package.json"
   },
-  "files": ["src"]
+  "files": ["src"],
+  "dependencies": {
+    "@cabinova/morocco-time": "workspace:*"
+  }
 }

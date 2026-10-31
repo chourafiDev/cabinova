@@ -21,7 +21,7 @@ import {
   tenantDomains,
   tenants,
 } from '../database/schema/index.js';
-import { EmailService } from '../email/email.service.js';
+import { EmailService, mailLocale } from '../email/email.service.js';
 import { NotificationsService } from '../notifications/notifications.service.js';
 import { PlatformConfigService } from '../settings/platform-config.service.js';
 import { TeamAlertsService } from '../settings/team-alerts.service.js';
@@ -368,6 +368,7 @@ export class QuotesService {
         if (notice.kind === 'reminder' && !cabinets.invoiceOverdue) continue;
         await this.email.sendQuote({
           kind: notice.kind,
+          locale: mailLocale(tenant.locale),
           email: tenant.email,
           name: tenant.responsibleName,
           tenantName: tenant.name,

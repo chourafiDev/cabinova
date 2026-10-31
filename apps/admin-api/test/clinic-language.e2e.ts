@@ -18,6 +18,7 @@ describe('clinic: language', () => {
   let clinic: INestApplication;
   let owner: Agent;
   let secretary: Agent;
+  let tenantId: string;
 
   const cab = (agent: Agent) => onCabinet(clinic, SUB, agent);
   const localeOf = async (agent: Agent) =>
@@ -27,7 +28,7 @@ describe('clinic: language', () => {
     admin = await createApp();
     const adminAgent = await signInAdmin(admin);
     const invitations = captureInvitations(admin);
-    const tenantId = await provisionCabinet(adminAgent, SUB, EMAIL);
+    tenantId = await provisionCabinet(adminAgent, SUB, EMAIL);
     clinic = await createClinicApp();
     owner = await signInDoctor(clinic, SUB, invitations.get(EMAIL)!);
     secretary = await addStaff(clinic, adminAgent, tenantId, SUB, {
@@ -72,6 +73,28 @@ describe('clinic: language', () => {
       .send({ locale: 'fr' })
       .expect(200);
     expect(await localeOf(owner)).toBe('fr');
+  });
+
+  it("sends billing e-mails in the responsible doctor's language", async () => {
+    const adminAgent = await signInAdmin(admin);
+    const localeOfTenant = async () =>
+      (await adminAgent.get(`/tenants/${tenantId}`).expect(200)).body.locale;
+    await cab(owner)
+      .put('/settings/language')
+      .send({ locale: 'ar' })
+      .expect(200);
+    expect(await localeOfTenant()).toBe('ar');
+    // Staff choose for themselves only.
+    await cab(secretary)
+      .put('/settings/language')
+      .send({ locale: 'fr' })
+      .expect(200);
+    expect(await localeOfTenant()).toBe('ar');
+    await cab(owner)
+      .put('/settings/language')
+      .send({ locale: 'fr' })
+      .expect(200);
+    expect(await localeOfTenant()).toBe('fr');
   });
 
   it('refuses a language the app does not have', async () => {

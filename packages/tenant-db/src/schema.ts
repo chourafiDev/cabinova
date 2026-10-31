@@ -520,8 +520,12 @@ export const notifications = pgTable(
       .references(() => users.id, { onDelete: 'cascade' }),
     /** "arrived" | "no_show" | "cancelled" | "team" | "billing" */
     kind: text('kind').notNull(),
+    /** French, for rows older than `code` and as a fallback. */
     title: text('title').notNull(),
     body: text('body'),
+    /** What the app translates, in each reader's language. */
+    code: text('code'),
+    params: jsonb('params'),
     /** Where the notification leads in the app. */
     href: text('href'),
     dedupeKey: text('dedupe_key').notNull(),

@@ -1,3 +1,4 @@
+import type { MailLocale } from '@cabinova/mail';
 import type { Pool, PoolClient } from '@neondatabase/serverless';
 import {
   BadRequestException,
@@ -132,6 +133,7 @@ export class TeamService {
       if (taken[0]) {
         throw new ConflictException({
           code: 'EMAIL_TAKEN',
+          key: taken[0].active ? 'EMAIL_TAKEN_MEMBER' : 'EMAIL_TAKEN_DISABLED',
           message: taken[0].active
             ? 'Un membre de l’équipe utilise déjà cet e-mail.'
             : 'Cet e-mail est celui d’un membre désactivé : réactivez-le plutôt.',
@@ -149,13 +151,16 @@ export class TeamService {
     });
     const member = await this.find(db, id);
     const url = this.linkUrl(tenant, token);
+    // They haven't chosen a language yet: the one of the person inviting them.
     const delivery = await this.mail.sendInvitation({
       email: member.email,
       name: member.name,
       cabinetName: tenant.name,
       invitedBy: user.name,
+      role: member.role,
       roleLabel: member.roleLabel,
       url,
+      locale: await this.localeOf(db, user.id),
     });
     return { member, link: { url, expiresAt, delivery, kind: 'invitation' } };
   }
@@ -174,6 +179,7 @@ export class TeamService {
         if (target.role === 'doctor' && target.upcomingAppointments > 0) {
           throw new ConflictException({
             code: 'HAS_APPOINTMENTS',
+            params: { count: target.upcomingAppointments },
             message: `${target.upcomingAppointments} rendez-vous à venir ${target.upcomingAppointments > 1 ? 'sont' : 'est'} au nom de ce médecin : déplacez-les ou annulez-les avant de changer son rôle.`,
           });
         }
@@ -219,14 +225,17 @@ export class TeamService {
             name: target.name,
             cabinetName: tenant.name,
             invitedBy: user.name,
+            role: target.role,
             roleLabel: ROLE_LABELS[target.role] ?? target.role,
             url,
+            locale: await this.localeOf(db, user.id),
           })
         : await this.mail.sendPasswordLink({
             email: target.email,
             name: target.name,
             cabinetName: tenant.name,
             url,
+            locale: await this.localeOf(db, id),
           });
     return {
       member: await this.find(db, id),
@@ -274,12 +283,16 @@ export class TeamService {
   async sendPasswordReset({ tenant, db }: ClinicContext, email: string) {
     try {
       const token = newToken();
-      const { rows } = await db.query<{ name: string; email: string }>(
+      const { rows } = await db.query<{
+        id: string;
+        name: string;
+        email: string;
+      }>(
         `update users set invite_token_hash = $2, invite_expires_at = $3,
                 updated_at = now()
           where lower(email) = $1 and active and password_hash is not null
             and not coalesce(invite_expires_at between $4 and $3, false)
-          returning name, email`,
+          returning id, name, email`,
         [
           email,
           hashToken(token),
@@ -294,10 +307,21 @@ export class TeamService {
         name: user.name,
         cabinetName: tenant.name,
         url: this.linkUrl(tenant, token),
+        locale: await this.localeOf(db, user.id),
       });
     } catch (err) {
       this.logger.error('Password reset failed', err);
     }
+  }
+
+  /** Their own language, else the cabinet's. */
+  private async localeOf(db: Pool, userId: string): Promise<MailLocale> {
+    const { rows } = await db.query<{ locale: MailLocale }>(
+      `select coalesce(u.locale, s.locale) as locale
+         from users u, clinic_settings s where u.id = $1 and s.id = 1`,
+      [userId],
+    );
+    return rows[0]?.locale ?? 'fr';
   }
 
   /** Lost phone: turns off a member's 2FA; they're told by e-mail. */
@@ -316,6 +340,7 @@ export class TeamService {
       email: member.email,
       name: member.name,
       cabinetName: clinic.tenant.name,
+      locale: await this.localeOf(clinic.db, id),
     });
     return { ok: true };
   }
@@ -379,6 +404,13 @@ export class TeamService {
         : `${max} secrétaire${max > 1 ? 's' : ''}`;
     throw new ConflictException({
       code: 'LIMIT_REACHED',
+      key:
+        max === 0
+          ? 'LIMIT_NO_SECRETARY'
+          : group === 'doctors'
+            ? 'LIMIT_DOCTORS'
+            : 'LIMIT_SECRETARIES',
+      params: { max },
       message:
         max === 0
           ? 'Votre offre ne comprend pas de secrétaire. Changez d’offre pour en ajouter.'

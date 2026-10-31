@@ -11,6 +11,7 @@ import { LuBell, LuCalendarX, LuCheckCheck, LuDoorOpen, LuReceipt, LuUserPlus, L
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { api } from "@/lib/api-client";
+import { useFormat } from "@/lib/use-format";
 import { cn } from "@/lib/utils";
 
 type Notification = {
@@ -18,6 +19,9 @@ type Notification = {
 	kind: "arrived" | "no_show" | "cancelled" | "team" | "billing";
 	title: string;
 	body: string | null;
+	/** Absent on notifications written before they were translated. */
+	code: string | null;
+	params: Record<string, string | number | null> | null;
 	href: string | null;
 	readAt: string | null;
 	createdAt: string;
@@ -42,6 +46,16 @@ export function NotificationBell() {
 	const [open, setOpen] = useState(false);
 	const t = useTranslations("common.notifications");
 	const dateLocale = useLocale() === "ar" ? arMA : fr;
+	const format = useFormat();
+	const titleOf = (n: Notification) =>
+		n.code && t.has(`codes.${n.code}`) ? t(`codes.${n.code}`, (n.params ?? {}) as Record<string, string | number>) : n.title;
+	const detailOf = ({ params, body }: Notification) => {
+		if (typeof params?.amount === "number") return format.mad(params.amount);
+		if (typeof params?.time === "string") {
+			return [t("appointmentAt", { time: params.time }), params.space].filter(Boolean).join(" · ");
+		}
+		return body;
+	};
 	const { data } = useQuery({
 		queryKey: KEY,
 		queryFn: () => api<Inbox>("/notifications"),
@@ -101,9 +115,9 @@ export function NotificationBell() {
 											<Icon className="size-4" />
 										</span>
 										<span className="grid min-w-0 flex-1 gap-0.5">
-											<span className={cn("text-sm", !n.readAt && "font-medium")}>{n.title}</span>
+											<span className={cn("text-sm", !n.readAt && "font-medium")}>{titleOf(n)}</span>
 											<span className="text-muted-foreground text-xs">
-												{[n.body, formatDistanceToNow(new Date(n.createdAt), { locale: dateLocale, addSuffix: true })]
+												{[detailOf(n), formatDistanceToNow(new Date(n.createdAt), { locale: dateLocale, addSuffix: true })]
 													.filter(Boolean)
 													.join(" · ")}
 											</span>

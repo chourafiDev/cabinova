@@ -19,7 +19,7 @@ import {
   platformUsers,
   tenants,
 } from '../database/schema/index.js';
-import { EmailService } from '../email/email.service.js';
+import { EmailService, mailLocale } from '../email/email.service.js';
 import { PlatformConfigService } from '../settings/platform-config.service.js';
 import type { IssueCreditNoteDto } from './dto.js';
 
@@ -217,6 +217,7 @@ export class CreditNotesService {
         email: tenant.email,
         name: tenant.responsibleName,
         tenantName: tenant.name,
+        locale: mailLocale(tenant.locale),
         ...note,
       });
     } catch (err) {

@@ -100,6 +100,7 @@ describe('clinic: agenda', () => {
       code: 'SLOT_TAKEN',
       message:
         'Le praticien a déjà un rendez-vous de 10:00 à 10:30 (Espace principal).',
+      params: { from: '10:00', to: '10:30', space: 'Espace principal' },
     });
     const { body: forced } = await book({
       startsAt: at('10:15'),

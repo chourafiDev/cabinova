@@ -36,7 +36,7 @@ import {
   tenantStatusChanges,
   tenants,
 } from '../database/schema/index.js';
-import { EmailService } from '../email/email.service.js';
+import { EmailService, mailLocale } from '../email/email.service.js';
 import { NotificationsService } from '../notifications/notifications.service.js';
 import { PlatformConfigService } from '../settings/platform-config.service.js';
 import { TeamAlertsService } from '../settings/team-alerts.service.js';
@@ -590,6 +590,7 @@ export class BillingService {
         email: tenant.email,
         name: tenant.responsibleName,
         tenantName: tenant.name,
+        locale: mailLocale(tenant.locale),
         planName,
         invoice,
         url: await this.quotes.appUrl(tenant.id, `/factures/${invoice.id}`),
@@ -1280,6 +1281,7 @@ export class BillingService {
             email: row.tenant.email,
             name: row.tenant.responsibleName,
             tenantName: row.tenant.name,
+            locale: mailLocale(row.tenant.locale),
             planName: row.plan.name,
             endsAt: row.sub.currentPeriodEnd,
             amount: invoiceAmount(row.sub.price, row.sub.discountPercent),
@@ -1337,6 +1339,7 @@ export class BillingService {
           email: row.tenant.email,
           name: row.tenant.responsibleName,
           tenantName: row.tenant.name,
+          locale: mailLocale(row.tenant.locale),
           kind: notice.kind,
           invoice: row.invoice,
           bank,

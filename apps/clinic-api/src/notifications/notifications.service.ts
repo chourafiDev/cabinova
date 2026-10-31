@@ -13,6 +13,8 @@ type Notification = {
   kind: 'arrived' | 'no_show' | 'cancelled' | 'team' | 'billing';
   title: string;
   body: string | null;
+  code: string;
+  params: Record<string, string | number | null>;
   href: string | null;
   dedupeKey: string;
 };
@@ -43,7 +45,7 @@ export class NotificationsService {
     );
     const [{ rows }, unread] = await Promise.all([
       db.query(
-        `select id, kind, title, body, href, read_at as "readAt", created_at as "createdAt"
+        `select id, kind, title, body, code, params, href, read_at as "readAt", created_at as "createdAt"
            from notifications where user_id = $1
           order by created_at desc limit ${LIST_LIMIT}`,
         [user.id],
@@ -126,6 +128,8 @@ export class NotificationsService {
           body: [`Rendez-vous de ${a.time}`, a.space]
             .filter(Boolean)
             .join(' · '),
+          code: status,
+          params: { patient: a.patient, time: a.time, space: a.space },
           href: `/appointments?view=day&date=${a.day}`,
           dedupeKey: `appointment:${id}:${status}`,
         })),
@@ -155,6 +159,8 @@ export class NotificationsService {
           kind: 'team',
           title: `${r.name} a rejoint votre équipe`,
           body: null,
+          code: 'member_joined',
+          params: { name: r.name },
           href: '/staff',
           dedupeKey: `team:${memberId}`,
         })),
@@ -197,6 +203,8 @@ export class NotificationsService {
           kind: 'billing' as const,
           title: `Devis ${q.number} à régler`,
           body: mad(q.amount),
+          code: 'quote_due',
+          params: { number: q.number, amount: Number(q.amount) },
           href: `/devis/${q.id}`,
           dedupeKey: `quote:${q.id}`,
         })),
@@ -205,6 +213,8 @@ export class NotificationsService {
           kind: 'billing' as const,
           title: `Facture ${i.number} ${titles[i.status]}`,
           body: mad(i.amount),
+          code: `invoice_${i.status}`,
+          params: { number: i.number, amount: Number(i.amount) },
           href: `/factures/${i.id}`,
           dedupeKey: `invoice:${i.id}:${i.status}`,
         })),
@@ -224,10 +234,22 @@ export class NotificationsService {
   private async write(db: Pool, items: Notification[]) {
     for (const n of items) {
       await db.query(
-        `insert into notifications (user_id, kind, title, body, href, dedupe_key)
-         values ($1, $2, $3, $4, $5, $6)
-         on conflict (user_id, dedupe_key) do nothing`,
-        [n.userId, n.kind, n.title, n.body, n.href, n.dedupeKey],
+        `insert into notifications
+           (user_id, kind, title, body, code, params, href, dedupe_key)
+         values ($1, $2, $3, $4, $5, $6, $7, $8)
+         on conflict (user_id, dedupe_key) do update
+           set code = excluded.code, params = excluded.params
+           where notifications.code is null`,
+        [
+          n.userId,
+          n.kind,
+          n.title,
+          n.body,
+          n.code,
+          JSON.stringify(n.params),
+          n.href,
+          n.dedupeKey,
+        ],
       );
     }
   }

@@ -53,6 +53,7 @@ const assertOwner = (user: ClinicUser) => {
   if (user.role !== 'owner') {
     throw new ForbiddenException({
       code: 'OWNER_ONLY',
+      key: 'OWNER_ONLY_BILLING',
       message: 'Seul le médecin responsable gère l’abonnement.',
     });
   }

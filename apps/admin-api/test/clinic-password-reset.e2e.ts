@@ -91,9 +91,16 @@ describe('clinic: forgot password', () => {
   });
 
   it('sends one link a minute, and it changes the password once', async () => {
+    await cab(secretary)
+      .put('/settings/language')
+      .send({ locale: 'ar' })
+      .expect(200);
     await forgot(` ${SECRETARY.toUpperCase()} `.trim());
     await waitFor(async () => sent.mock.calls.length === 1);
-    expect(sent.mock.calls[0][0]).toMatchObject({ email: SECRETARY });
+    expect(sent.mock.calls[0][0]).toMatchObject({
+      email: SECRETARY,
+      locale: 'ar',
+    });
     await forgot(SECRETARY);
     await new Promise((resolve) => setTimeout(resolve, 200));
     expect(sent).toHaveBeenCalledOnce();

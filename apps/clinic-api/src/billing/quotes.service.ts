@@ -53,7 +53,10 @@ export const QUOTEABLE = `(
 )`;
 
 const notFound = (what: string) =>
-  new NotFoundException(`${what} introuvable.`);
+  new NotFoundException({
+    code: what === 'Devis' ? 'QUOTE_NOT_FOUND' : 'INVOICE_NOT_FOUND',
+    message: `${what} introuvable.`,
+  });
 
 /**
  * The doctor's side of the devis (admin-api billing/quotes.service.ts has
@@ -373,9 +376,10 @@ export class QuotesService {
       name: string;
       responsible_name: string;
       email: string;
+      locale: 'fr' | 'ar';
       subdomain: string;
     }>(
-      `select t.name, t.responsible_name, t.email, d.subdomain
+      `select t.name, t.responsible_name, t.email, t.locale, d.subdomain
          from tenants t
          join tenant_domains d on d.tenant_id = t.id
         where t.id = $1`,
@@ -389,6 +393,7 @@ export class QuotesService {
         : 'http://{subdomain}.localhost:3002');
     return this.mail.sendQuote({
       kind: 'request',
+      locale: t.locale,
       email: t.email,
       name: t.responsible_name,
       tenantName: t.name,

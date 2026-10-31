@@ -89,7 +89,18 @@
     "unread": "الإشعارات، {count} غير مقروءة",
     "readAll": "تعليم الكل كمقروء",
     "empty": "لا توجد إشعارات حاليًا.",
-    "unreadDot": "غير مقروء"
+    "unreadDot": "غير مقروء",
+    "appointmentAt": "موعد {time}",
+    "codes": {
+      "arrived": "{patient} في قاعة الانتظار",
+      "no_show": "لم يحضر {patient}",
+      "cancelled": "أُلغي موعد {patient}",
+      "member_joined": "انضم {name} إلى فريقك",
+      "quote_due": "عرض السعر {number} للأداء",
+      "invoice_billed": "الفاتورة {number} للأداء",
+      "invoice_overdue": "الفاتورة {number} متأخرة",
+      "invoice_paid": "الفاتورة {number} متاحة"
+    }
   },
   "space": {
     "switch": "{cabinet}، الفضاء {space} — تغيير الفضاء",

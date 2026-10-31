@@ -58,15 +58,19 @@ export class SettingsController {
   @AllowBeforeTwoFactor()
   @Put('language')
   async updateLanguage(
-    @Clinic() { db }: ClinicContext,
+    @Clinic() { db, tenant }: ClinicContext,
     @CurrentUser() user: ClinicUser,
     @Body() dto: UpdateLanguageDto,
   ) {
-    await db.query(
+    const { rowCount } = await db.query(
       `update users set locale = $2, updated_at = now()
         where id = $1 and ($3 = false or locale is null)`,
       [user.id, dto.locale, dto.onlyIfUnset ?? false],
     );
+    // Billing e-mails come from the catalog side, addressed to this doctor.
+    if (rowCount && user.role === 'owner') {
+      await this.cabinet.setBillingLocale(tenant.id, dto.locale);
+    }
     return { locale: dto.locale };
   }
 

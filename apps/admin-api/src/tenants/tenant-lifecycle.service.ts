@@ -17,7 +17,7 @@ import {
   tenants,
   tenantStatusChanges,
 } from '../database/schema/index.js';
-import { EmailService } from '../email/email.service.js';
+import { EmailService, mailLocale } from '../email/email.service.js';
 import type { ChangeTenantStatusDto } from './dto.js';
 import {
   canTransition,
@@ -36,6 +36,13 @@ const OUTCOME: Partial<Record<TenantTransition, string>> = {
   reactivate: 'réactivé',
   start_closure: 'mis en période de fermeture',
   close: 'fermé',
+};
+
+const OUTCOME_AR: Partial<Record<TenantTransition, string>> = {
+  suspend: 'معلقة',
+  reactivate: 'أُعيد تفعيلها',
+  start_closure: 'في فترة الإغلاق',
+  close: 'مغلقة',
 };
 
 /** Furthest a change can be scheduled ahead. */
@@ -345,16 +352,21 @@ export class TenantLifecycleService {
         email: tenant.email,
         name: tenant.responsibleName,
         tenantName: tenant.name,
+        locale: mailLocale(tenant.locale),
         outcome,
+        outcomeAr: OUTCOME_AR[change.action as TenantTransition] ?? '',
         effectiveOn:
           change.state === 'scheduled'
-            ? new Intl.DateTimeFormat('fr-MA', {
-                dateStyle: 'long',
-                timeZone:
-                  tenant.timezone === 'Africa/Casablanca'
-                    ? moroccoZone(change.effectiveAt)
-                    : tenant.timezone,
-              }).format(change.effectiveAt)
+            ? new Intl.DateTimeFormat(
+                tenant.locale === 'ar' ? 'ar-MA-u-nu-latn' : 'fr-MA',
+                {
+                  dateStyle: 'long',
+                  timeZone:
+                    tenant.timezone === 'Africa/Casablanca'
+                      ? moroccoZone(change.effectiveAt)
+                      : tenant.timezone,
+                },
+              ).format(change.effectiveAt)
             : undefined,
         comment: change.comment,
       });

@@ -42,11 +42,23 @@ const SELECT = FIELDS.map(([key, column]) => `${column} as "${key}"`).join(
  * by the cabinet), then copied to the clinic's own `clinic_settings`.
  *
  * Production: the catalog role of clinic-api needs UPDATE on those columns of
- * `tenants` (plus updated_at) and INSERT on `platform_audit_logs`.
+ * `tenants` (plus updated_at and locale) and INSERT on `platform_audit_logs`.
  */
 @Injectable()
 export class CabinetService {
   private readonly logger = new Logger(CabinetService.name);
+
+  /** The language of the e-mails admin-api sends the responsible doctor. */
+  async setBillingLocale(tenantId: string, locale: 'fr' | 'ar') {
+    try {
+      await this.catalog.pool.query(
+        'update tenants set locale = $2, updated_at = now() where id = $1',
+        [tenantId, locale],
+      );
+    } catch (err) {
+      this.logger.error('Billing language not saved', err);
+    }
+  }
 
   constructor(
     private readonly catalog: CatalogService,
@@ -63,7 +75,12 @@ export class CabinetService {
          from tenants t where id = $1`,
       [tenantId],
     );
-    if (!rows[0]) throw new NotFoundException('Cabinet introuvable.');
+    if (!rows[0]) {
+      throw new NotFoundException({
+        code: 'CABINET_NOT_FOUND',
+        message: 'Cabinet introuvable.',
+      });
+    }
     return rows[0];
   }
 
@@ -83,7 +100,12 @@ export class CabinetService {
         [tenantId],
       );
       const current = rows[0];
-      if (!current) throw new NotFoundException('Cabinet introuvable.');
+      if (!current) {
+        throw new NotFoundException({
+          code: 'CABINET_NOT_FOUND',
+          message: 'Cabinet introuvable.',
+        });
+      }
 
       for (const [key] of FIELDS) {
         const to = dto[key] ?? null;
@@ -164,6 +186,7 @@ export class CabinetService {
     ) {
       throw new ConflictException({
         code: 'EMAIL_TAKEN',
+        key: 'EMAIL_TAKEN_CABINET',
         message: 'Un cabinet utilise déjà cette adresse e-mail.',
       });
     }

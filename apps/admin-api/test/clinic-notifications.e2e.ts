@@ -20,6 +20,8 @@ type Inbox = {
     id: string;
     kind: string;
     title: string;
+    code: string;
+    params: Record<string, unknown>;
     href: string | null;
     readAt: string | null;
   }[];
@@ -110,6 +112,8 @@ describe('clinic: notifications', () => {
     expect((await inbox(owner)).data[0]).toMatchObject({
       kind: 'team',
       title: 'Karim Idrissi a rejoint votre équipe',
+      code: 'member_joined',
+      params: { name: 'Karim Idrissi' },
       href: '/staff',
     });
     expect((await inbox(secretary)).data).toHaveLength(0);
@@ -126,6 +130,8 @@ describe('clinic: notifications', () => {
     expect(data.filter((n) => n.kind === 'arrived')).toHaveLength(1);
     expect(data[0]).toMatchObject({
       title: 'ALAOUI Omar est en salle d’attente',
+      code: 'arrived',
+      params: { patient: 'ALAOUI Omar' },
       href: `/appointments?view=day&date=${MONDAY}`,
     });
     expect(unread).toBe(1);
@@ -166,6 +172,8 @@ describe('clinic: notifications', () => {
     expect((await inbox(owner)).data[0]).toMatchObject({
       kind: 'billing',
       title: `Devis ${quote.number} à régler`,
+      code: 'quote_due',
+      params: { number: quote.number, amount: expect.any(Number) },
       href: `/devis/${quote.id}`,
     });
     expect((await inbox(doctor)).data.some((n) => n.kind === 'billing')).toBe(

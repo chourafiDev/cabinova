@@ -1,16 +1,23 @@
-import { moroccoZone } from '@cabinova/morocco-time';
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import {
   addressOf,
+  bankDetails,
   button,
   escapeHtml,
   layout,
+  longDate,
+  type MailLocale,
+  money,
   quoteEmail,
 } from '@cabinova/mail';
 import { Resend } from 'resend';
 import type { Env } from '../config/env.js';
 import { PlatformConfigService } from '../settings/platform-config.service.js';
+
+/** `tenants.locale`: the responsible doctor's language. */
+export const mailLocale = (locale: string): MailLocale =>
+  locale === 'ar' ? 'ar' : 'fr';
 
 @Injectable()
 export class EmailService {
@@ -44,7 +51,23 @@ export class EmailService {
     name: string;
     tenantName: string;
     url: string;
+    locale: MailLocale;
   }) {
+    if (to.locale === 'ar') {
+      await this.send({
+        to: to.email,
+        locale: 'ar',
+        subject: `دعوة للانضمام إلى ${to.tenantName} على {{PLATFORM}}`,
+        body: `
+          <p>مرحبًا ${escapeHtml(to.name)}،</p>
+          <p>تمت إضافتك إلى فريق <strong>${escapeHtml(to.tenantName)}</strong> على {{PLATFORM}}.</p>
+          <p>اختر كلمة المرور للوصول إلى فضائك:</p>
+          ${button(to.url, 'اختيار كلمة المرور')}
+          <p style="color:#6b7280;font-size:12px">هذا الرابط صالح لمدة 7 أيام ولمرة واحدة فقط.</p>
+        `,
+      });
+      return;
+    }
     await this.send({
       to: to.email,
       subject: `Vous êtes invité(e) à rejoindre ${to.tenantName} sur {{PLATFORM}}`,
@@ -111,6 +134,7 @@ export class EmailService {
     email: string;
     name: string;
     tenantName: string;
+    locale: MailLocale;
     kind:
       'invoice' | 'overdue' | 'receipt' | 'suspension_warning' | 'suspended';
     /** suspension_warning: the day access will be cut. */
@@ -129,27 +153,45 @@ export class EmailService {
       swift?: string;
     } | null;
   }) {
-    const amount = new Intl.NumberFormat('fr-MA', {
-      style: 'currency',
-      currency: 'MAD',
-    }).format(to.invoice.amount / 100);
-    const due = new Intl.DateTimeFormat('fr-MA', { dateStyle: 'long' }).format(
-      to.invoice.dueAt,
-    );
-    const rib = to.bank
-      ? `<table role="presentation" style="width:100%;margin:12px 0;border:1px solid #e5e7eb;border-radius:8px;font-size:13px">
-          <tr><td style="padding:8px 12px;color:#6b7280">Titulaire</td><td style="padding:8px 12px">${escapeHtml(to.bank.accountHolder)}</td></tr>
-          <tr><td style="padding:8px 12px;color:#6b7280">Banque</td><td style="padding:8px 12px">${escapeHtml(to.bank.bankName)}</td></tr>
-          <tr><td style="padding:8px 12px;color:#6b7280">RIB</td><td style="padding:8px 12px;font-family:monospace">${escapeHtml(to.bank.rib.replace(/(\d{3})(\d{3})(\d{16})(\d{2})/, '$1 $2 $3 $4'))}</td></tr>
-          ${to.bank.swift ? `<tr><td style="padding:8px 12px;color:#6b7280">SWIFT</td><td style="padding:8px 12px">${escapeHtml(to.bank.swift)}</td></tr>` : ''}
-          <tr><td style="padding:8px 12px;color:#6b7280">Référence</td><td style="padding:8px 12px;font-weight:600">${escapeHtml(to.invoice.number)}</td></tr>
-        </table>`
-      : '<p>Les coordonnées bancaires vous seront communiquées par le support {{PLATFORM}}.</p>';
+    const amount = money(to.invoice.amount, to.locale);
+    const due = longDate(to.invoice.dueAt, to.locale);
+    const suspendOn = to.suspendOn ? longDate(to.suspendOn, to.locale) : '';
+    const number = escapeHtml(to.invoice.number);
+    const description = escapeHtml(to.invoice.description);
+    const rib = bankDetails(to.bank, to.invoice.number, to.locale);
+    if (to.locale === 'ar') {
+      const intro = {
+        invoice: `فاتورتك <strong>${number}</strong> بمبلغ <strong>${amount}</strong> متاحة (${description}). يرجى أداؤها عبر تحويل بنكي قبل <strong>${due}</strong>، مع ذكر المرجع أدناه.`,
+        overdue: `ما لم نكن مخطئين، لم يتم بعد أداء الفاتورة <strong>${number}</strong> بمبلغ <strong>${amount}</strong>، المستحقة بتاريخ ${due}. يرجى إجراء التحويل في أقرب وقت.`,
+        receipt: `توصلنا بتحويلك الخاص بالفاتورة <strong>${number}</strong> (${amount}). شكرًا! اشتراكك محيّن.`,
+        suspension_warning: `لم يتم بعد أداء الفاتورة <strong>${number}</strong> بمبلغ <strong>${amount}</strong>، المستحقة بتاريخ ${due}. بدون تحويل، سيتم تعليق الوصول إلى فضائك بتاريخ <strong>${suspendOn}</strong>. تبقى بياناتك محفوظة.`,
+        suspended: `بسبب عدم أداء الفاتورة <strong>${number}</strong> (${amount})، تم تعليق الوصول إلى فضائك. بياناتك محفوظة: يُعاد الوصول تلقائيًا فور توصلنا بتحويلك.`,
+      }[to.kind];
+      const subject = {
+        invoice: `الفاتورة ${to.invoice.number} — ${to.tenantName}`,
+        overdue: `تذكير: الفاتورة ${to.invoice.number} في انتظار الأداء`,
+        receipt: `تم استلام الأداء — الفاتورة ${to.invoice.number}`,
+        suspension_warning: `تذكير أخير: الفاتورة ${to.invoice.number} قبل التعليق`,
+        suspended: `تم تعليق الوصول — الفاتورة ${to.invoice.number} غير مؤداة`,
+      }[to.kind];
+      await this.send({
+        to: to.email,
+        locale: 'ar',
+        subject,
+        body: `
+          <p>مرحبًا ${escapeHtml(to.name)}،</p>
+          <p>${intro}</p>
+          ${to.kind === 'receipt' ? '' : rib}
+          <p style="color:#6b7280;font-size:12px">العيادة: ${escapeHtml(to.tenantName)}. لأي سؤال، أجب على هذه الرسالة.</p>
+        `,
+      });
+      return;
+    }
     const intro = {
       invoice: `Votre facture <strong>${escapeHtml(to.invoice.number)}</strong> de <strong>${amount}</strong> est disponible (${escapeHtml(to.invoice.description)}). Merci de la régler par virement avant le <strong>${due}</strong>, en indiquant la référence ci-dessous.`,
       overdue: `Sauf erreur de notre part, la facture <strong>${escapeHtml(to.invoice.number)}</strong> de <strong>${amount}</strong>, échue le ${due}, n'a pas encore été réglée. Merci d'effectuer le virement dès que possible.`,
       receipt: `Nous avons bien reçu votre virement pour la facture <strong>${escapeHtml(to.invoice.number)}</strong> (${amount}). Merci ! Votre abonnement est à jour.`,
-      suspension_warning: `La facture <strong>${escapeHtml(to.invoice.number)}</strong> de <strong>${amount}</strong>, échue le ${due}, n'est toujours pas réglée. Sans virement d'ici là, l'accès à votre espace sera suspendu le <strong>${to.suspendOn ? fmtDate(to.suspendOn) : ''}</strong>. Vos données restent conservées.`,
+      suspension_warning: `La facture <strong>${escapeHtml(to.invoice.number)}</strong> de <strong>${amount}</strong>, échue le ${due}, n'est toujours pas réglée. Sans virement d'ici là, l'accès à votre espace sera suspendu le <strong>${suspendOn}</strong>. Vos données restent conservées.`,
       suspended: `Faute de paiement de la facture <strong>${escapeHtml(to.invoice.number)}</strong> (${amount}), l'accès à votre espace est suspendu. Vos données sont conservées : dès réception de votre virement, l'accès est rétabli automatiquement.`,
     }[to.kind];
     const subject = {
@@ -173,7 +215,7 @@ export class EmailService {
 
   /** A devis to pay by transfer, or a reminder about one. */
   async sendQuote(to: Parameters<typeof quoteEmail>[0] & { email: string }) {
-    await this.send({ to: to.email, ...quoteEmail(to) });
+    await this.send({ to: to.email, locale: to.locale, ...quoteEmail(to) });
   }
 
   /** The payment was confirmed: the facture, and the plan is running. */
@@ -184,11 +226,24 @@ export class EmailService {
     planName: string;
     invoice: { number: string; amount: number };
     url: string;
+    locale: MailLocale;
   }) {
-    const amount = new Intl.NumberFormat('fr-MA', {
-      style: 'currency',
-      currency: 'MAD',
-    }).format(to.invoice.amount / 100);
+    const amount = money(to.invoice.amount, to.locale);
+    if (to.locale === 'ar') {
+      await this.send({
+        to: to.email,
+        locale: 'ar',
+        subject: `الفاتورة ${to.invoice.number} — اشتراكك ${to.planName} نشط`,
+        body: `
+          <p>مرحبًا ${escapeHtml(to.name)}،</p>
+          <p>توصلنا بأدائك بمبلغ <strong>${amount}</strong>. شكرًا!</p>
+          <p>اشتراكك <strong>${escapeHtml(to.planName)}</strong> نشط. فاتورتك <strong>${escapeHtml(to.invoice.number)}</strong> متاحة في فضائك.</p>
+          ${button(to.url, 'عرض الفاتورة')}
+          <p style="color:#6b7280;font-size:12px">العيادة: ${escapeHtml(to.tenantName)}. لأي سؤال، أجب على هذه الرسالة.</p>
+        `,
+      });
+      return;
+    }
     await this.send({
       to: to.email,
       subject: `Facture ${to.invoice.number} — votre abonnement ${to.planName} est actif`,
@@ -212,17 +267,30 @@ export class EmailService {
     /** Centimes per period, after discount. */
     amount: number;
     period: 'monthly' | 'annual';
+    locale: MailLocale;
   }) {
-    const amount = new Intl.NumberFormat('fr-MA', {
-      style: 'currency',
-      currency: 'MAD',
-    }).format(to.amount / 100);
+    const amount = money(to.amount, to.locale);
+    const endsOn = longDate(to.endsAt, to.locale);
+    if (to.locale === 'ar') {
+      await this.send({
+        to: to.email,
+        locale: 'ar',
+        subject: `تنتهي فترتك التجريبية على {{PLATFORM}} بتاريخ ${endsOn}`,
+        body: `
+          <p>مرحبًا ${escapeHtml(to.name)}،</p>
+          <p>تنتهي الفترة التجريبية لـ <strong>${escapeHtml(to.tenantName)}</strong> بتاريخ <strong>${endsOn}</strong>.</p>
+          <p>سيستمر بعدها اشتراكك <strong>${escapeHtml(to.planName)}</strong> بمبلغ <strong>${amount}</strong> في ${to.period === 'annual' ? 'السنة' : 'الشهر'}. إذا لم تطلب عرض السعر بعد، ستتوصل به في هذا التاريخ مع معلوماتنا البنكية للتحويل.</p>
+          <p>لاختيار باقة أخرى، افتح «اشتراكي» في فضائك. لأي سؤال، أجب ببساطة على هذه الرسالة.</p>
+        `,
+      });
+      return;
+    }
     await this.send({
       to: to.email,
-      subject: `Votre essai {{PLATFORM}} se termine le ${fmtDate(to.endsAt)}`,
+      subject: `Votre essai {{PLATFORM}} se termine le ${endsOn}`,
       body: `
         <p>Bonjour ${escapeHtml(to.name)},</p>
-        <p>La période d'essai de <strong>${escapeHtml(to.tenantName)}</strong> se termine le <strong>${fmtDate(to.endsAt)}</strong>.</p>
+        <p>La période d'essai de <strong>${escapeHtml(to.tenantName)}</strong> se termine le <strong>${endsOn}</strong>.</p>
         <p>Votre abonnement <strong>${escapeHtml(to.planName)}</strong> continuera ensuite à <strong>${amount}</strong> par ${to.period === 'annual' ? 'an' : 'mois'}. Si vous n'avez pas encore demandé votre devis, vous le recevrez à cette date avec nos coordonnées bancaires pour le virement.</p>
         <p>Pour choisir une autre offre, ouvrez « Mon abonnement » dans votre espace. Pour toute question, répondez simplement à ce message.</p>
       `,
@@ -239,11 +307,27 @@ export class EmailService {
     kind: 'refund' | 'credit';
     amount: number;
     reason: string;
+    locale: MailLocale;
   }) {
-    const amount = new Intl.NumberFormat('fr-MA', {
-      style: 'currency',
-      currency: 'MAD',
-    }).format(to.amount / 100);
+    const amount = money(to.amount, to.locale);
+    if (to.locale === 'ar') {
+      await this.send({
+        to: to.email,
+        locale: 'ar',
+        subject: `إشعار دائن ${to.number} — الفاتورة ${to.invoiceNumber}`,
+        body: `
+          <p>مرحبًا ${escapeHtml(to.name)}،</p>
+          <p>أصدرنا الإشعار الدائن <strong>${escapeHtml(to.number)}</strong> بمبلغ <strong>${amount}</strong> على الفاتورة ${escapeHtml(to.invoiceNumber)} (${escapeHtml(to.reason)}).</p>
+          <p>${
+            to.kind === 'refund'
+              ? 'تم رد هذا المبلغ إليك عبر تحويل بنكي.'
+              : 'سيُخصم هذا المبلغ تلقائيًا من فواتيرك القادمة.'
+          }</p>
+          <p style="color:#6b7280;font-size:12px">العيادة: ${escapeHtml(to.tenantName)}. لأي سؤال، أجب على هذه الرسالة.</p>
+        `,
+      });
+      return;
+    }
     await this.send({
       to: to.email,
       subject: `Avoir ${to.number} — facture ${to.invoiceNumber}`,
@@ -267,10 +351,28 @@ export class EmailService {
     tenantName: string;
     /** e.g. "suspendu", "réactivé" */
     outcome: string;
+    /** The same, for an Arabic reader. */
+    outcomeAr: string;
     /** Set when the change is scheduled rather than already applied. */
     effectiveOn?: string;
     comment: string;
+    locale: MailLocale;
   }) {
+    if (to.locale === 'ar') {
+      const status = escapeHtml(to.outcomeAr);
+      await this.send({
+        to: to.email,
+        locale: 'ar',
+        subject: `عيادتكم ${to.tenantName}: ${to.outcomeAr}`,
+        body: `
+          <p>مرحبًا ${escapeHtml(to.name)}،</p>
+          <p>حالة عيادتكم <strong>${escapeHtml(to.tenantName)}</strong> على {{PLATFORM}}: ${status}${to.effectiveOn ? ` ابتداءً من ${escapeHtml(to.effectiveOn)}` : ''}.</p>
+          <p style="white-space:pre-line;border-inline-start:3px solid #e5e7eb;padding-inline-start:12px;color:#374151">${escapeHtml(to.comment)}</p>
+          <p style="color:#6b7280;font-size:12px">بيانات عيادتكم محفوظة. لأي سؤال، أجب على هذه الرسالة أو اتصل بدعم {{PLATFORM}}.</p>
+        `,
+      });
+      return;
+    }
     const when = to.effectiveOn
       ? `sera ${escapeHtml(to.outcome)} à compter du ${escapeHtml(to.effectiveOn)}`
       : `a été ${escapeHtml(to.outcome)}`;
@@ -359,25 +461,30 @@ export class EmailService {
     body: string;
     /** Team alerts: no signature or support footer. */
     internal?: boolean;
+    locale?: MailLocale;
   }) {
     const { general, email, branding } = await this.platform.all();
     const name = general.platformName;
     const logoUrl = branding.logo
       ? `${this.publicOrigin}/api${(await this.platform.branding()).logoUrl}`
       : null;
-    const html = layout(message.body, {
-      name,
-      color: branding.primaryColor,
-      logoUrl,
-      footer: message.internal
-        ? null
-        : [
-            email.signature,
-            [general.supportEmail, general.supportPhone, general.websiteUrl]
-              .filter(Boolean)
-              .join(' · ') || null,
-          ],
-    })
+    const html = layout(
+      message.body,
+      {
+        name,
+        color: branding.primaryColor,
+        logoUrl,
+        footer: message.internal
+          ? null
+          : [
+              email.signature,
+              [general.supportEmail, general.supportPhone, general.websiteUrl]
+                .filter(Boolean)
+                .join(' · ') || null,
+            ],
+      },
+      message.locale,
+    )
       .replaceAll('{{PLATFORM}}', escapeHtml(name))
       .replaceAll('{{BRAND}}', branding.primaryColor);
     const subject = message.subject.replaceAll('{{PLATFORM}}', name);
@@ -417,9 +524,3 @@ export class EmailService {
     return { provider: this.resend ? 'resend' : null, defaultFrom: this.from };
   }
 }
-
-const fmtDate = (d: Date) =>
-  new Intl.DateTimeFormat('fr-MA', {
-    dateStyle: 'long',
-    timeZone: moroccoZone(d),
-  }).format(d);

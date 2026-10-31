@@ -20,7 +20,7 @@ import {
   tenants,
   tenantSecrets,
 } from '../database/schema/index.js';
-import { EmailService } from '../email/email.service.js';
+import { EmailService, mailLocale } from '../email/email.service.js';
 import { NotificationsService } from '../notifications/notifications.service.js';
 import { canTransition } from '../tenants/lifecycle.js';
 import { TenantLifecycleService } from '../tenants/tenant-lifecycle.service.js';
@@ -158,6 +158,7 @@ export class ProvisioningService {
       name: tenant.responsibleName,
       tenantName: tenant.name,
       url,
+      locale: mailLocale(tenant.locale),
     });
     await writeAudit(this.database.db, actor, {
       action: 'tenant.invitation.resend',
@@ -230,6 +231,7 @@ export class ProvisioningService {
           name: tenant.responsibleName,
           tenantName: tenant.name,
           url: await this.inviteUrl(tenant.id, invitation.token),
+          locale: mailLocale(tenant.locale),
         });
         return tenant.email;
       });

@@ -9,8 +9,13 @@ export const DAYS = ['0', '1', '2', '3', '4', '5', '6'] as const;
 const MAX_PERIODS = 3;
 const TIME = /^([01]\d|2[0-3]):[0-5]\d$/;
 
-const invalid = (message: string) =>
-  new BadRequestException({ code: 'INVALID_OPENING_HOURS', message });
+const invalid = (key: string, message: string, params?: object) =>
+  new BadRequestException({
+    code: 'INVALID_OPENING_HOURS',
+    key,
+    params,
+    message,
+  });
 
 const WEEKDAY = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const toMinutes = (time: string) =>
@@ -56,14 +61,18 @@ export function isWithinOpeningHours(
  */
 export function parseOpeningHours(value: unknown): OpeningHours {
   if (!value || typeof value !== 'object' || Array.isArray(value)) {
-    throw invalid('Horaires invalides.');
+    throw invalid('HOURS_INVALID', 'Horaires invalides.');
   }
   const week = value as Record<string, unknown>;
   const result = {} as OpeningHours;
   for (const day of DAYS) {
     const periods = week[day] ?? [];
     if (!Array.isArray(periods) || periods.length > MAX_PERIODS) {
-      throw invalid(`Au plus ${MAX_PERIODS} plages horaires par jour.`);
+      throw invalid(
+        'HOURS_TOO_MANY',
+        `Au plus ${MAX_PERIODS} plages horaires par jour.`,
+        { max: MAX_PERIODS },
+      );
     }
     const parsed = periods.map((p: unknown) => {
       const { from, to } = (p ?? {}) as { from?: unknown; to?: unknown };
@@ -73,17 +82,23 @@ export function parseOpeningHours(value: unknown): OpeningHours {
         !TIME.test(from) ||
         !TIME.test(to)
       ) {
-        throw invalid('Heure invalide (format HH:MM).');
+        throw invalid('HOURS_FORMAT', 'Heure invalide (format HH:MM).');
       }
       if (from >= to) {
-        throw invalid('Chaque plage doit finir après son début.');
+        throw invalid(
+          'HOURS_ORDER',
+          'Chaque plage doit finir après son début.',
+        );
       }
       return { from, to };
     });
     parsed.sort((a, b) => a.from.localeCompare(b.from));
     for (let i = 1; i < parsed.length; i++) {
       if (parsed[i].from < parsed[i - 1].to) {
-        throw invalid('Les plages horaires d’un même jour se chevauchent.');
+        throw invalid(
+          'HOURS_OVERLAP',
+          'Les plages horaires d’un même jour se chevauchent.',
+        );
       }
     }
     result[day] = parsed;

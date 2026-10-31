@@ -89,7 +89,18 @@
     "unread": "Notifications, {count} non lues",
     "readAll": "Tout marquer comme lu",
     "empty": "Aucune notification pour le moment.",
-    "unreadDot": "Non lue"
+    "unreadDot": "Non lue",
+    "appointmentAt": "Rendez-vous de {time}",
+    "codes": {
+      "arrived": "{patient} est en salle d’attente",
+      "no_show": "{patient} n’est pas venu(e)",
+      "cancelled": "Rendez-vous de {patient} annulé",
+      "member_joined": "{name} a rejoint votre équipe",
+      "quote_due": "Devis {number} à régler",
+      "invoice_billed": "Facture {number} à régler",
+      "invoice_overdue": "Facture {number} en retard",
+      "invoice_paid": "Facture {number} disponible"
+    }
   },
   "space": {
     "switch": "{cabinet}, espace {space} — changer d’espace",

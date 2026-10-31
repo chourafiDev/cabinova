@@ -557,7 +557,11 @@ importers:
 
   packages/features: {}
 
-  packages/mail: {}
+  packages/mail:
+    dependencies:
+      '@cabinova/morocco-time':
+        specifier: workspace:*
+        version: link:../morocco-time
 
   packages/morocco-time: {}
 

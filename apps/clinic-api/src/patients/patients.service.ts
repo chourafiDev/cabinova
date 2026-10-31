@@ -223,6 +223,7 @@ export class PatientsService {
     );
     return new ConflictException({
       code: 'CIN_TAKEN',
+      params: { number: rows[0]?.file_number ?? '?' },
       message: `Ce CIN correspond déjà au dossier n° ${rows[0]?.file_number ?? '?'}.`,
     });
   }
