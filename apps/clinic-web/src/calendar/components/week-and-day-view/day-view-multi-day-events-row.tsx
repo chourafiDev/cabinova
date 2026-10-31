@@ -36,7 +36,7 @@ export function DayViewMultiDayEventsRow({ selectedDate, multiDayEvents }: IProp
   return (
     <div className="flex border-b">
       <div className="w-18"></div>
-      <div className="flex flex-1 flex-col gap-1 border-l py-1">
+      <div className="flex flex-1 flex-col gap-1 border-s py-1">
         {multiDayEventsInDay.map(event => {
           const eventStart = startOfDay(parseISO(event.startDate));
           const eventEnd = startOfDay(parseISO(event.endDate));

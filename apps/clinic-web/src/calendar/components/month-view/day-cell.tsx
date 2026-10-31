@@ -40,7 +40,7 @@ export function DayCell({ cell, events, eventPositions }: IProps) {
         <button
           onClick={handleClick}
           className={cn(
-            "flex size-6 translate-x-1 items-center justify-center rounded-full text-xs font-semibold hover:bg-accent focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring lg:px-2",
+            "flex size-6 translate-x-1 rtl:-translate-x-1 items-center justify-center rounded-full text-xs font-semibold hover:bg-accent focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring lg:px-2",
             !currentMonth && "opacity-20",
             isToday(date) && "bg-primary font-bold text-primary-foreground hover:bg-primary"
           )}

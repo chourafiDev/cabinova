@@ -70,7 +70,7 @@ export function TeamSessions({ sessions, ownId }: { sessions: TeamSession[]; own
 											)
 										}
 									>
-										{pending === member.id ? <LuLoader className="animate-spin" /> : <LuLogOut />} {t("signOutAll")}
+										{pending === member.id ? <LuLoader className="animate-spin" /> : <LuLogOut className="rtl:-scale-x-100" />} {t("signOutAll")}
 									</Button>
 								)}
 							</header>
@@ -108,7 +108,7 @@ export function TeamSessions({ sessions, ownId }: { sessions: TeamSession[]; own
 														run(s.id, () => api(`/team/sessions/${s.id}`, { method: "DELETE" }), common("deviceSignedOut"))
 													}
 												>
-													{pending === s.id ? <LuLoader className="animate-spin" /> : <LuLogOut />} {common("signOut")}
+													{pending === s.id ? <LuLoader className="animate-spin" /> : <LuLogOut className="rtl:-scale-x-100" />} {common("signOut")}
 												</Button>
 											)}
 										</li>

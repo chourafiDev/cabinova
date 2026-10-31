@@ -41,7 +41,7 @@ export function DevicesCard({ sessions }: { sessions: DeviceSession[] }) {
 			action={
 				others > 0 && (
 					<Button variant="outline" size="sm" disabled={pending !== null} onClick={() => revoke("others")}>
-						{pending === "others" ? <LuLoader className="animate-spin" /> : <LuLogOut />} {t("signOutOthers")}
+						{pending === "others" ? <LuLoader className="animate-spin" /> : <LuLogOut className="rtl:-scale-x-100" />} {t("signOutOthers")}
 					</Button>
 				)
 			}
@@ -77,7 +77,7 @@ export function DevicesCard({ sessions }: { sessions: DeviceSession[] }) {
 									disabled={pending !== null}
 									onClick={() => revoke(s.id)}
 								>
-									{pending === s.id ? <LuLoader className="animate-spin" /> : <LuLogOut />} {common("signOut")}
+									{pending === s.id ? <LuLoader className="animate-spin" /> : <LuLogOut className="rtl:-scale-x-100" />} {common("signOut")}
 								</Button>
 							)}
 						</li>

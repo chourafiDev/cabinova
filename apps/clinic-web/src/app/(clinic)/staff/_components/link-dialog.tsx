@@ -83,7 +83,7 @@ function LinkContent({ member, link, onDone }: { member: Member; link: MemberLin
 
 			<div className="grid gap-2">
 				<div className="flex gap-2">
-					<Input value={link.url} readOnly aria-label={t("label")} className="font-mono text-xs" onFocus={(e) => e.target.select()} />
+					<Input type="url" value={link.url} readOnly aria-label={t("label")} className="font-mono text-xs" onFocus={(e) => e.target.select()} />
 					<Button type="button" variant="outline" onClick={copy} className="shrink-0">
 						{copied ? <LuCheck /> : <LuCopy />} {copied ? t("copied") : t("copy")}
 					</Button>

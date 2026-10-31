@@ -81,7 +81,7 @@ export function NavigationProgress() {
 		<div aria-hidden className="pointer-events-none fixed inset-x-0 top-0 z-[100] h-0.5">
 			<div
 				ref={bar}
-				className="h-full origin-left bg-primary opacity-0 shadow-[0_0_8px_var(--primary)] transition-[transform,opacity] duration-200 ease-out motion-reduce:transition-none"
+				className="h-full origin-left rtl:origin-right bg-primary opacity-0 shadow-[0_0_8px_var(--primary)] transition-[transform,opacity] duration-200 ease-out motion-reduce:transition-none"
 				style={{ transform: "scaleX(0)" }}
 			/>
 		</div>

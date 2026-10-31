@@ -240,14 +240,14 @@ export function PatientForm({
 					<div className="grid gap-4 sm:grid-cols-2">
 						<Field data-invalid={!!errors.phone}>
 							<Label htmlFor="phone">{t("phone")}</Label>
-							<div className="relative">
+							<div dir="ltr" className="relative">
 								<LuPhone className="text-muted-foreground pointer-events-none absolute start-3 top-1/2 size-4 -translate-y-1/2" />
 								<Input
 									id="phone"
 									type="tel"
 									inputMode="tel"
 									placeholder="06 12 34 56 78"
-									className="ps-9"
+									className="ps-9 rtl:text-left"
 									aria-invalid={!!errors.phone}
 									{...form.register("phone")}
 								/>

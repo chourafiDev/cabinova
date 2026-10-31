@@ -464,7 +464,7 @@ function Movements({
 				<h3 className="text-sm font-medium">{t("payments")}</h3>
 				{canRefund && !refunding && (
 					<Button type="button" variant="ghost" size="sm" className="h-7" onClick={() => setRefunding(true)}>
-						<LuUndo2 /> {t("refund")}
+						<LuUndo2 className="rtl:-scale-x-100" /> {t("refund")}
 					</Button>
 				)}
 			</div>

@@ -278,7 +278,7 @@ export function SubscriptionDialog({ open, onOpenChange }: { open: boolean; onOp
 								<div className="mt-3 flex flex-wrap gap-2">
 									<Button asChild size="sm" variant="outline">
 										<a href={`/devis/${quote.id}`} target="_blank" rel="noreferrer">
-											<LuExternalLink /> {t("seeQuote")}
+											<LuExternalLink className="rtl:-scale-x-100" /> {t("seeQuote")}
 										</a>
 									</Button>
 									<Button size="sm" variant="ghost" onClick={() => setChanging(true)}>
@@ -319,7 +319,7 @@ export function SubscriptionDialog({ open, onOpenChange }: { open: boolean; onOp
 									)}
 									<div className="flex items-center justify-between gap-3">
 										<dt className="text-muted-foreground">{t("rib")}</dt>
-										<dd className="flex items-center gap-1 font-mono text-xs">
+										<dd dir="ltr" className="flex items-center gap-1 font-mono text-xs">
 											{formatRib(s.payTo.rib)}
 											<CopyButton value={s.payTo.rib} label={t("theRib")} />
 										</dd>

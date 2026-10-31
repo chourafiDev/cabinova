@@ -81,7 +81,7 @@ export function WeekViewMultiDayEventsRow({ selectedDate, multiDayEvents }: IPro
   return (
     <div className="hidden overflow-hidden sm:flex">
       <div className="w-18 border-b"></div>
-      <div className="grid flex-1 grid-cols-7 divide-x border-b border-l">
+      <div className="grid flex-1 grid-cols-7 divide-x rtl:divide-x-reverse border-b border-s">
         {weekDays.map((day, dayIndex) => (
           <div key={day.toISOString()} className="flex h-full flex-col gap-1 py-1">
             {eventRows.map((row, rowIndex) => {

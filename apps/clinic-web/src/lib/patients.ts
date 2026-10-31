@@ -53,10 +53,13 @@ export const formatFileNumber = (n: number) => `N° ${String(n).padStart(5, "0")
 export const ageOf = (birthDate: string | null) =>
 	birthDate ? differenceInYears(new Date(), parseISO(birthDate)) : null;
 
+/** Kept left to right inside Arabic text, where spaced digit groups would swap. */
+export const ltrText = (text: string) => `\u2066${text}\u2069`;
+
 /** "0612345678" → "06 12 34 56 78"; other formats unchanged. */
 export function formatPhone(phone: string | null) {
 	if (!phone) return "";
-	return /^0\d{9}$/.test(phone) ? phone.replace(/(\d{2})(?=\d)/g, "$1 ") : phone;
+	return ltrText(/^0\d{9}$/.test(phone) ? phone.replace(/(\d{2})(?=\d)/g, "$1 ") : phone);
 }
 
 const optional = (max: number) => z.string().trim().max(max);

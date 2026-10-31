@@ -70,7 +70,7 @@ export function UserMenu({ user }: { user: ClinicSession["user"] }) {
 				</DropdownMenuItem>
 				<DropdownMenuSeparator />
 				<DropdownMenuItem variant="destructive" onSelect={signOut}>
-					<LuLogOut />
+					<LuLogOut className="rtl:-scale-x-100" />
 					{t("userMenu.signOut")}
 				</DropdownMenuItem>
 			</DropdownMenuContent>

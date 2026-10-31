@@ -36,6 +36,7 @@ import {
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { api } from "@/lib/api-client";
+import { formatPhone } from "@/lib/patients";
 import type { ManagedSpace } from "@/lib/settings";
 import { cn } from "@/lib/utils";
 import { SettingsCard } from "../../_components/settings-card";
@@ -157,7 +158,7 @@ function SpaceRow({
 						{(s.address || s.city) && <span>{[s.address, s.city].filter(Boolean).join(", ")}</span>}
 						{s.phone && (
 							<span className="inline-flex items-center gap-1">
-								<LuPhone className="size-3" /> {s.phone}
+								<LuPhone className="size-3" /> {formatPhone(s.phone)}
 							</span>
 						)}
 					</p>

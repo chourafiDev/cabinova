@@ -45,7 +45,7 @@ export function CalendarWeekView({ singleDayEvents, multiDayEvents }: IProps) {
           {/* Week header */}
           <div className="relative z-20 flex border-b">
             <div className="w-18"></div>
-            <div className="grid flex-1 grid-cols-7 divide-x border-s">
+            <div className="grid flex-1 grid-cols-7 divide-x rtl:divide-x-reverse border-s">
               {weekDays.map((day, index) => (
                 <span key={index} className="py-2 text-center text-xs font-medium text-muted-foreground">
                   {fmt(day, "EEE")} <span className="ms-1 font-semibold text-foreground">{fmt(day, "d")}</span>
@@ -70,7 +70,7 @@ export function CalendarWeekView({ singleDayEvents, multiDayEvents }: IProps) {
 
             {/* Week grid */}
             <div className="relative flex-1 border-s">
-              <div className="grid grid-cols-7 divide-x">
+              <div className="grid grid-cols-7 divide-x rtl:divide-x-reverse">
                 {weekDays.map((day, dayIndex) => {
                   const dayEvents = singleDayEvents.filter(event => isSameDay(parseISO(event.startDate), day) || isSameDay(parseISO(event.endDate), day));
                   const groupedEvents = groupEvents(dayEvents);
