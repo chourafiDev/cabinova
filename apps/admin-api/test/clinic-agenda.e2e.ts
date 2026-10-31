@@ -10,7 +10,7 @@ import {
 } from './clinic.js';
 
 /** 2026-11-02 (a Monday) at hh:mm, Moroccan time (UTC+1). */
-const at = (hhmm: string) => `2026-11-02T${hhmm}:00+01:00`;
+const at = (hhmm: string) => `2026-11-02T${hhmm}:00+00:00`;
 
 /**
  * The agenda of a space: booking, no double booking (across spaces too)
@@ -36,7 +36,7 @@ describe('clinic: agenda', () => {
         .get('/appointments')
         .query({
           from: at('00:00'),
-          to: '2026-11-03T00:00:00+01:00',
+          to: '2026-11-03T00:00:00+00:00',
           includeCancelled,
         })
         .expect(200)
@@ -87,7 +87,7 @@ describe('clinic: agenda', () => {
       practitioner: { id: doctorId },
     });
     expect(new Date(body.startsAt).toISOString()).toBe(
-      '2026-11-02T09:00:00.000Z',
+      '2026-11-02T10:00:00.000Z',
     );
   });
 
@@ -196,8 +196,8 @@ describe('clinic: agenda', () => {
   it('refuses a slot outside opening hours, and leaves an old one alone', async () => {
     // Defaults: closed on Sunday, 08:00 – 18:00 on Monday.
     const sunday = await book({
-      startsAt: '2026-11-08T10:00:00+01:00',
-      endsAt: '2026-11-08T10:30:00+01:00',
+      startsAt: '2026-11-08T10:00:00+00:00',
+      endsAt: '2026-11-08T10:30:00+00:00',
     }).expect(400);
     expect(sunday.body.code).toBe('OUTSIDE_HOURS');
     await book({ startsAt: at('07:30'), endsAt: at('08:00') }).expect(400);
@@ -243,8 +243,8 @@ describe('clinic: agenda', () => {
     expect(before.week).toHaveLength(6);
     // Today's date comes from the API (Moroccan time); noon is safely inside it.
     const { body: today } = await book({
-      startsAt: `${before.date}T12:00:00+01:00`,
-      endsAt: `${before.date}T12:20:00+01:00`,
+      startsAt: `${before.date}T12:00:00+00:00`,
+      endsAt: `${before.date}T12:20:00+00:00`,
       allowOverlap: true,
     }).expect(201);
 

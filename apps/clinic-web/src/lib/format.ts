@@ -1,9 +1,9 @@
-// Always Moroccan time: the same on the server and in the browser.
-const TIME_ZONE = "Africa/Casablanca";
+import { moroccoZone } from "@cabinova/morocco-time";
 
+// Always Moroccan time: the same on the server and in the browser.
 export function formatDate(date: Date | string | number, opts: Intl.DateTimeFormatOptions = {}, locale = "fr-MA") {
   return new Intl.DateTimeFormat(locale, {
-    timeZone: TIME_ZONE,
+    timeZone: moroccoZone(date),
     day: "numeric",
     month: "long",
     year: "numeric",

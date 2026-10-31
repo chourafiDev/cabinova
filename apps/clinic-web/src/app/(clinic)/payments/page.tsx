@@ -1,3 +1,4 @@
+import { moroccoDay } from "@cabinova/morocco-time";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
@@ -34,11 +35,10 @@ export const generateMetadata = () => pageTitle("payments");
 const VIEWS = ["caisse", "historique", "clotures"] as const;
 type View = (typeof VIEWS)[number];
 
-const today = () => new Intl.DateTimeFormat("en-CA", { timeZone: "Africa/Casablanca" }).format(new Date());
 const addDays = (day: string, n: number) =>
 	new Date(Date.parse(`${day}T00:00:00Z`) + n * 86_400_000).toISOString().slice(0, 10);
 const periodOf = (preset: HistoryPreset) => {
-	const to = today();
+	const to = moroccoDay();
 	const from =
 		preset === "jour" ? to : preset === "7j" ? addDays(to, -6) : preset === "mois" ? `${to.slice(0, 8)}01` : addDays(to, -29);
 	return { from, to };

@@ -31,7 +31,9 @@ describe('period', () => {
   });
 
   it('knows the Moroccan day', () => {
-    // 23:30 UTC on Oct 31 is already Nov 1 in Morocco (UTC+1).
-    expect(today(new Date('2026-10-31T23:30:00Z'))).toBe('2026-11-01');
+    // Morocco was UTC+1 until 2026-09-20 at 01:00 UTC, UTC+0 since.
+    expect(today(new Date('2026-08-31T23:30:00Z'))).toBe('2026-09-01');
+    expect(today(new Date('2026-10-31T23:30:00Z'))).toBe('2026-10-31');
+    expect(today(new Date('2026-11-01T00:30:00Z'))).toBe('2026-11-01');
   });
 });

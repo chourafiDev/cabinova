@@ -74,8 +74,8 @@ describe('isWithinOpeningHours', () => {
       { from: '15:00', to: '18:00' },
     ],
   });
-  // Monday 2 November 2026; Morocco is UTC+1.
-  const at = (time: string) => new Date(`2026-11-02T${time}:00+01:00`);
+  // Monday 2 November 2026; Morocco is UTC+0.
+  const at = (time: string) => new Date(`2026-11-02T${time}:00+00:00`);
   const within = (from: string, to: string) =>
     isWithinOpeningHours(at(from), at(to), hours);
 
@@ -83,6 +83,17 @@ describe('isWithinOpeningHours', () => {
     expect(within('08:00', '08:30')).toBe(true);
     expect(within('07:30', '08:00')).toBe(false);
     expect(within('17:30', '18:00')).toBe(true);
+  });
+
+  it('keeps UTC+1 for dates before Morocco moved to UTC+0', () => {
+    // Monday 7 September 2026.
+    const before = (time: string) => new Date(`2026-09-07T${time}:00+01:00`);
+    expect(isWithinOpeningHours(before('08:00'), before('08:30'), hours)).toBe(
+      true,
+    );
+    expect(isWithinOpeningHours(before('07:30'), before('08:00'), hours)).toBe(
+      false,
+    );
   });
 
   it('refuses a slot that runs past closing or across a gap', () => {

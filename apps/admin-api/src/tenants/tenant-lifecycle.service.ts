@@ -1,3 +1,4 @@
+import { moroccoZone } from '@cabinova/morocco-time';
 import {
   BadRequestException,
   ConflictException,
@@ -349,7 +350,10 @@ export class TenantLifecycleService {
           change.state === 'scheduled'
             ? new Intl.DateTimeFormat('fr-MA', {
                 dateStyle: 'long',
-                timeZone: tenant.timezone,
+                timeZone:
+                  tenant.timezone === 'Africa/Casablanca'
+                    ? moroccoZone(change.effectiveAt)
+                    : tenant.timezone,
               }).format(change.effectiveAt)
             : undefined,
         comment: change.comment,

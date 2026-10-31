@@ -1,3 +1,4 @@
+import { moroccoZone } from '@cabinova/morocco-time';
 import { BadRequestException } from '@nestjs/common';
 import type { OpeningHours } from '@cabinova/tenant-db/schema';
 
@@ -12,18 +13,18 @@ const invalid = (message: string) =>
   new BadRequestException({ code: 'INVALID_OPENING_HOURS', message });
 
 const WEEKDAY = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-const clock = new Intl.DateTimeFormat('en-US', {
-  timeZone: 'Africa/Casablanca',
-  weekday: 'short',
-  hour: '2-digit',
-  minute: '2-digit',
-  hourCycle: 'h23',
-});
 const toMinutes = (time: string) =>
   Number(time.slice(0, 2)) * 60 + Number(time.slice(3));
 
 /** Weekday and minutes since midnight, on the cabinet's clock. */
 function local(date: Date) {
+  const clock = new Intl.DateTimeFormat('en-US', {
+    timeZone: moroccoZone(date),
+    weekday: 'short',
+    hour: '2-digit',
+    minute: '2-digit',
+    hourCycle: 'h23',
+  });
   const part = (type: string) =>
     clock.formatToParts(date).find((p) => p.type === type)!.value;
   return {

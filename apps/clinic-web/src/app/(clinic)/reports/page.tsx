@@ -1,3 +1,4 @@
+import { moroccoDay } from "@cabinova/morocco-time";
 import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { HiChartBar } from "react-icons/hi2";
@@ -28,7 +29,6 @@ import { cn } from "@/lib/utils";
 export const generateMetadata = () => pageTitle("reports");
 
 const DAY = /^\d{4}-\d{2}-\d{2}$/;
-const today = () => new Intl.DateTimeFormat("en-CA", { timeZone: "Africa/Casablanca" }).format(new Date());
 const addDays = (day: string, n: number) =>
 	new Date(Date.parse(`${day}T00:00:00Z`) + n * 86_400_000).toISOString().slice(0, 10);
 const span = (from: string, to: string) => (Date.parse(to) - Date.parse(from)) / 86_400_000 + 1;
@@ -45,7 +45,7 @@ function periodOf(params: Record<string, string | string[] | undefined>) {
 		return { preset: null, from, to };
 	}
 	const preset = PRESETS.find((p) => p.key === one(params.periode)) ?? PRESETS.find((p) => p.key === DEFAULT_PRESET)!;
-	const end = today();
+	const end = moroccoDay();
 	return { preset: preset.key as PresetKey, from: addDays(end, 1 - preset.days), to: end };
 }
 

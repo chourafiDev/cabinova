@@ -1,3 +1,4 @@
+import { moroccoDay } from "@cabinova/morocco-time";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { useTranslations } from "next-intl";
@@ -20,8 +21,6 @@ import { SettingsCard } from "../_components/settings-card";
 import { ActivityFilters } from "./_components/activity-filters";
 
 export const generateMetadata = () => settingsTitle("activity");
-
-const dayKey = new Intl.DateTimeFormat("en-CA", { timeZone: "Africa/Casablanca" });
 
 function Entry({ entry }: { entry: ActivityEntry }) {
 	const t = useTranslations("settings.activity");
@@ -86,7 +85,7 @@ export default async function ActivityPage({ searchParams }: PageProps<"/setting
 		});
 		return `/settings/activity?${next}`;
 	};
-	const days = Map.groupBy(data, (e) => dayKey.format(new Date(e.createdAt)));
+	const days = Map.groupBy(data, (e) => moroccoDay(e.createdAt));
 	const t = await getTranslations("settings.activity");
 	const common = await getTranslations("common");
 	const format = await getFormat();

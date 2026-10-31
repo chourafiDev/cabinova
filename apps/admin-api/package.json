@@ -34,6 +34,7 @@
   "dependencies": {
     "@cabinova/features": "workspace:*",
     "@cabinova/mail": "workspace:*",
+    "@cabinova/morocco-time": "workspace:*",
     "@cabinova/secret-box": "workspace:*",
     "@cabinova/tenant-db": "workspace:*",
     "@neondatabase/serverless": "^1.2.0",

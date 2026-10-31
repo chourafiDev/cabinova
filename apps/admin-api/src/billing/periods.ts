@@ -1,4 +1,5 @@
 // Pure billing rules (Module 3): period arithmetic, amounts, labels.
+import { moroccoZone } from '@cabinova/morocco-time';
 
 export type BillingPeriod = 'monthly' | 'annual';
 
@@ -38,7 +39,7 @@ const day = (d: Date) =>
     day: '2-digit',
     month: '2-digit',
     year: 'numeric',
-    timeZone: 'Africa/Casablanca',
+    timeZone: moroccoZone(d),
   }).format(d);
 
 export function invoiceDescription(

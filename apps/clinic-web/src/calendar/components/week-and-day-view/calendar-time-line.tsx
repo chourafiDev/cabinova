@@ -1,19 +1,24 @@
 import { fmt } from "@/calendar/locale";
 
-import { useEffect, useState } from "react";
+import { useSyncExternalStore } from "react";
 
 interface IProps {
   firstVisibleHour: number;
   lastVisibleHour: number;
 }
 
-export function CalendarTimeline({ firstVisibleHour, lastVisibleHour }: IProps) {
-  const [currentTime, setCurrentTime] = useState(new Date());
+const MINUTE = 60 * 1000;
+const thisMinute = () => Math.floor(Date.now() / MINUTE);
+const subscribe = (tick: () => void) => {
+  const timer = setInterval(tick, MINUTE);
+  return () => clearInterval(timer);
+};
 
-  useEffect(() => {
-    const timer = setInterval(() => setCurrentTime(new Date()), 60 * 1000);
-    return () => clearInterval(timer);
-  }, []);
+/** The browser's clock, so nothing of it is rendered on the server. */
+export function CalendarTimeline({ firstVisibleHour, lastVisibleHour }: IProps) {
+  const minute = useSyncExternalStore(subscribe, thisMinute, () => null);
+  if (minute === null) return null;
+  const currentTime = new Date(minute * MINUTE);
 
   const getCurrentTimePosition = () => {
     const minutes = currentTime.getHours() * 60 + currentTime.getMinutes();

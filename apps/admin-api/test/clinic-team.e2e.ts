@@ -219,8 +219,8 @@ describe('clinic: team', () => {
       .send({
         patientId: patient.id,
         practitionerId: doctorId,
-        startsAt: '2030-01-07T10:00:00+01:00',
-        endsAt: '2030-01-07T10:30:00+01:00',
+        startsAt: '2030-01-07T10:00:00+00:00',
+        endsAt: '2030-01-07T10:30:00+00:00',
       })
       .expect(201);
     const { body: refused } = await cab()

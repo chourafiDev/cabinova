@@ -77,8 +77,8 @@ describe('clinic: getting-started checklist', () => {
       .send({
         patientId: patient.id,
         practitionerId: me.user.id,
-        startsAt: `${MONDAY}T10:00:00+01:00`,
-        endsAt: `${MONDAY}T10:30:00+01:00`,
+        startsAt: `${MONDAY}T10:00:00+00:00`,
+        endsAt: `${MONDAY}T10:30:00+00:00`,
       })
       .expect(201);
     expect(await steps()).toEqual({

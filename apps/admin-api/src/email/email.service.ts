@@ -1,3 +1,4 @@
+import { moroccoZone } from '@cabinova/morocco-time';
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import {
@@ -420,5 +421,5 @@ export class EmailService {
 const fmtDate = (d: Date) =>
   new Intl.DateTimeFormat('fr-MA', {
     dateStyle: 'long',
-    timeZone: 'Africa/Casablanca',
+    timeZone: moroccoZone(d),
   }).format(d);

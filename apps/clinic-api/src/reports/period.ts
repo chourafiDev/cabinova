@@ -1,5 +1,6 @@
 // Calendar arithmetic on "YYYY-MM-DD" days (no time zone involved: the days
 // are already Moroccan ones).
+import { moroccoDay } from '@cabinova/morocco-time';
 
 export type Bucket = 'day' | 'week' | 'month';
 
@@ -17,10 +18,7 @@ export const daysBetween = (from: string, to: string) =>
   Math.round((toDate(to).getTime() - toDate(from).getTime()) / 86_400_000) + 1;
 
 /** Today in Morocco. */
-export const today = (now = new Date()) =>
-  new Intl.DateTimeFormat('en-CA', { timeZone: 'Africa/Casablanca' }).format(
-    now,
-  );
+export const today = (now = new Date()) => moroccoDay(now);
 
 /** Days up to ~6 weeks, then weeks up to ~6 months, then months. */
 export const bucketFor = (days: number): Bucket =>

@@ -102,8 +102,8 @@ describe('clinic: activity log', () => {
         .send({
           patientId,
           practitionerId: ownerId,
-          startsAt: `${MONDAY}T10:00:00+01:00`,
-          endsAt: `${MONDAY}T10:30:00+01:00`,
+          startsAt: `${MONDAY}T10:00:00+00:00`,
+          endsAt: `${MONDAY}T10:30:00+00:00`,
         })
         .expect(201)
     ).body.id;
@@ -125,8 +125,8 @@ describe('clinic: activity log', () => {
       .send({
         patientId,
         practitionerId: ownerId,
-        startsAt: `${MONDAY}T22:00:00+01:00`,
-        endsAt: `${MONDAY}T22:30:00+01:00`,
+        startsAt: `${MONDAY}T22:00:00+00:00`,
+        endsAt: `${MONDAY}T22:30:00+00:00`,
       })
       .expect(400);
     expect((await journal()).total).toBe(before);

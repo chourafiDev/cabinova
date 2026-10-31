@@ -47,8 +47,8 @@ describe('clinic: notifications', () => {
         .send({
           patientId,
           practitionerId: doctorId,
-          startsAt: `${MONDAY}T${time}:00+01:00`,
-          endsAt: `${MONDAY}T${time.slice(0, 3)}30:00+01:00`,
+          startsAt: `${MONDAY}T${time}:00+00:00`,
+          endsAt: `${MONDAY}T${time.slice(0, 3)}30:00+00:00`,
         })
         .expect(201)
     ).body.id as string;

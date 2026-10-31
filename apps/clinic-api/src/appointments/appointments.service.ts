@@ -1,3 +1,4 @@
+import { moroccoZone } from '@cabinova/morocco-time';
 import type { Pool, PoolClient } from '@neondatabase/serverless';
 import {
   BadRequestException,
@@ -38,7 +39,7 @@ const time = (d: Date) =>
   d.toLocaleTimeString('fr-MA', {
     hour: '2-digit',
     minute: '2-digit',
-    timeZone: 'Africa/Casablanca',
+    timeZone: moroccoZone(d),
   });
 
 /**

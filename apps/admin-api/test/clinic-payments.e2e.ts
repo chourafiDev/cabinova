@@ -1,3 +1,4 @@
+import { moroccoDay } from '@cabinova/morocco-time';
 import type { INestApplication } from '@nestjs/common';
 import { type Agent, createApp, signInAdmin } from './app.js';
 import {
@@ -12,9 +13,8 @@ import {
 
 const SUB = 'caisse-atlas';
 const EMAIL = 'caisse@e2e.test';
-/** Today in Morocco, at a given hour (UTC+1). */
-const todayAt = (time: string) =>
-  `${new Intl.DateTimeFormat('en-CA', { timeZone: 'Africa/Casablanca' }).format(new Date())}T${time}:00+01:00`;
+/** Today in Morocco, at a given hour (UTC+0). */
+const todayAt = (time: string) => `${moroccoDay()}T${time}:00+00:00`;
 
 /**
  * Encaissements: price list, a visit checked out in two payments, receipt,

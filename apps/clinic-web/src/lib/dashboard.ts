@@ -1,3 +1,4 @@
+import { moroccoZone } from "@cabinova/morocco-time";
 import type { Appointment } from "./appointments";
 
 /** GET /dashboard (clinic-api): one space, or every space for the owner (?scope=all). */
@@ -28,6 +29,6 @@ export type DashboardData = {
 
 /** "09:30", Moroccan time. */
 export const clock = (iso: string, locale = "fr-MA") =>
-	new Intl.DateTimeFormat(locale, { timeZone: "Africa/Casablanca", hour: "2-digit", minute: "2-digit" }).format(
+	new Intl.DateTimeFormat(locale, { timeZone: moroccoZone(iso), hour: "2-digit", minute: "2-digit" }).format(
 		new Date(iso),
 	);
