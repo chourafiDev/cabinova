@@ -53,7 +53,6 @@ import {
   addDays,
   addPeriod,
   dueDate,
-  firstPeriodStart,
   invoiceAmount,
   invoiceDescription,
   invoiceNumber,
@@ -477,7 +476,7 @@ export class BillingService {
   /**
    * The cabinet's fiche de paiement arrived and the transfer is on the
    * statement: creates the facture (already paid), moves the subscription
-   * to the devis' plan and period, and starts it.
+   * to the devis' plan and period, and starts it now: a trial ends here.
    */
   async confirmQuote(quoteId: string, actor: AuditActor, dto: ConfirmQuoteDto) {
     const result = await this.database.db.transaction(async (tx) => {
@@ -502,11 +501,7 @@ export class BillingService {
         .where(eq(subscriptionPlans.id, quote.planId));
       const receivedAt = new Date(dto.receivedAt);
       const now = new Date();
-      const periodStart = firstPeriodStart(
-        sub.currentPeriodEnd,
-        sub.status === 'trialing',
-        receivedAt,
-      );
+      const periodStart = now;
       const periodEnd = addPeriod(periodStart, quote.billingPeriod);
       const [{ n }] = await tx
         .execute<{ n: string }>(sql`select nextval('invoice_number_seq') as n`)

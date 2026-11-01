@@ -24,6 +24,7 @@ type Row = {
   billing_period: 'monthly' | 'annual' | null;
   status: string | null;
   current_period_end: Date | null;
+  current_period_start: Date | null;
   price: number | null;
   discount_percent: number | null;
   promo_percent: number | null;
@@ -113,6 +114,13 @@ export class BillingController {
     const [{ rows }, plans, invoices] = await Promise.all([
       this.catalog.pool.query<Row>(
         `select p.name as plan, p.key as plan_key, s.billing_period, s.status, s.current_period_end,
+              (
+                  select pi.period_start from invoices pi
+                   where pi.subscription_id = s.id
+                     and pi.period_end = s.current_period_end
+                     and pi.status <> 'void'
+                   order by pi.issued_at desc limit 1
+                ) as current_period_start,
               s.price, s.discount_percent,
               pc.discount_percent as promo_percent, s.promo_invoices_left,
               i.number as invoice_number, i.amount as invoice_amount,
@@ -182,6 +190,7 @@ export class BillingController {
       status: r?.status ?? null,
       trialEndsAt: r?.status === 'trialing' ? r.current_period_end : null,
       currentPeriodEnd: r?.current_period_end ?? null,
+      currentPeriodStart: r?.current_period_start ?? null,
       nextAmount:
         r?.price != null
           ? nextInvoiceAmount(

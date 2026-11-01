@@ -22,7 +22,7 @@
     "pickDescription": "ستتلقى عرض سعر عبر البريد الإلكتروني. يبدأ اشتراكك عند استلام الدفع.",
     "loading": "جارٍ التحميل…",
     "loadError": "تعذر التحميل",
-    "trialUntil": "الفترة التجريبية حتى <strong>{date}</strong>. الدفع قبل هذا التاريخ لا يُفقدك أي يوم تجريبي.",
+    "trialUntil": "الفترة التجريبية حتى <strong>{date}</strong>. يبدأ اشتراكك فور تأكيد أدائك.",
     "monthly": "شهري",
     "annual": "سنوي",
     "period": "المدة",
@@ -66,6 +66,7 @@
     "afterTransferReply": "بعد التحويل، أرسل <strong>إشعار التحويل</strong> ردًا على رسالة عرض السعر. سننشئ فاتورتك ويبدأ اشتراكك.",
     "proofSubject": "دفع عرض السعر {number}",
     "invoices": "فواتيري",
-    "contact": "تريد تغيير الباقة؟ راسلنا"
+    "contact": "تريد تغيير الباقة؟ راسلنا",
+    "activePeriod": "نشط من <strong>{from}</strong> إلى <strong>{to}</strong>."
   }
 }

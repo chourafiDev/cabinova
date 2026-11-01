@@ -64,16 +64,6 @@ export const quoteDescription = (
     discountPercent ? ` (remise ${discountPercent} %)` : ''
   }`;
 
-/**
- * A confirmed devis starts when the trial would have ended, so paying early
- * loses no trial day; after the trial, on the day the transfer arrived.
- */
-export const firstPeriodStart = (
-  trialEnd: Date | null,
-  trialing: boolean,
-  receivedAt: Date,
-) => (trialing && trialEnd && trialEnd > receivedAt ? trialEnd : receivedAt);
-
 /** "D-2026-000042" */
 export const quoteNumber = (year: number, sequence: number) =>
   `D-${year}-${String(sequence).padStart(6, '0')}`;

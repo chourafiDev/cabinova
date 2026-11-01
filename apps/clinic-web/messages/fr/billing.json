@@ -22,7 +22,7 @@
     "pickDescription": "Vous recevez un devis par e-mail. Votre abonnement démarre à réception du paiement.",
     "loading": "Chargement…",
     "loadError": "Chargement impossible",
-    "trialUntil": "Essai gratuit jusqu’au <strong>{date}</strong>. Payer avant cette date ne vous fait perdre aucun jour d’essai.",
+    "trialUntil": "Essai gratuit jusqu’au <strong>{date}</strong>. Votre abonnement démarre dès la confirmation de votre paiement.",
     "monthly": "Mensuel",
     "annual": "Annuel",
     "period": "Période",
@@ -66,6 +66,7 @@
     "afterTransferReply": "Après le virement, envoyez votre <strong>avis de virement</strong> en réponse à l’e-mail du devis. Nous créons votre facture et votre abonnement démarre.",
     "proofSubject": "Paiement du devis {number}",
     "invoices": "Mes factures",
-    "contact": "Changer d’offre ? Écrivez-nous"
+    "contact": "Changer d’offre ? Écrivez-nous",
+    "activePeriod": "Actif du <strong>{from}</strong> au <strong>{to}</strong>."
   }
 }

@@ -146,11 +146,15 @@ describe('billing: devis', () => {
       price: 1_199_000,
       plan: { key: 'enterprise' },
     });
-    // Paying early loses no trial day: the year starts when the trial ends.
-    expect(
-      new Date(after.subscription.currentPeriodEnd).getTime(),
-    ).toBeGreaterThan(
-      new Date(subscription.currentPeriodEnd).getTime() + 360 * DAY,
+    // The trial ends here: the year starts at the confirmation, not after it.
+    const { currentPeriodStart, currentPeriodEnd } = await summary();
+    const start = new Date(currentPeriodStart).getTime();
+    expect(Math.abs(start - Date.now())).toBeLessThan(60_000);
+    expect(new Date(currentPeriodEnd).getTime()).toBeGreaterThan(
+      start + 360 * DAY,
+    );
+    expect(new Date(currentPeriodEnd).getTime()).toBeLessThan(
+      new Date(subscription.currentPeriodEnd).getTime() + 366 * DAY,
     );
     expect(after.invoices).toHaveLength(1);
     expect(after.invoices[0]).toMatchObject({

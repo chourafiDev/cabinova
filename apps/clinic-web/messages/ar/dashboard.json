@@ -88,7 +88,8 @@
     "secretaries": "السكرتيرات",
     "storage": "التخزين",
     "unlimited": "غير محدود",
-    "gb": "جيجابايت"
+    "gb": "جيجابايت",
+    "period": "من {from} إلى {to}."
   },
   "today": {
     "eyebrow": "اليوم",

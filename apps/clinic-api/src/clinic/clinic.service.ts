@@ -6,6 +6,7 @@ type OfferRow = {
   plan: string | null;
   status: string | null;
   current_period_end: Date | null;
+  current_period_start: Date | null;
   max_doctors: number | null;
   max_secretaries: number | null;
   storage_quota_mb: number | null;
@@ -23,6 +24,13 @@ export class ClinicService {
     const [{ rows }, team] = await Promise.all([
       this.catalog.pool.query<OfferRow>(
         `select p.name as plan, s.status, s.current_period_end,
+                (
+                  select pi.period_start from invoices pi
+                   where pi.subscription_id = s.id
+                     and pi.period_end = s.current_period_end
+                     and pi.status <> 'void'
+                   order by pi.issued_at desc limit 1
+                ) as current_period_start,
                 exists (
                   select 1 from quotes q
                    where q.tenant_id = t.id and q.status = 'pending'
@@ -61,6 +69,8 @@ export class ClinicService {
       trialEndsAt:
         offer?.status === 'trialing' ? offer.current_period_end : null,
       currentPeriodEnd: offer?.current_period_end ?? null,
+      /** From the facture of this period; null when none was issued for it. */
+      currentPeriodStart: offer?.current_period_start ?? null,
       quotePending: offer?.quote_pending ?? false,
       /** A facture is waiting for its transfer, due on this date. */
       invoiceDueAt: offer?.invoice_due_at ?? null,

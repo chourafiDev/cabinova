@@ -88,7 +88,8 @@
     "secretaries": "Secrétaires",
     "storage": "Stockage",
     "unlimited": "illimité",
-    "gb": "Go"
+    "gb": "Go",
+    "period": "du {from} au {to}."
   },
   "today": {
     "eyebrow": "Aujourd’hui",

@@ -72,7 +72,14 @@ export function SubscriptionCard({
 						{s.status === "trialing" && s.trialEndsAt && (
 							<> {t("until", { date: format.date(s.trialEndsAt) })} {t("chooseHint")}</>
 						)}
-						{s.status === "active" && s.currentPeriodEnd && <> {t("until", { date: format.date(s.currentPeriodEnd) })}</>}
+						{s.status === "active" && s.currentPeriodEnd && (
+							<>
+								{" "}
+								{s.currentPeriodStart
+									? t("period", { from: format.date(s.currentPeriodStart), to: format.date(s.currentPeriodEnd) })
+									: t("until", { date: format.date(s.currentPeriodEnd) })}
+							</>
+						)}
 					</span>
 				</p>
 				<Usage label={t("doctors")} used={s.doctors.used} max={s.doctors.max} />

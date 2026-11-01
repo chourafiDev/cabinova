@@ -20,6 +20,7 @@ export type ClinicSession = {
 		status: "trialing" | "active" | "past_due" | "cancelled" | null;
 		trialEndsAt: string | null;
 		currentPeriodEnd: string | null;
+		currentPeriodStart: string | null;
 		quotePending: boolean;
 		invoiceDueAt: string | null;
 		doctors: { used: number; max: number | null };

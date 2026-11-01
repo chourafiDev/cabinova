@@ -18,6 +18,7 @@ type BillingSummary = {
 	status: "trialing" | "active" | "past_due" | "cancelled" | null;
 	trialEndsAt: string | null;
 	currentPeriodEnd: string | null;
+	currentPeriodStart: string | null;
 	nextAmount: number | null;
 	openInvoice: { number: string; amount: number; dueAt: string; status: "billed" | "overdue" } | null;
 	/** On trial, nothing invoiced yet: the doctor can ask for a devis. */
@@ -260,7 +261,13 @@ export function SubscriptionDialog({ open, onOpenChange }: { open: boolean; onOp
 								</p>
 								{s.status === "active" && s.currentPeriodEnd && (
 									<p className="text-muted-foreground mt-2">
-										{t.rich("activeUntil", { date: format.date(s.currentPeriodEnd), strong: bold })}
+										{s.currentPeriodStart
+											? t.rich("activePeriod", {
+													from: format.date(s.currentPeriodStart),
+													to: format.date(s.currentPeriodEnd),
+													strong: bold,
+												})
+											: t.rich("activeUntil", { date: format.date(s.currentPeriodEnd), strong: bold })}
 									</p>
 								)}
 							</div>
