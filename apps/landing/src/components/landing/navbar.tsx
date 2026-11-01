@@ -33,7 +33,7 @@ export function Navbar() {
 				<ul className="text-muted-foreground hidden flex-1 items-center justify-center gap-1 text-sm lg:flex">
 					{NAV.map((item) => (
 						<li key={item.href}>
-							<a href={item.href} className="hover:bg-muted hover:text-foreground rounded-full px-3 py-1.5 transition-colors">
+							<a href={item.href} className="hover:bg-muted hover:text-foreground rounded-full px-2.5 py-1.5 whitespace-nowrap xl:px-3 transition-colors">
 								{item.label}
 							</a>
 						</li>

@@ -22,6 +22,7 @@ export const NAV = [
 	{ href: "#securite", label: "Sécurité" },
 	{ href: "#tarifs", label: "Tarifs" },
 	{ href: "#faq", label: "FAQ" },
+	{ href: "/docs", label: "Documentation" },
 ];
 
 export type Plan = {
