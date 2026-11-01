@@ -146,10 +146,12 @@ describe('billing: devis', () => {
       price: 1_199_000,
       plan: { key: 'enterprise' },
     });
-    // The trial ends here: the year starts at the confirmation, not after it.
+    // The trial ends here: the year starts the next day.
     const { currentPeriodStart, currentPeriodEnd } = await summary();
     const start = new Date(currentPeriodStart).getTime();
-    expect(Math.abs(start - Date.now())).toBeLessThan(60_000);
+    expect(new Date(start).toISOString()).toMatch(/T00:00:00\.000Z$/);
+    expect(start - Date.now()).toBeGreaterThan(0);
+    expect(start - Date.now()).toBeLessThanOrEqual(DAY);
     expect(new Date(currentPeriodEnd).getTime()).toBeGreaterThan(
       start + 360 * DAY,
     );

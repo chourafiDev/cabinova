@@ -1,5 +1,6 @@
 import {
   addPeriod,
+  dayAfter,
   dueDate,
   invoiceAmount,
   invoiceNumber,
@@ -8,6 +9,25 @@ import {
 
 const d = (iso: string) => new Date(`${iso}T00:00:00Z`);
 const iso = (date: Date) => date.toISOString().slice(0, 10);
+
+describe('dayAfter', () => {
+  it('starts the period at the next midnight, for a month or a year', () => {
+    const start = dayAfter(new Date('2026-10-31T19:38:17Z'));
+    expect(start.toISOString()).toBe('2026-11-01T00:00:00.000Z');
+    expect(addPeriod(start, 'monthly').toISOString()).toBe(
+      '2026-12-01T00:00:00.000Z',
+    );
+    expect(addPeriod(start, 'annual').toISOString()).toBe(
+      '2027-11-01T00:00:00.000Z',
+    );
+  });
+
+  it('counts the day in Morocco, even late in the evening', () => {
+    expect(dayAfter(new Date('2026-12-31T23:59:00Z')).toISOString()).toBe(
+      '2027-01-01T00:00:00.000Z',
+    );
+  });
+});
 
 describe('billing periods', () => {
   it('adds a month, clamping to the end of shorter months', () => {

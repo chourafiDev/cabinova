@@ -1,5 +1,5 @@
 // Pure billing rules (Module 3): period arithmetic, amounts, labels.
-import { moroccoZone } from '@cabinova/morocco-time';
+import { moroccoDay, moroccoZone } from '@cabinova/morocco-time';
 
 export type BillingPeriod = 'monthly' | 'annual';
 
@@ -9,6 +9,13 @@ const DAY_MS = 24 * 60 * 60 * 1000;
  * Start + one billing period, clamped to the end of the month:
  * 31 Jan + 1 month = 28/29 Feb, 29 Feb + 1 year = 28 Feb.
  */
+/** A confirmed devis: its period starts at midnight the next day in Morocco. */
+export const dayAfter = (date: Date) => {
+  const start = new Date(`${moroccoDay(date)}T00:00:00Z`);
+  start.setUTCDate(start.getUTCDate() + 1);
+  return start;
+};
+
 export function addPeriod(start: Date, period: BillingPeriod) {
   const months = period === 'annual' ? 12 : 1;
   const target = new Date(start);
@@ -54,7 +61,7 @@ export function invoiceDescription(
   }`;
 }
 
-/** The devis has no dates: the period starts when the payment is confirmed. */
+/** The devis has no dates: the period starts the day after the payment is confirmed. */
 export const quoteDescription = (
   planName: string,
   period: BillingPeriod,

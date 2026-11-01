@@ -22,7 +22,7 @@
     "pickDescription": "Vous recevez un devis par e-mail. Votre abonnement démarre à réception du paiement.",
     "loading": "Chargement…",
     "loadError": "Chargement impossible",
-    "trialUntil": "Essai gratuit jusqu’au <strong>{date}</strong>. Votre abonnement démarre dès la confirmation de votre paiement.",
+    "trialUntil": "Essai gratuit jusqu’au <strong>{date}</strong>. Votre abonnement démarre le lendemain de la confirmation de votre paiement.",
     "monthly": "Mensuel",
     "annual": "Annuel",
     "period": "Période",
