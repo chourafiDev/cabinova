@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { LinkPending } from "@/components/link-pending";
 import { usePathname } from "next/navigation";
 import {
 	Sidebar,
@@ -59,6 +60,7 @@ export function AppSidebar({ branding }: { branding: Branding }) {
 										<Link href={item.href}>
 											<item.icon />
 											<span>{item.title}</span>
+											<LinkPending />
 										</Link>
 									</SidebarMenuButton>
 								</SidebarMenuItem>

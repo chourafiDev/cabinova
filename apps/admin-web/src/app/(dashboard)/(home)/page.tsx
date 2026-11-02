@@ -16,13 +16,13 @@ import { formatPrice } from "@/lib/plans";
 import { plural } from "@/lib/plural";
 import { apiGet } from "@/lib/server-api";
 import { getSession } from "@/lib/session";
-import { AlertsCard } from "./_components/dashboard/alerts-card";
-import { BreakdownCard } from "./_components/dashboard/breakdown-card";
-import { DashboardFilters } from "./_components/dashboard/dashboard-filters";
-import { PlansDonut } from "./_components/dashboard/plans-donut";
-import { SubscriptionsChart } from "./_components/dashboard/subscriptions-chart";
-import Header from "./_components/header";
-import { KpiCard } from "./_components/shared/kpi-card";
+import { AlertsCard } from "../_components/dashboard/alerts-card";
+import { BreakdownCard } from "../_components/dashboard/breakdown-card";
+import { DashboardFilters } from "../_components/dashboard/dashboard-filters";
+import { PlansDonut } from "../_components/dashboard/plans-donut";
+import { SubscriptionsChart } from "../_components/dashboard/subscriptions-chart";
+import Header from "../_components/header";
+import { KpiCard } from "../_components/shared/kpi-card";
 
 export const metadata: Metadata = { title: "Tableau de bord" };
 

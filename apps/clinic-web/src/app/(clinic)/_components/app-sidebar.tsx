@@ -2,6 +2,7 @@
 
 import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
+import { LinkPending } from "@/components/link-pending";
 import { usePathname } from "next/navigation";
 import {
 	Sidebar,
@@ -75,6 +76,7 @@ export function AppSidebar({
 										<Link href={item.href}>
 											<item.icon />
 											<span>{t(`items.${item.key}`)}</span>
+											<LinkPending />
 										</Link>
 									</SidebarMenuButton>
 									{item.soon && (

@@ -8,14 +8,14 @@ import { apiGet } from "@/lib/server-api";
 import { getClinicState } from "@/lib/session";
 import { spaceLabel } from "@/lib/spaces";
 import { cn } from "@/lib/utils";
-import { GettingStarted, type ChecklistSteps } from "./_components/dashboard/getting-started";
-import { SpacesOverview } from "./_components/dashboard/spaces-overview";
-import { SubscriptionCard } from "./_components/dashboard/subscription-card";
-import { TodayAppointments } from "./_components/dashboard/today-appointments";
-import { WaitingRoom } from "./_components/dashboard/waiting-room";
-import { WeekActivityChart } from "./_components/dashboard/week-activity-chart";
-import { WelcomeBanner } from "./_components/dashboard/welcome-banner";
-import { KpiCard } from "./_components/kpi-card";
+import { GettingStarted, type ChecklistSteps } from "../_components/dashboard/getting-started";
+import { SpacesOverview } from "../_components/dashboard/spaces-overview";
+import { SubscriptionCard } from "../_components/dashboard/subscription-card";
+import { TodayAppointments } from "../_components/dashboard/today-appointments";
+import { WaitingRoom } from "../_components/dashboard/waiting-room";
+import { WeekActivityChart } from "../_components/dashboard/week-activity-chart";
+import { WelcomeBanner } from "../_components/dashboard/welcome-banner";
+import { KpiCard } from "../_components/kpi-card";
 
 export const generateMetadata = () => pageTitle("dashboard");
 
