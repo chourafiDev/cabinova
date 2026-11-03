@@ -83,5 +83,13 @@
   "QUOTE_NOT_FOUND": "عرض السعر غير موجود.",
   "INVOICE_NOT_FOUND": "الفاتورة غير موجودة.",
   "OWN_FIGURES_ONLY": "يمكنك الاطلاع على أرقام العيادة أو أرقامك.",
-  "INVALID_OPENING_HOURS": "أوقات غير صالحة."
+  "INVALID_OPENING_HOURS": "أوقات غير صالحة.",
+  "GOOGLE_NOT_CONFIGURED": "لم يتم تفعيل اجتماعات Google Meet بعد في Cabinova.",
+  "GOOGLE_NOT_CONNECTED": "اربط أولًا حساب Google (الإعدادات › التكاملات).",
+  "GOOGLE_RECONNECT": "سحب Google وصول Cabinova إلى هذا الحساب. أعد ربطه في الإعدادات › التكاملات.",
+  "GOOGLE_UNAVAILABLE": "Google لا يستجيب حاليًا. حاول بعد قليل.",
+  "MEETING_IN_PAST": "اختر ساعة قادمة.",
+  "MEETING_OVER": "هذا الاجتماع انتهى أو أُلغي.",
+  "MEETING_NOT_FOUND": "الاجتماع غير موجود.",
+  "INVALID_PARTICIPANTS": "بعض الأشخاص لم يعودوا ضمن الفريق."
 }

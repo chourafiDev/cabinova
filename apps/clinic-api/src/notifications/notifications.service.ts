@@ -10,7 +10,7 @@ const TZ = 'Africa/Casablanca';
 
 type Notification = {
   userId: string;
-  kind: 'arrived' | 'no_show' | 'cancelled' | 'team' | 'billing';
+  kind: 'arrived' | 'no_show' | 'cancelled' | 'team' | 'billing' | 'meeting';
   title: string;
   body: string | null;
   code: string;
@@ -170,6 +170,45 @@ export class NotificationsService {
       );
     } catch (err) {
       this.logger.error('Team notification failed', err);
+    }
+  }
+
+  /** Team meeting: the people invited (or told it's cancelled). */
+  async meeting(
+    db: Pool,
+    change: 'invite' | 'cancelled',
+    meeting: { id: string; title: string; startsAt: Date },
+    by: string,
+    userIds: string[],
+  ) {
+    try {
+      const time = new Intl.DateTimeFormat('fr-FR', {
+        timeZone: TZ,
+        hour: '2-digit',
+        minute: '2-digit',
+      }).format(meeting.startsAt);
+      const day = new Intl.DateTimeFormat('en-CA', { timeZone: TZ }).format(
+        meeting.startsAt,
+      );
+      const now = meeting.startsAt.getTime() <= Date.now() + 60_000;
+      await this.write(
+        db,
+        userIds.map((userId) => ({
+          userId,
+          kind: 'meeting' as const,
+          title:
+            change === 'invite'
+              ? `${by} vous invite à une réunion`
+              : `Réunion annulée par ${by}`,
+          body: `${meeting.title} · ${time}`,
+          code: change === 'invite' ? 'meeting_invite' : 'meeting_cancelled',
+          params: { by, title: meeting.title, time, day, now: now ? 1 : 0 },
+          href: '/meetings',
+          dedupeKey: `meeting:${meeting.id}:${change}`,
+        })),
+      );
+    } catch (err) {
+      this.logger.error('Meeting notification failed', err);
     }
   }
 

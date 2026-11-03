@@ -8,6 +8,7 @@
     "dashboard": "لوحة التحكم",
     "appointments": "المواعيد",
     "patients": "المرضى",
+    "meetings": "الاجتماعات",
     "consultations": "الاستشارات",
     "prescriptions": "الوصفات الطبية",
     "payments": "المداخيل",
@@ -24,6 +25,7 @@
     "sessions": "الجلسات النشطة",
     "cabinet": "العيادة",
     "profile": "ملفي الشخصي",
-    "hours": "أوقات العمل والمواعيد"
+    "hours": "أوقات العمل والمواعيد",
+    "integrations": "التكاملات"
   }
 }

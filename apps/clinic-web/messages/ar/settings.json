@@ -24,6 +24,10 @@
       "label": "الأسعار",
       "hint": "الأعمال والأتعاب"
     },
+    "integrations": {
+      "label": "التكاملات",
+      "hint": "Google Meet للاجتماعات"
+    },
     "sessions": {
       "label": "الجلسات النشطة",
       "hint": "أجهزة الفريق"
@@ -139,7 +143,12 @@
       "auth_password_change": "غيّر كلمة المرور",
       "auth_password_reset": "أعاد تعيين كلمة المرور",
       "auth_two_factor_enable": "فعّل المصادقة الثنائية",
-      "auth_two_factor_disable": "عطّل المصادقة الثنائية"
+      "auth_two_factor_disable": "عطّل المصادقة الثنائية",
+      "meeting_create": "أنشأ الاجتماع",
+      "meeting_invite": "دعا أشخاصًا إلى الاجتماع",
+      "meeting_cancel": "ألغى الاجتماع",
+      "integrations_google_connect": "ربط حساب Google",
+      "integrations_google_disconnect": "فصل حساب Google"
     }
   },
   "cabinet": {
@@ -286,5 +295,35 @@
     "description": "تُقترح افتراضيًا عند كل حجز، في كل الفضاءات، وتبقى قابلة للتعديل في كل موعد.",
     "hint": "المواعيد المحجوزة لا تتغير.",
     "label": "المدة الافتراضية"
+  },
+  "integrations": {
+    "connectError": "تعذر بدء الربط مع Google.",
+    "disconnected": "تم فصل حساب Google",
+    "disconnectError": "تعذر فصل حساب Google.",
+    "cancel": "إلغاء",
+    "outcome": {
+      "connected": "تم ربط حساب Google: يمكنك الآن إنشاء اجتماعات.",
+      "denied": "تم إلغاء الربط على Google.",
+      "scope": "يحتاج Cabinova إلى الوصول إلى أجندتك لإنشاء الاجتماعات. أعد المحاولة مع تحديد خانة الأجندة.",
+      "error": "لم يتمكن Google من تأكيد الربط. حاول مرة أخرى."
+    },
+    "google": {
+      "title": "Google Meet",
+      "description": "لبدء أو برمجة اجتماعات الفريق عبر الفيديو.",
+      "connected": "مرتبط",
+      "connect": "ربط Google",
+      "disconnect": "فصل",
+      "account": "الحساب",
+      "since": "تاريخ الربط",
+      "privacy": "لا ينشئ Cabinova سوى أحداث اجتماعاتك؛ ولا يقرأ باقي أجندتك.",
+      "notConfigured": "لم يتم تفعيل اجتماعات Google Meet بعد في Cabinova.",
+      "benefits": {
+        "meet": "رابط Google Meet لكل اجتماع، بنقرة واحدة.",
+        "calendar": "تُضاف الاجتماعات إلى أجندتك على Google وأجندة المدعوين.",
+        "team": "تختار من يشارك؛ ويتم إخبار كل واحد في Cabinova وبالبريد الإلكتروني."
+      },
+      "disconnectTitle": "فصل Google؟",
+      "disconnectHint": "لن تتمكن من إنشاء اجتماعات بعد الآن. تبقى الاجتماعات المبرمجة في أجندات Google وتظل روابطها تعمل."
+    }
   }
 }

@@ -52,7 +52,7 @@ export const DEFAULT_OPENING_HOURS: OpeningHours = {
 	"6": [{ from: "08:00", to: "13:00" }],
 };
 
-export type SettingsSection = { href: string; key: "profile" | "cabinet" | "spaces" | "hours" | "tarifs" | "sessions" | "activity"; ownerOnly?: boolean };
+export type SettingsSection = { href: string; key: "profile" | "cabinet" | "spaces" | "hours" | "tarifs" | "sessions" | "activity" | "integrations"; ownerOnly?: boolean };
 
 export const SETTINGS_SECTIONS: SettingsSection[] = [
 	{ href: "/settings/profile", key: "profile" },
@@ -60,6 +60,7 @@ export const SETTINGS_SECTIONS: SettingsSection[] = [
 	{ href: "/settings/spaces", key: "spaces", ownerOnly: true },
 	{ href: "/settings/hours", key: "hours", ownerOnly: true },
 	{ href: "/settings/tarifs", key: "tarifs", ownerOnly: true },
+	{ href: "/settings/integrations", key: "integrations", ownerOnly: true },
 	{ href: "/settings/sessions", key: "sessions", ownerOnly: true },
 	{ href: "/settings/activity", key: "activity", ownerOnly: true },
 ];

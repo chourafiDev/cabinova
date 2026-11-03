@@ -106,6 +106,13 @@
       "when": 1793471055095,
       "tag": "0014_notification_codes",
       "breakpoints": true
+    },
+    {
+      "idx": 15,
+      "version": "7",
+      "when": 1793697039351,
+      "tag": "0015_meetings",
+      "breakpoints": true
     }
   ]
 }

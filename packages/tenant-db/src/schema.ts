@@ -586,3 +586,64 @@ export const activityLogs = pgTable(
     index('activity_logs_entity_idx').on(t.entityId, t.createdAt),
   ],
 );
+
+// ── Team meetings (Google Meet) ───────────────────────────────────────────
+
+/**
+ * Single row: the Google account the responsible doctor connected. Meetings
+ * are events of its calendar, with a Meet link. Only the refresh token is
+ * kept, encrypted with the master key (bound to the cabinet).
+ */
+export const googleConnection = pgTable(
+  'google_connection',
+  {
+    id: smallint('id').primaryKey().default(1),
+    email: text('email').notNull(),
+    refreshToken: text('refresh_token').notNull(),
+    keyVersion: integer('key_version').notNull(),
+    connectedBy: uuid('connected_by').references(() => users.id, {
+      onDelete: 'set null',
+    }),
+    connectedAt: timestamp('connected_at', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [check('google_connection_single_row', sql`${t.id} = 1`)],
+);
+
+/** A team meeting: a Google Calendar event with its Meet link. */
+export const meetings = pgTable(
+  'meetings',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    title: text('title').notNull(),
+    startsAt: timestamp('starts_at', { withTimezone: true }).notNull(),
+    endsAt: timestamp('ends_at', { withTimezone: true }).notNull(),
+    meetUrl: text('meet_url').notNull(),
+    googleEventId: text('google_event_id').notNull(),
+    createdBy: uuid('created_by').references(() => users.id, {
+      onDelete: 'set null',
+    }),
+    cancelledAt: timestamp('cancelled_at', { withTimezone: true }),
+    createdAt: timestamp('created_at', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [index('meetings_starts_idx').on(t.startsAt)],
+);
+
+export const meetingParticipants = pgTable(
+  'meeting_participants',
+  {
+    meetingId: uuid('meeting_id')
+      .notNull()
+      .references(() => meetings.id, { onDelete: 'cascade' }),
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+  },
+  (t) => [
+    primaryKey({ columns: [t.meetingId, t.userId] }),
+    index('meeting_participants_user_idx').on(t.userId),
+  ],
+);

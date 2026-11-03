@@ -100,8 +100,12 @@
       "quote_due": "عرض السعر {number} للأداء",
       "invoice_billed": "الفاتورة {number} للأداء",
       "invoice_overdue": "الفاتورة {number} متأخرة",
-      "invoice_paid": "الفاتورة {number} متاحة"
-    }
+      "invoice_paid": "الفاتورة {number} متاحة",
+      "meeting_invite": "يدعوك {by} إلى اجتماع",
+      "meeting_cancelled": "ألغى {by} الاجتماع"
+    },
+    "meetingNow": "{title} · الآن",
+    "meetingAt": "{title} · {date} على الساعة {time}"
   },
   "space": {
     "switch": "{cabinet}، الفضاء {space} — تغيير الفضاء",

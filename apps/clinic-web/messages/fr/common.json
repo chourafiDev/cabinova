@@ -100,8 +100,12 @@
       "quote_due": "Devis {number} à régler",
       "invoice_billed": "Facture {number} à régler",
       "invoice_overdue": "Facture {number} en retard",
-      "invoice_paid": "Facture {number} disponible"
-    }
+      "invoice_paid": "Facture {number} disponible",
+      "meeting_invite": "{by} vous invite à une réunion",
+      "meeting_cancelled": "Réunion annulée par {by}"
+    },
+    "meetingNow": "{title} · maintenant",
+    "meetingAt": "{title} · {date} à {time}"
   },
   "space": {
     "switch": "{cabinet}, espace {space} — changer d’espace",

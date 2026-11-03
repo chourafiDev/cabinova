@@ -56,13 +56,36 @@ const envSchema = z
      * /api/branding/logo). Without it, e-mails show the letter mark.
      */
     PLATFORM_WEB_ORIGIN: z.url().optional(),
+    /**
+     * Team meetings (Google Meet): the OAuth client of Cabinova's Google
+     * Cloud project. Without them, the feature says it isn't set up.
+     */
+    GOOGLE_CLIENT_ID: z.string().optional(),
+    GOOGLE_CLIENT_SECRET: z.string().optional(),
+    /**
+     * Where Google sends the responsible doctor back, registered as is in
+     * the OAuth client: one address for every cabinet (Google doesn't take
+     * wildcards). Defaults to this API on localhost outside production.
+     */
+    GOOGLE_REDIRECT_URI: z.url().optional(),
     /** Tests and CI only, see admin-api/test/docker-compose.yml. */
     NEON_WS_PROXY: z.string().optional(),
   })
   .refine((env) => !(env.NODE_ENV === 'production' && env.NEON_WS_PROXY), {
     message: 'NEON_WS_PROXY is for tests only',
     path: ['NEON_WS_PROXY'],
-  });
+  })
+  .refine(
+    (env) =>
+      !env.GOOGLE_CLIENT_ID ||
+      (env.GOOGLE_CLIENT_SECRET &&
+        (env.GOOGLE_REDIRECT_URI || env.NODE_ENV !== 'production')),
+    {
+      message:
+        'GOOGLE_CLIENT_ID needs GOOGLE_CLIENT_SECRET (and GOOGLE_REDIRECT_URI in production)',
+      path: ['GOOGLE_CLIENT_ID'],
+    },
+  );
 
 export type Env = z.infer<typeof envSchema>;
 

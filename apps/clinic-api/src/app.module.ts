@@ -24,6 +24,10 @@ import { DashboardService } from './dashboard/dashboard.service.js';
 import { validateEnv } from './config/env.js';
 import { CatalogModule } from './database/catalog.module.js';
 import { MailService } from './mail/mail.service.js';
+import { GoogleConnectionService } from './meetings/google-connection.service.js';
+import { IntegrationsController } from './meetings/integrations.controller.js';
+import { MeetingsController } from './meetings/meetings.controller.js';
+import { MeetingsService } from './meetings/meetings.service.js';
 import { HealthController } from './health/health.controller.js';
 import { NotificationsController } from './notifications/notifications.controller.js';
 import { NotificationsService } from './notifications/notifications.service.js';
@@ -78,6 +82,8 @@ import { TenancyService } from './tenancy/tenancy.service.js';
     ReportsController,
     ActsController,
     PaymentsController,
+    MeetingsController,
+    IntegrationsController,
   ],
   providers: [
     TenancyService,
@@ -98,6 +104,8 @@ import { TenancyService } from './tenancy/tenancy.service.js';
     TeamService,
     ReportsService,
     PaymentsService,
+    GoogleConnectionService,
+    MeetingsService,
     { provide: APP_GUARD, useClass: ThrottlerGuard },
     { provide: APP_GUARD, useClass: SessionGuard },
     { provide: APP_INTERCEPTOR, useClass: ActivityInterceptor },
@@ -105,6 +113,10 @@ import { TenancyService } from './tenancy/tenancy.service.js';
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer.apply(TenancyMiddleware).exclude('health').forRoutes('*path');
+    // Google's return comes on one address for every cabinet (no subdomain).
+    consumer
+      .apply(TenancyMiddleware)
+      .exclude('health', 'integrations/google/callback')
+      .forRoutes('*path');
   }
 }

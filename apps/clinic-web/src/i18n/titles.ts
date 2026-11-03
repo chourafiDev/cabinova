@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 
-type Page = "dashboard" | "appointments" | "patients" | "payments" | "reports" | "staff";
-type SettingsPage = "activity" | "tarifs" | "spaces" | "sessions" | "cabinet" | "profile" | "hours";
+type Page = "dashboard" | "appointments" | "patients" | "payments" | "reports" | "staff" | "meetings";
+type SettingsPage = "activity" | "tarifs" | "spaces" | "sessions" | "cabinet" | "profile" | "hours" | "integrations";
 
 /** The browser tab of a page, named like its menu entry. */
 export async function pageTitle(page: Page): Promise<Metadata> {

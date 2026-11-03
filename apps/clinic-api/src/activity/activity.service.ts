@@ -19,7 +19,8 @@ export type ActivityEntity =
   | 'space'
   | 'payment'
   | 'charge'
-  | 'session';
+  | 'session'
+  | 'meeting';
 
 const PATIENT_NAME = `upper(p.last_name) || ' ' || p.first_name`;
 
@@ -34,6 +35,7 @@ const DESCRIBE: Record<ActivityEntity, string> = {
               join users u on u.id = s.user_id where s.id = $1`,
   act: 'select name as target from acts where id = $1',
   space: 'select name as target from spaces where id = $1',
+  meeting: 'select title as target from meetings where id = $1',
   payment: `select ${PATIENT_NAME} || coalesce(' · ' || c.receipt_number, '') as target
               from payments c join patients p on p.id = c.patient_id
              where c.id = $1`,
@@ -47,9 +49,9 @@ const CATEGORIES: Record<string, string[]> = {
   patients: ['patient.'],
   appointments: ['appointment.'],
   payments: ['payment.', 'cashier.', 'act.'],
-  team: ['team.'],
+  team: ['team.', 'meeting.'],
   security: ['auth.'],
-  settings: ['space.', 'settings.'],
+  settings: ['space.', 'settings.', 'integrations.'],
 };
 
 export type ActivityEntry = {

@@ -6,6 +6,7 @@ import { KeyboardShortcuts } from '@/components/keyboard-shortcuts';
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
 import { billingNotice } from '@/lib/billing-notice';
 import { getClinicState } from '@/lib/session';
+import { LiveMeetingStrip } from '@/components/meetings/live-meeting-strip';
 import { Suspense } from 'react';
 import { BillingBanner } from './_components/billing/billing-banner';
 import { allNavItems } from './_components/nav';
@@ -46,6 +47,7 @@ export default async function ClinicLayout({ children }: LayoutProps<'/'>) {
         {/* Inset panel: fixed frame on desktop, the page scrolls inside it. */}
         <SidebarInset className="min-w-0 md:h-[calc(100svh-1rem)] md:overflow-y-auto md:border md:border-black/5 dark:md:border-white/5">
           <SiteHeader user={session.user} spaces={session.spaces} />
+          <LiveMeetingStrip />
           {notice && <BillingBanner notice={notice} />}
           <div className="flex min-w-0 flex-1 flex-col p-4">{children}</div>
           <SiteFooter />

@@ -24,6 +24,10 @@
       "label": "Tarifs",
       "hint": "Actes et honoraires"
     },
+    "integrations": {
+      "label": "Intégrations",
+      "hint": "Google Meet pour les réunions"
+    },
     "sessions": {
       "label": "Sessions actives",
       "hint": "Appareils de l’équipe"
@@ -139,7 +143,12 @@
       "auth_password_change": "a changé son mot de passe",
       "auth_password_reset": "a réinitialisé son mot de passe",
       "auth_two_factor_enable": "a activé la double authentification",
-      "auth_two_factor_disable": "a désactivé la double authentification"
+      "auth_two_factor_disable": "a désactivé la double authentification",
+      "meeting_create": "a créé la réunion",
+      "meeting_invite": "a invité des personnes à la réunion",
+      "meeting_cancel": "a annulé la réunion",
+      "integrations_google_connect": "a connecté le compte Google",
+      "integrations_google_disconnect": "a déconnecté le compte Google"
     }
   },
   "cabinet": {
@@ -286,5 +295,35 @@
     "description": "Proposée par défaut à chaque prise de rendez-vous, dans tous les espaces. Elle reste modifiable rendez-vous par rendez-vous.",
     "hint": "Les rendez-vous déjà pris ne changent pas.",
     "label": "Durée par défaut"
+  },
+  "integrations": {
+    "connectError": "La connexion à Google n’a pas pu démarrer.",
+    "disconnected": "Compte Google déconnecté",
+    "disconnectError": "Le compte Google n’a pas pu être déconnecté.",
+    "cancel": "Annuler",
+    "outcome": {
+      "connected": "Compte Google connecté : vous pouvez créer des réunions.",
+      "denied": "Connexion annulée sur Google.",
+      "scope": "Cabinova a besoin de l’accès à votre agenda pour créer les réunions. Recommencez en cochant la case de l’agenda.",
+      "error": "Google n’a pas pu confirmer la connexion. Réessayez."
+    },
+    "google": {
+      "title": "Google Meet",
+      "description": "Pour démarrer ou planifier des réunions d’équipe en visioconférence.",
+      "connected": "Connecté",
+      "connect": "Connecter Google",
+      "disconnect": "Déconnecter",
+      "account": "Compte",
+      "since": "Connecté le",
+      "privacy": "Cabinova ne crée que les événements de vos réunions ; il ne lit pas le reste de votre agenda.",
+      "notConfigured": "Les réunions Google Meet ne sont pas encore activées pour Cabinova.",
+      "benefits": {
+        "meet": "Un lien Google Meet pour chaque réunion, en un clic.",
+        "calendar": "Les réunions s’ajoutent à votre agenda Google et à celui des invités.",
+        "team": "Vous choisissez qui participe ; chacun est prévenu dans Cabinova et par e-mail."
+      },
+      "disconnectTitle": "Déconnecter Google ?",
+      "disconnectHint": "Vous ne pourrez plus créer de réunions. Celles déjà prévues restent dans les agendas Google et leurs liens continuent de fonctionner."
+    }
   }
 }

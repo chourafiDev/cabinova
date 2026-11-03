@@ -10,6 +10,7 @@ import { CommandPalette } from "./command-palette";
 import { findNavItem } from "./nav";
 import { NotificationBell } from "./notification-bell";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { MeetingButton } from "@/components/meetings/meeting-button";
 import { UserMenu } from "./user-menu";
 
 export function SiteHeader({ user, spaces }: { user: ClinicSession["user"]; spaces: ClinicSession["spaces"] }) {
@@ -31,6 +32,7 @@ export function SiteHeader({ user, spaces }: { user: ClinicSession["user"]; spac
       </Breadcrumb>
       <div className="ms-auto flex flex-1 items-center justify-end gap-2">
         <CommandPalette spaces={spaces} role={user.role} />
+        {user.role === "owner" && <MeetingButton />}
         <NotificationBell />
         <span data-tour="account" className="flex items-center gap-2">
           <ThemeToggle />

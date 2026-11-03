@@ -16,6 +16,7 @@ import { TwoFactorService } from '../auth/two-factor.service.js';
 import type { Env } from '../config/env.js';
 import { CatalogService } from '../database/catalog.module.js';
 import { MailService } from '../mail/mail.service.js';
+import { clinicAppUrl } from '../tenancy/app-url.js';
 import type {
   ClinicContext,
   ClinicTenant,
@@ -77,7 +78,7 @@ const MEMBERS = `
  */
 @Injectable()
 export class TeamService {
-  private readonly appUrl: string;
+  private readonly appUrl: (subdomain: string) => string;
   private readonly logger = new Logger(TeamService.name);
 
   constructor(
@@ -86,11 +87,7 @@ export class TeamService {
     private readonly mail: MailService,
     private readonly twoFactor: TwoFactorService,
   ) {
-    this.appUrl =
-      config.get('CLINIC_APP_URL', { infer: true }) ??
-      (config.get('NODE_ENV') === 'production'
-        ? `https://{subdomain}.${config.get('TENANT_BASE_DOMAIN')}`
-        : 'http://{subdomain}.localhost:3002');
+    this.appUrl = clinicAppUrl(config);
   }
 
   /** Everyone, the owner first; with the offer's limits and the open spaces. */
@@ -473,7 +470,7 @@ export class TeamService {
   }
 
   private linkUrl(tenant: ClinicTenant, token: string) {
-    return `${this.appUrl.replace('{subdomain}', tenant.subdomain)}/invite/${token}`;
+    return `${this.appUrl(tenant.subdomain)}/invite/${token}`;
   }
 
   /**

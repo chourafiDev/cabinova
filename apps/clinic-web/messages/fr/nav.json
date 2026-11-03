@@ -8,6 +8,7 @@
     "dashboard": "Tableau de bord",
     "appointments": "Agenda",
     "patients": "Patients",
+    "meetings": "Réunions",
     "consultations": "Consultations",
     "prescriptions": "Ordonnances",
     "payments": "Encaissements",
@@ -24,6 +25,7 @@
     "sessions": "Sessions actives",
     "cabinet": "Cabinet",
     "profile": "Mon profil",
-    "hours": "Horaires & agenda"
+    "hours": "Horaires & agenda",
+    "integrations": "Intégrations"
   }
 }

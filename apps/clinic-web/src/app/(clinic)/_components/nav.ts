@@ -10,6 +10,7 @@ import {
   HiIdentification,
   HiSquares2X2,
   HiUsers,
+  HiVideoCamera,
 } from "react-icons/hi2";
 
 export type NavItem = {
@@ -32,6 +33,7 @@ export const navGroups: { key: string; items: NavItem[] }[] = [
       { key: "dashboard", href: "/", icon: HiSquares2X2, shortcut: "d" },
       { key: "appointments", href: "/appointments", icon: HiCalendarDays, shortcut: "a" },
       { key: "patients", href: "/patients", icon: HiUsers, shortcut: "p" },
+      { key: "meetings", href: "/meetings", icon: HiVideoCamera, shortcut: "m" },
       { key: "consultations", href: "/consultations", icon: HiClipboardDocumentList, shortcut: "c", soon: true },
       { key: "prescriptions", href: "/prescriptions", icon: HiDocumentText, shortcut: "o", soon: true },
     ],

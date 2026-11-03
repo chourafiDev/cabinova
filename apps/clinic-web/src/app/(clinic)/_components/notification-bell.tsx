@@ -7,7 +7,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import type { IconType } from "react-icons";
-import { LuBell, LuCalendarX, LuCheckCheck, LuDoorOpen, LuReceipt, LuUserPlus, LuUserX } from "react-icons/lu";
+import { LuBell, LuCalendarX, LuCheckCheck, LuDoorOpen, LuReceipt, LuUserPlus, LuUserX, LuVideo } from "react-icons/lu";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { api } from "@/lib/api-client";
@@ -16,7 +16,7 @@ import { cn } from "@/lib/utils";
 
 type Notification = {
 	id: string;
-	kind: "arrived" | "no_show" | "cancelled" | "team" | "billing";
+	kind: "arrived" | "no_show" | "cancelled" | "team" | "billing" | "meeting";
 	title: string;
 	body: string | null;
 	/** Absent on notifications written before they were translated. */
@@ -37,6 +37,7 @@ const ICONS: Record<Notification["kind"], IconType> = {
 	cancelled: LuCalendarX,
 	team: LuUserPlus,
 	billing: LuReceipt,
+	meeting: LuVideo,
 };
 
 /** The header's bell: what needs this person's attention, checked every minute. */
@@ -49,7 +50,12 @@ export function NotificationBell() {
 	const format = useFormat();
 	const titleOf = (n: Notification) =>
 		n.code && t.has(`codes.${n.code}`) ? t(`codes.${n.code}`, (n.params ?? {}) as Record<string, string | number>) : n.title;
-	const detailOf = ({ params, body }: Notification) => {
+	const detailOf = ({ kind, params, body }: Notification) => {
+		if (kind === "meeting" && typeof params?.time === "string") {
+			if (params.now) return t("meetingNow", { title: String(params.title) });
+			const date = format.date(`${params.day}T12:00:00Z`, { weekday: "long", month: "long", year: undefined });
+			return t("meetingAt", { title: String(params.title), date, time: params.time });
+		}
 		if (typeof params?.amount === "number") return format.mad(params.amount);
 		if (typeof params?.time === "string") {
 			return [t("appointmentAt", { time: params.time }), params.space].filter(Boolean).join(" · ");
