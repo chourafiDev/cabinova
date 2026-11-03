@@ -1,5 +1,9 @@
 import type { Pool } from '@neondatabase/serverless';
-import { Injectable, Logger } from '@nestjs/common';
+import {
+  type BeforeApplicationShutdown,
+  Injectable,
+  Logger,
+} from '@nestjs/common';
 import type { ListActivityQuery } from './dto.js';
 
 const PER_PAGE = 50;
@@ -64,8 +68,26 @@ export type ActivityEntry = {
  * Writing an entry never breaks what it records.
  */
 @Injectable()
-export class ActivityService {
+export class ActivityService implements BeforeApplicationShutdown {
   private readonly logger = new Logger(ActivityService.name);
+  /** Entries still being written after their response went out. */
+  private readonly pending = new Set<Promise<void>>();
+
+  /**
+   * Writes journal work after the response, so nobody waits on it: a failure
+   * is logged, never returned. Shutdown waits for these before the pools close.
+   */
+  later(work: () => Promise<unknown>) {
+    const task = work()
+      .then(() => undefined)
+      .catch((err: unknown) => this.logger.error('Activity failed', err))
+      .finally(() => this.pending.delete(task));
+    this.pending.add(task);
+  }
+
+  async beforeApplicationShutdown() {
+    await Promise.all(this.pending);
+  }
 
   async describe(db: Pool, entity: ActivityEntity, id: string) {
     const { rows } = await db.query<{ target: string }>(DESCRIBE[entity], [id]);

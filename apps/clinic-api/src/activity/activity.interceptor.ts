@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import type { Request } from 'express';
-import { from, mergeMap, type Observable } from 'rxjs';
+import { from, map, mergeMap, type Observable } from 'rxjs';
 import { ACTIVITY, type ActivityOptions } from './activity.decorator.js';
 import { ActivityService } from './activity.service.js';
 
@@ -22,7 +22,8 @@ const idOf = (result: unknown) => {
 /**
  * Journal entries for the routes marked @Activity. The target's name is
  * read before the route runs, so a deletion can still say what it deleted;
- * nothing is written if the route fails.
+ * nothing is written if the route fails, and the entry is written after the
+ * response goes out.
  */
 @Injectable()
 export class ActivityInterceptor implements NestInterceptor {
@@ -45,25 +46,28 @@ export class ActivityInterceptor implements NestInterceptor {
     return from(this.targetOf(req, options)).pipe(
       mergeMap((before) =>
         next.handle().pipe(
-          mergeMap(async (result: unknown) => {
+          map((result: unknown) => {
             const entityId = paramId(req) ?? idOf(result);
-            const target =
-              before ??
-              (options.entity && entityId
-                ? await this.safeDescribe(req, options, entityId)
-                : null);
-            const entry = {
-              action: options.action,
-              actor: { id: user.id, name: user.name },
-              entity: options.entity,
-              entityId,
-              target,
-              detail: options.detail?.(req),
-              ip: req.ip,
-            };
-            await (options.hourly
-              ? this.activity.recordHourly(db, entry)
-              : this.activity.record(db, entry));
+            // After the response: the journal never slows what it records.
+            this.activity.later(async () => {
+              const target =
+                before ??
+                (options.entity && entityId
+                  ? await this.safeDescribe(req, options, entityId)
+                  : null);
+              const entry = {
+                action: options.action,
+                actor: { id: user.id, name: user.name },
+                entity: options.entity,
+                entityId,
+                target,
+                detail: options.detail?.(req),
+                ip: req.ip,
+              };
+              await (options.hourly
+                ? this.activity.recordHourly(db, entry)
+                : this.activity.record(db, entry));
+            });
             return result;
           }),
         ),

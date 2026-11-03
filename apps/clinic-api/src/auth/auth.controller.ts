@@ -72,11 +72,13 @@ export class AuthController {
       body.password,
     );
     if (!user) {
-      await this.activity.record(db, {
-        action: 'auth.login_failed',
-        target: body.email,
-        ip: req.ip,
-      });
+      this.activity.later(() =>
+        this.activity.record(db, {
+          action: 'auth.login_failed',
+          target: body.email,
+          ip: req.ip,
+        }),
+      );
       throw new UnauthorizedException({
         code: 'INVALID_CREDENTIALS',
         message: 'E-mail ou mot de passe incorrect.',
@@ -215,11 +217,13 @@ export class AuthController {
     const user = await this.auth.acceptInvitation(db, token, body.password);
     if (!user) throw this.invalidLink();
     if (user.joined) await this.notifications.memberJoined(db, user.id);
-    await this.activity.record(db, {
-      action: user.joined ? 'team.joined' : 'auth.password_reset',
-      actor: { id: user.id, name: user.name },
-      ip: req.ip,
-    });
+    this.activity.later(() =>
+      this.activity.record(db, {
+        action: user.joined ? 'team.joined' : 'auth.password_reset',
+        actor: { id: user.id, name: user.name },
+        ip: req.ip,
+      }),
+    );
     // A password link must not skip the second factor.
     if (await this.twoFactor.isEnabled(db, user.id)) {
       return { ok: true, loginRequired: true };
@@ -276,20 +280,20 @@ export class AuthController {
     };
   }
 
-  private async recordSignIn(
-    db: ClinicContext['db'],
-    userId: string,
-    req: Request,
-  ) {
-    await this.activity.record(db, {
-      action: 'auth.login',
-      actor: {
-        id: userId,
-        name: await this.activity.describe(db, 'member', userId),
-      },
-      ip: req.ip,
+  /** After the response, like every journal entry. */
+  private recordSignIn(db: ClinicContext['db'], userId: string, req: Request) {
+    const ip = req.ip;
+    this.activity.later(async () => {
+      await this.activity.record(db, {
+        action: 'auth.login',
+        actor: {
+          id: userId,
+          name: await this.activity.describe(db, 'member', userId),
+        },
+        ip,
+      });
+      await this.activity.prune(db);
     });
-    await this.activity.prune(db);
   }
 
   private async signIn(
@@ -299,7 +303,7 @@ export class AuthController {
     req: Request,
     res: Response,
   ) {
-    await this.recordSignIn(db, userId, req);
+    this.recordSignIn(db, userId, req);
     const { token, expiresAt } = await this.auth.createSession(db, userId, {
       remember,
       userAgent: req.get('user-agent'),
