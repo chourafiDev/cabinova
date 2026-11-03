@@ -11,6 +11,7 @@ import { ConfigService } from '@nestjs/config';
 import type { SecretBox } from '@cabinova/secret-box';
 import type { Env } from '../config/env.js';
 import { CatalogService, SECRET_BOX } from '../database/catalog.module.js';
+import { POOL } from '../database/pool.js';
 import { subdomainOf } from './host.js';
 import { isBehind } from './schema-version.js';
 
@@ -37,13 +38,6 @@ export type ClinicContext = { tenant: ClinicTenant; db: Pool };
 
 // Status changes in the admin (suspension…) reach the clinic within this delay.
 const CACHE_MS = 30_000;
-
-/**
- * Room for one page's queries at once (/auth/me runs 5 together), and idle
- * connections kept 5 minutes instead of 10 seconds: each new one costs a
- * WebSocket, TLS and login handshake before the first query.
- */
-const POOL = { max: 10, idleTimeoutMillis: 5 * 60_000 };
 
 @Injectable()
 export class TenancyService implements OnApplicationShutdown {

@@ -32,6 +32,19 @@ export class DatabaseService implements OnApplicationShutdown {
   }
 }
 
+/**
+ * Idle connections are kept a minute (reconnecting costs a handshake), not
+ * longer: one dropped while idle (sleep, network change) can look alive,
+ * and a query on it waits forever. A query that gets no answer is stopped
+ * after 30 s, which also discards its connection; waiting for a free one
+ * gives up after 30 s (time for Neon to wake up a suspended database).
+ */
+const POOL_TIMEOUTS = {
+  idleTimeoutMillis: 60_000,
+  connectionTimeoutMillis: 30_000,
+  query_timeout: 30_000,
+};
+
 @Global()
 @Module({
   providers: [
@@ -41,8 +54,7 @@ export class DatabaseService implements OnApplicationShutdown {
       useFactory: (config: ConfigService<Env, true>) =>
         new Pool({
           connectionString: config.get('DATABASE_URL'),
-          // Kept open between requests: reconnecting costs a handshake.
-          idleTimeoutMillis: 5 * 60_000,
+          ...POOL_TIMEOUTS,
         }),
     },
     {

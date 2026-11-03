@@ -9,6 +9,7 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { SecretBox } from '@cabinova/secret-box';
 import type { Env } from '../config/env.js';
+import { POOL } from './pool.js';
 import { configureNeon } from './neon.js';
 
 configureNeon();
@@ -36,11 +37,11 @@ export class CatalogService implements OnApplicationShutdown {
       provide: CATALOG,
       inject: [ConfigService],
       useFactory: (config: ConfigService<Env, true>) =>
+        // Same timeouts as the cabinets' pools.
         new Pool({
           connectionString: config.get('DATABASE_URL'),
+          ...POOL,
           max: 5,
-          // Kept open between requests: reconnecting costs a handshake.
-          idleTimeoutMillis: 5 * 60_000,
         }),
     },
     {
