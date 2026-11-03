@@ -6,7 +6,7 @@ import {
   ServiceUnavailableException,
   UnauthorizedException,
 } from '@nestjs/common';
-import { and, eq, gt } from 'drizzle-orm';
+import { and, eq, gt, isNull } from 'drizzle-orm';
 import { type AuditActor, writeAudit } from '../audit/audit.js';
 import { SECRET_BOX } from '../crypto/crypto.module.js';
 import {
@@ -151,21 +151,33 @@ export class TwoFactorService {
     });
   }
 
-  /** Enrolment step 1: a new secret (not active until confirmed with a code). */
+  /** Enrolment step 1: a secret (not active until confirmed with a code). */
   async setup(userId: string) {
-    const user = await this.find(userId);
+    let user = await this.find(userId);
     if (user.totpEnabledAt) {
       throw new ConflictException({
         code: 'ALREADY_ENABLED',
         message: 'La double authentification est déjà active.',
       });
     }
-    const secret = newTotpSecret();
-    const sealed = this.box().encrypt(secret, `totp:${userId}`);
-    await this.database.db
-      .update(platformUsers)
-      .set({ totpSecret: sealed.ciphertext, totpKeyVersion: sealed.keyVersion })
-      .where(eq(platformUsers.id, userId));
+    // A setup already started keeps its secret: asked twice (double click,
+    // reload, second tab), a new one would no longer match the QR code
+    // already scanned. Of two requests at once, the first one wins.
+    if (!user.totpSecret) {
+      const sealed = this.box().encrypt(newTotpSecret(), `totp:${userId}`);
+      await this.database.db
+        .update(platformUsers)
+        .set({ totpSecret: sealed.ciphertext, totpKeyVersion: sealed.keyVersion })
+        .where(
+          and(
+            eq(platformUsers.id, userId),
+            isNull(platformUsers.totpSecret),
+            isNull(platformUsers.totpEnabledAt),
+          ),
+        );
+      user = await this.find(userId);
+    }
+    const secret = this.secretOf(user);
     return { secret, otpauthUrl: otpauthUrl(secret, user.email) };
   }
 
