@@ -18,6 +18,10 @@ const envSchema = z
     WEB_ORIGIN: z.string().default('http://localhost:3000'),
     /** Express "trust proxy": the Next.js app proxies /api to this server. */
     TRUST_PROXY: z.string().default('loopback'),
+    /** Requests at least this slow are logged, with their database time (see app.setup.ts). */
+    SLOW_REQUEST_MS: z.coerce.number().int().min(0).default(500),
+    /** "true": log every request's timing, not only the slow ones. */
+    LOG_ALL_REQUESTS: z.stringbool().default(false),
     /**
      * Resend API key. Optional: without it, EmailService logs instead of
      * sending, and invite/reset links fall back to "copy the link" in the UI.

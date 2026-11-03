@@ -20,6 +20,10 @@ const envSchema = z
     DATABASE_URL: z.url(),
     /** Express "trust proxy": the clinic Next.js app proxies /api here. */
     TRUST_PROXY: z.string().default('loopback'),
+    /** Requests at least this slow are logged, with their database time (see app.setup.ts). */
+    SLOW_REQUEST_MS: z.coerce.number().int().min(0).default(500),
+    /** "true": log every request's timing, not only the slow ones. */
+    LOG_ALL_REQUESTS: z.stringbool().default(false),
     /**
      * Same master key as admin-api: decrypts each cabinet's database
      * password (tenant_secrets).
