@@ -74,7 +74,8 @@
     "connectFirst": "Connectez votre compte Google",
     "connectFirstHint": "Les réunions sont créées dans votre agenda Google, avec un lien Google Meet. C’est à faire une seule fois.",
     "notConfigured": "Réunions bientôt disponibles",
-    "notConfiguredHint": "Les réunions Google Meet ne sont pas encore activées pour Cabinova. Contactez le support si vous en avez besoin."
+    "notConfiguredHint": "Les réunions Google Meet ne sont pas encore activées pour Cabinova. Contactez le support si vous en avez besoin.",
+    "copyLink": "Copier le lien"
   },
   "add": {
     "title": "Ajouter des personnes",

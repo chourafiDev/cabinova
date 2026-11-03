@@ -74,7 +74,8 @@
     "connectFirst": "اربط حساب Google الخاص بك",
     "connectFirstHint": "تُنشأ الاجتماعات في أجندة Google الخاصة بك، مع رابط Google Meet. يتم ذلك مرة واحدة فقط.",
     "notConfigured": "الاجتماعات متاحة قريبًا",
-    "notConfiguredHint": "لم يتم تفعيل اجتماعات Google Meet بعد في Cabinova. تواصل مع الدعم إذا كنت بحاجة إليها."
+    "notConfiguredHint": "لم يتم تفعيل اجتماعات Google Meet بعد في Cabinova. تواصل مع الدعم إذا كنت بحاجة إليها.",
+    "copyLink": "نسخ الرابط"
   },
   "add": {
     "title": "إضافة أشخاص",
