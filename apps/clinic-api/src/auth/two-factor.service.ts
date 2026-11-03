@@ -161,19 +161,30 @@ export class TwoFactorService {
     });
   }
 
-  /** Enrolment step 1: a new secret, not active until confirmed with a code. */
-  async setup({ db, tenant }: ClinicContext, userId: string) {
-    const user = await this.find(db, userId);
+  /**
+   * Enrolment step 1: a secret, not active until confirmed with a code. A
+   * setup already started keeps its secret: the screen can ask twice (React
+   * in development, a reload, a second tab), and a new secret would no
+   * longer match the QR code already scanned.
+   */
+  async setup(ctx: ClinicContext, userId: string) {
+    const { db, tenant } = ctx;
+    let user = await this.find(db, userId);
     if (user.totp_enabled_at) throw this.alreadyEnabled();
-    const secret = newTotpSecret();
-    const sealed = this.secrets.encrypt(
-      secret,
-      this.context(tenant.id, userId),
-    );
-    await db.query(
-      'update users set totp_secret = $2, totp_key_version = $3 where id = $1',
-      [userId, sealed.ciphertext, sealed.keyVersion],
-    );
+    if (!user.totp_secret) {
+      const sealed = this.secrets.encrypt(
+        newTotpSecret(),
+        this.context(tenant.id, userId),
+      );
+      // Only if still none: of two requests at once, the first one wins.
+      await db.query(
+        `update users set totp_secret = $2, totp_key_version = $3
+          where id = $1 and totp_secret is null and totp_enabled_at is null`,
+        [userId, sealed.ciphertext, sealed.keyVersion],
+      );
+      user = await this.find(db, userId);
+    }
+    const secret = this.secretOf(ctx, user);
     return { secret, otpauthUrl: otpauthUrl(secret, user.email) };
   }
 
