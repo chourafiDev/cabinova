@@ -4,7 +4,7 @@ import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { LuVideo } from "react-icons/lu";
 import { Button } from "@/components/ui/button";
-import { NewMeetingDialog } from "./new-meeting-dialog";
+import { NewMeetingSheet } from "./new-meeting-sheet";
 
 /** The header's "Réunion": the responsible doctor starts one from any page. */
 export function MeetingButton({ variant = "header" }: { variant?: "header" | "page" }) {
@@ -22,7 +22,7 @@ export function MeetingButton({ variant = "header" }: { variant?: "header" | "pa
 					<LuVideo /> {t("newMeeting")}
 				</Button>
 			)}
-			<NewMeetingDialog open={open} onOpenChange={setOpen} />
+			<NewMeetingSheet open={open} onOpenChange={setOpen} />
 		</>
 	);
 }

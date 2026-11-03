@@ -11,13 +11,14 @@ import { GoogleMark } from "@/app/(clinic)/settings/integrations/_components/goo
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
-	Dialog,
-	DialogContent,
-	DialogDescription,
-	DialogFooter,
-	DialogHeader,
-	DialogTitle,
-} from "@/components/ui/dialog";
+	Sheet,
+	SHEET_AT_END,
+	SheetContent,
+	SheetDescription,
+	SheetFooter,
+	SheetHeader,
+	SheetTitle,
+} from "@/components/ui/sheet";
 import { Field, FieldError, FieldLabel, FieldLegend, FieldSet } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -36,15 +37,22 @@ import { cn } from "@/lib/utils";
 /** From this many people, the list gets a search field. */
 const SEARCH_FROM = 7;
 
-/** Start a Google Meet now, or plan one, with chosen members of the team. */
-export function NewMeetingDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {
+/**
+ * Start a Google Meet now, or plan one, with chosen members of the team: a
+ * sheet beside the page (at the end side, also in Arabic), the people list
+ * scrolling between a fixed header and the buttons.
+ */
+export function NewMeetingSheet({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {
 	return (
-		<Dialog open={open} onOpenChange={onOpenChange}>
-			<DialogContent className="gap-0 p-0 sm:max-w-xl">
+		<Sheet open={open} onOpenChange={onOpenChange}>
+			<SheetContent
+				side="right"
+				className={`w-[calc(100%-1rem)] gap-0 overflow-hidden p-0 data-[side=right]:sm:max-w-lg ${SHEET_AT_END}`}
+			>
 				{/* Remounted per opening: a fresh form each time. */}
 				{open && <MeetingForm onDone={() => onOpenChange(false)} />}
-			</DialogContent>
-		</Dialog>
+			</SheetContent>
+		</Sheet>
 	);
 }
 
@@ -158,20 +166,20 @@ function MeetingForm({ onDone }: { onDone: () => void }) {
 	};
 
 	const header = (
-		<DialogHeader className="border-b p-5">
-			<DialogTitle className="flex items-center gap-2">
+		<SheetHeader className="border-b p-5 pe-12">
+			<SheetTitle className="flex items-center gap-2">
 				<span className="bg-primary/10 text-primary flex size-8 items-center justify-center rounded-lg">
 					<LuVideo className="size-4" />
 				</span>
 				{t("title")}
-			</DialogTitle>
-			<DialogDescription>{t("description")}</DialogDescription>
-		</DialogHeader>
+			</SheetTitle>
+			<SheetDescription>{t("description")}</SheetDescription>
+		</SheetHeader>
 	);
 
 	if (google.isPending || people.isPending) {
 		return (
-			<div aria-busy="true">
+			<div aria-busy="true" className="flex min-h-0 flex-1 flex-col">
 				{header}
 				<div className="grid gap-3 p-5">
 					<Skeleton className="h-10" />
@@ -184,9 +192,9 @@ function MeetingForm({ onDone }: { onDone: () => void }) {
 	// Nothing to create meetings with yet: say so, and get there in one step.
 	if (!google.data?.connected) {
 		return (
-			<div>
+			<div className="flex min-h-0 flex-1 flex-col">
 				{header}
-				<div className="grid justify-items-center gap-3 p-8 text-center">
+				<div className="grid flex-1 content-center justify-items-center gap-3 p-8 text-center">
 					<span className="bg-muted flex size-12 items-center justify-center rounded-full">
 						<GoogleMark className="size-6" />
 					</span>
@@ -201,9 +209,9 @@ function MeetingForm({ onDone }: { onDone: () => void }) {
 	}
 
 	return (
-		<form onSubmit={submit} noValidate>
+		<form onSubmit={submit} noValidate className="flex min-h-0 flex-1 flex-col">
 			{header}
-			<div className="grid max-h-[65svh] gap-5 overflow-y-auto p-5">
+			<div className="grid min-h-0 flex-1 content-start gap-5 overflow-y-auto p-5">
 				<FieldSet data-invalid={!!errors.people}>
 					<div className="flex flex-wrap items-baseline justify-between gap-2">
 						<FieldLegend variant="label">{t("who")}</FieldLegend>
@@ -346,7 +354,7 @@ function MeetingForm({ onDone }: { onDone: () => void }) {
 					<FieldError>{errors.when}</FieldError>
 				</FieldSet>
 
-				<div className="grid gap-4 sm:grid-cols-[1fr_auto]">
+				<div className="grid gap-5">
 					<Field>
 						<FieldLabel htmlFor="meeting-title">
 							{t("subject")} <span className="text-muted-foreground font-normal">{t("optional")}</span>
@@ -384,7 +392,7 @@ function MeetingForm({ onDone }: { onDone: () => void }) {
 				</div>
 
 			</div>
-			<DialogFooter className="mx-0 mb-0 items-center px-5 sm:justify-between">
+			<SheetFooter className="mt-0 items-center rounded-b-none px-5 sm:justify-between">
 				{/* Beside the buttons, so it's seen whatever the scroll. */}
 				{errors.form ? (
 					<p role="alert" className="text-destructive text-sm sm:max-w-[55%]">
@@ -405,7 +413,7 @@ function MeetingForm({ onDone }: { onDone: () => void }) {
 						{when === "now" ? t("startNow") : t("plan")}
 					</Button>
 				</div>
-			</DialogFooter>
+			</SheetFooter>
 		</form>
 	);
 }
