@@ -178,7 +178,11 @@ export class TwoFactorService {
       user = await this.find(userId);
     }
     const secret = this.secretOf(user);
-    return { secret, otpauthUrl: otpauthUrl(secret, user.email) };
+    // Told apart from the same person's cabinet entries in the app.
+    return {
+      secret,
+      otpauthUrl: otpauthUrl(secret, user.email, 'Cabinova Admin'),
+    };
   }
 
   /** Enrolment step 2: the first code proves the app is set up; returns the backup codes (once). */

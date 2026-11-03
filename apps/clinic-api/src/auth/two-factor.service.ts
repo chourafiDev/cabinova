@@ -185,7 +185,12 @@ export class TwoFactorService {
       user = await this.find(db, userId);
     }
     const secret = this.secretOf(ctx, user);
-    return { secret, otpauthUrl: otpauthUrl(secret, user.email) };
+    // The cabinet in the name: one person in several cabinets (or with a
+    // platform account) would otherwise get look-alike entries in the app.
+    return {
+      secret,
+      otpauthUrl: otpauthUrl(secret, user.email, `Cabinova · ${tenant.name}`),
+    };
   }
 
   /** Enrolment step 2: the first code proves the app works; the backup codes, once. */
