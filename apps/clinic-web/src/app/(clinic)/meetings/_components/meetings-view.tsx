@@ -256,6 +256,10 @@ function People({ people, max = 4 }: { people: MeetingPerson[]; max?: number }) 
 	);
 }
 
+/** Emerald into teal, sky and a touch of violet, around a running meeting. */
+const LIVE_BORDER =
+	"linear-gradient(var(--card), var(--card)) padding-box, linear-gradient(135deg, #34d399, #10b981 30%, #14b8a6 55%, #38bdf8 80%, #a78bfa) border-box";
+
 /** Re-renders now and then: "dans 5 minutes" keeps counting down. */
 function useNow(every = 30_000) {
 	const [now, setNow] = useState(() => Date.now());
@@ -298,11 +302,11 @@ function MeetingCard({
 		<article
 			className={cn(
 				"bg-card group relative flex h-full flex-col overflow-hidden rounded-2xl border transition-[box-shadow,border-color] duration-200 hover:border-foreground/15 hover:shadow-md",
-				live && "border-emerald-300 shadow-sm shadow-emerald-500/10 dark:border-emerald-700",
+				live && "border-2 border-transparent shadow-lg shadow-emerald-500/15 hover:border-transparent hover:shadow-emerald-500/25",
 			)}
+			// Live: the card's own background inside a gradient border.
+			style={live ? { background: LIVE_BORDER } : undefined}
 		>
-			{/* Live: a thin accent along the top. */}
-			{live && <span aria-hidden="true" className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-emerald-400 via-emerald-500 to-teal-400" />}
 
 			<div className="flex flex-1 gap-4 p-4">
 				{/* The day, like a calendar sheet. */}
