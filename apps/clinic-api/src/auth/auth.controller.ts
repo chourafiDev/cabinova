@@ -239,12 +239,21 @@ export class AuthController {
     res.clearCookie(SESSION_COOKIE, { path: '/' });
   }
 
-  /** Current user, cabinet and offer — read by the clinic app on every page. */
+  /**
+   * Current user, cabinet and offer — read by the clinic app on every page,
+   * so its lookups run together, not one after another.
+   */
   @Get('me')
   async me(
     @Clinic() { tenant, db }: ClinicContext,
     @CurrentUser() user: ClinicUser,
   ) {
+    const [locale, subscription, tourCompleted, spaces] = await Promise.all([
+      this.auth.localeOf(db, user.id),
+      this.clinic.subscription(tenant.id, db),
+      this.onboarding.tourCompleted(db, user.id),
+      this.spaces.current(db, user).catch(() => null),
+    ]);
     return {
       user: {
         id: user.id,
@@ -253,7 +262,7 @@ export class AuthController {
         role: user.role,
         roleLabel: ROLE_LABELS[user.role] ?? user.role,
         twoFactorSetupRequired: user.twoFactorSetupRequired,
-        locale: await this.auth.localeOf(db, user.id),
+        locale,
       },
       cabinet: {
         name: tenant.name,
@@ -261,11 +270,9 @@ export class AuthController {
         city: tenant.city,
         subdomain: tenant.subdomain,
       },
-      subscription: await this.clinic.subscription(tenant.id, db),
-      onboarding: {
-        tourCompleted: await this.onboarding.tourCompleted(db, user.id),
-      },
-      spaces: await this.spaces.current(db, user).catch(() => null),
+      subscription,
+      onboarding: { tourCompleted },
+      spaces,
     };
   }
 

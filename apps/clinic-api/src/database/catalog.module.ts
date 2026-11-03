@@ -36,7 +36,12 @@ export class CatalogService implements OnApplicationShutdown {
       provide: CATALOG,
       inject: [ConfigService],
       useFactory: (config: ConfigService<Env, true>) =>
-        new Pool({ connectionString: config.get('DATABASE_URL'), max: 5 }),
+        new Pool({
+          connectionString: config.get('DATABASE_URL'),
+          max: 5,
+          // Kept open between requests: reconnecting costs a handshake.
+          idleTimeoutMillis: 5 * 60_000,
+        }),
     },
     {
       provide: SECRET_BOX,

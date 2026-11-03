@@ -57,11 +57,13 @@ export class SpacesService {
 
   /** The space this person works in now: the last one used, else the first. */
   async current(db: Pool, user: ClinicUser) {
-    const spaces = await this.accessible(db, user);
-    const { rows } = await db.query<{ last_space_id: string | null }>(
-      'select last_space_id from users where id = $1',
-      [user.id],
-    );
+    const [spaces, { rows }] = await Promise.all([
+      this.accessible(db, user),
+      db.query<{ last_space_id: string | null }>(
+        'select last_space_id from users where id = $1',
+        [user.id],
+      ),
+    ]);
     const current =
       spaces.find((s) => s.id === rows[0]?.last_space_id) ?? spaces[0];
     if (!current) {

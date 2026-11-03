@@ -39,7 +39,11 @@ export class DatabaseService implements OnApplicationShutdown {
       provide: DB_POOL,
       inject: [ConfigService],
       useFactory: (config: ConfigService<Env, true>) =>
-        new Pool({ connectionString: config.get('DATABASE_URL') }),
+        new Pool({
+          connectionString: config.get('DATABASE_URL'),
+          // Kept open between requests: reconnecting costs a handshake.
+          idleTimeoutMillis: 5 * 60_000,
+        }),
     },
     {
       provide: DB,
