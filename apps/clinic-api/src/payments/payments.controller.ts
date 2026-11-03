@@ -12,7 +12,11 @@ import {
 import { Activity } from '../activity/activity.decorator.js';
 import type { ClinicUser } from '../auth/auth.types.js';
 import { CurrentUser } from '../auth/decorators.js';
-import { CurrentSpace, SpaceGuard } from '../spaces/space.guard.js';
+import {
+  AccessibleSpaces,
+  CurrentSpace,
+  SpaceGuard,
+} from '../spaces/space.guard.js';
 import type { Space } from '../spaces/spaces.service.js';
 import { Clinic } from '../tenancy/decorators.js';
 import type { ClinicContext } from '../tenancy/tenancy.service.js';
@@ -95,10 +99,10 @@ export class PaymentsController {
   @Get('payments/:id/receipt')
   receipt(
     @Clinic() { db }: ClinicContext,
-    @CurrentUser() user: ClinicUser,
+    @AccessibleSpaces() spaces: Space[],
     @Param('id', ParseUUIDPipe) id: string,
   ) {
-    return this.payments.receipt(db, user, id);
+    return this.payments.receipt(db, spaces, id);
   }
 
   @Get('cashier/today')
@@ -122,17 +126,19 @@ export class PaymentsController {
   history(
     @Clinic() { db }: ClinicContext,
     @CurrentUser() user: ClinicUser,
+    @AccessibleSpaces() spaces: Space[],
     @Query() query: PaymentsQuery,
   ) {
-    return this.payments.history(db, user, query);
+    return this.payments.history(db, user, spaces, query);
   }
 
   @Get('cashier/closes')
   closes(
     @Clinic() { db }: ClinicContext,
     @CurrentUser() user: ClinicUser,
+    @AccessibleSpaces() spaces: Space[],
     @Query() query: PaymentsQuery,
   ) {
-    return this.payments.closes(db, user, query);
+    return this.payments.closes(db, user, spaces, query);
   }
 }

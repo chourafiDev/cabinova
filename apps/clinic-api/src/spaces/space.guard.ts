@@ -10,6 +10,8 @@ import { type Space, SpacesService } from './spaces.service.js';
 declare module 'express' {
   interface Request {
     space?: Space;
+    /** Every space this person may enter, read with the current one. */
+    spaces?: Space[];
   }
 }
 
@@ -24,8 +26,12 @@ export class SpaceGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext) {
     const req = context.switchToHttp().getRequest<Request>();
-    const { current } = await this.spaces.current(req.clinic!.db, req.user!);
+    const { current, spaces } = await this.spaces.current(
+      req.clinic!.db,
+      req.user!,
+    );
     req.space = current;
+    req.spaces = spaces;
     return true;
   }
 }
@@ -34,4 +40,10 @@ export class SpaceGuard implements CanActivate {
 export const CurrentSpace = createParamDecorator(
   (_: unknown, ctx: ExecutionContext): Space =>
     ctx.switchToHttp().getRequest<Request>().space!,
+);
+
+/** The spaces this person may enter (set by SpaceGuard): no second lookup. */
+export const AccessibleSpaces = createParamDecorator(
+  (_: unknown, ctx: ExecutionContext): Space[] =>
+    ctx.switchToHttp().getRequest<Request>().spaces!,
 );

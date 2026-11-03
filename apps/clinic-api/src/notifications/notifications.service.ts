@@ -37,12 +37,15 @@ export class NotificationsService {
   constructor(private readonly catalog: CatalogService) {}
 
   async list(db: Pool, tenantId: string, user: { id: string; role: string }) {
-    if (user.role === 'owner') await this.syncBilling(db, tenantId, user.id);
-    await db.query(
-      `delete from notifications
-        where user_id = $1 and created_at < now() - make_interval(days => $2)`,
-      [user.id, KEEP_DAYS],
-    );
+    // Independent: the billing copy only touches the current devis/factures.
+    await Promise.all([
+      user.role === 'owner' && this.syncBilling(db, tenantId, user.id),
+      db.query(
+        `delete from notifications
+          where user_id = $1 and created_at < now() - make_interval(days => $2)`,
+        [user.id, KEEP_DAYS],
+      ),
+    ]);
     const [{ rows }, unread] = await Promise.all([
       db.query(
         `select id, kind, title, body, code, params, href, read_at as "readAt", created_at as "createdAt"
@@ -219,38 +222,43 @@ export class NotificationsService {
           dedupeKey: `invoice:${i.id}:${i.status}`,
         })),
       ];
-      await this.write(db, items);
-      // A devis paid or a facture settled no longer asks for anything.
-      await db.query(
-        `delete from notifications
-          where user_id = $1 and kind = 'billing' and dedupe_key <> all($2)`,
-        [userId, items.map((n) => n.dedupeKey)],
-      );
+      await Promise.all([
+        this.write(db, items),
+        // A devis paid or a facture settled no longer asks for anything.
+        db.query(
+          `delete from notifications
+            where user_id = $1 and kind = 'billing' and dedupe_key <> all($2)`,
+          [userId, items.map((n) => n.dedupeKey)],
+        ),
+      ]);
     } catch (err) {
       this.logger.error('Billing notifications failed', err);
     }
   }
 
+  /** One statement for all of them, however many. */
   private async write(db: Pool, items: Notification[]) {
-    for (const n of items) {
-      await db.query(
-        `insert into notifications
-           (user_id, kind, title, body, code, params, href, dedupe_key)
-         values ($1, $2, $3, $4, $5, $6, $7, $8)
-         on conflict (user_id, dedupe_key) do update
-           set code = excluded.code, params = excluded.params
-           where notifications.code is null`,
-        [
-          n.userId,
-          n.kind,
-          n.title,
-          n.body,
-          n.code,
-          JSON.stringify(n.params),
-          n.href,
-          n.dedupeKey,
-        ],
-      );
-    }
+    if (items.length === 0) return;
+    const column = <K extends keyof Notification>(key: K) =>
+      items.map((n) => n[key]);
+    await db.query(
+      `insert into notifications
+         (user_id, kind, title, body, code, params, href, dedupe_key)
+       select * from unnest($1::uuid[], $2::text[], $3::text[], $4::text[],
+                            $5::text[], $6::jsonb[], $7::text[], $8::text[])
+       on conflict (user_id, dedupe_key) do update
+         set code = excluded.code, params = excluded.params
+         where notifications.code is null`,
+      [
+        column('userId'),
+        column('kind'),
+        column('title'),
+        column('body'),
+        column('code'),
+        items.map((n) => JSON.stringify(n.params)),
+        column('href'),
+        column('dedupeKey'),
+      ],
+    );
   }
 }

@@ -9,7 +9,7 @@ import {
 import type { ClinicUser } from '../auth/auth.types.js';
 import { assertOwner } from '../auth/roles.js';
 import { addDays, today } from '../reports/period.js';
-import { SpacesService } from '../spaces/spaces.service.js';
+import type { Space } from '../spaces/spaces.service.js';
 import type {
   CashCloseDto,
   CheckoutDto,
@@ -48,8 +48,6 @@ const PAYMENT_JOINS = `
  */
 @Injectable()
 export class PaymentsService {
-  constructor(private readonly spaces: SpacesService) {}
-
   /** A visit's charge (or null), its acts and payments, and the balance. */
   async account(db: Pool | PoolClient, spaceId: string, appointmentId: string) {
     const { rows } = await db.query<{
@@ -331,8 +329,8 @@ export class PaymentsService {
   }
 
   /** Everything a receipt shows, for staff of the payment's space. */
-  async receipt(db: Pool, user: ClinicUser, id: string) {
-    const spaceIds = (await this.spaces.accessible(db, user)).map((s) => s.id);
+  async receipt(db: Pool, accessible: Space[], id: string) {
+    const spaceIds = accessible.map((s) => s.id);
     const { rows } = await db.query(
       `select ${PAYMENT_COLUMNS}, p.charge_id as "chargeId",
               json_build_object('name', s.name, 'city', s.city, 'address', s.address,
@@ -507,9 +505,14 @@ export class PaymentsService {
   }
 
   /** The owner's history: totals by method, what's still owed, every movement. */
-  async history(db: Pool, user: ClinicUser, query: PaymentsQuery) {
+  async history(
+    db: Pool,
+    user: ClinicUser,
+    accessible: Space[],
+    query: PaymentsQuery,
+  ) {
     assertOwner(user);
-    const { from, to, spaceIds } = await this.scope(db, user, query);
+    const { from, to, spaceIds } = this.scope(accessible, query);
     const params = [from, to, spaceIds, query.method ?? null];
     const where = `p.space_id = any($3::uuid[])
        and ($4::payment_method is null or p.method = $4)
@@ -579,9 +582,14 @@ export class PaymentsService {
   }
 
   /** The owner's view of the closes: expected, counted and the difference. */
-  async closes(db: Pool, user: ClinicUser, query: PaymentsQuery) {
+  async closes(
+    db: Pool,
+    user: ClinicUser,
+    accessible: Space[],
+    query: PaymentsQuery,
+  ) {
     assertOwner(user);
-    const { from, to, spaceIds } = await this.scope(db, user, query);
+    const { from, to, spaceIds } = this.scope(accessible, query);
     const { rows } = await db.query<{
       expected: Record<PaymentMethod, number>;
       countedCash: number;
@@ -603,7 +611,7 @@ export class PaymentsService {
   }
 
   /** The period (default: the last 30 days) and the spaces asked for. */
-  private async scope(db: Pool, user: ClinicUser, query: PaymentsQuery) {
+  private scope(accessible: Space[], query: PaymentsQuery) {
     const to = query.to ?? today();
     const from = query.from ?? addDays(to, -29);
     if (from > to) {
@@ -612,7 +620,6 @@ export class PaymentsService {
         message: 'La date de début doit précéder la date de fin.',
       });
     }
-    const accessible = await this.spaces.accessible(db, user);
     const spaceIds = accessible
       .filter((s) => !query.space || s.id === query.space)
       .map((s) => s.id);
