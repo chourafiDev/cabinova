@@ -48,6 +48,7 @@ import {
   APPOINTMENT_STATUSES,
   APPOINTMENTS_KEY,
   type AppointmentStatus,
+  patchAppointment,
 } from "@/lib/appointments";
 import {
   ageOf,
@@ -159,15 +160,21 @@ function PanelContent({ event, onClose }: { event: IEvent; onClose: () => void }
 
   async function setStatus(status: AppointmentStatus) {
     setBusy(true);
+    // Shown at once (badge, colour, next step); undone if the server refuses.
+    const undo = patchAppointment(queryClient, event.id, {
+      status,
+      ...(status === "arrived" && { arrivedAt: new Date().toISOString() }),
+    });
     try {
       await api(`/appointments/${event.id}/status`, { method: "POST", body: JSON.stringify({ status }) });
       toast.success(panel("statusChanged", { status: statusLabel(status).toLowerCase() }));
-      await queryClient.invalidateQueries({ queryKey: APPOINTMENTS_KEY });
-      void queryClient.invalidateQueries({ queryKey: ["patient-appointments", patientId] });
     } catch (err) {
+      undo();
       toast.error(err instanceof Error ? err.message : panel("statusError"));
     } finally {
       setBusy(false);
+      void queryClient.invalidateQueries({ queryKey: APPOINTMENTS_KEY });
+      void queryClient.invalidateQueries({ queryKey: ["patient-appointments", patientId] });
     }
   }
 

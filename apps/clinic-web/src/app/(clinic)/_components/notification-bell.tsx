@@ -62,15 +62,29 @@ export function NotificationBell() {
 		refetchInterval: POLL_MS,
 	});
 	const refresh = () => queryClient.invalidateQueries({ queryKey: KEY });
+	/** Read at once on screen; the next refresh says what the server kept. */
+	const markRead = (ids: string[] | "all") => {
+		const now = new Date().toISOString();
+		queryClient.setQueryData<Inbox>(KEY, (inbox) => {
+			if (!inbox) return inbox;
+			const data = inbox.data.map((n) => (!n.readAt && (ids === "all" || ids.includes(n.id)) ? { ...n, readAt: now } : n));
+			const marked = data.filter((n, i) => n !== inbox.data[i]).length;
+			return { data, unread: ids === "all" ? 0 : Math.max(0, inbox.unread - marked) };
+		});
+	};
 	const readAll = useMutation({
 		mutationFn: () => api("/notifications/read", { method: "POST" }),
-		onSuccess: refresh,
+		onMutate: () => markRead("all"),
+		onSettled: refresh,
 	});
 	const unread = data?.unread ?? 0;
 
 	const select = (n: Notification) => {
 		setOpen(false);
-		if (!n.readAt) void api(`/notifications/${n.id}/read`, { method: "POST" }).then(refresh);
+		if (!n.readAt) {
+			markRead([n.id]);
+			void api(`/notifications/${n.id}/read`, { method: "POST" }).then(refresh, refresh);
+		}
 		if (n.href) router.push(n.href);
 	};
 

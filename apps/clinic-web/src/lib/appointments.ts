@@ -1,3 +1,4 @@
+import type { QueryClient } from "@tanstack/react-query";
 import {
   addDays,
   endOfMonth,
@@ -61,6 +62,21 @@ export type Practitioner = { id: string; name: string };
 
 /** react-query key prefix of every appointments list (invalidate after a change). */
 export const APPOINTMENTS_KEY = ["appointments"] as const;
+
+/**
+ * Shows a change on every loaded agenda before the server answers. Returns
+ * the undo, for when it refuses; refetch afterwards either way.
+ */
+export function patchAppointment(queryClient: QueryClient, id: string, patch: Partial<Appointment>) {
+	void queryClient.cancelQueries({ queryKey: APPOINTMENTS_KEY });
+	const before = queryClient.getQueriesData<Appointment[]>({ queryKey: APPOINTMENTS_KEY });
+	queryClient.setQueriesData<Appointment[]>({ queryKey: APPOINTMENTS_KEY }, (list) =>
+		list?.map((a) => (a.id === id ? { ...a, ...patch } : a)),
+	);
+	return () => {
+		for (const [key, list] of before) queryClient.setQueryData(key, list);
+	};
+}
 
 export const toEvent = (a: Appointment): IEvent => ({
 	id: a.id,
