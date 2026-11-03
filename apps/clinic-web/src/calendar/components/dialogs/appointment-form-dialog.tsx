@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { addMinutes, differenceInMinutes, format as formatDay, parseISO } from "date-fns";
 import { useTranslations } from "next-intl";
 import { LuClock, LuLoader, LuTriangleAlert } from "react-icons/lu";
@@ -30,7 +30,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { ApiError, api } from "@/lib/api-client";
 import { APPOINTMENTS_KEY, DURATIONS } from "@/lib/appointments";
+import type { Act } from "@/lib/payments";
 import { useFormat } from "@/lib/use-format";
+
+/** The select's "Aucun" (Radix wants a non-empty value). */
+const NO_REASON = "__none";
 
 const schemaOf = (t: (key: "choosePatient" | "choosePractitioner" | "dateRequired" | "timeRequired") => string) =>
 	z.object({
@@ -72,6 +76,8 @@ export function AppointmentFormDialog({
 	const t = useTranslations("agenda.form");
 	const format = useFormat();
 	const fmt = useFmt();
+	// The motif is one of the cabinet's acts (Paramètres › Tarifs).
+	const acts = useQuery({ queryKey: ["acts"], queryFn: () => api<Act[]>("/acts") });
 
 	const defaults = (): Values => {
 		if (event) {
@@ -247,12 +253,44 @@ export function AppointmentFormDialog({
 
 						<Field data-invalid={!!errors.reason}>
 							<FieldLabel htmlFor="appointment-reason">{t("reason")}</FieldLabel>
-							<Input
-								id="appointment-reason"
-								placeholder={t("reasonPlaceholder")}
-								aria-invalid={!!errors.reason}
-								{...form.register("reason")}
+							<Controller
+								control={form.control}
+								name="reason"
+								render={({ field }) => {
+									const list = acts.data ?? [];
+									// A motif typed before tarifs were used stays selectable.
+									const kept = field.value && !list.some((a) => a.name === field.value) ? field.value : null;
+									const empty = list.length === 0 && !kept;
+									return (
+										<Select
+											value={field.value || NO_REASON}
+											onValueChange={(v) => field.onChange(v === NO_REASON ? "" : v)}
+											disabled={acts.isPending || empty}
+										>
+											<SelectTrigger id="appointment-reason" className="w-full" aria-invalid={!!errors.reason}>
+												<SelectValue placeholder={t("reasonPlaceholder")} />
+											</SelectTrigger>
+											<SelectContent>
+												<SelectItem value={NO_REASON}>
+													<span className="text-muted-foreground">{t("noReason")}</span>
+												</SelectItem>
+												{kept && <SelectItem value={kept}>{kept}</SelectItem>}
+												{list.map((act) => (
+													<SelectItem key={act.id} value={act.name} className="[&>span:last-child]:flex-1">
+														<span className="flex w-full items-center justify-between gap-3">
+															<span className="truncate">{act.name}</span>
+															<span className="text-muted-foreground tabular-nums">{format.mad(act.price)}</span>
+														</span>
+													</SelectItem>
+												))}
+											</SelectContent>
+										</Select>
+									);
+								}}
 							/>
+							{acts.isSuccess && acts.data.length === 0 && (
+								<p className="text-muted-foreground text-xs">{t("noActs")}</p>
+							)}
 							<FieldError errors={[errors.reason]} />
 						</Field>
 
