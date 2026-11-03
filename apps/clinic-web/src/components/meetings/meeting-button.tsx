@@ -13,7 +13,7 @@ export function MeetingButton({ variant = "header" }: { variant?: "header" | "pa
 	return (
 		<>
 			{variant === "header" ? (
-				<Button type="button" variant="outline" size="sm" onClick={() => setOpen(true)} aria-label={t("newMeeting")}>
+				<Button type="button" variant="outline" size="sm" className="bg-green/5 hover:bg-green/10 border border-green/40 text-green h-8 rounded-full !shadow-none" onClick={() => setOpen(true)} aria-label={t("newMeeting")}>
 					<LuVideo />
 					<span className="hidden lg:inline">{t("meeting")}</span>
 				</Button>

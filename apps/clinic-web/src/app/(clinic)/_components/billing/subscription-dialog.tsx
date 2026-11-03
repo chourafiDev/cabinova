@@ -153,7 +153,7 @@ function OfferPicker({
 						onClick={() => setPlanKey(p.key)}
 						className={cn(
 							"hover:bg-muted/60 rounded-xl border p-3 text-start transition-colors",
-							planKey === p.key && "border-primary ring-primary/30 ring-2",
+							planKey === p.key && "border-primary",
 						)}
 					>
 						<span className="flex items-baseline justify-between gap-2">

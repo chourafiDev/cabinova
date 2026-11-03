@@ -2,25 +2,38 @@
 
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { addMinutes, format, roundToNearestMinutes } from "date-fns";
-import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { useMemo, useState } from "react";
-import { LuCalendarClock, LuCheck, LuLoader, LuSearch, LuVideo, LuZap } from "react-icons/lu";
+import {
+	LuCalendarClock,
+	LuCheck,
+	LuLoader,
+	LuSearch,
+	LuVideo,
+	LuZap,
+} from "react-icons/lu";
 import { toast } from "sonner";
 import { GoogleMark } from "@/app/(clinic)/settings/integrations/_components/google-card";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
-	Sheet,
+	Field,
+	FieldError,
+	FieldLabel,
+	FieldLegend,
+	FieldSet,
+} from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
+import {
 	SHEET_AT_END,
+	Sheet,
 	SheetContent,
 	SheetDescription,
 	SheetFooter,
 	SheetHeader,
 	SheetTitle,
 } from "@/components/ui/sheet";
-import { Field, FieldError, FieldLabel, FieldLegend, FieldSet } from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { api } from "@/lib/api-client";
 import { initials } from "@/lib/format";
@@ -42,12 +55,18 @@ const SEARCH_FROM = 7;
  * sheet beside the page (at the end side, also in Arabic), the people list
  * scrolling between a fixed header and the buttons.
  */
-export function NewMeetingSheet({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {
+export function NewMeetingSheet({
+	open,
+	onOpenChange,
+}: {
+	open: boolean;
+	onOpenChange: (open: boolean) => void;
+}) {
 	return (
 		<Sheet open={open} onOpenChange={onOpenChange}>
 			<SheetContent
 				side="right"
-				className={`w-[calc(100%-1rem)] gap-0 overflow-hidden p-0 data-[side=right]:sm:max-w-lg ${SHEET_AT_END}`}
+				className={`w-[calc(100%-1rem)] gap-0 overflow-hidden p-0 data-[side=right]:sm:max-w-2xl ${SHEET_AT_END}`}
 			>
 				{/* Remounted per opening: a fresh form each time. */}
 				{open && <MeetingForm onDone={() => onOpenChange(false)} />}
@@ -75,7 +94,14 @@ function MeetingForm({ onDone }: { onDone: () => void }) {
 	});
 
 	const [when, setWhen] = useState<When>("now");
-	const nextSlot = useMemo(() => roundToNearestMinutes(addMinutes(new Date(), 30), { nearestTo: 15, roundingMethod: "ceil" }), []);
+	const nextSlot = useMemo(
+		() =>
+			roundToNearestMinutes(addMinutes(new Date(), 30), {
+				nearestTo: 15,
+				roundingMethod: "ceil",
+			}),
+		[],
+	);
 	const [date, setDate] = useState(() => format(nextSlot, "yyyy-MM-dd"));
 	const [time, setTime] = useState(() => format(nextSlot, "HH:mm"));
 	const [duration, setDuration] = useState<number>(30);
@@ -87,9 +113,12 @@ function MeetingForm({ onDone }: { onDone: () => void }) {
 
 	const list = people.data ?? [];
 	const shown = search.trim()
-		? list.filter((p) => p.name.toLowerCase().includes(search.trim().toLowerCase()))
+		? list.filter((p) =>
+				p.name.toLowerCase().includes(search.trim().toLowerCase()),
+			)
 		: list;
-	const clear = (key: keyof Errors) => setErrors((e) => ({ ...e, [key]: undefined, form: undefined }));
+	const clear = (key: keyof Errors) =>
+		setErrors((e) => ({ ...e, [key]: undefined, form: undefined }));
 	const toggle = (id: string, on: boolean) => {
 		setSelected((s) => {
 			const next = new Set(s);
@@ -123,7 +152,11 @@ function MeetingForm({ onDone }: { onDone: () => void }) {
 		const next: Errors = {};
 		if (selected.size === 0) next.people = t("peopleError");
 		const startsAt = when === "later" ? new Date(`${date}T${time}`) : null;
-		if (startsAt && (Number.isNaN(startsAt.getTime()) || startsAt.getTime() < Date.now() - 60_000)) {
+		if (
+			startsAt &&
+			(Number.isNaN(startsAt.getTime()) ||
+				startsAt.getTime() < Date.now() - 60_000)
+		) {
 			next.when = t("whenError");
 		}
 		setErrors(next);
@@ -198,9 +231,13 @@ function MeetingForm({ onDone }: { onDone: () => void }) {
 					<span className="bg-muted flex size-12 items-center justify-center rounded-full">
 						<GoogleMark className="size-6" />
 					</span>
-					<p className="font-medium">{google.data?.configured ? t("connectFirst") : t("notConfigured")}</p>
+					<p className="font-medium">
+						{google.data?.configured ? t("connectFirst") : t("notConfigured")}
+					</p>
 					<p className="text-muted-foreground max-w-sm text-sm">
-						{google.data?.configured ? t("connectFirstHint") : t("notConfiguredHint")}
+						{google.data?.configured
+							? t("connectFirstHint")
+							: t("notConfiguredHint")}
 					</p>
 					{google.data?.configured && <ConnectGoogleButton />}
 				</div>
@@ -220,7 +257,9 @@ function MeetingForm({ onDone }: { onDone: () => void }) {
 						</span>
 					</div>
 					{list.length === 0 ? (
-						<p className="text-muted-foreground rounded-lg border border-dashed p-4 text-center text-sm">{t("noTeam")}</p>
+						<p className="text-muted-foreground rounded-lg border border-dashed p-4 text-center text-sm">
+							{t("noTeam")}
+						</p>
 					) : (
 						<>
 							<div className="flex flex-wrap gap-1.5">
@@ -234,7 +273,9 @@ function MeetingForm({ onDone }: { onDone: () => void }) {
 											onClick={() => pick(g.people)}
 											className={cn(
 												"inline-flex items-center gap-1 rounded-full border px-3 py-1 text-xs font-medium transition-colors",
-												all ? "border-primary bg-primary/10 text-primary" : "hover:bg-muted",
+												all
+													? "border-primary bg-primary/10 text-primary"
+													: "hover:bg-muted",
 											)}
 										>
 											{all && <LuCheck className="size-3" />}
@@ -256,7 +297,12 @@ function MeetingForm({ onDone }: { onDone: () => void }) {
 									/>
 								</div>
 							)}
-							<ul className="divide-y overflow-hidden rounded-lg border" aria-describedby={errors.people ? "meeting-people-error" : undefined}>
+							<ul
+								className="divide-y overflow-hidden rounded-lg border"
+								aria-describedby={
+									errors.people ? "meeting-people-error" : undefined
+								}
+							>
 								{shown.map((p) => {
 									const checked = selected.has(p.id);
 									return (
@@ -267,7 +313,10 @@ function MeetingForm({ onDone }: { onDone: () => void }) {
 													checked ? "bg-primary/5" : "hover:bg-muted/50",
 												)}
 											>
-												<Checkbox checked={checked} onCheckedChange={(on) => toggle(p.id, on === true)} />
+												<Checkbox
+													checked={checked}
+													onCheckedChange={(on) => toggle(p.id, on === true)}
+												/>
 												<span
 													aria-hidden="true"
 													className="bg-muted flex size-8 shrink-0 items-center justify-center rounded-full text-xs font-semibold"
@@ -275,15 +324,21 @@ function MeetingForm({ onDone }: { onDone: () => void }) {
 													{initials(p.name)}
 												</span>
 												<span className="grid min-w-0 flex-1">
-													<span className="truncate text-sm font-medium">{p.name}</span>
-													<span className="text-muted-foreground text-xs">{roles(p.role)}</span>
+													<span className="truncate text-sm font-medium">
+														{p.name}
+													</span>
+													<span className="text-muted-foreground text-xs">
+														{roles(p.role)}
+													</span>
 												</span>
 											</label>
 										</li>
 									);
 								})}
 								{shown.length === 0 && (
-									<li className="text-muted-foreground p-4 text-center text-sm">{t("noMatch")}</li>
+									<li className="text-muted-foreground p-4 text-center text-sm">
+										{t("noMatch")}
+									</li>
 								)}
 							</ul>
 						</>
@@ -293,7 +348,11 @@ function MeetingForm({ onDone }: { onDone: () => void }) {
 
 				<FieldSet data-invalid={!!errors.when}>
 					<FieldLegend variant="label">{t("when")}</FieldLegend>
-					<div role="radiogroup" aria-label={t("when")} className="grid gap-2 sm:grid-cols-2">
+					<div
+						role="radiogroup"
+						aria-label={t("when")}
+						className="grid gap-2 sm:grid-cols-2"
+					>
 						{(["now", "later"] as const).map((w) => {
 							const Icon = w === "now" ? LuZap : LuCalendarClock;
 							const on = when === w;
@@ -309,13 +368,24 @@ function MeetingForm({ onDone }: { onDone: () => void }) {
 									}}
 									className={cn(
 										"flex items-start gap-3 rounded-lg border p-3 text-start transition-colors",
-										on ? "border-primary bg-primary/5 ring-primary/20 ring-2" : "hover:bg-muted/50",
+										on
+											? "border-primary bg-primary/5"
+											: "hover:bg-muted/50",
 									)}
 								>
-									<Icon className={cn("mt-0.5 size-4 shrink-0", on ? "text-primary" : "text-muted-foreground")} />
+									<Icon
+										className={cn(
+											"mt-0.5 size-4 shrink-0",
+											on ? "text-primary" : "text-muted-foreground",
+										)}
+									/>
 									<span className="grid gap-0.5">
-										<span className="text-sm font-medium">{t(`whenOptions.${w}.label`)}</span>
-										<span className="text-muted-foreground text-xs">{t(`whenOptions.${w}.hint`)}</span>
+										<span className="text-sm font-medium">
+											{t(`whenOptions.${w}.label`)}
+										</span>
+										<span className="text-muted-foreground text-xs">
+											{t(`whenOptions.${w}.hint`)}
+										</span>
 									</span>
 								</button>
 							);
@@ -357,7 +427,10 @@ function MeetingForm({ onDone }: { onDone: () => void }) {
 				<div className="grid gap-5">
 					<Field>
 						<FieldLabel htmlFor="meeting-title">
-							{t("subject")} <span className="text-muted-foreground font-normal">{t("optional")}</span>
+							{t("subject")}{" "}
+							<span className="text-muted-foreground font-normal">
+								{t("optional")}
+							</span>
 						</FieldLabel>
 						<Input
 							id="meeting-title"
@@ -380,8 +453,12 @@ function MeetingForm({ onDone }: { onDone: () => void }) {
 									size="sm"
 									onClick={() => setDuration(d)}
 									className={cn(
-										"h-9 tabular-nums",
-										i === 0 ? "rounded-e-none" : i === MEETING_DURATIONS.length - 1 ? "-ms-px rounded-s-none" : "-ms-px rounded-none",
+										"h-9 tabular-nums !shadow-none",
+										i === 0
+											? "rounded-e-none"
+											: i === MEETING_DURATIONS.length - 1
+												? "-ms-px rounded-s-none"
+												: "-ms-px rounded-none",
 									)}
 								>
 									{t("minutes", { count: d })}
@@ -390,7 +467,6 @@ function MeetingForm({ onDone }: { onDone: () => void }) {
 						</div>
 					</FieldSet>
 				</div>
-
 			</div>
 			<SheetFooter className="mt-0 items-center rounded-b-none px-5 sm:justify-between">
 				{/* Beside the buttons, so it's seen whatever the scroll. */}
@@ -401,7 +477,11 @@ function MeetingForm({ onDone }: { onDone: () => void }) {
 				) : (
 					<p className="text-muted-foreground hidden items-center gap-1.5 text-xs sm:flex">
 						<GoogleMark className="size-3.5" />
-						<span dir="ltr">{google.data.connected && "email" in google.data ? google.data.email : null}</span>
+						<span dir="ltr">
+							{google.data.connected && "email" in google.data
+								? google.data.email
+								: null}
+						</span>
 					</p>
 				)}
 				<div className="flex gap-2">
@@ -409,7 +489,13 @@ function MeetingForm({ onDone }: { onDone: () => void }) {
 						{t("cancel")}
 					</Button>
 					<Button type="submit" disabled={saving || list.length === 0}>
-						{saving ? <LuLoader className="animate-spin" /> : when === "now" ? <LuVideo /> : <LuCalendarClock />}
+						{saving ? (
+							<LuLoader className="animate-spin" />
+						) : when === "now" ? (
+							<LuVideo />
+						) : (
+							<LuCalendarClock />
+						)}
 						{when === "now" ? t("startNow") : t("plan")}
 					</Button>
 				</div>
@@ -429,7 +515,10 @@ export function ConnectGoogleButton() {
 			onClick={async () => {
 				setPending(true);
 				try {
-					const { url } = await api<{ url: string }>("/integrations/google/connect", { method: "POST" });
+					const { url } = await api<{ url: string }>(
+						"/integrations/google/connect",
+						{ method: "POST" },
+					);
 					window.location.assign(url);
 				} catch (err) {
 					toast.error(err instanceof Error ? err.message : t("connectError"));

@@ -55,7 +55,7 @@ export function CalendarHeader({ view, events }: IProps) {
                 variant={view === v ? "default" : "outline"}
                 onClick={() => setView(v)}
                 className={cn(
-                  "[&_svg]:size-5",
+                  "[&_svg]:size-5 h-10 !shadow-none",
                   index === 0 ? "rounded-e-none" : index === VIEWS.length - 1 ? "-ms-px rounded-s-none" : "-ms-px rounded-none",
                 )}
               >

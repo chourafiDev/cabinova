@@ -301,8 +301,8 @@ function MeetingCard({
 	return (
 		<article
 			className={cn(
-				"bg-card group relative flex h-full flex-col overflow-hidden rounded-2xl border transition-[box-shadow,border-color] duration-200 hover:border-foreground/15 hover:shadow-md",
-				live && "border-2 border-transparent shadow-lg shadow-emerald-500/15 hover:border-transparent hover:shadow-emerald-500/25",
+				"bg-card group relative flex h-full flex-col overflow-hidden rounded-2xl border transition-[box-shadow,border-color] duration-200 hover:border-foreground/15",
+				live && " border-transparent shadow-md shadow-emerald-500/15 hover:border-transparent",
 			)}
 			// Live: the card's own background inside a gradient border.
 			style={live ? { background: LIVE_BORDER } : undefined}

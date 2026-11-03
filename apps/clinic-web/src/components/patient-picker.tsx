@@ -52,7 +52,7 @@ export function PatientPicker({
 					aria-expanded={open}
 					aria-invalid={invalid}
 					disabled={disabled}
-					className={cn("w-full justify-between font-normal", !value && "text-muted-foreground")}
+					className={cn("w-full h-10 justify-between font-normal", !value && "text-muted-foreground")}
 				>
 					<span className="truncate">
 						{value ? `${fullName(value)} · ${formatFileNumber(value.fileNumber)}` : t("placeholder")}

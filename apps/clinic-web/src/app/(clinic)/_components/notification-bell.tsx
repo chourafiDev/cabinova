@@ -3,13 +3,26 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { formatDistanceToNow } from "date-fns";
 import { arMA, fr } from "date-fns/locale";
-import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
+import { useLocale, useTranslations } from "next-intl";
 import { useState } from "react";
 import type { IconType } from "react-icons";
-import { LuBell, LuCalendarX, LuCheckCheck, LuDoorOpen, LuReceipt, LuUserPlus, LuUserX, LuVideo } from "react-icons/lu";
+import {
+	LuBell,
+	LuCalendarX,
+	LuCheckCheck,
+	LuDoorOpen,
+	LuReceipt,
+	LuUserPlus,
+	LuUserX,
+	LuVideo,
+} from "react-icons/lu";
 import { Button } from "@/components/ui/button";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+	Popover,
+	PopoverContent,
+	PopoverTrigger,
+} from "@/components/ui/popover";
 import { api } from "@/lib/api-client";
 import { useFormat } from "@/lib/use-format";
 import { cn } from "@/lib/utils";
@@ -49,16 +62,31 @@ export function NotificationBell() {
 	const dateLocale = useLocale() === "ar" ? arMA : fr;
 	const format = useFormat();
 	const titleOf = (n: Notification) =>
-		n.code && t.has(`codes.${n.code}`) ? t(`codes.${n.code}`, (n.params ?? {}) as Record<string, string | number>) : n.title;
+		n.code && t.has(`codes.${n.code}`)
+			? t(
+					`codes.${n.code}`,
+					(n.params ?? {}) as Record<string, string | number>,
+				)
+			: n.title;
 	const detailOf = ({ kind, params, body }: Notification) => {
 		if (kind === "meeting" && typeof params?.time === "string") {
 			if (params.now) return t("meetingNow", { title: String(params.title) });
-			const date = format.date(`${params.day}T12:00:00Z`, { weekday: "long", month: "long", year: undefined });
-			return t("meetingAt", { title: String(params.title), date, time: params.time });
+			const date = format.date(`${params.day}T12:00:00Z`, {
+				weekday: "long",
+				month: "long",
+				year: undefined,
+			});
+			return t("meetingAt", {
+				title: String(params.title),
+				date,
+				time: params.time,
+			});
 		}
 		if (typeof params?.amount === "number") return format.mad(params.amount);
 		if (typeof params?.time === "string") {
-			return [t("appointmentAt", { time: params.time }), params.space].filter(Boolean).join(" · ");
+			return [t("appointmentAt", { time: params.time }), params.space]
+				.filter(Boolean)
+				.join(" · ");
 		}
 		return body;
 	};
@@ -73,9 +101,16 @@ export function NotificationBell() {
 		const now = new Date().toISOString();
 		queryClient.setQueryData<Inbox>(KEY, (inbox) => {
 			if (!inbox) return inbox;
-			const data = inbox.data.map((n) => (!n.readAt && (ids === "all" || ids.includes(n.id)) ? { ...n, readAt: now } : n));
+			const data = inbox.data.map((n) =>
+				!n.readAt && (ids === "all" || ids.includes(n.id))
+					? { ...n, readAt: now }
+					: n,
+			);
 			const marked = data.filter((n, i) => n !== inbox.data[i]).length;
-			return { data, unread: ids === "all" ? 0 : Math.max(0, inbox.unread - marked) };
+			return {
+				data,
+				unread: ids === "all" ? 0 : Math.max(0, inbox.unread - marked),
+			};
 		});
 	};
 	const readAll = useMutation({
@@ -89,7 +124,10 @@ export function NotificationBell() {
 		setOpen(false);
 		if (!n.readAt) {
 			markRead([n.id]);
-			void api(`/notifications/${n.id}/read`, { method: "POST" }).then(refresh, refresh);
+			void api(`/notifications/${n.id}/read`, { method: "POST" }).then(
+				refresh,
+				refresh,
+			);
 		}
 		if (n.href) router.push(n.href);
 	};
@@ -98,9 +136,9 @@ export function NotificationBell() {
 		<Popover open={open} onOpenChange={setOpen}>
 			<PopoverTrigger asChild>
 				<Button
+					variant="outline"
 					size="icon"
-					variant="ghost"
-					className="relative"
+					className="relative !shadow-none"
 					aria-label={unread ? t("unread", { count: unread }) : t("title")}
 				>
 					<LuBell />
@@ -111,11 +149,20 @@ export function NotificationBell() {
 					)}
 				</Button>
 			</PopoverTrigger>
-			<PopoverContent align="end" className="w-[min(24rem,calc(100vw-2rem))] gap-0 p-0">
+			<PopoverContent
+				align="end"
+				className="w-[min(24rem,calc(100vw-2rem))] gap-0 p-0"
+			>
 				<header className="flex items-center justify-between gap-2 border-b px-4 py-2.5">
 					<h2 className="font-semibold">{t("title")}</h2>
 					{unread > 0 && (
-						<Button size="sm" variant="ghost" className="-me-2 h-7" disabled={readAll.isPending} onClick={() => readAll.mutate()}>
+						<Button
+							size="sm"
+							variant="ghost"
+							className="-me-2 h-7"
+							disabled={readAll.isPending}
+							onClick={() => readAll.mutate()}
+						>
 							<LuCheckCheck /> {t("readAll")}
 						</Button>
 					)}
@@ -129,27 +176,47 @@ export function NotificationBell() {
 									<button
 										type="button"
 										onClick={() => select(n)}
-										className={cn("hover:bg-muted/60 flex w-full items-start gap-3 px-4 py-3 text-start", !n.readAt && "bg-primary/5")}
+										className={cn(
+											"hover:bg-muted/60 flex w-full items-start gap-3 px-4 py-3 text-start",
+											!n.readAt && "bg-primary/5",
+										)}
 									>
 										<span className="bg-muted text-muted-foreground flex size-8 shrink-0 items-center justify-center rounded-lg">
 											<Icon className="size-4" />
 										</span>
 										<span className="grid min-w-0 flex-1 gap-0.5">
-											<span className={cn("text-sm", !n.readAt && "font-medium")}>{titleOf(n)}</span>
+											<span
+												className={cn("text-sm", !n.readAt && "font-medium")}
+											>
+												{titleOf(n)}
+											</span>
 											<span className="text-muted-foreground text-xs">
-												{[detailOf(n), formatDistanceToNow(new Date(n.createdAt), { locale: dateLocale, addSuffix: true })]
+												{[
+													detailOf(n),
+													formatDistanceToNow(new Date(n.createdAt), {
+														locale: dateLocale,
+														addSuffix: true,
+													}),
+												]
 													.filter(Boolean)
 													.join(" · ")}
 											</span>
 										</span>
-										{!n.readAt && <span className="bg-primary mt-1.5 size-2 shrink-0 rounded-full" aria-label={t("unreadDot")} />}
+										{!n.readAt && (
+											<span
+												className="bg-primary mt-1.5 size-2 shrink-0 rounded-full"
+												aria-label={t("unreadDot")}
+											/>
+										)}
 									</button>
 								</li>
 							);
 						})}
 					</ul>
 				) : (
-					<p className="text-muted-foreground px-4 py-10 text-center text-sm">{t("empty")}</p>
+					<p className="text-muted-foreground px-4 py-10 text-center text-sm">
+						{t("empty")}
+					</p>
 				)}
 			</PopoverContent>
 		</Popover>

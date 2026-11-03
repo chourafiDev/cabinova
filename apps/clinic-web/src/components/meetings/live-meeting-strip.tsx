@@ -34,19 +34,19 @@ export function LiveMeetingStrip() {
 	if (meetings.length === 0) return null;
 
 	return (
-		<div role="region" aria-label={t("label")} className="grid gap-px border-b">
+		<div role="region" aria-label={t("label")} className="grid gap-px mx-4 mt-2">
 			{meetings.map((m) => {
 				const live = new Date(m.startsAt).getTime() <= now;
 				return (
 					<div
 						key={m.id}
-						className="flex flex-wrap items-center gap-x-3 gap-y-2 bg-emerald-50 px-4 py-2 text-sm text-emerald-950 dark:bg-emerald-950/40 dark:text-emerald-50"
+						className="flex flex-wrap items-center gap-x-3 rounded-xl gap-y-2 bg-emerald-50 px-4 py-2 text-sm text-emerald-950 dark:bg-emerald-950/40 dark:text-emerald-50"
 					>
 						<span className="relative flex size-2.5 shrink-0" aria-hidden="true">
 							{live && <span className="absolute inline-flex size-full animate-ping rounded-full bg-emerald-500 opacity-60 motion-reduce:hidden" />}
 							<span className="relative inline-flex size-2.5 rounded-full bg-emerald-500" />
 						</span>
-						<p className="min-w-0 flex-1">
+						<p className="min-w-0 flex-1 text-[13px]">
 							<span className="font-medium">{live ? t("live") : t("soon", { time: format.clock(m.startsAt) })}</span>{" "}
 							<span className="text-emerald-900/80 dark:text-emerald-100/80">
 								· {m.title}

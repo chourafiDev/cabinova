@@ -27,7 +27,7 @@ export function ThemeToggle() {
 	return (
 		<DropdownMenu>
 			<DropdownMenuTrigger asChild>
-				<Button variant="ghost" size="icon" aria-label={t("label")}>
+				<Button variant="outline" size="icon" className="!shadow-none" aria-label={t("label")}>
 					{/* Both icons rendered, CSS picks one: no flash before the theme is known. */}
 					<LuSun className="dark:hidden" />
 					<LuMoon className="hidden dark:block" />
