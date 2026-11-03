@@ -93,5 +93,11 @@
     "submit": "إلغاء الاجتماع",
     "done": "تم إلغاء الاجتماع",
     "error": "تعذر إلغاء الاجتماع."
+  },
+  "card": {
+    "startsIn": "يبدأ {ago}",
+    "endsIn": "ينتهي {ago}",
+    "minutes": "{count} د",
+    "andOthers": "{name} و{count, plural, one {شخص آخر} two {شخصان آخران} few {# آخرين} many {# آخرين} other {# آخرين}}"
   }
 }

@@ -93,5 +93,11 @@
     "submit": "Annuler la réunion",
     "done": "Réunion annulée",
     "error": "La réunion n’a pas pu être annulée."
+  },
+  "card": {
+    "startsIn": "Commence {ago}",
+    "endsIn": "Se termine {ago}",
+    "minutes": "{count} min",
+    "andOthers": "{name} et {count, plural, one {# autre} other {# autres}}"
   }
 }
