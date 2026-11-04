@@ -97,6 +97,13 @@ export class AppointmentsService {
   }
 
   async create(db: Pool, spaceId: string, dto: AppointmentDto, userId: string) {
+    // New appointments name their act; older ones without one can still be edited.
+    if (!dto.reason?.trim()) {
+      throw new BadRequestException({
+        code: 'REASON_REQUIRED',
+        message: 'Choisissez un acte.',
+      });
+    }
     return this.transaction(db, async (tx) => {
       const values = await this.validate(tx, spaceId, dto);
       const { rows } = await tx.query<{ id: string }>(

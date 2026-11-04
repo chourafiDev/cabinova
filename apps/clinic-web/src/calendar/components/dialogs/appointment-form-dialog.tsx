@@ -36,7 +36,11 @@ import { useFormat } from "@/lib/use-format";
 /** The select's "Aucun" (Radix wants a non-empty value). */
 const NO_REASON = "__none";
 
-const schemaOf = (t: (key: "choosePatient" | "choosePractitioner" | "dateRequired" | "timeRequired") => string) =>
+const schemaOf = (
+	t: (key: "choosePatient" | "choosePractitioner" | "dateRequired" | "timeRequired" | "chooseReason") => string,
+	/** Booking needs an act; an older appointment without one can still be edited. */
+	reasonRequired: boolean,
+) =>
 	z.object({
 		patient: z
 			.object({ id: z.string(), firstName: z.string(), lastName: z.string(), fileNumber: z.number() })
@@ -46,7 +50,11 @@ const schemaOf = (t: (key: "choosePatient" | "choosePractitioner" | "dateRequire
 		date: z.string().min(1, t("dateRequired")),
 		time: z.string().regex(/^\d{2}:\d{2}$/, t("timeRequired")),
 		duration: z.number().int().positive(),
-		reason: z.string().trim().max(200),
+		reason: z
+			.string()
+			.trim()
+			.max(200)
+			.refine((v) => !reasonRequired || v.length > 0, t("chooseReason")),
 		notes: z.string().trim().max(2000),
 	});
 type Values = z.infer<ReturnType<typeof schemaOf>>;
@@ -79,6 +87,8 @@ export function AppointmentFormDialog({
 	// The motif is one of the cabinet's acts (Paramètres › Tarifs).
 	const acts = useQuery({ queryKey: ["acts"], queryFn: () => api<Act[]>("/acts") });
 
+	const reasonRequired = !event || !!event.reason;
+
 	const defaults = (): Values => {
 		if (event) {
 			const start = parseISO(event.startDate);
@@ -105,7 +115,10 @@ export function AppointmentFormDialog({
 		};
 	};
 
-	const form = useForm<Values>({ resolver: zodResolver(schemaOf(t)), defaultValues: defaults() });
+	const form = useForm<Values>({
+		resolver: zodResolver(schemaOf(t, reasonRequired)),
+		defaultValues: defaults(),
+	});
 	/** The practitioner is already booked then: the message, until the user decides. */
 	const [overlap, setOverlap] = useState<string | null>(null);
 	const { errors, isSubmitting } = form.formState;
@@ -263,7 +276,7 @@ export function AppointmentFormDialog({
 									const empty = list.length === 0 && !kept;
 									return (
 										<Select
-											value={field.value || NO_REASON}
+											value={field.value || (reasonRequired ? "" : NO_REASON)}
 											onValueChange={(v) => field.onChange(v === NO_REASON ? "" : v)}
 											disabled={acts.isPending || empty}
 										>
@@ -271,9 +284,11 @@ export function AppointmentFormDialog({
 												<SelectValue placeholder={t("reasonPlaceholder")} />
 											</SelectTrigger>
 											<SelectContent>
-												<SelectItem value={NO_REASON}>
-													<span className="text-muted-foreground">{t("noReason")}</span>
-												</SelectItem>
+												{!reasonRequired && (
+													<SelectItem value={NO_REASON}>
+														<span className="text-muted-foreground">{t("noReason")}</span>
+													</SelectItem>
+												)}
 												{kept && <SelectItem value={kept}>{kept}</SelectItem>}
 												{list.map((act) => (
 													<SelectItem key={act.id} value={act.name} className="[&>span:last-child]:flex-1">

@@ -91,5 +91,6 @@
   "MEETING_IN_PAST": "اختر ساعة قادمة.",
   "MEETING_OVER": "هذا الاجتماع انتهى أو أُلغي.",
   "MEETING_NOT_FOUND": "الاجتماع غير موجود.",
-  "INVALID_PARTICIPANTS": "بعض الأشخاص لم يعودوا ضمن الفريق."
+  "INVALID_PARTICIPANTS": "بعض الأشخاص لم يعودوا ضمن الفريق.",
+  "REASON_REQUIRED": "اختر العمل الطبي."
 }

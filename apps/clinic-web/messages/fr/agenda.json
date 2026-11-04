@@ -45,6 +45,7 @@
     "choosePractitioner": "Choisissez un praticien",
     "dateRequired": "Date requise",
     "timeRequired": "Heure requise",
+    "chooseReason": "Choisissez un acte",
     "edited": "Rendez-vous modifié",
     "added": "Rendez-vous ajouté",
     "saveError": "Enregistrement impossible",
