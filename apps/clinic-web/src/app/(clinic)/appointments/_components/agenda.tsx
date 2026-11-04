@@ -1,7 +1,7 @@
 "use client";
 
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
-import { format } from "date-fns";
+import { format, subDays } from "date-fns";
 import { useTranslations } from "next-intl";
 import { parseAsIsoDate, parseAsString, parseAsStringEnum, useQueryStates } from "nuqs";
 import { useMemo } from "react";
@@ -14,6 +14,7 @@ import type { TCalendarView } from "@/calendar/types";
 import { api } from "@/lib/api-client";
 import { type Appointment, APPOINTMENTS_KEY, type Practitioner, toEvent, visibleRange } from "@/lib/appointments";
 import type { OpeningHours } from "@/lib/session";
+import { CLOSURES_KEY, type Closure } from "@/lib/closures";
 import { cn } from "@/lib/utils";
 import { BookFromUrl } from "./book-from-url";
 
@@ -53,6 +54,14 @@ export function Agenda({
 		placeholderData: keepPreviousData,
 	});
 
+	// Congés et absences over the same days (the range ends the day before `to`).
+	const days = { from: format(range.from, "yyyy-MM-dd"), to: format(subDays(range.to, 1), "yyyy-MM-dd") };
+	const { data: closures } = useQuery({
+		queryKey: [...CLOSURES_KEY, days.from, days.to],
+		queryFn: () => api<Closure[]>(`/closures?${new URLSearchParams(days)}`),
+		placeholderData: keepPreviousData,
+	});
+
 	const events = useMemo(() => (data ?? []).map(toEvent), [data]);
 	const users = useMemo(() => practitioners.map((p) => ({ ...p, picturePath: null })), [practitioners]);
 
@@ -72,6 +81,7 @@ export function Agenda({
 			canWrite={canWrite}
 			openingHours={openingHours}
 			defaultDuration={defaultDuration}
+			closures={closures}
 		>
 			<AppointmentDialogsProvider>
 				{book && canWrite && <BookFromUrl patientId={book} onDone={() => setParams({ book: null })} />}

@@ -85,7 +85,7 @@ function Entry({ consultation: c, open }: { consultation: PastConsultation; open
 									key={v.key}
 									className={cn(
 										"rounded-md px-1.5 py-0.5 text-xs tabular-nums",
-										v.abnormal ? "bg-amber-50 text-amber-800 dark:bg-amber-950/40 dark:text-amber-300" : "bg-muted",
+										v.abnormal ? "bg-amber-50 text-amber-800" : "bg-muted",
 									)}
 								>
 									{v.text}

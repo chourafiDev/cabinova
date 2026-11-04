@@ -14,7 +14,7 @@ import { DayViewMultiDayEventsRow } from "@/calendar/components/week-and-day-vie
 
 import { cn } from "@/lib/utils";
 import { TimeSlot } from "@/calendar/components/week-and-day-view/time-slot";
-import { HolidayLabel } from "@/calendar/components/holiday-label";
+import { DayLabels } from "@/calendar/components/holiday-label";
 import { groupEvents, getEventBlockStyle, isWorkingHour, getCurrentEvents, getVisibleHours } from "@/calendar/helpers";
 
 import type { IEvent } from "@/calendar/interfaces";
@@ -26,7 +26,7 @@ interface IProps {
 
 export function CalendarDayView({ singleDayEvents, multiDayEvents }: IProps) {
   const fmt = useFmt();
-  const { selectedDate, setSelectedDate, users, visibleHours, workingHours } = useCalendar();
+  const { selectedDate, setSelectedDate, users, visibleHours, schedule } = useCalendar();
   const [, setCurrentTime] = useState(new Date());
 
   useEffect(() => {
@@ -62,7 +62,7 @@ export function CalendarDayView({ singleDayEvents, multiDayEvents }: IProps) {
               <span>
                 {fmt(selectedDate, "EEE")} <span className="font-semibold text-foreground">{fmt(selectedDate, "d")}</span>
               </span>
-              <HolidayLabel date={selectedDate} />
+              <DayLabels date={selectedDate} />
             </span>
           </div>
         </div>
@@ -84,7 +84,7 @@ export function CalendarDayView({ singleDayEvents, multiDayEvents }: IProps) {
             <div className="relative flex-1 border-s">
               <div className="relative">
                 {hours.map((hour, index) => {
-                  const isDisabled = !isWorkingHour(selectedDate, hour, workingHours);
+                  const isDisabled = !isWorkingHour(selectedDate, hour, schedule);
 
                   return (
                     <div key={hour} className={cn("relative", isDisabled && "bg-calendar-disabled-hour")} style={{ height: "96px" }}>

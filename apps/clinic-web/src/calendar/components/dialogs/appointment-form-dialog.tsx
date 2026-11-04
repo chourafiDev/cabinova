@@ -80,10 +80,11 @@ export function AppointmentFormDialog({
 	open: boolean;
 	onOpenChange: (open: boolean) => void;
 }) {
-	const { users, selectedDate, selectedUserId, defaultDuration, workingHours, openingHours } = useCalendar();
+	const { users, selectedDate, selectedUserId, defaultDuration, scheduleFor, closureOn, openingHours } = useCalendar();
 	const queryClient = useQueryClient();
 	const t = useTranslations("agenda.form");
 	const tc = useTranslations("common");
+	const kinds = useTranslations("absences.kinds");
 	const format = useFormat();
 	const fmt = useFmt();
 	// The motif is one of the cabinet's acts (Paramètres › Tarifs).
@@ -125,15 +126,35 @@ export function AppointmentFormDialog({
 	const [overlap, setOverlap] = useState<string | null>(null);
 	const { errors, isSubmitting } = form.formState;
 	const durations = [...new Set([...DURATIONS, form.getValues("duration")])].sort((a, b) => a - b);
-	const [date, time, duration] = useWatch({ control: form.control, name: ["date", "time", "duration"] });
+	const [date, time, duration, practitionerId] = useWatch({
+		control: form.control,
+		name: ["date", "time", "duration", "practitionerId"],
+	});
 	const slotStart = date && /^\d{2}:\d{2}$/.test(time) ? new Date(`${date}T${time}`) : null;
 	// Refused (the API too), unless an existing appointment simply keeps its time.
 	const keepsTime =
 		!!event && !!slotStart && slotStart.getTime() === parseISO(event.startDate).getTime() && duration === differenceInMinutes(parseISO(event.endDate), parseISO(event.startDate));
 	const outsideHours =
-		slotStart && !keepsTime && !Number.isNaN(slotStart.getTime()) && !isWithinWorkingHours(slotStart, addMinutes(slotStart, duration), workingHours)
+		slotStart && !keepsTime && !Number.isNaN(slotStart.getTime()) && !isWithinWorkingHours(slotStart, addMinutes(slotStart, duration), scheduleFor(practitionerId))
 			? slotStart
 			: null;
+
+	/** Why the slot can't be booked: a public holiday, a closure, an absence, or the hours. */
+	const closedReason = (day: Date) => {
+		const holiday = holidayOf(day);
+		if (holiday) return t("holiday", { holiday: tc(`holidays.names.${holiday.key}`) });
+		const closure = closureOn(day, practitionerId);
+		if (closure) {
+			const kind = kinds(closure.kind).toLowerCase();
+			return closure.practitionerId
+				? t("practitionerAbsent", { practitioner: closure.practitionerName ?? "", kind })
+				: t("cabinetClosed", { kind });
+		}
+		return t("closed", {
+			day: fmt(day, "EEEE"),
+			hours: format.periods(openingHours[String(day.getDay()) as keyof typeof openingHours]).toLowerCase(),
+		});
+	};
 
 	const save = async (values: Values, allowOverlap: boolean) => {
 		const startsAt = new Date(`${values.date}T${values.time}`);
@@ -256,16 +277,7 @@ export function AppointmentFormDialog({
 						{outsideHours && (
 							<p role="alert" className="text-destructive -mt-2 flex items-start gap-1.5 text-xs">
 								<LuClock className="mt-px size-3.5 shrink-0" />
-								<span>
-									{holidayOf(outsideHours)
-										? t("holiday", { holiday: tc(`holidays.names.${holidayOf(outsideHours)!.key}`) })
-										: t("closed", {
-										day: fmt(outsideHours, "EEEE"),
-										hours: format
-											.periods(openingHours[String(outsideHours.getDay()) as keyof typeof openingHours])
-											.toLowerCase(),
-										})}
-								</span>
+								<span>{closedReason(outsideHours)}</span>
 							</p>
 						)}
 

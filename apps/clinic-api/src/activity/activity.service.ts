@@ -47,7 +47,7 @@ const DESCRIBE: Record<ActivityEntity, string> = {
 /** The prefixes of each filter in the journal. */
 const CATEGORIES: Record<string, string[]> = {
   patients: ['patient.', 'consultation.'],
-  appointments: ['appointment.'],
+  appointments: ['appointment.', 'closure.'],
   payments: ['payment.', 'cashier.', 'act.'],
   team: ['team.', 'meeting.'],
   security: ['auth.'],

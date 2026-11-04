@@ -1,0 +1,60 @@
+{
+  "title": "Congés et absences",
+  "subtitle": "Les jours où le cabinet ou un médecin ne travaille pas : l’agenda les ferme.",
+  "add": "Nouvelle absence",
+  "tabs": {
+    "upcoming": "À venir",
+    "past": "Passées"
+  },
+  "loadError": "Impossible de charger les absences.",
+  "empty": {
+    "upcoming": "Aucune absence prévue",
+    "past": "Aucune absence passée",
+    "hint": "Congés, jours off, formations : enregistrez-les ici, l’agenda n’acceptera plus de rendez-vous ces jours-là."
+  },
+  "wholeCabinet": "Tout le cabinet",
+  "ongoing": "En cours",
+  "range": "Du {from} au {to}",
+  "days": "{count, plural, one {# jour} other {# jours}}",
+  "toMove": "{count, plural, one {# RDV à déplacer} other {# RDV à déplacer}}",
+  "remove": "Supprimer",
+  "removed": "Absence supprimée",
+  "removeError": "Suppression impossible.",
+  "removeTitle": "Supprimer cette absence ?",
+  "removeDescription": "Ces jours redeviennent ouverts dans l’agenda.",
+  "cancel": "Annuler",
+  "kinds": {
+    "vacation": "Congé",
+    "day_off": "Jour off",
+    "training": "Formation",
+    "sick": "Maladie",
+    "other": "Autre"
+  },
+  "holidays": {
+    "title": "Jours fériés à venir",
+    "hint": "Fermés pour tout le monde : rien à enregistrer.",
+    "estimated": "Date estimée (± 1 jour)",
+    "closedInAgenda": "Déjà fermés dans l’agenda."
+  },
+  "form": {
+    "title": "Nouvelle absence",
+    "description": "Ces jours seront fermés dans l’agenda.",
+    "who": "Qui",
+    "whoDoctor": "Seuls les rendez-vous de ce médecin sont bloqués.",
+    "whoCabinet": "Le cabinet entier est fermé : aucun rendez-vous.",
+    "kind": "Motif",
+    "from": "Du",
+    "to": "Au",
+    "datesError": "La date de fin doit suivre la date de début.",
+    "note": "Note",
+    "notePlaceholder": "Facultatif (ex. : congrès à Rabat)",
+    "noConflicts": "Aucun rendez-vous prévu pendant cette période.",
+    "conflicts": "{count, plural, one {# rendez-vous déjà prévu pendant cette période} other {# rendez-vous déjà prévus pendant cette période}}",
+    "more": "et {count} autres…",
+    "conflictsHint": "Ils restent dans l’agenda : pensez à les déplacer et à prévenir les patients.",
+    "submit": "Enregistrer l’absence",
+    "saved": "Absence enregistrée",
+    "saveError": "Enregistrement impossible."
+  },
+  "closed": "Fermé"
+}

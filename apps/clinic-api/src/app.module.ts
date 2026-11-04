@@ -24,6 +24,8 @@ import { DashboardService } from './dashboard/dashboard.service.js';
 import { validateEnv } from './config/env.js';
 import { ConsultationsController } from './consultations/consultations.controller.js';
 import { ConsultationsService } from './consultations/consultations.service.js';
+import { ClosuresController } from './closures/closures.controller.js';
+import { ClosuresService } from './closures/closures.service.js';
 import { CatalogModule } from './database/catalog.module.js';
 import { MailService } from './mail/mail.service.js';
 import { GoogleConnectionService } from './meetings/google-connection.service.js';
@@ -78,6 +80,7 @@ import { TenancyService } from './tenancy/tenancy.service.js';
     PatientsController,
     SpacesController,
     AppointmentsController,
+    ClosuresController,
     ConsultationsController,
     DashboardController,
     SettingsController,
@@ -100,6 +103,7 @@ import { TenancyService } from './tenancy/tenancy.service.js';
     SpacesService,
     SpaceGuard,
     AppointmentsService,
+    ClosuresService,
     ConsultationsService,
     DashboardService,
     CabinetService,

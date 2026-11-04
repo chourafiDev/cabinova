@@ -62,6 +62,8 @@
     "duration": "المدة",
     "closed": "العيادة مغلقة في هذا الوقت. أوقات العمل ({day}: {hours}).",
     "holiday": "يوم عطلة ({holiday}): العيادة مغلقة في هذا اليوم.",
+    "cabinetClosed": "العيادة مغلقة في هذا اليوم ({kind}).",
+    "practitionerAbsent": "{practitioner} غائب في هذا اليوم ({kind}).",
     "reason": "العمل الطبي",
     "reasonPlaceholder": "اختر عملًا…",
     "noReason": "بدون",

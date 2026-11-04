@@ -131,7 +131,7 @@ export function DossierView({ patientId, visitId }: { patientId: string; visitId
 				</div>
 
 				{allergies && (
-					<div className="border-t border-red-200 bg-red-50 text-red-900 dark:border-red-900/60 dark:bg-red-950/40 dark:text-red-200">
+					<div className="border-t border-red-200 bg-red-50 text-red-900">
 						<p className="mx-auto flex max-w-[1600px] items-start gap-2 px-4 py-2 text-sm">
 							<LuTriangleAlert className="mt-0.5 size-4 shrink-0" />
 							<span>

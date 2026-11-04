@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { isToday, startOfDay } from "date-fns";
-import { HolidayLabel } from "@/calendar/components/holiday-label";
+import { DayLabels } from "@/calendar/components/holiday-label";
 
 import { useCalendar } from "@/calendar/contexts/calendar-context";
 
@@ -48,7 +48,7 @@ export function DayCell({ cell, events, eventPositions }: IProps) {
         >
           {day}
         </button>
-        <HolidayLabel date={date} className={cn("mx-1 hidden lg:inline-flex", !currentMonth && "opacity-50")} />
+        <DayLabels date={date} className={cn("mx-1 hidden lg:inline-flex", !currentMonth && "opacity-50")} />
 
         <div className={cn("flex h-6 gap-1 px-2 lg:h-[94px] lg:flex-col lg:gap-2 lg:px-0", !currentMonth && "opacity-50")}>
           {[0, 1, 2].map(position => {

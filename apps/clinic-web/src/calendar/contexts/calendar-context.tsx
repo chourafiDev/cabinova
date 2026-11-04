@@ -3,7 +3,8 @@
 import { createContext, useContext, useMemo, useState } from "react";
 
 import type { IEvent, IUser } from "@/calendar/interfaces";
-import type { TBadgeVariant, TCalendarView, TVisibleHours, TWorkingHours } from "@/calendar/types";
+import type { TBadgeVariant, TCalendarView, TSchedule, TVisibleHours, TWorkingHours } from "@/calendar/types";
+import { type Closure, covers, dayKey } from "@/lib/closures";
 import type { OpeningHours } from "@/lib/session";
 import { toMinutes } from "@/lib/settings";
 
@@ -22,6 +23,17 @@ interface ICalendarContext {
   openingHours: OpeningHours;
   /** …and in minutes, for the views. */
   workingHours: TWorkingHours;
+  /**
+   * What the views close: opening hours, public holidays, the cabinet's
+   * closures, and the absences of the doctor shown (or of the only one).
+   */
+  schedule: TSchedule;
+  /** The same for one doctor (the booking form). */
+  scheduleFor: (practitionerId: string) => TSchedule;
+  /** Why a day is closed for this doctor (or the whole cabinet), if it is. */
+  closureOn: (day: Date, practitionerId: string | null) => Closure | undefined;
+  /** Every closure on a day (labels in the views). */
+  closuresOn: (day: Date) => Closure[];
   /** Rows shown on the day/week views: opening hours, widened by events outside them. */
   visibleHours: TVisibleHours;
   /** Pre-selected when booking (minutes). */
@@ -72,6 +84,7 @@ export function CalendarProvider({
   canWrite,
   openingHours,
   defaultDuration,
+  closures = [],
 }: {
   children: React.ReactNode;
   users: IUser[];
@@ -85,10 +98,24 @@ export function CalendarProvider({
   canWrite: boolean;
   openingHours: OpeningHours;
   defaultDuration: number;
+  /** Congés et absences over the visible range. */
+  closures?: Closure[];
 }) {
   const [badgeVariant, setBadgeVariant] = useState<TBadgeVariant>("colored");
   const workingHours = useMemo(() => workingHoursOf(openingHours), [openingHours]);
   const visibleHours = useMemo(() => visibleHoursOf(workingHours), [workingHours]);
+
+  const closuresOn = (day: Date) => closures.filter((c) => covers(c, dayKey(day)));
+  const closureOn = (day: Date, practitionerId: string | null) => {
+    const today = closuresOn(day);
+    return today.find((c) => c.practitionerId === null) ?? (practitionerId ? today.find((c) => c.practitionerId === practitionerId) : undefined);
+  };
+  const scheduleFor = (practitionerId: string | null): TSchedule => ({
+    hours: workingHours,
+    closed: (day) => !!closureOn(day, practitionerId),
+  });
+  // A doctor's absence closes the grid when the agenda shows that doctor (or there is only one).
+  const shown = selectedUserId !== "all" ? selectedUserId : users.length === 1 ? users[0].id : null;
 
   return (
     <CalendarContext.Provider
@@ -105,6 +132,10 @@ export function CalendarProvider({
         visibleHours,
         openingHours,
         workingHours,
+        schedule: scheduleFor(shown),
+        scheduleFor,
+        closureOn,
+        closuresOn,
         defaultDuration,
         events,
         canWrite,

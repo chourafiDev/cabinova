@@ -152,7 +152,9 @@
       "meeting_cancel": "a annulé la réunion",
       "integrations_google_connect": "a connecté le compte Google",
       "integrations_google_disconnect": "a déconnecté le compte Google",
-      "consultation_save": "a rédigé la consultation de"
+      "consultation_save": "a rédigé la consultation de",
+      "closure_create": "a enregistré une absence",
+      "closure_delete": "a supprimé une absence"
     }
   },
   "cabinet": {

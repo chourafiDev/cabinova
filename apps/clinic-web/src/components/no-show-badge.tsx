@@ -35,7 +35,7 @@ export function NoShowNote({ count }: { count: number | undefined }) {
 	return (
 		<p
 			role="note"
-			className="flex items-start gap-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-900 dark:border-red-900/60 dark:bg-red-950/40 dark:text-red-200"
+			className="flex items-start gap-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-900"
 		>
 			<LuTriangleAlert className="mt-0.5 size-4 shrink-0" />
 			<span>

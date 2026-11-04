@@ -4,7 +4,7 @@ import { addDays, addMonths, addWeeks, subDays, subMonths, subWeeks, isSameWeek,
 
 import { format } from "date-fns";
 import type { ICalendarCell, IEvent } from "@/calendar/interfaces";
-import type { TCalendarView, TVisibleHours, TWorkingHours } from "@/calendar/types";
+import type { TCalendarView, TSchedule, TVisibleHours } from "@/calendar/types";
 
 // ================ Header helper functions ================ //
 
@@ -122,25 +122,26 @@ export function getEventBlockStyle(event: IEvent, day: Date, groupIndex: number,
 /** The Moroccan public holiday on this day: the cabinet is closed, whatever its hours. */
 export const holidayOf = (day: Date) => moroccoHolidayOn(format(day, "yyyy-MM-dd"));
 
-/** The day's opening periods: none on a public holiday. */
-const periodsOf = (day: Date, workingHours: TWorkingHours) => (holidayOf(day) ? [] : (workingHours[day.getDay()] ?? []));
+/** The day's opening periods: none on a public holiday or a closed day. */
+const periodsOf = (day: Date, schedule: TSchedule) =>
+  holidayOf(day) || schedule.closed(day) ? [] : (schedule.hours[day.getDay()] ?? []);
 
-export function isWorkingHour(day: Date, hour: number, workingHours: TWorkingHours) {
-  return periodsOf(day, workingHours).some((p) => p.from < (hour + 1) * 60 && p.to > hour * 60);
+export function isWorkingHour(day: Date, hour: number, schedule: TSchedule) {
+  return periodsOf(day, schedule).some((p) => p.from < (hour + 1) * 60 && p.to > hour * 60);
 }
 
 /** The quarter of an hour overlaps opening hours. */
-export function isWorkingSlot(day: Date, hour: number, minute: number, workingHours: TWorkingHours) {
+export function isWorkingSlot(day: Date, hour: number, minute: number, schedule: TSchedule) {
   const from = hour * 60 + minute;
-  return periodsOf(day, workingHours).some((p) => p.from < from + 15 && p.to > from);
+  return periodsOf(day, schedule).some((p) => p.from < from + 15 && p.to > from);
 }
 
 /** The whole appointment is open; back-to-back periods count as one (same rule as the API). */
-export function isWithinWorkingHours(start: Date, end: Date, workingHours: TWorkingHours) {
+export function isWithinWorkingHours(start: Date, end: Date, schedule: TSchedule) {
   const from = start.getHours() * 60 + start.getMinutes();
   const to = from + Math.round((end.getTime() - start.getTime()) / 60_000);
   let reached = from;
-  for (const p of periodsOf(start, workingHours)) {
+  for (const p of periodsOf(start, schedule)) {
     if (p.from <= reached && p.to > reached) reached = p.to;
   }
   return reached >= to;

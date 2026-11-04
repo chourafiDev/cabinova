@@ -152,7 +152,9 @@
       "meeting_cancel": "ألغى الاجتماع",
       "integrations_google_connect": "ربط حساب Google",
       "integrations_google_disconnect": "فصل حساب Google",
-      "consultation_save": "حرّر استشارة"
+      "consultation_save": "حرّر استشارة",
+      "closure_create": "سجّل غيابًا",
+      "closure_delete": "حذف غيابًا"
     }
   },
   "cabinet": {

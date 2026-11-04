@@ -277,7 +277,7 @@ function Vitals({
 			<div
 				className={cn(
 					"border-input bg-background focus-within:ring-ring/50 focus-within:border-ring flex h-10 items-center rounded-md border px-3 transition-[color,box-shadow] focus-within:ring-[3px]",
-					abnormal && "border-amber-400 bg-amber-50 dark:bg-amber-950/30",
+					abnormal && "border-amber-400 bg-amber-50",
 					bad && "border-destructive bg-destructive/5",
 					className,
 				)}
@@ -291,7 +291,7 @@ function Vitals({
 					aria-invalid={bad}
 					className={cn(
 						"w-full min-w-0 bg-transparent text-base font-semibold tabular-nums outline-none md:text-sm",
-						abnormal && "text-amber-800 dark:text-amber-300",
+						abnormal && "text-amber-800",
 					)}
 				/>
 				{unit && <span className="text-muted-foreground ms-1 shrink-0 text-xs">{unit}</span>}
@@ -360,8 +360,8 @@ function Vitals({
 							className={cn(
 								"rounded px-1.5 text-[11px] font-medium",
 								bmiCategory(bmi) === "normal"
-									? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300"
-									: "bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300",
+									? "bg-emerald-100 text-emerald-800"
+									: "bg-amber-100 text-amber-800",
 							)}
 						>
 							{t(`bmiCategory.${bmiCategory(bmi)}`)}

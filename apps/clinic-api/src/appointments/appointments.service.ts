@@ -415,7 +415,8 @@ export class AppointmentsService {
       !current ||
       new Date(current.startsAt).getTime() !== startsAt.getTime() ||
       new Date(current.endsAt).getTime() !== endsAt.getTime();
-    if (moved) await this.assertOpen(tx, spaceId, startsAt, endsAt);
+    if (moved)
+      await this.assertOpen(tx, spaceId, startsAt, endsAt, dto.practitionerId);
     if (!dto.allowOverlap) {
       await this.assertSlotFree(
         tx,
@@ -467,6 +468,7 @@ export class AppointmentsService {
     spaceId: string,
     startsAt: Date,
     endsAt: Date,
+    practitionerId: string,
   ) {
     // Public holidays close every cabinet, whatever its opening hours.
     const holiday = moroccoHolidayOn(moroccoDay(startsAt));
@@ -476,6 +478,35 @@ export class AppointmentsService {
         params: { holiday: holiday.key },
         message: `Jour férié (${HOLIDAY_NAMES[holiday.key]}) : le cabinet est fermé.`,
       });
+    }
+    // Congés et absences: the whole cabinet's, or this doctor's.
+    const { rows: closed } = await tx.query<{
+      kind: string;
+      practitioner: string | null;
+    }>(
+      `select c.kind, u.name as practitioner
+         from closures c left join users u on u.id = c.practitioner_id
+        where $1::date between c.starts_on and c.ends_on
+          and (c.practitioner_id is null or c.practitioner_id = $2)
+        order by c.practitioner_id nulls first
+        limit 1`,
+      [moroccoDay(startsAt), practitionerId],
+    );
+    if (closed[0]) {
+      const { kind, practitioner } = closed[0];
+      throw new BadRequestException(
+        practitioner
+          ? {
+              code: 'PRACTITIONER_ABSENT',
+              params: { kind, practitioner },
+              message: `${practitioner} est absent(e) ce jour-là.`,
+            }
+          : {
+              code: 'CABINET_CLOSED',
+              params: { kind },
+              message: 'Le cabinet est fermé ce jour-là.',
+            },
+      );
     }
     const { rows } = await tx.query<{ opening_hours: OpeningHours }>(
       'select opening_hours from spaces where id = $1',

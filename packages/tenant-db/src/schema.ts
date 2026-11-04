@@ -351,6 +351,43 @@ export const appointments = pgTable(
  * the constants taken, the examination, the diagnosis and what was decided.
  * One per appointment, saved as the doctor types.
  */
+/** Why the cabinet or a doctor isn't working (Congés et absences). */
+export const closureKind = pgEnum('closure_kind', [
+  'vacation',
+  'day_off',
+  'training',
+  'sick',
+  'other',
+]);
+
+/**
+ * Whole days off: the whole cabinet (no practitioner) or one doctor. No
+ * booking falls in them; appointments already there are shown to be moved.
+ */
+export const closures = pgTable(
+  'closures',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    /** Null: the whole cabinet is closed. */
+    practitionerId: uuid('practitioner_id').references(() => users.id, {
+      onDelete: 'cascade',
+    }),
+    kind: closureKind('kind').notNull(),
+    /** Both days included, on the cabinet's calendar. */
+    startsOn: date('starts_on').notNull(),
+    endsOn: date('ends_on').notNull(),
+    note: text('note'),
+    createdBy: uuid('created_by').references(() => users.id, {
+      onDelete: 'set null',
+    }),
+    ...timestamps,
+  },
+  (t) => [
+    check('closures_dates_order', sql`${t.endsOn} >= ${t.startsOn}`),
+    index('closures_dates_idx').on(t.startsOn, t.endsOn),
+  ],
+);
+
 export const consultations = pgTable(
   'consultations',
   {

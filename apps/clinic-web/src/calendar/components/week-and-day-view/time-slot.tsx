@@ -12,8 +12,8 @@ import { cn } from "@/lib/utils";
  * form: the form and the API are what refuse them.
  */
 export function TimeSlot({ date, hour, minute }: { date: Date; hour: number; minute: number }) {
-  const { workingHours } = useCalendar();
-  const partlyClosed = isWorkingHour(date, hour, workingHours) && !isWorkingSlot(date, hour, minute, workingHours);
+  const { schedule } = useCalendar();
+  const partlyClosed = isWorkingHour(date, hour, schedule) && !isWorkingSlot(date, hour, minute, schedule);
 
   return (
     <DroppableTimeBlock date={date} hour={hour} minute={minute}>
