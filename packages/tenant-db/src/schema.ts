@@ -462,6 +462,42 @@ export const consultations = pgTable(
   (t) => [index('consultations_patient_idx').on(t.patientId)],
 );
 
+/** One line of an ordonnance, as the doctor wrote it. */
+export type PrescriptionItem = {
+  /** "Amlodipine 5 mg, comprimé" */
+  medication: string;
+  /** "1 cp le matin" */
+  posology: string | null;
+  /** "3 mois", "QSP 1 mois" */
+  duration: string | null;
+};
+
+/**
+ * The ordonnance of one visit (doctors only), printed on the cabinet's
+ * letterhead. One per appointment, saved as the doctor types.
+ */
+export const prescriptions = pgTable(
+  'prescriptions',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    appointmentId: uuid('appointment_id')
+      .notNull()
+      .unique()
+      .references(() => appointments.id, { onDelete: 'cascade' }),
+    patientId: uuid('patient_id')
+      .notNull()
+      .references(() => patients.id, { onDelete: 'restrict' }),
+    practitionerId: uuid('practitioner_id').references(() => users.id, {
+      onDelete: 'set null',
+    }),
+    items: jsonb('items').$type<PrescriptionItem[]>().notNull().default([]),
+    /** Advice printed under the lines ("à prendre au cours des repas"). */
+    notes: text('notes'),
+    ...timestamps,
+  },
+  (t) => [index('prescriptions_patient_idx').on(t.patientId)],
+);
+
 // ── Encaissements ─────────────────────────────────────────────────────────
 // Amounts are integers in centimes of MAD, like the platform's invoices.
 

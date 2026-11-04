@@ -3,23 +3,35 @@
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
+import { parseAsStringLiteral, useQueryState } from "nuqs";
 import { useRef, useState } from "react";
-import { LuArrowLeft, LuCalendarClock, LuStethoscope, LuTimer, LuTriangleAlert } from "react-icons/lu";
+import {
+	LuArrowLeft,
+	LuCalendarClock,
+	LuNotebookPen,
+	LuPill,
+	LuStethoscope,
+	LuTimer,
+	LuTriangleAlert,
+} from "react-icons/lu";
 import { AppointmentStatusBadge } from "@/components/appointment-status-badge";
 import { NoShowBadge } from "@/components/no-show-badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { api } from "@/lib/api-client";
 import type { Appointment } from "@/lib/appointments";
 import type { PastConsultation, Visit } from "@/lib/consultations";
 import { initials } from "@/lib/format";
 import { ageOf, formatFileNumber, fullName, type PatientFile } from "@/lib/patients";
+import type { PastPrescription, Prescription } from "@/lib/prescriptions";
 import { useFormat } from "@/lib/use-format";
 import { useNow } from "@/lib/use-now";
 import { ConsultationWorkspace, type WorkspaceHandle } from "./consultation-workspace";
 import { FinishButton } from "./finish-button";
 import { HistoryPanel } from "./history-panel";
 import { PatientNotes } from "./patient-notes";
+import { PrescriptionEditor } from "./prescription-editor";
 import { type Point, TrendsCard } from "./trends-card";
 import { PatientAside } from "./patient-aside";
 import { SaveStatus, type SaveState } from "./save-status";
@@ -34,6 +46,8 @@ export function DossierView({ patientId, visitId }: { patientId: string; visitId
 	const common = useTranslations("common");
 	const format = useFormat();
 	const workspace = useRef<WorkspaceHandle>(null);
+	const prescriptionEditor = useRef<WorkspaceHandle>(null);
+	const [tab, setTab] = useQueryState("onglet", TAB.withOptions({ history: "replace" }));
 	const [saveState, setSaveState] = useState<SaveState>({ status: "idle" });
 
 	const patient = useQuery({
@@ -49,6 +63,16 @@ export function DossierView({ patientId, visitId }: { patientId: string; visitId
 		queryKey: ["consultations", patientId],
 		queryFn: () => api<PastConsultation[]>(`/consultations?patientId=${patientId}`),
 	});
+	const prescription = useQuery({
+		queryKey: ["prescription-visit", visitId],
+		queryFn: () =>
+			api<{ prescription: Prescription | null }>(`/prescriptions/visit/${visitId}`).then((r) => r.prescription),
+		enabled: !!visitId,
+	});
+	const prescriptions = useQuery({
+		queryKey: ["prescriptions", patientId],
+		queryFn: () => api<PastPrescription[]>(`/prescriptions?patientId=${patientId}`),
+	});
 	const appointments = useQuery({
 		queryKey: ["patient-appointments", patientId],
 		queryFn: () => api<Appointment[]>(`/appointments?patientId=${patientId}`),
@@ -61,6 +85,8 @@ export function DossierView({ patientId, visitId }: { patientId: string; visitId
 	// Past visits (newest first), and the curves' points: those, then today's as saved.
 	const past = history.data?.filter((c) => c.appointmentId !== visitId);
 	const current = visit.data?.consultation;
+	const pastPrescriptions = prescriptions.data?.filter((r) => r.appointmentId !== visitId);
+	const lines = prescription.data?.items.length ?? 0;
 	const points: Point[] = [
 		...(past ?? []).toReversed(),
 		...(current && appointment ? [{ ...current, date: appointment.startsAt }] : []),
@@ -138,7 +164,16 @@ export function DossierView({ patientId, visitId }: { patientId: string; visitId
 						)}
 						{appointment && <SaveStatus state={saveState} />}
 						{appointment && (
-							<FinishButton appointment={appointment} beforeFinish={() => workspace.current?.flush() ?? Promise.resolve(true)} />
+							<FinishButton
+								appointment={appointment}
+								beforeFinish={async () => {
+									const [notes, rx] = await Promise.all([
+										workspace.current?.flush() ?? true,
+										prescriptionEditor.current?.flush() ?? true,
+									]);
+									return notes && rx;
+								}}
+							/>
 						)}
 					</div>
 				</div>
@@ -165,22 +200,48 @@ export function DossierView({ patientId, visitId }: { patientId: string; visitId
 					{p && <PatientNotes patient={p} last={visitId ? past?.[0] : undefined} />}
 					{!visitId ? (
 						<NoVisit />
-					) : visit.isPending ? (
+					) : visit.isPending || prescription.isPending ? (
 						<div className="grid gap-4">
 							<Skeleton className="h-40 rounded-xl" />
 							<Skeleton className="h-32 rounded-xl" />
 							<Skeleton className="h-56 rounded-xl" />
 						</div>
-					) : visit.isError || !visit.data ? (
+					) : visit.isError || !visit.data || prescription.isError ? (
 						<p className="text-destructive text-sm">{t("visitError")}</p>
 					) : (
-						<ConsultationWorkspace
-							ref={workspace}
-							key={visit.data.appointment.id}
-							visit={visit.data}
-							previous={history.data?.find((c) => c.appointmentId !== visitId)}
-							onSaveState={setSaveState}
-						/>
+						// Both stay mounted: switching tabs never loses what's being typed.
+						<Tabs value={tab} onValueChange={(v) => void setTab(v as Tab)} className="gap-4">
+							<TabsList className="w-full sm:w-fit">
+								<TabsTrigger value="consultation" className="sm:px-4">
+									<LuNotebookPen /> {t("tabs.consultation")}
+								</TabsTrigger>
+								<TabsTrigger value="ordonnance" className="sm:px-4">
+									<LuPill /> {t("tabs.prescription")}
+									{lines > 0 && (
+										<span className="bg-primary/12 text-primary rounded px-1.5 text-xs tabular-nums">{lines}</span>
+									)}
+								</TabsTrigger>
+							</TabsList>
+							<TabsContent value="consultation" forceMount className="data-[state=inactive]:hidden">
+								<ConsultationWorkspace
+									ref={workspace}
+									key={visit.data.appointment.id}
+									visit={visit.data}
+									previous={history.data?.find((c) => c.appointmentId !== visitId)}
+									onSaveState={setSaveState}
+								/>
+							</TabsContent>
+							<TabsContent value="ordonnance" forceMount className="data-[state=inactive]:hidden">
+								<PrescriptionEditor
+									ref={prescriptionEditor}
+									key={visit.data.appointment.id}
+									appointmentId={visit.data.appointment.id}
+									prescription={prescription.data ?? null}
+									previous={pastPrescriptions?.[0]}
+									onSaveState={setSaveState}
+								/>
+							</TabsContent>
+						</Tabs>
 					)}
 					{/* Below xl the left column moves under the consultation. */}
 					<div className="xl:hidden">{p && <PatientAside patient={p} next={next} />}</div>
@@ -188,15 +249,15 @@ export function DossierView({ patientId, visitId }: { patientId: string; visitId
 
 				<aside className="order-3 grid min-w-0 gap-4">
 					<TrendsCard points={points} />
-					<HistoryPanel
-						consultations={past}
-						loading={history.isPending}
-					/>
+					<HistoryPanel consultations={past} prescriptions={pastPrescriptions} loading={history.isPending} />
 				</aside>
 			</main>
 		</div>
 	);
 }
+
+const TAB = parseAsStringLiteral(["consultation", "ordonnance"] as const).withDefault("consultation");
+type Tab = "consultation" | "ordonnance";
 
 /** Opened outside a visit (from the patient's file): nothing to write, the history is beside. */
 function NoVisit() {

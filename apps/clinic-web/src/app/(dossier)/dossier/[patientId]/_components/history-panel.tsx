@@ -1,9 +1,10 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { LuChevronDown, LuHistory } from "react-icons/lu";
+import { LuChevronDown, LuHistory, LuPill, LuPrinter } from "react-icons/lu";
 import { Skeleton } from "@/components/ui/skeleton";
 import { bmiOf, isAbnormal, type PastConsultation, type VitalField } from "@/lib/consultations";
+import type { PastPrescription } from "@/lib/prescriptions";
 import { useFormat } from "@/lib/use-format";
 import { cn } from "@/lib/utils";
 import { Card } from "./patient-aside";
@@ -14,9 +15,11 @@ import { Card } from "./patient-aside";
  */
 export function HistoryPanel({
 	consultations,
+	prescriptions,
 	loading,
 }: {
 	consultations: PastConsultation[] | undefined;
+	prescriptions: PastPrescription[] | undefined;
 	loading: boolean;
 }) {
 	const t = useTranslations("dossier.history");
@@ -34,7 +37,12 @@ export function HistoryPanel({
 			) : (
 				<ol className="relative grid gap-3 before:absolute before:inset-y-2 before:start-[5px] before:w-px before:bg-border">
 					{consultations.map((c, i) => (
-						<Entry key={c.id} consultation={c} open={i === 0} />
+						<Entry
+							key={c.id}
+							consultation={c}
+							prescription={prescriptions?.find((r) => r.appointmentId === c.appointmentId)}
+							open={i === 0}
+						/>
 					))}
 				</ol>
 			)}
@@ -42,7 +50,15 @@ export function HistoryPanel({
 	);
 }
 
-function Entry({ consultation: c, open }: { consultation: PastConsultation; open: boolean }) {
+function Entry({
+	consultation: c,
+	prescription,
+	open,
+}: {
+	consultation: PastConsultation;
+	prescription: PastPrescription | undefined;
+	open: boolean;
+}) {
 	const t = useTranslations("dossier");
 	const format = useFormat();
 	const bmi = bmiOf(c.weightKg, c.heightCm);
@@ -103,6 +119,36 @@ function Entry({ consultation: c, open }: { consultation: PastConsultation; open
 									<p className="whitespace-pre-line">{c[f]}</p>
 								</div>
 							),
+					)}
+					{prescription && (
+						<div>
+							<div className="flex items-center justify-between gap-2">
+								<p className="text-muted-foreground flex items-center gap-1 text-xs">
+									<LuPill className="size-3" /> {t("history.prescription")}
+								</p>
+								<a
+									href={`/ordonnances/${c.appointmentId}`}
+									target="_blank"
+									rel="noopener"
+									className="text-primary flex items-center gap-1 text-xs hover:underline"
+								>
+									<LuPrinter className="size-3" /> {t("history.reprint")}
+								</a>
+							</div>
+							<ul className="grid gap-0.5">
+								{prescription.items.map((item, i) => (
+									<li key={i}>
+										<span className="font-medium">{item.medication}</span>
+										{(item.posology || item.duration) && (
+											<span className="text-muted-foreground">
+												{" — "}
+												{[item.posology, item.duration].filter(Boolean).join(", ")}
+											</span>
+										)}
+									</li>
+								))}
+							</ul>
+						</div>
 					)}
 				</div>
 			</details>

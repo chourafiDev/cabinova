@@ -153,6 +153,7 @@
       "integrations_google_connect": "a connecté le compte Google",
       "integrations_google_disconnect": "a déconnecté le compte Google",
       "consultation_save": "a rédigé la consultation de",
+      "prescription_save": "a rédigé l’ordonnance de",
       "closure_create": "a enregistré une absence",
       "closure_delete": "a supprimé une absence"
     }

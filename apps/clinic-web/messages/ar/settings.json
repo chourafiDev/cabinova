@@ -153,6 +153,7 @@
       "integrations_google_connect": "ربط حساب Google",
       "integrations_google_disconnect": "فصل حساب Google",
       "consultation_save": "حرّر استشارة",
+      "prescription_save": "حرّر وصفة",
       "closure_create": "سجّل غيابًا",
       "closure_delete": "حذف غيابًا"
     }

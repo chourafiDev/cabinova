@@ -103,5 +103,8 @@
   "CLOSURE_DATES": "يجب أن يكون تاريخ النهاية بعد تاريخ البداية.",
   "CLOSURE_TOO_LONG": "لا يتجاوز الغياب سنة واحدة.",
   "CLOSURE_NOT_YOURS": "يمكنك تدبير غياباتك فقط.",
-  "CLOSURE_NOT_FOUND": "الغياب غير موجود."
+  "CLOSURE_NOT_FOUND": "الغياب غير موجود.",
+  "VISIT_CLOSED": "أُلغيت هذه الزيارة: لم يعد بالإمكان تعبئتها.",
+  "PHRASE_NOT_FOUND": "النموذج غير موجود.",
+  "PRESCRIPTION_NOT_FOUND": "الوصفة غير موجودة."
 }

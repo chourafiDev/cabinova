@@ -79,7 +79,9 @@
   "history": {
     "title": "Consultations précédentes",
     "empty": "Première consultation : aucun historique pour l’instant.",
-    "noDiagnosis": "Sans diagnostic noté"
+    "noDiagnosis": "Sans diagnostic noté",
+    "prescription": "Ordonnance",
+    "reprint": "Réimprimer"
   },
   "nextVisitHint": "Rappel affiché en haut du dossier à la prochaine consultation.",
   "timerTitle": "Durée de la consultation",
@@ -114,5 +116,28 @@
       "hba1c": "HbA1c"
     },
     "unit": "En {unit}"
+  },
+  "tabs": {
+    "consultation": "Consultation",
+    "prescription": "Ordonnance"
+  },
+  "prescription": {
+    "title": "Ordonnance",
+    "print": "Imprimer",
+    "renew": "Renouveler celle du {date}",
+    "renewed": "{count, plural, one {# médicament repris} other {# médicaments repris}} de l’ordonnance du {date}.",
+    "saveFirst": "L’ordonnance n’a pas pu être enregistrée : réessayez avant d’imprimer.",
+    "add": "Ajouter un médicament",
+    "remove": "Retirer ce médicament",
+    "medication": "Médicament",
+    "posology": "Posologie",
+    "duration": "Durée",
+    "notes": "Conseils (imprimés sous les médicaments)",
+    "placeholders": {
+      "medication": "Médicament, dosage et forme : Amlodipine 5 mg, comprimé",
+      "posology": "Posologie : 1 comprimé le matin",
+      "duration": "Durée : 3 mois",
+      "notes": "À prendre au cours des repas, revoir dans 1 mois avec le bilan…"
+    }
   }
 }
