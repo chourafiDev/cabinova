@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { LuCheck, LuChevronsUpDown, LuLoader } from "react-icons/lu";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { NoShowBadge } from "@/components/no-show-badge";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useDebouncedCallback } from "@/hooks/use-debounced-callback";
@@ -12,7 +13,7 @@ import { api } from "@/lib/api-client";
 import { formatFileNumber, formatPhone, fullName, type PatientsPage } from "@/lib/patients";
 import { cn } from "@/lib/utils";
 
-export type PickedPatient = { id: string; firstName: string; lastName: string; fileNumber: number };
+export type PickedPatient = { id: string; firstName: string; lastName: string; fileNumber: number; noShows?: number };
 
 /** Searchable patient select (name, phone, CIN or file number), active files only. */
 export function PatientPicker({
@@ -54,8 +55,11 @@ export function PatientPicker({
 					disabled={disabled}
 					className={cn("w-full h-10 justify-between font-normal", !value && "text-muted-foreground")}
 				>
-					<span className="truncate">
-						{value ? `${fullName(value)} · ${formatFileNumber(value.fileNumber)}` : t("placeholder")}
+					<span className="flex min-w-0 items-center gap-2">
+						<span className="truncate">
+							{value ? `${fullName(value)} · ${formatFileNumber(value.fileNumber)}` : t("placeholder")}
+						</span>
+						{value && <NoShowBadge count={value.noShows} />}
 					</span>
 					<LuChevronsUpDown className="size-4 shrink-0 opacity-50" />
 				</Button>
@@ -74,12 +78,21 @@ export function PatientPicker({
 									key={p.id}
 									value={p.id}
 									onSelect={() => {
-										onChange({ id: p.id, firstName: p.firstName, lastName: p.lastName, fileNumber: p.fileNumber });
+										onChange({
+											id: p.id,
+											firstName: p.firstName,
+											lastName: p.lastName,
+											fileNumber: p.fileNumber,
+											noShows: p.noShows,
+										});
 										setOpen(false);
 									}}
 								>
 									<div className="grid min-w-0 flex-1 leading-tight">
-										<span className="truncate font-medium">{fullName(p)}</span>
+										<span className="flex items-center gap-2">
+											<span className="truncate font-medium">{fullName(p)}</span>
+											<NoShowBadge count={p.noShows} />
+										</span>
 										<span className="text-muted-foreground truncate text-xs tabular-nums">
 											{formatFileNumber(p.fileNumber)}
 											{p.phone && ` · ${formatPhone(p.phone)}`}

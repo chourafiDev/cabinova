@@ -4,6 +4,7 @@ import Link from "next/link";
 import { differenceInMinutes } from "date-fns";
 import { useTranslations } from "next-intl";
 import { LuArchive, LuArchiveRestore, LuCalendarClock, LuCalendarPlus, LuContactRound, LuEllipsis, LuIdCard, LuMail, LuMapPin, LuPencil, LuPhone, LuShieldCheck, LuStickyNote, LuTriangleAlert } from "react-icons/lu";
+import { NoShowBadge } from "@/components/no-show-badge";
 import { useState } from "react";
 import { AppointmentStatusBadge } from "@/components/appointment-status-badge";
 import { Badge } from "@/components/ui/badge";
@@ -61,6 +62,7 @@ export function PatientHeader({
 				<div className="grid min-w-0 gap-1">
 					<SheetTitle className="flex flex-wrap items-center gap-2 text-xl leading-tight font-semibold">
 						<span className="truncate">{fullName(patient)}</span>
+						<NoShowBadge count={patient.noShows} />
 						{archived && <Badge variant="secondary">{t("archived")}</Badge>}
 					</SheetTitle>
 					<SheetDescription className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm">

@@ -33,6 +33,7 @@ import { useCalendar } from "@/calendar/contexts/calendar-context";
 import type { IEvent } from "@/calendar/interfaces";
 import { useFmt } from "@/calendar/locale";
 import { AppointmentStatusBadge } from "@/components/appointment-status-badge";
+import { NoShowBadge } from "@/components/no-show-badge";
 import { useCurrentUser } from "@/components/current-user";
 import { Button } from "@/components/ui/button";
 import {
@@ -192,7 +193,10 @@ function PanelContent({ event, onClose }: { event: IEvent; onClose: () => void }
       <header className="grid gap-2 border-b p-4">
         <div className="flex items-start justify-between gap-2">
           <div className="grid min-w-0 gap-0.5">
-            <h2 className="truncate font-semibold">{event.title}</h2>
+            <h2 className="flex items-center gap-2 font-semibold">
+              <span className="truncate">{event.title}</span>
+              <NoShowBadge count={event.patient.noShows} />
+            </h2>
             <p className="text-muted-foreground text-sm tabular-nums">{formatFileNumber(event.patient.fileNumber)}</p>
           </div>
           <Button size="icon-sm" variant="ghost" aria-label={t("common.close")} onClick={onClose}>

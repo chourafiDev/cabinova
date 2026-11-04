@@ -20,7 +20,14 @@ export interface IEvent {
   description: string;
   user: IUser;
   status: AppointmentStatus;
-  patient: { id: string; firstName: string; lastName: string; fileNumber: number; phone: string | null };
+  patient: {
+    id: string;
+    firstName: string;
+    lastName: string;
+    fileNumber: number;
+    phone: string | null;
+    noShows?: number;
+  };
   reason: string | null;
   notes: string | null;
 }

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { LuArmchair, LuCheck, LuDoorOpen, LuLogOut, LuStethoscope, LuUndo2, LuUserPlus } from "react-icons/lu";
+import { NoShowBadge } from "@/components/no-show-badge";
 import { useCurrentUser } from "@/components/current-user";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -141,6 +142,7 @@ function WaitingTable({ waiting, doctor, actions }: { waiting: Appointment[]; do
 									<Link href={patientHref(a.patient.id)} className="font-medium hover:underline">
 										{fullName(a.patient)}
 									</Link>
+									<NoShowBadge count={a.patient.noShows} className="ms-2" />
 									<p className="text-muted-foreground font-mono text-xs">{formatFileNumber(a.patient.fileNumber)}</p>
 								</TableCell>
 								<TableCell className="tabular-nums">

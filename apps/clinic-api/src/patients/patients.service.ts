@@ -9,6 +9,7 @@ import type {
   MedicalProfileDto,
   PatientDto,
 } from './dto.js';
+import { noShowsOf } from './no-shows.js';
 import { patientSearch } from './search.js';
 
 /** Column list of a patient as the API returns it (camelCase). */
@@ -20,7 +21,7 @@ const PATIENT = `
   p.emergency_contact_name as "emergencyContactName",
   p.emergency_contact_phone as "emergencyContactPhone", p.notes,
   p.archived_at as "archivedAt", p.created_at as "createdAt",
-  p.updated_at as "updatedAt"`;
+  p.updated_at as "updatedAt", ${noShowsOf('p.id')} as "noShows"`;
 
 const SORT_COLUMNS = {
   lastName: 'p.last_name',

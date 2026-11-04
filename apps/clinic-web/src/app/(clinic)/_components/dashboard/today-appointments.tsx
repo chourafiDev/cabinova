@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import type { DashboardData } from "@/lib/dashboard";
 import { initials } from "@/lib/format";
 import { ageOf, fullName, patientHref } from "@/lib/patients";
+import { NoShowBadge } from "@/components/no-show-badge";
 import { useFormat } from "@/lib/use-format";
 import { cn } from "@/lib/utils";
 import { ChartCard } from "./chart-card";
@@ -70,6 +71,7 @@ export function TodayAppointments({ appointments }: { appointments: NonNullable<
 										<Link href={patientHref(a.patient.id)} className="truncate after:absolute after:inset-0">
 											{fullName(a.patient)}
 										</Link>
+										<NoShowBadge count={a.patient.noShows} className="relative z-10" />
 										{a.firstVisit && (
 											<span className="shrink-0 rounded-sm bg-primary/10 px-1 text-[10px] font-medium text-primary">
 												{t("dashboard.today.new")}

@@ -11,6 +11,7 @@ import {
   isWithinOpeningHours,
   type OpeningHours,
 } from '../settings/opening-hours.js';
+import { noShowsOf } from '../patients/no-shows.js';
 import {
   type AppointmentDto,
   type AppointmentStatus,
@@ -30,7 +31,7 @@ const APPOINTMENT = `
   a.left_at as "leftAt",
   json_build_object('id', p.id, 'firstName', p.first_name, 'lastName', p.last_name,
     'fileNumber', p.file_number, 'phone', p.phone, 'birthDate', to_char(p.birth_date, 'YYYY-MM-DD'),
-    'sex', p.sex) as patient,
+    'sex', p.sex, 'noShows', ${noShowsOf('p.id')}) as patient,
   json_build_object('id', u.id, 'name', u.name) as practitioner`;
 const FROM = `appointments a
   join patients p on p.id = a.patient_id

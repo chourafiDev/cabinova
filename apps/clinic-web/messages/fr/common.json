@@ -177,5 +177,9 @@
     "next": "Suivante"
   },
   "breadcrumb": "Fil d’Ariane",
-  "toasts": "Notifications"
+  "toasts": "Notifications",
+  "noShowRisk": {
+    "label": "Risque",
+    "tooltip": "{count} absences aux rendez-vous : confirmez ses rendez-vous à l’avance."
+  }
 }

@@ -30,6 +30,8 @@ export type PatientRow = {
 	coverage: Coverage;
 	archivedAt: string | null;
 	createdAt: string;
+	/** Missed appointments ("Absent"); flagged from NO_SHOW_RISK. */
+	noShows: number;
 };
 
 export type Patient = PatientRow & {

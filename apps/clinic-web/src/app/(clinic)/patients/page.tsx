@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { LuChevronLeft, LuChevronRight, LuPlus, LuUsers } from "react-icons/lu";
+import { NoShowBadge } from "@/components/no-show-badge";
 import { Suspense } from "react";
 import { getTranslations } from "next-intl/server";
 import { pageTitle } from "@/i18n/titles";
@@ -150,6 +151,8 @@ export default async function PatientsPage({ searchParams }: PageProps<"/patient
 											>
 												{fullName(p)}
 											</Link>
+											{/* Above the row link, so its tooltip opens. */}
+											<NoShowBadge count={p.noShows} className="relative z-10 ms-2" />
 											<p className="text-muted-foreground text-xs">
 												{[common(`sex.${p.sex}`), age !== null && common("age", { age }), p.city].filter(Boolean).join(" · ")}
 											</p>

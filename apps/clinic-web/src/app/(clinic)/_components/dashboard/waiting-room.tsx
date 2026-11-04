@@ -1,5 +1,6 @@
 import { useTranslations } from "next-intl";
 import { LuArmchair, LuStethoscope } from "react-icons/lu";
+import { NoShowBadge } from "@/components/no-show-badge";
 import type { DashboardData } from "@/lib/dashboard";
 import { fullName } from "@/lib/patients";
 import { useFormat } from "@/lib/use-format";
@@ -49,7 +50,10 @@ export function WaitingRoom({ appointments }: { appointments: NonNullable<Dashbo
 										{i + 1}
 									</span>
 									<div className="min-w-0 flex-1">
-										<p className="truncate text-sm font-medium">{fullName(a.patient)}</p>
+										<p className="flex items-center gap-1.5 text-sm font-medium">
+											<span className="truncate">{fullName(a.patient)}</span>
+											<NoShowBadge count={a.patient.noShows} />
+										</p>
 										<p className="truncate text-xs text-muted-foreground">
 											{t("arrivedAt", { time: a.arrivedAt ? format.clock(a.arrivedAt) : "—" })} ·{" "}
 											{a.walkIn ? t("walkIn") : t("appointmentAt", { time: format.clock(a.startsAt) })}

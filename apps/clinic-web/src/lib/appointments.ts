@@ -58,6 +58,8 @@ export type Appointment = {
 		phone: string | null;
 		birthDate: string | null;
 		sex: "male" | "female";
+		/** Missed appointments ("Absent"); flagged from NO_SHOW_RISK. */
+		noShows: number;
 	};
 	practitioner: { id: string; name: string };
 };

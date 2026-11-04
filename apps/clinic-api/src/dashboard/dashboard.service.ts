@@ -1,5 +1,6 @@
 import type { Pool } from '@neondatabase/serverless';
 import { Injectable } from '@nestjs/common';
+import { noShowsOf } from '../patients/no-shows.js';
 import { percentChange } from './change.js';
 
 // Day, week and month in Moroccan time, computed by Postgres (Morocco moves
@@ -78,10 +79,11 @@ export class DashboardService {
         ? db.query(
             `${BOUNDS}
              select a.id, a.starts_at as "startsAt", a.ends_at as "endsAt", a.status, a.reason,
-               a.arrived_at as "arrivedAt", a.walk_in as "walkIn",
+               a.arrived_at as "arrivedAt", a.walk_in as "walkIn", a.left_at as "leftAt",
                json_build_object('id', p.id, 'firstName', p.first_name, 'lastName', p.last_name,
                  'fileNumber', p.file_number, 'phone', p.phone,
-                 'birthDate', to_char(p.birth_date, 'YYYY-MM-DD'), 'sex', p.sex) as patient,
+                 'birthDate', to_char(p.birth_date, 'YYYY-MM-DD'), 'sex', p.sex,
+                 'noShows', ${noShowsOf('p.id')}) as patient,
                json_build_object('id', u.id, 'name', u.name) as practitioner,
                not exists (select 1 from appointments o where o.patient_id = a.patient_id
                  and o.status = 'completed' and o.starts_at < a.starts_at) as "firstVisit"
