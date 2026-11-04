@@ -6,7 +6,7 @@
   "welcomeTitle": "Bienvenue, {name} 👋",
   "welcome": "Voici l’espace de votre cabinet sur Cabinova. Une minute pour en faire le tour, vous pourrez la revoir depuis votre menu.",
   "navTitle": "Votre cabinet, module par module",
-  "nav": "Agenda, patients, consultations, ordonnances : tout se trouve ici. Les modules marqués « Bientôt » arrivent prochainement.",
+  "nav": "Agenda, patients, réunions, encaissements : tout se trouve ici.",
   "kpisTitle": "Votre journée en un coup d’œil",
   "kpis": "Rendez-vous du jour, patients vus, nouveaux patients et encaissements, comparés à la semaine dernière.",
   "appointmentsTitle": "Rendez-vous et salle d’attente",

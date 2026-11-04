@@ -12,7 +12,6 @@ import {
 	SidebarGroupLabel,
 	SidebarHeader,
 	SidebarMenu,
-	SidebarMenuBadge,
 	SidebarMenuButton,
 	SidebarMenuItem,
 } from "@/components/ui/sidebar";
@@ -37,7 +36,6 @@ export function AppSidebar({
 	const pathname = usePathname();
 	const active = findNavItem(pathname);
 	const t = useTranslations("nav");
-	const tc = useTranslations("common");
 
 	return (
 		<Sidebar collapsible="icon" variant="inset" side={directionOf(useLocale()) === "rtl" ? "right" : "left"}>
@@ -79,9 +77,6 @@ export function AppSidebar({
 											<LinkPending />
 										</Link>
 									</SidebarMenuButton>
-									{item.soon && (
-										<SidebarMenuBadge className="text-[10px] font-normal text-muted-foreground">{tc("soon")}</SidebarMenuBadge>
-									)}
 								</SidebarMenuItem>
 							))}
 						</SidebarMenu>

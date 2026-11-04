@@ -4,9 +4,7 @@ import {
   HiBanknotes,
   HiCalendarDays,
   HiChartBar,
-  HiClipboardDocumentList,
   HiCog6Tooth,
-  HiDocumentText,
   HiIdentification,
   HiSquares2X2,
   HiUsers,
@@ -18,8 +16,6 @@ export type NavItem = {
   key: string;
   href: string;
   icon: IconType;
-  /** Not built yet: shown with a "Bientôt" placeholder page. */
-  soon?: boolean;
   /** "G" then this letter jumps here (keyboard shortcuts). */
   shortcut?: string;
   /** Only these roles see it (everyone when absent). */
@@ -34,8 +30,6 @@ export const navGroups: { key: string; items: NavItem[] }[] = [
       { key: "appointments", href: "/appointments", icon: HiCalendarDays, shortcut: "a" },
       { key: "patients", href: "/patients", icon: HiUsers, shortcut: "p" },
       { key: "meetings", href: "/meetings", icon: HiVideoCamera, shortcut: "m" },
-      { key: "consultations", href: "/consultations", icon: HiClipboardDocumentList, shortcut: "c", soon: true },
-      { key: "prescriptions", href: "/prescriptions", icon: HiDocumentText, shortcut: "o", soon: true },
     ],
   },
   {

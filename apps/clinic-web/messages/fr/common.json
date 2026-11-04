@@ -9,7 +9,6 @@
   },
   "loadingPage": "Chargement de la page…",
   "close": "Fermer",
-  "soon": "Bientôt",
   "toggleMenu": "Afficher ou masquer le menu",
   "menu": "Menu",
   "menuDescription": "Navigation du cabinet.",
@@ -45,10 +44,6 @@
     "SERVICE_UNAVAILABLE": "Service indisponible",
     "TENANT_OUTDATED": "Mise à jour en cours",
     "default": "Cabinet introuvable"
-  },
-  "soonPage": {
-    "message": "Cette section arrive bientôt.",
-    "back": "Retour au tableau de bord"
   },
   "palette": {
     "open": "Ouvrir la palette de commandes",

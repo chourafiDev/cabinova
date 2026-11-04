@@ -143,7 +143,6 @@ export function CommandPalette({ spaces, role }: { spaces: ClinicSession["spaces
 									<CommandItem key={item.href} value={`page-${item.href}`} onSelect={() => go(item.href)}>
 										<item.icon className="text-muted-foreground" />
 										{tn(item.key)}
-										{item.soon && <span className="text-muted-foreground text-xs">{tc("soon")}</span>}
 										{item.shortcut && (
 											<CommandShortcut className="flex gap-1">
 												<Kbd>G</Kbd>
