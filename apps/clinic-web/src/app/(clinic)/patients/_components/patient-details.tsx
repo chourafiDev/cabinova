@@ -265,28 +265,30 @@ export function PatientDetails({
 			/>
 
 			<Tabs defaultValue="overview" className="min-h-0 flex-1 gap-0">
-				<TabsList variant="line" className="w-full justify-start gap-4 border-b px-5">
-					<TabsTrigger value="overview" className="flex-none px-0">
-						{t("tabs.overview")}
-					</TabsTrigger>
-					<TabsTrigger value="appointments" className="flex-none px-0">
-						{t("tabs.appointments")}
-						{list.length > 0 && (
-							<span className="bg-muted text-muted-foreground rounded-full px-1.5 text-[11px] tabular-nums">
-								{list.length}
-							</span>
-						)}
-					</TabsTrigger>
-					<TabsTrigger value="payments" className="flex-none px-0">
-						{t("tabs.payments")}
-					</TabsTrigger>
-					{medical && (
-						<TabsTrigger value="medical" className="flex-none px-0">
-							{t("tabs.medical")}
-							{allergies && <span className="size-1.5 rounded-full bg-red-500" aria-label={t("knownAllergies")} />}
+				<div className="border-b px-5 pb-3">
+					<TabsList className="w-full">
+						<TabsTrigger value="overview">
+							{t("tabs.overview")}
 						</TabsTrigger>
-					)}
-				</TabsList>
+						<TabsTrigger value="appointments">
+							{t("tabs.appointments")}
+							{list.length > 0 && (
+								<span className="bg-muted text-muted-foreground rounded-full px-1.5 text-[11px] tabular-nums">
+									{list.length}
+								</span>
+							)}
+						</TabsTrigger>
+						<TabsTrigger value="payments">
+							{t("tabs.payments")}
+						</TabsTrigger>
+						{medical && (
+							<TabsTrigger value="medical">
+								{t("tabs.medical")}
+								{allergies && <span className="size-1.5 rounded-full bg-red-500" aria-label={t("knownAllergies")} />}
+							</TabsTrigger>
+						)}
+					</TabsList>
+				</div>
 
 				<TabsContent value="overview" className="min-h-0 overflow-y-auto p-5">
 					<div className="grid gap-3">

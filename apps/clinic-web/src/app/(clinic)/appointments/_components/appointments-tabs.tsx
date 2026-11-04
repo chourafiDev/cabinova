@@ -29,27 +29,19 @@ export function AppointmentsTabs({ agenda }: { agenda: React.ReactNode }) {
 
 	return (
 		<Tabs value={current} onValueChange={(v) => setParams({ tab: v as Tab })} className="min-w-0 gap-4">
-			<div className="-mx-1 overflow-x-auto border-b px-1">
-				<TabsList variant="line" className="h-auto! p-0">
-					<TabsTrigger
-						value="waiting"
-						className="flex-none gap-2 rounded-none px-3 py-2 group-data-horizontal/tabs:after:bottom-0"
-					>
-						<LuArmchair /> {t("waiting")}
-						{waiting.length > 0 && (
-							<span className="bg-primary text-primary-foreground rounded-full px-1.5 text-xs font-semibold tabular-nums">
-								{waiting.length}
-							</span>
-						)}
-					</TabsTrigger>
-					<TabsTrigger
-						value="agenda"
-						className="flex-none gap-2 rounded-none px-3 py-2 group-data-horizontal/tabs:after:bottom-0"
-					>
-						<LuCalendarDays /> {t("agenda")}
-					</TabsTrigger>
-				</TabsList>
-			</div>
+			<TabsList>
+				<TabsTrigger value="waiting" className="px-3">
+					<LuArmchair /> {t("waiting")}
+					{waiting.length > 0 && (
+						<span className="bg-primary text-primary-foreground rounded-full px-1.5 text-xs font-semibold tabular-nums">
+							{waiting.length}
+						</span>
+					)}
+				</TabsTrigger>
+				<TabsTrigger value="agenda" className="px-3">
+					<LuCalendarDays /> {t("agenda")}
+				</TabsTrigger>
+			</TabsList>
 			<TabsContent value="waiting" className="min-w-0">
 				<WaitingRoom />
 			</TabsContent>

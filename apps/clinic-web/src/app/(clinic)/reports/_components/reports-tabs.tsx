@@ -6,10 +6,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 export function ReportsTabs({ tabs }: { tabs: { key: string; label: string; content: React.ReactNode }[] }) {
 	return (
 		<Tabs defaultValue={tabs[0].key} className="min-w-0 gap-4">
-			<div className="-mx-1 overflow-x-auto border-b px-1">
-				<TabsList variant="line" className="h-auto! p-0">
+			<div className="-mx-1 overflow-x-auto px-1">
+				<TabsList>
 					{tabs.map((t) => (
-						<TabsTrigger key={t.key} value={t.key} className="flex-none rounded-none px-3 py-2 group-data-horizontal/tabs:after:bottom-0">
+						<TabsTrigger key={t.key} value={t.key} className="flex-none px-3">
 							{t.label}
 						</TabsTrigger>
 					))}
