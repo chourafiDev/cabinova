@@ -180,6 +180,8 @@
   "toasts": "Notifications",
   "noShowRisk": {
     "label": "Risque",
-    "tooltip": "{count} absences aux rendez-vous : confirmez ses rendez-vous à l’avance."
+    "tooltip": "{count} absences aux rendez-vous : confirmez ses rendez-vous à l’avance.",
+    "noteTitle": "Ce patient a manqué {count} rendez-vous.",
+    "noteAdvice": "Pensez à l’appeler la veille pour confirmer sa venue."
   }
 }

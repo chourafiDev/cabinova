@@ -14,6 +14,7 @@ import { useCalendar } from "@/calendar/contexts/calendar-context";
 import { isWithinWorkingHours } from "@/calendar/helpers";
 import { useFmt } from "@/calendar/locale";
 import type { IEvent } from "@/calendar/interfaces";
+import { NoShowNote } from "@/components/no-show-badge";
 import { type PickedPatient, PatientPicker } from "@/components/patient-picker";
 import { Button } from "@/components/ui/button";
 import {
@@ -189,6 +190,7 @@ export function AppointmentFormDialog({
 										invalid={!!errors.patient}
 									/>
 									<FieldError errors={[errors.patient]} />
+									<NoShowNote count={(field.value as PickedPatient | null)?.noShows} />
 								</Field>
 							)}
 						/>

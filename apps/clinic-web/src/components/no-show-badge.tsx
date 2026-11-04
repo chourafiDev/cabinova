@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { LuCalendarX2 } from "react-icons/lu";
+import { LuCalendarX2, LuTriangleAlert } from "react-icons/lu";
 import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
@@ -25,5 +25,22 @@ export function NoShowBadge({ count, className }: { count: number | undefined; c
 			</TooltipTrigger>
 			<TooltipContent>{t("tooltip", { count })}</TooltipContent>
 		</Tooltip>
+	);
+}
+
+/** Under a chosen patient while booking: why they're flagged, and what to do about it. */
+export function NoShowNote({ count }: { count: number | undefined }) {
+	const t = useTranslations("common.noShowRisk");
+	if (!count || count < NO_SHOW_RISK) return null;
+	return (
+		<p
+			role="note"
+			className="flex items-start gap-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-900 dark:border-red-900/60 dark:bg-red-950/40 dark:text-red-200"
+		>
+			<LuTriangleAlert className="mt-0.5 size-4 shrink-0" />
+			<span>
+				<span className="font-semibold">{t("noteTitle", { count })}</span> {t("noteAdvice")}
+			</span>
+		</p>
 	);
 }
