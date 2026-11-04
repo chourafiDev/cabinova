@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { differenceInMinutes } from "date-fns";
 import { useTranslations } from "next-intl";
-import { LuArchive, LuArchiveRestore, LuCalendarClock, LuCalendarPlus, LuContactRound, LuEllipsis, LuIdCard, LuMail, LuMapPin, LuPencil, LuPhone, LuShieldCheck, LuStickyNote, LuTriangleAlert } from "react-icons/lu";
+import { LuArchive, LuArchiveRestore, LuCalendarClock, LuCalendarPlus, LuContactRound, LuEllipsis, LuIdCard, LuMail, LuMapPin, LuPencil, LuPhone, LuShieldCheck, LuStethoscope, LuStickyNote, LuTriangleAlert } from "react-icons/lu";
 import { NoShowBadge } from "@/components/no-show-badge";
 import { useState } from "react";
 import { AppointmentStatusBadge } from "@/components/appointment-status-badge";
@@ -19,7 +19,7 @@ import { SheetDescription, SheetTitle } from "@/components/ui/sheet";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { Appointment } from "@/lib/appointments";
 import { initials } from "@/lib/format";
-import { ageOf, formatFileNumber, formatPhone, fullName, type PatientFile } from "@/lib/patients";
+import { ageOf, dossierHref, formatFileNumber, formatPhone, fullName, type PatientFile } from "@/lib/patients";
 import { useFormat } from "@/lib/use-format";
 import { cn } from "@/lib/utils";
 import { ArchiveDialog } from "./archive-button";
@@ -36,10 +36,13 @@ const dayLabel = (format: ReturnType<typeof useFormat>, iso: string) =>
 /** Header of the file: identity at a glance, one-click contact, main actions. */
 export function PatientHeader({
 	patient,
+	medical,
 	onEdit,
 	onArchive,
 }: {
 	patient: PatientFile;
+	/** A doctor: the medical dossier is one click away. */
+	medical?: boolean;
 	onEdit: () => void;
 	onArchive: () => void;
 }) {
@@ -117,6 +120,13 @@ export function PatientHeader({
 								<LuCalendarPlus /> {t("book")}
 							</Link>
 						</Button>
+						{medical && (
+							<Button asChild variant="outline" size="sm">
+								<Link href={dossierHref(patient.id)}>
+									<LuStethoscope /> {t("dossier")}
+								</Link>
+							</Button>
+						)}
 						<Button variant="outline" size="sm" onClick={onEdit}>
 							<LuPencil /> {t("edit")}
 						</Button>
@@ -256,7 +266,7 @@ export function PatientDetails({
 
 	return (
 		<>
-			<PatientHeader patient={patient} onEdit={onEdit} onArchive={() => setArchiving(true)} />
+			<PatientHeader patient={patient} medical={medical} onEdit={onEdit} onArchive={() => setArchiving(true)} />
 			<ArchiveDialog
 				open={archiving}
 				onOpenChange={setArchiving}

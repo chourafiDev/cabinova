@@ -1,0 +1,73 @@
+{
+  "title": "Dossier patient",
+  "notFound": "Ce dossier est introuvable dans cet espace.",
+  "back": "Salle d’attente",
+  "walkIn": "Sans rendez-vous",
+  "appointmentAt": "RDV {time}",
+  "allergies": "Allergies :",
+  "consultation": "Consultation",
+  "visitError": "Impossible de charger cette visite.",
+  "noVisit": "Aucune consultation en cours",
+  "noVisitHint": "Ouvrez le dossier depuis la salle d’attente pour commencer la consultation d’un patient. Son historique reste consultable à droite.",
+  "toWaitingRoom": "Aller à la salle d’attente",
+  "finish": "Terminer la consultation",
+  "finished": "Consultation de {patient} terminée",
+  "finishError": "Impossible de terminer la consultation.",
+  "save": {
+    "saving": "Enregistrement…",
+    "saved": "Enregistré à {time}",
+    "error": "Non enregistré : vérifiez les valeurs"
+  },
+  "sections": {
+    "complaint": "Motif et histoire",
+    "vitals": "Constantes",
+    "examination": "Examen clinique",
+    "diagnosis": "Diagnostic",
+    "plan": "Conduite à tenir"
+  },
+  "fields": {
+    "complaint": "Motif de consultation",
+    "history": "Histoire de la maladie",
+    "examination": "Examen clinique",
+    "diagnosis": "Diagnostic",
+    "plan": "Conduite à tenir"
+  },
+  "placeholders": {
+    "complaint": "Pourquoi le patient consulte-t-il aujourd’hui ?",
+    "complaintWithAct": "Pourquoi le patient consulte-t-il ? (acte prévu : {act})",
+    "history": "Début, évolution, signes associés, traitements déjà pris…",
+    "examination": "Examen général et par appareil…",
+    "diagnosis": "Diagnostic retenu ou hypothèses",
+    "plan": "Traitement, examens demandés, conseils, prochain contrôle…"
+  },
+  "vitals": {
+    "checkRed": "Vérifiez les valeurs en rouge",
+    "bloodPressure": "Tension artérielle",
+    "heartRate": "Pouls",
+    "temperature": "Température",
+    "spo2": "SpO₂",
+    "weight": "Poids",
+    "height": "Taille",
+    "bmi": "IMC",
+    "glycemia": "Glycémie",
+    "reuse": "Reprendre {value}",
+    "last": "Dernier : {value} ({date})",
+    "bmiCategory": {
+      "under": "Maigreur",
+      "normal": "Normal",
+      "over": "Surpoids",
+      "obese": "Obésité"
+    }
+  },
+  "aside": {
+    "medical": "Antécédents",
+    "next": "Prochain rendez-vous",
+    "contact": "Patient",
+    "adminFile": "Fiche administrative"
+  },
+  "history": {
+    "title": "Consultations précédentes",
+    "empty": "Première consultation : aucun historique pour l’instant.",
+    "noDiagnosis": "Sans diagnostic noté"
+  }
+}

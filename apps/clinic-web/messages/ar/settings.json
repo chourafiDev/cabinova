@@ -151,7 +151,8 @@
       "meeting_invite": "دعا أشخاصًا إلى الاجتماع",
       "meeting_cancel": "ألغى الاجتماع",
       "integrations_google_connect": "ربط حساب Google",
-      "integrations_google_disconnect": "فصل حساب Google"
+      "integrations_google_disconnect": "فصل حساب Google",
+      "consultation_save": "حرّر استشارة"
     }
   },
   "cabinet": {

@@ -22,6 +22,8 @@ import { ClinicService } from './clinic/clinic.service.js';
 import { DashboardController } from './dashboard/dashboard.controller.js';
 import { DashboardService } from './dashboard/dashboard.service.js';
 import { validateEnv } from './config/env.js';
+import { ConsultationsController } from './consultations/consultations.controller.js';
+import { ConsultationsService } from './consultations/consultations.service.js';
 import { CatalogModule } from './database/catalog.module.js';
 import { MailService } from './mail/mail.service.js';
 import { GoogleConnectionService } from './meetings/google-connection.service.js';
@@ -76,6 +78,7 @@ import { TenancyService } from './tenancy/tenancy.service.js';
     PatientsController,
     SpacesController,
     AppointmentsController,
+    ConsultationsController,
     DashboardController,
     SettingsController,
     TeamController,
@@ -97,6 +100,7 @@ import { TenancyService } from './tenancy/tenancy.service.js';
     SpacesService,
     SpaceGuard,
     AppointmentsService,
+    ConsultationsService,
     DashboardService,
     CabinetService,
     MailService,

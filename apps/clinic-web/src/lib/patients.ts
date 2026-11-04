@@ -168,4 +168,8 @@ export const isMedicalRole = (role: string) => role === "owner" || role === "doc
 
 /** The patient sheet on the Patients list (file, edit, new): links from anywhere. */
 export const patientHref = (id: string) => `/patients?patient=${id}`;
+
+/** The doctor's page for a patient; with a visit, its consultation is open for writing. */
+export const dossierHref = (patientId: string, visitId?: string) =>
+	`/dossier/${patientId}${visitId ? `?visit=${visitId}` : ""}`;
 export const NEW_PATIENT_HREF = "/patients?nouveau=1";

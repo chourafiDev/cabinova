@@ -342,13 +342,19 @@ export class AppointmentsService {
     }
   }
 
-  private async find(tx: PoolClient, spaceId: string, id: string) {
+  /** One appointment of the space, as the API returns it. */
+  get(db: Pool, spaceId: string, id: string) {
+    return this.find(db, spaceId, id);
+  }
+
+  private async find(tx: Pool | PoolClient, spaceId: string, id: string) {
     const { rows } = await tx.query<{
       id: string;
       status: AppointmentStatus;
       startsAt: string;
       endsAt: string;
       leftAt: string | null;
+      patient: { id: string };
       practitioner: { id: string; name: string };
     }>(
       `select ${APPOINTMENT} from ${FROM} where a.id = $1 and a.space_id = $2`,

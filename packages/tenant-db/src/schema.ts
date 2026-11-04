@@ -7,6 +7,7 @@ import {
   index,
   integer,
   jsonb,
+  numeric,
   pgEnum,
   pgSequence,
   pgTable,
@@ -343,6 +344,48 @@ export const appointments = pgTable(
     ),
     index('appointments_patient_idx').on(t.patientId),
   ],
+);
+
+/**
+ * The doctor's notes of one visit (doctors only): what brought the patient,
+ * the constants taken, the examination, the diagnosis and what was decided.
+ * One per appointment, saved as the doctor types.
+ */
+export const consultations = pgTable(
+  'consultations',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    appointmentId: uuid('appointment_id')
+      .notNull()
+      .unique()
+      .references(() => appointments.id, { onDelete: 'cascade' }),
+    patientId: uuid('patient_id')
+      .notNull()
+      .references(() => patients.id, { onDelete: 'restrict' }),
+    practitionerId: uuid('practitioner_id').references(() => users.id, {
+      onDelete: 'set null',
+    }),
+    /** Motif de consultation, in the patient's words. */
+    complaint: text('complaint'),
+    /** Histoire de la maladie (anamnèse). */
+    history: text('history'),
+    examination: text('examination'),
+    diagnosis: text('diagnosis'),
+    /** Conduite à tenir: treatment, tests, advice, follow-up. */
+    plan: text('plan'),
+    /** Constantes: blood pressure (mmHg), pulse (bpm), SpO2 (%), height (cm). */
+    systolic: smallint('systolic'),
+    diastolic: smallint('diastolic'),
+    heartRate: smallint('heart_rate'),
+    spo2: smallint('spo2'),
+    heightCm: smallint('height_cm'),
+    /** °C, kg and g/L. */
+    temperature: numeric('temperature', { precision: 4, scale: 1 }),
+    weightKg: numeric('weight_kg', { precision: 5, scale: 1 }),
+    glycemia: numeric('glycemia', { precision: 4, scale: 2 }),
+    ...timestamps,
+  },
+  (t) => [index('consultations_patient_idx').on(t.patientId)],
 );
 
 // ── Encaissements ─────────────────────────────────────────────────────────

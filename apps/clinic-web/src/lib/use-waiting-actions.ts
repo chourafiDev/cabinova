@@ -7,7 +7,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { api } from "./api-client";
 import { type Appointment, APPOINTMENTS_KEY, patchAppointment } from "./appointments";
-import { fullName, patientHref } from "./patients";
+import { dossierHref, fullName } from "./patients";
 
 type Visit = Pick<Appointment, "id"> & { patient: Pick<Appointment["patient"], "id" | "firstName" | "lastName"> };
 
@@ -50,9 +50,9 @@ export function useWaitingActions() {
 			panel("statusChanged", { status: statusLabel(status).toLowerCase() }),
 		);
 
-	/** The doctor takes a waiting patient: in consultation, and straight to their file. */
+	/** The doctor takes a waiting patient: in consultation, and straight to their dossier. */
 	const openFile = async (a: Visit) => {
-		if (await setStatus(a, "in_consultation")) router.push(patientHref(a.patient.id));
+		if (await setStatus(a, "in_consultation")) router.push(dossierHref(a.patient.id, a.id));
 	};
 
 	const finish = async (a: Visit) => {

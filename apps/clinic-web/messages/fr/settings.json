@@ -151,7 +151,8 @@
       "meeting_invite": "a invité des personnes à la réunion",
       "meeting_cancel": "a annulé la réunion",
       "integrations_google_connect": "a connecté le compte Google",
-      "integrations_google_disconnect": "a déconnecté le compte Google"
+      "integrations_google_disconnect": "a déconnecté le compte Google",
+      "consultation_save": "a rédigé la consultation de"
     }
   },
   "cabinet": {

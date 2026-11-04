@@ -79,7 +79,8 @@
     "noAppointments": "لا توجد مواعيد لهذا المريض.",
     "upcoming": "القادمة · {count}",
     "history": "السجل · {count}",
-    "minutes": "{count} د"
+    "minutes": "{count} د",
+    "dossier": "الملف الطبي"
   },
   "account": {
     "due": "المبلغ المتبقي:",

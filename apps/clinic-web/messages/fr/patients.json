@@ -79,7 +79,8 @@
     "noAppointments": "Aucun rendez-vous pour ce patient.",
     "upcoming": "À venir · {count}",
     "history": "Historique · {count}",
-    "minutes": "{count} min"
+    "minutes": "{count} min",
+    "dossier": "Dossier médical"
   },
   "account": {
     "due": "Reste à payer :",
