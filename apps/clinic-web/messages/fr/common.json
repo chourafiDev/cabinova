@@ -92,6 +92,7 @@
     "empty": "Aucune notification pour le moment.",
     "unreadDot": "Non lue",
     "appointmentAt": "Rendez-vous de {time}",
+    "walkIn": "Sans rendez-vous",
     "codes": {
       "arrived": "{patient} est en salle d’attente",
       "no_show": "{patient} n’est pas venu(e)",

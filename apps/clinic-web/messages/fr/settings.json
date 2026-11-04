@@ -113,6 +113,7 @@
       "appointment_create": "a pris un rendez-vous pour",
       "appointment_update": "a modifié le rendez-vous de",
       "appointment_status": "a changé le statut du rendez-vous de",
+      "appointment_walk_in": "a mis en salle d’attente, sans rendez-vous,",
       "payment_checkout": "a encaissé la visite de",
       "payment_cancel": "a annulé un paiement de",
       "payment_refund": "a remboursé",

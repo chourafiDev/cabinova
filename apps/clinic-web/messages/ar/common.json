@@ -92,6 +92,7 @@
     "empty": "لا توجد إشعارات حاليًا.",
     "unreadDot": "غير مقروء",
     "appointmentAt": "موعد {time}",
+    "walkIn": "بدون موعد",
     "codes": {
       "arrived": "{patient} في قاعة الانتظار",
       "no_show": "لم يحضر {patient}",

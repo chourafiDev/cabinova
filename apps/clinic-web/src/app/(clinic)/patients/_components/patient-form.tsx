@@ -105,11 +105,17 @@ export function PatientForm({
 	defaultValues,
 	onSaved,
 	onCancel,
+	submitLabel,
+	autoFocus = !patientId,
 }: {
 	patientId?: string;
 	defaultValues: PatientInput;
 	onSaved: (patient: Patient, next: "file" | "book") => void;
 	onCancel: () => void;
+	/** A new patient for another flow (the waiting room): one button, this label. */
+	submitLabel?: string;
+	/** Focus the name field (not when a tab button keeps the focus: it would blur it into an error). */
+	autoFocus?: boolean;
 }) {
 	const t = useTranslations("patients.form");
 	const common = useTranslations("common");
@@ -188,7 +194,7 @@ export function PatientForm({
 			<div className="grid min-h-0 flex-1 content-start gap-6 overflow-y-auto p-5">
 				<section className="grid gap-4">
 					<div className="grid gap-4 sm:grid-cols-2">
-						{input("lastName", t("lastName"), { required: true, autoComplete: "off", autoFocus: !patientId })}
+						{input("lastName", t("lastName"), { required: true, autoComplete: "off", autoFocus })}
 						{input("firstName", t("firstName"), { required: true, autoComplete: "off" })}
 					</div>
 					<div className="grid gap-4 sm:grid-cols-2">
@@ -365,6 +371,11 @@ export function PatientForm({
 					<Button type="submit" disabled={isSubmitting || !isDirty}>
 						{isSubmitting && <LuLoader className="animate-spin" />}
 						{t("save")}
+					</Button>
+				) : submitLabel ? (
+					<Button type="submit" disabled={isSubmitting}>
+						{isSubmitting && <LuLoader className="animate-spin" />}
+						{submitLabel}
 					</Button>
 				) : (
 					<>

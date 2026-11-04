@@ -23,6 +23,7 @@ import {
   AppointmentDto,
   ListAppointmentsQuery,
   UpdateStatusDto,
+  WalkInDto,
 } from './dto.js';
 
 /** The current space's agenda. */
@@ -57,6 +58,30 @@ export class AppointmentsController {
     @Body() dto: AppointmentDto,
   ) {
     return this.appointments.create(db, space.id, dto, user.id);
+  }
+
+  /** A patient without an appointment, straight into the waiting room. */
+  @Activity('appointment.walk_in', 'appointment')
+  @Post('walk-in')
+  async walkIn(
+    @Clinic() { db }: ClinicContext,
+    @CurrentSpace() space: Space,
+    @CurrentUser() user: ClinicUser,
+    @Body() dto: WalkInDto,
+  ) {
+    const appointment = await this.appointments.walkIn(
+      db,
+      space.id,
+      dto,
+      user.id,
+    );
+    await this.notifications.appointmentChanged(
+      db,
+      appointment.id,
+      'arrived',
+      user.id,
+    );
+    return appointment;
   }
 
   /** Edit, move or resize (drag & drop sends the whole appointment). */

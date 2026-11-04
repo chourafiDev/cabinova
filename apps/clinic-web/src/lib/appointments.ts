@@ -46,6 +46,8 @@ export type Appointment = {
 	notes: string | null;
 	/** Checked in at the front desk (waiting room order). */
 	arrivedAt: string | null;
+	/** Came without an appointment (booked on arrival). */
+	walkIn: boolean;
 	patient: {
 		id: string;
 		firstName: string;

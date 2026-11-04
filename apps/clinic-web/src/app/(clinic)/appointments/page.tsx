@@ -22,6 +22,7 @@ export default async function AppointmentsPage() {
 
 	return (
 		<AppointmentsTabs
+			practitioners={practitioners}
 			agenda={
 				<>
 					{space && (

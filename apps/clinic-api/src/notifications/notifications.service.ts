@@ -93,8 +93,9 @@ export class NotificationsService {
         time: string;
         day: string;
         space: string | null;
+        walk_in: boolean;
       }>(
-        `select a.practitioner_id,
+        `select a.practitioner_id, a.walk_in,
                 upper(p.last_name) || ' ' || p.first_name as patient,
                 to_char(a.starts_at at time zone '${TZ}', 'HH24:MI') as time,
                 to_char(a.starts_at at time zone '${TZ}', 'YYYY-MM-DD') as day,
@@ -128,12 +129,24 @@ export class NotificationsService {
           userId,
           kind: status as Notification['kind'],
           title,
-          body: [`Rendez-vous de ${a.time}`, a.space]
+          body: [
+            a.walk_in ? 'Sans rendez-vous' : `Rendez-vous de ${a.time}`,
+            a.space,
+          ]
             .filter(Boolean)
             .join(' · '),
           code: status,
-          params: { patient: a.patient, time: a.time, space: a.space },
-          href: `/appointments?view=day&date=${a.day}`,
+          params: {
+            patient: a.patient,
+            time: a.time,
+            space: a.space,
+            ...(a.walk_in && { walkIn: 1 }),
+          },
+          // An arrival opens the waiting room; the rest, that day's agenda.
+          href:
+            status === 'arrived'
+              ? '/appointments?tab=waiting'
+              : `/appointments?view=day&date=${a.day}`,
           dedupeKey: `appointment:${id}:${status}`,
         })),
       );

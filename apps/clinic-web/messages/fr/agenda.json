@@ -94,7 +94,26 @@
     "actions": "Actions",
     "justNow": "À l’instant",
     "empty": "La salle d’attente est vide.",
-    "emptyHint": "Quand un patient arrive, marquez son rendez-vous « Patient arrivé » dans l’agenda : il apparaît ici, dans l’ordre d’arrivée.",
-    "loadError": "Impossible de charger la salle d’attente."
+    "emptyHint": "Les patients apparaissent ici, dans l’ordre d’arrivée : marquez un rendez-vous « Patient arrivé » dans l’agenda, ou ajoutez un patient venu sans rendez-vous.",
+    "loadError": "Impossible de charger la salle d’attente.",
+    "count": "{count, plural, =0 {Personne en attente} one {# patient en attente} other {# patients en attente}}",
+    "walkIn": "Patient sans RDV",
+    "noAppointment": "Sans RDV"
+  },
+  "walkIn": {
+    "title": "Patient sans rendez-vous",
+    "description": "Un patient venu sans rendez-vous et vu aujourd’hui : il rejoint la salle d’attente, et sa visite s’ajoute à l’agenda à partir de maintenant.",
+    "existing": "Patient existant",
+    "new": "Nouveau patient",
+    "createAndContinue": "Créer et continuer",
+    "notFound": "Pas encore de dossier ?",
+    "createFile": "Créer un nouveau patient",
+    "alreadyHere": "ce patient est déjà là aujourd’hui.",
+    "hasAppointment": "Ce patient a rendez-vous aujourd’hui à {time} avec {doctor}.",
+    "checkIn": "Marquer arrivé à son rendez-vous",
+    "fromNow": "La visite commence maintenant, pour la durée habituelle.",
+    "submit": "Mettre en salle d’attente",
+    "added": "Patient ajouté à la salle d’attente",
+    "error": "Ajout impossible"
   }
 }

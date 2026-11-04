@@ -325,6 +325,8 @@ export const appointments = pgTable(
     notes: text('notes'),
     /** Checked in at the front desk (waiting room order). */
     arrivedAt: timestamp('arrived_at', { withTimezone: true }),
+    /** Came without an appointment: booked on arrival, straight into the waiting room. */
+    walkIn: boolean('walk_in').notNull().default(false),
     createdBy: uuid('created_by').references(() => users.id, {
       onDelete: 'set null',
     }),

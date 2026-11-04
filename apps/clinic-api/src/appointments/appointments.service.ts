@@ -15,6 +15,7 @@ import {
   type AppointmentStatus,
   type ListAppointmentsQuery,
   RELEASED_STATUSES,
+  type WalkInDto,
 } from './dto.js';
 
 const MAX_DURATION_MS = 12 * 60 * 60 * 1000;
@@ -24,7 +25,7 @@ const HISTORY_LIMIT = 200;
 /** An appointment as the API returns it. */
 const APPOINTMENT = `
   a.id, a.starts_at as "startsAt", a.ends_at as "endsAt", a.status,
-  a.reason, a.notes, a.arrived_at as "arrivedAt",
+  a.reason, a.notes, a.arrived_at as "arrivedAt", a.walk_in as "walkIn",
   json_build_object('id', p.id, 'firstName', p.first_name, 'lastName', p.last_name,
     'fileNumber', p.file_number, 'phone', p.phone, 'birthDate', to_char(p.birth_date, 'YYYY-MM-DD'),
     'sex', p.sex) as patient,
@@ -41,6 +42,16 @@ const time = (d: Date) =>
     minute: '2-digit',
     timeZone: moroccoZone(d),
   });
+
+/** New appointments name their act; older ones without one can still be edited. */
+function requireReason(reason: string | null | undefined) {
+  if (!reason?.trim()) {
+    throw new BadRequestException({
+      code: 'REASON_REQUIRED',
+      message: 'Choisissez un acte.',
+    });
+  }
+}
 
 /**
  * A space's agenda. Every query is filtered by the space; the patient must
@@ -97,13 +108,7 @@ export class AppointmentsService {
   }
 
   async create(db: Pool, spaceId: string, dto: AppointmentDto, userId: string) {
-    // New appointments name their act; older ones without one can still be edited.
-    if (!dto.reason?.trim()) {
-      throw new BadRequestException({
-        code: 'REASON_REQUIRED',
-        message: 'Choisissez un acte.',
-      });
-    }
+    requireReason(dto.reason);
     return this.transaction(db, async (tx) => {
       const values = await this.validate(tx, spaceId, dto);
       const { rows } = await tx.query<{ id: string }>(
@@ -118,6 +123,55 @@ export class AppointmentsService {
           values.endsAt,
           values.reason,
           values.notes,
+          userId,
+        ],
+      );
+      return this.find(tx, spaceId, rows[0].id);
+    });
+  }
+
+  /**
+   * A patient who came without an appointment: booked from now for the
+   * cabinet's usual duration, already in the waiting room. Neither opening
+   * hours nor the doctor's other appointments stop it: the patient is here.
+   */
+  async walkIn(db: Pool, spaceId: string, dto: WalkInDto, userId: string) {
+    requireReason(dto.reason);
+    return this.transaction(db, async (tx) => {
+      await this.assertPatient(tx, spaceId, dto.patientId);
+      await this.assertPractitioner(tx, spaceId, dto.practitionerId);
+      // Lock the patient's row: two desks adding them at once make one visit.
+      await tx.query('select 1 from patients where id = $1 for update', [
+        dto.patientId,
+      ]);
+      const zone = moroccoZone(new Date());
+      const { rowCount: waiting } = await tx.query(
+        `select 1 from appointments
+          where patient_id = $1 and status in ('arrived', 'in_consultation')
+            and (starts_at at time zone $2)::date = (now() at time zone $2)::date`,
+        [dto.patientId, zone],
+      );
+      if (waiting) {
+        throw new ConflictException({
+          code: 'ALREADY_WAITING',
+          message: 'Ce patient est déjà en salle d’attente ou en consultation.',
+        });
+      }
+      const { rows } = await tx.query<{ id: string }>(
+        `insert into appointments
+           (space_id, patient_id, practitioner_id, starts_at, ends_at, reason, notes,
+            status, arrived_at, walk_in, created_by)
+         select $1, $2, $3, t, t + make_interval(mins => coalesce(
+                  (select default_appointment_minutes from clinic_settings where id = 1), 30)),
+                $4, $5, 'arrived', now(), true, $6
+           from date_trunc('minute', now()) t
+         returning id`,
+        [
+          spaceId,
+          dto.patientId,
+          dto.practitionerId,
+          dto.reason,
+          dto.notes ?? null,
           userId,
         ],
       );
@@ -246,23 +300,8 @@ export class AppointmentsService {
         message: "L'heure de fin doit suivre l'heure de début (12 h maximum).",
       });
     }
-    const { rowCount: patientOk } = await tx.query(
-      'select 1 from patients where id = $1 and space_id = $2 and archived_at is null',
-      [dto.patientId, spaceId],
-    );
-    if (!patientOk) {
-      throw new BadRequestException({
-        code: 'PATIENT_UNAVAILABLE',
-        message: 'Patient introuvable dans cet espace, ou archivé.',
-      });
-    }
-    const practitioners = await this.practitioners(tx, spaceId);
-    if (!practitioners.some((p) => p.id === dto.practitionerId)) {
-      throw new BadRequestException({
-        code: 'PRACTITIONER_UNAVAILABLE',
-        message: 'Ce praticien ne consulte pas dans cet espace.',
-      });
-    }
+    await this.assertPatient(tx, spaceId, dto.patientId);
+    await this.assertPractitioner(tx, spaceId, dto.practitionerId);
     const moved =
       !current ||
       new Date(current.startsAt).getTime() !== startsAt.getTime() ||
@@ -285,6 +324,33 @@ export class AppointmentsService {
       reason: dto.reason ?? null,
       notes: dto.notes ?? null,
     };
+  }
+
+  private async assertPatient(tx: PoolClient, spaceId: string, id: string) {
+    const { rowCount } = await tx.query(
+      'select 1 from patients where id = $1 and space_id = $2 and archived_at is null',
+      [id, spaceId],
+    );
+    if (!rowCount) {
+      throw new BadRequestException({
+        code: 'PATIENT_UNAVAILABLE',
+        message: 'Patient introuvable dans cet espace, ou archivé.',
+      });
+    }
+  }
+
+  private async assertPractitioner(
+    tx: PoolClient,
+    spaceId: string,
+    id: string,
+  ) {
+    const practitioners = await this.practitioners(tx, spaceId);
+    if (!practitioners.some((p) => p.id === id)) {
+      throw new BadRequestException({
+        code: 'PRACTITIONER_UNAVAILABLE',
+        message: 'Ce praticien ne consulte pas dans cet espace.',
+      });
+    }
   }
 
   private async assertOpen(

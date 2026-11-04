@@ -84,7 +84,7 @@ export function NotificationBell() {
 		}
 		if (typeof params?.amount === "number") return format.mad(params.amount);
 		if (typeof params?.time === "string") {
-			return [t("appointmentAt", { time: params.time }), params.space]
+			return [params.walkIn ? t("walkIn") : t("appointmentAt", { time: params.time }), params.space]
 				.filter(Boolean)
 				.join(" · ");
 		}

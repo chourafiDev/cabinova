@@ -1,52 +1,53 @@
 "use client";
 
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { addDays, differenceInMinutes, startOfDay } from "date-fns";
+import { useQueryClient } from "@tanstack/react-query";
+import { differenceInMinutes } from "date-fns";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
-import { LuArmchair, LuDoorOpen } from "react-icons/lu";
+import { LuArmchair, LuDoorOpen, LuUserPlus } from "react-icons/lu";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { api } from "@/lib/api-client";
-import { type Appointment, APPOINTMENTS_KEY, patchAppointment } from "@/lib/appointments";
+import { type Appointment, APPOINTMENTS_KEY, type Practitioner, patchAppointment } from "@/lib/appointments";
 import { formatFileNumber, fullName, patientHref } from "@/lib/patients";
 import { useFormat } from "@/lib/use-format";
 import { useNow } from "@/lib/use-now";
 import { cn } from "@/lib/utils";
-
-/**
- * Today's appointments, refreshed often: other desks check patients in too.
- * Same key shape as the agenda's day view, so a status change shows on both.
- */
-function useToday() {
-	const from = startOfDay(new Date());
-	const to = addDays(from, 1);
-	return useQuery({
-		queryKey: [...APPOINTMENTS_KEY, from.toISOString(), to.toISOString()],
-		queryFn: () =>
-			api<Appointment[]>(`/appointments?${new URLSearchParams({ from: from.toISOString(), to: to.toISOString() })}`),
-		refetchInterval: 30_000,
-	});
-}
-
-/** Patients checked in and not yet called, in arrival order. */
-export function useWaiting() {
-	const query = useToday();
-	const waiting = (query.data ?? [])
-		.filter((a) => a.status === "arrived")
-		.sort((a, b) => (a.arrivedAt ?? "").localeCompare(b.arrivedAt ?? ""));
-	return { ...query, waiting };
-}
+import { useWaiting } from "./use-today";
+import { WalkInSheet } from "./walk-in-sheet";
 
 /** Waiting this long is shown in amber, then red. */
 const LONG_WAIT = 20;
 const VERY_LONG_WAIT = 45;
 
-/** The waiting room as a table: who came first, how long they've waited, and "Faire entrer". */
-export function WaitingRoom() {
+/**
+ * The waiting room as a table: who came first, how long they've waited, and
+ * "Faire entrer". Patients with an appointment arrive from the agenda; one
+ * without is added here ("Patient sans RDV").
+ */
+export function WaitingRoom({ practitioners }: { practitioners: Practitioner[] }) {
+	const [adding, setAdding] = useState(false);
+	const t = useTranslations("agenda.waiting");
+	const { waiting } = useWaiting();
+
+	return (
+		<div className="grid gap-3">
+			<div className="flex flex-wrap items-center justify-between gap-3">
+				<p className="text-muted-foreground text-sm">{t("count", { count: waiting.length })}</p>
+				<Button size="sm" onClick={() => setAdding(true)}>
+					<LuUserPlus /> {t("walkIn")}
+				</Button>
+			</div>
+			<WaitingTable />
+			<WalkInSheet practitioners={practitioners} open={adding} onOpenChange={setAdding} />
+		</div>
+	);
+}
+
+function WaitingTable() {
 	const { waiting, isPending, isError } = useWaiting();
 	const queryClient = useQueryClient();
 	const [calling, setCalling] = useState<string | null>(null);
@@ -104,7 +105,7 @@ export function WaitingRoom() {
 					<TableRow>
 						<TableHead className="w-12">{t("order")}</TableHead>
 						<TableHead>{t("patient")}</TableHead>
-						<TableHead className="hidden sm:table-cell">{t("appointment")}</TableHead>
+						<TableHead>{t("appointment")}</TableHead>
 						<TableHead className="hidden md:table-cell">{t("arrived")}</TableHead>
 						<TableHead>{t("wait")}</TableHead>
 						<TableHead className="hidden lg:table-cell">{t("practitioner")}</TableHead>
@@ -130,7 +131,15 @@ export function WaitingRoom() {
 									</Link>
 									<p className="text-muted-foreground font-mono text-xs">{formatFileNumber(a.patient.fileNumber)}</p>
 								</TableCell>
-								<TableCell className="hidden tabular-nums sm:table-cell">{fmt.clock(a.startsAt)}</TableCell>
+								<TableCell className="tabular-nums">
+									{a.walkIn ? (
+										<span className="rounded-md bg-sky-50 px-1.5 py-0.5 text-xs font-medium whitespace-nowrap text-sky-700">
+											{t("noAppointment")}
+										</span>
+									) : (
+										fmt.clock(a.startsAt)
+									)}
+								</TableCell>
 								<TableCell className="hidden tabular-nums md:table-cell">
 									{a.arrivedAt ? fmt.clock(a.arrivedAt) : "—"}
 								</TableCell>

@@ -1,0 +1,1 @@
+ALTER TABLE "appointments" ADD COLUMN "walk_in" boolean DEFAULT false NOT NULL;

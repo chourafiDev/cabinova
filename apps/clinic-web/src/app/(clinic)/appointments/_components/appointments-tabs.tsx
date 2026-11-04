@@ -5,7 +5,9 @@ import { parseAsString, parseAsStringEnum, useQueryStates } from "nuqs";
 import { useState } from "react";
 import { LuArmchair, LuCalendarDays } from "react-icons/lu";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useWaiting, WaitingRoom } from "./waiting-room";
+import type { Practitioner } from "@/lib/appointments";
+import { useWaiting } from "./use-today";
+import { WaitingRoom } from "./waiting-room";
 
 const TABS = ["waiting", "agenda"] as const;
 type Tab = (typeof TABS)[number];
@@ -19,7 +21,7 @@ const searchParams = {
 };
 
 /** Waiting room first, the agenda next to it. The tab lives in the URL. */
-export function AppointmentsTabs({ agenda }: { agenda: React.ReactNode }) {
+export function AppointmentsTabs({ agenda, practitioners }: { agenda: React.ReactNode; practitioners: Practitioner[] }) {
 	const [{ tab, view, date, book }, setParams] = useQueryStates(searchParams, { history: "replace" });
 	const { waiting } = useWaiting();
 	const t = useTranslations("agenda.tabs");
@@ -43,7 +45,7 @@ export function AppointmentsTabs({ agenda }: { agenda: React.ReactNode }) {
 				</TabsTrigger>
 			</TabsList>
 			<TabsContent value="waiting" className="min-w-0">
-				<WaitingRoom />
+				<WaitingRoom practitioners={practitioners} />
 			</TabsContent>
 			<TabsContent value="agenda" className="grid min-w-0 gap-3">
 				{agenda}

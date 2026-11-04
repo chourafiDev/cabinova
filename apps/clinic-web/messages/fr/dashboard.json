@@ -109,7 +109,8 @@
     "nobody": "Personne pour le moment.",
     "waiting": "{count, plural, one {# patient en attente} other {# patients en attente}}",
     "empty": "La salle d’attente est vide.",
-    "arrivedAt": "Arrivé(e) à {time}"
+    "arrivedAt": "Arrivé(e) à {time}",
+    "walkIn": "Sans RDV"
   },
   "week": {
     "title": "Activité de la semaine",

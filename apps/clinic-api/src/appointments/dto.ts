@@ -68,6 +68,27 @@ export class AppointmentDto {
   allowOverlap?: boolean;
 }
 
+/** A patient who came without an appointment: seen today, from now. */
+export class WalkInDto {
+  @IsUUID()
+  patientId: string;
+
+  @IsUUID()
+  practitionerId: string;
+
+  @clean()
+  @IsOptional()
+  @IsString()
+  @MaxLength(200)
+  reason?: string | null;
+
+  @clean()
+  @IsOptional()
+  @IsString()
+  @MaxLength(2000)
+  notes?: string | null;
+}
+
 export class UpdateStatusDto {
   @IsIn(APPOINTMENT_STATUSES)
   status: AppointmentStatus;

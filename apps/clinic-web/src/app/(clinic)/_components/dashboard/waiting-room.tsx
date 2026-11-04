@@ -26,7 +26,7 @@ export function WaitingRoom({ appointments }: { appointments: NonNullable<Dashbo
 							<div key={a.id}>
 								<p className="text-sm font-semibold">{fullName(a.patient)}</p>
 								<p className="text-xs text-muted-foreground">
-									{t("appointmentAt", { time: format.clock(a.startsAt) })} · {a.practitioner.name}
+									{a.walkIn ? t("walkIn") : t("appointmentAt", { time: format.clock(a.startsAt) })} · {a.practitioner.name}
 								</p>
 							</div>
 						))
@@ -52,7 +52,7 @@ export function WaitingRoom({ appointments }: { appointments: NonNullable<Dashbo
 										<p className="truncate text-sm font-medium">{fullName(a.patient)}</p>
 										<p className="truncate text-xs text-muted-foreground">
 											{t("arrivedAt", { time: a.arrivedAt ? format.clock(a.arrivedAt) : "—" })} ·{" "}
-											{t("appointmentAt", { time: format.clock(a.startsAt) })}
+											{a.walkIn ? t("walkIn") : t("appointmentAt", { time: format.clock(a.startsAt) })}
 										</p>
 									</div>
 								</li>
