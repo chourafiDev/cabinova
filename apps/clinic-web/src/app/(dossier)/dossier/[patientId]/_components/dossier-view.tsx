@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { useRef, useState } from "react";
-import { LuArrowLeft, LuCalendarClock, LuStethoscope, LuTriangleAlert } from "react-icons/lu";
+import { LuArrowLeft, LuCalendarClock, LuStethoscope, LuTimer, LuTriangleAlert } from "react-icons/lu";
 import { AppointmentStatusBadge } from "@/components/appointment-status-badge";
 import { NoShowBadge } from "@/components/no-show-badge";
 import { Button } from "@/components/ui/button";
@@ -15,9 +15,12 @@ import type { PastConsultation, Visit } from "@/lib/consultations";
 import { initials } from "@/lib/format";
 import { ageOf, formatFileNumber, fullName, type PatientFile } from "@/lib/patients";
 import { useFormat } from "@/lib/use-format";
+import { useNow } from "@/lib/use-now";
 import { ConsultationWorkspace, type WorkspaceHandle } from "./consultation-workspace";
 import { FinishButton } from "./finish-button";
 import { HistoryPanel } from "./history-panel";
+import { PatientNotes } from "./patient-notes";
+import { type Point, TrendsCard } from "./trends-card";
 import { PatientAside } from "./patient-aside";
 import { SaveStatus, type SaveState } from "./save-status";
 
@@ -55,6 +58,13 @@ export function DossierView({ patientId, visitId }: { patientId: string; visitId
 	const appointment = visit.data?.appointment;
 	const allergies = p?.medicalProfile?.allergies;
 	const age = p ? ageOf(p.birthDate) : null;
+	// Past visits (newest first), and the curves' points: those, then today's as saved.
+	const past = history.data?.filter((c) => c.appointmentId !== visitId);
+	const current = visit.data?.consultation;
+	const points: Point[] = [
+		...(past ?? []).toReversed(),
+		...(current && appointment ? [{ ...current, date: appointment.startsAt }] : []),
+	];
 	const next = appointments.data
 		?.filter((a) => a.id !== visitId && new Date(a.startsAt) > new Date() && ["scheduled", "confirmed"].includes(a.status))
 		.at(-1);
@@ -117,6 +127,9 @@ export function DossierView({ patientId, visitId }: { patientId: string; visitId
 						{appointment && (
 							<div className="hidden items-center gap-2 text-sm md:flex">
 								<AppointmentStatusBadge status={appointment.status} />
+								{appointment.status === "in_consultation" && appointment.consultationStartedAt && (
+									<VisitTimer since={appointment.consultationStartedAt} />
+								)}
 								<span className="text-muted-foreground">
 									{appointment.walkIn ? t("walkIn") : t("appointmentAt", { time: format.clock(appointment.startsAt) })}
 									{appointment.reason && ` · ${appointment.reason}`}
@@ -149,6 +162,7 @@ export function DossierView({ patientId, visitId }: { patientId: string; visitId
 				</div>
 
 				<section className="order-1 grid min-w-0 gap-4 xl:order-2" aria-label={t("consultation")}>
+					{p && <PatientNotes patient={p} last={visitId ? past?.[0] : undefined} />}
 					{!visitId ? (
 						<NoVisit />
 					) : visit.isPending ? (
@@ -172,9 +186,10 @@ export function DossierView({ patientId, visitId }: { patientId: string; visitId
 					<div className="xl:hidden">{p && <PatientAside patient={p} next={next} />}</div>
 				</section>
 
-				<aside className="order-3 min-w-0">
+				<aside className="order-3 grid min-w-0 gap-4">
+					<TrendsCard points={points} />
 					<HistoryPanel
-						consultations={history.data?.filter((c) => c.appointmentId !== visitId)}
+						consultations={past}
 						loading={history.isPending}
 					/>
 				</aside>
@@ -199,5 +214,18 @@ function NoVisit() {
 				</Link>
 			</Button>
 		</div>
+	);
+}
+
+/** How long the doctor has been with the patient, kept up to date. */
+function VisitTimer({ since }: { since: string }) {
+	const t = useTranslations("dossier");
+	const fmt = useFormat();
+	const now = useNow();
+	const minutes = Math.max(0, Math.floor((now - new Date(since).getTime()) / 60_000));
+	return (
+		<span className="bg-muted flex items-center gap-1 rounded-md px-1.5 py-0.5 text-xs tabular-nums" title={t("timerTitle")}>
+			<LuTimer className="size-3.5" /> {minutes < 1 ? t("justStarted") : fmt.duration(minutes)}
+		</span>
 	);
 }

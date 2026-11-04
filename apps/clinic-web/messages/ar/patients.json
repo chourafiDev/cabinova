@@ -125,12 +125,18 @@
       "chronicConditions": "الأمراض المزمنة",
       "medicalHistory": "السوابق الطبية",
       "surgicalHistory": "السوابق الجراحية",
-      "familyHistory": "السوابق العائلية"
+      "familyHistory": "السوابق العائلية",
+      "riskFactors": "عوامل الخطر",
+      "toxicHabits": "العادات (تدخين، كحول…)",
+      "gynecoHistory": "السوابق النسائية والتوليدية"
     },
     "placeholders": {
       "allergies": "أدوية، أطعمة… أو «لا شيء معروف»",
       "currentTreatments": "الدواء، الجرعة، التكرار",
-      "chronicConditions": "السكري، ارتفاع الضغط، الربو…"
+      "chronicConditions": "السكري، ارتفاع الضغط، الربو…",
+      "riskFactors": "سمنة، قلة الحركة، ضغط دم وراثي…",
+      "toxicHabits": "التدخين، الكحول، مواد أخرى",
+      "gynecoHistory": "عدد الحمل والولادات، آخر حيض، منع الحمل، سن اليأس…"
     }
   },
   "form": {

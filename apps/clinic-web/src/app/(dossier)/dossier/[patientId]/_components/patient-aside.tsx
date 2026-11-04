@@ -24,6 +24,7 @@ export function PatientAside({ patient, next }: { patient: PatientFile; next: Ap
 					patientId={patient.id}
 					profile={patient.medicalProfile ?? null}
 					readOnly={false}
+					sex={patient.sex}
 					onSaved={() => void queryClient.invalidateQueries({ queryKey: ["patient", patient.id] })}
 				/>
 			</Card>

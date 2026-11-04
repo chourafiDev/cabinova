@@ -2,7 +2,9 @@ import type { Appointment } from "./appointments";
 
 // Types and helpers of the Consultations API (clinic-api/src/consultations), doctors only.
 
-export const NOTE_FIELDS = ["complaint", "history", "examination", "diagnosis", "plan"] as const;
+/** The consultation's own text fields; saved phrases go into these. */
+export const PHRASE_FIELDS = ["complaint", "history", "examination", "diagnosis", "plan"] as const;
+export const NOTE_FIELDS = [...PHRASE_FIELDS, "nextVisitNote"] as const;
 export const VITAL_FIELDS = [
 	"systolic",
 	"diastolic",
@@ -12,9 +14,15 @@ export const VITAL_FIELDS = [
 	"weightKg",
 	"heightCm",
 	"glycemia",
+	"glycemiaPostprandial",
+	"hba1c",
 ] as const;
 
 export type NoteField = (typeof NOTE_FIELDS)[number];
+export type PhraseField = (typeof PHRASE_FIELDS)[number];
+
+/** GET /phrases: the doctor's saved phrases. */
+export type Phrase = { id: string; field: PhraseField; text: string; createdAt: string };
 export type VitalField = (typeof VITAL_FIELDS)[number];
 
 export type Consultation = Record<NoteField, string | null> &
@@ -69,6 +77,10 @@ export function isAbnormal(field: VitalField, value: number | null) {
 			return value < 95;
 		case "glycemia":
 			return value >= 1.26 || value < 0.7;
+		case "glycemiaPostprandial":
+			return value >= 1.4 || value < 0.7;
+		case "hba1c":
+			return value >= 6.5;
 		default:
 			return false;
 	}

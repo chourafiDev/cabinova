@@ -214,4 +214,28 @@ export class MedicalProfileDto {
   @IsString()
   @MaxLength(4000)
   currentTreatments?: string | null;
+
+  @clean()
+  @IsOptional()
+  @IsString()
+  @MaxLength(4000)
+  toxicHabits?: string | null;
+
+  @clean()
+  @IsOptional()
+  @IsString()
+  @MaxLength(4000)
+  gynecoHistory?: string | null;
+
+  @clean()
+  @IsOptional()
+  @IsString()
+  @MaxLength(4000)
+  riskFactors?: string | null;
+
+  @clean()
+  @IsOptional()
+  @IsString()
+  @MaxLength(1000)
+  permanentNote?: string | null;
 }

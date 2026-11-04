@@ -57,6 +57,10 @@ const PROFILE_FIELDS = [
   ['surgical_history', 'surgicalHistory'],
   ['family_history', 'familyHistory'],
   ['current_treatments', 'currentTreatments'],
+  ['toxic_habits', 'toxicHabits'],
+  ['gyneco_history', 'gynecoHistory'],
+  ['risk_factors', 'riskFactors'],
+  ['permanent_note', 'permanentNote'],
 ] as const;
 
 /** Postgres unique_violation on the CIN index. */
@@ -127,6 +131,10 @@ export class PatientsService {
               surgical_history as "surgicalHistory",
               family_history as "familyHistory",
               current_treatments as "currentTreatments",
+              toxic_habits as "toxicHabits",
+              gyneco_history as "gynecoHistory",
+              risk_factors as "riskFactors",
+              permanent_note as "permanentNote",
               updated_at as "updatedAt"
          from medical_profiles where patient_id = $1`,
       [id],

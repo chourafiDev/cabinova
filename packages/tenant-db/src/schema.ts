@@ -279,6 +279,12 @@ export const medicalProfiles = pgTable('medical_profiles', {
   surgicalHistory: text('surgical_history'),
   familyHistory: text('family_history'),
   currentTreatments: text('current_treatments'),
+  /** Habitudes: tabac, alcool, autres substances. */
+  toxicHabits: text('toxic_habits'),
+  gynecoHistory: text('gyneco_history'),
+  riskFactors: text('risk_factors'),
+  /** Shown at the top of every visit (e.g. "malentendant, parler fort"). */
+  permanentNote: text('permanent_note'),
   updatedBy: uuid('updated_by').references(() => users.id, {
     onDelete: 'set null',
   }),
@@ -330,6 +336,10 @@ export const appointments = pgTable(
     walkIn: boolean('walk_in').notNull().default(false),
     /** Left the waiting room without being seen (the visit is cancelled; undone if they come back that day). */
     leftAt: timestamp('left_at', { withTimezone: true }),
+    /** When the doctor took the patient (the visit's timer). */
+    consultationStartedAt: timestamp('consultation_started_at', {
+      withTimezone: true,
+    }),
     createdBy: uuid('created_by').references(() => users.id, {
       onDelete: 'set null',
     }),
@@ -351,6 +361,25 @@ export const appointments = pgTable(
  * the constants taken, the examination, the diagnosis and what was decided.
  * One per appointment, saved as the doctor types.
  */
+/**
+ * A doctor's saved phrases ("Examen cardio-pulmonaire normal…"), inserted
+ * in one click into a consultation field. Each doctor has their own.
+ */
+export const phrases = pgTable(
+  'phrases',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    /** The consultation field it belongs to (complaint, examination…). */
+    field: text('field').notNull(),
+    text: text('text').notNull(),
+    ...timestamps,
+  },
+  (t) => [index('phrases_user_field_idx').on(t.userId, t.field)],
+);
+
 /** Why the cabinet or a doctor isn't working (Congés et absences). */
 export const closureKind = pgEnum('closure_kind', [
   'vacation',
@@ -420,6 +449,14 @@ export const consultations = pgTable(
     temperature: numeric('temperature', { precision: 4, scale: 1 }),
     weightKg: numeric('weight_kg', { precision: 5, scale: 1 }),
     glycemia: numeric('glycemia', { precision: 4, scale: 2 }),
+    /** Glycémie postprandiale (g/L) and HbA1c (%). */
+    glycemiaPostprandial: numeric('glycemia_postprandial', {
+      precision: 4,
+      scale: 2,
+    }),
+    hba1c: numeric('hba1c', { precision: 3, scale: 1 }),
+    /** Shown once at the patient's next visit ("contrôler la TA"). */
+    nextVisitNote: text('next_visit_note'),
     ...timestamps,
   },
   (t) => [index('consultations_patient_idx').on(t.patientId)],

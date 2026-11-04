@@ -125,12 +125,18 @@
       "chronicConditions": "Maladies chroniques",
       "medicalHistory": "Antécédents médicaux",
       "surgicalHistory": "Antécédents chirurgicaux",
-      "familyHistory": "Antécédents familiaux"
+      "familyHistory": "Antécédents familiaux",
+      "riskFactors": "Facteurs de risque",
+      "toxicHabits": "Habitudes (tabac, alcool…)",
+      "gynecoHistory": "Antécédents gynéco-obstétricaux"
     },
     "placeholders": {
       "allergies": "Médicaments, aliments… ou « Aucune connue »",
       "currentTreatments": "Médicament, dose, fréquence",
-      "chronicConditions": "Diabète, HTA, asthme…"
+      "chronicConditions": "Diabète, HTA, asthme…",
+      "riskFactors": "Obésité, sédentarité, HTA familiale…",
+      "toxicHabits": "Tabac (paquets-années), alcool, autres",
+      "gynecoHistory": "Gestité, parité, DDR, contraception, ménopause…"
     }
   },
   "form": {

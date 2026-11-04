@@ -111,6 +111,26 @@ export class ConsultationDto {
   @Min(0.2)
   @Max(10)
   glycemia?: number | null;
+
+  @num()
+  @IsOptional()
+  @IsNumber({ maxDecimalPlaces: 2 })
+  @Min(0.2)
+  @Max(10)
+  glycemiaPostprandial?: number | null;
+
+  @num()
+  @IsOptional()
+  @IsNumber({ maxDecimalPlaces: 1 })
+  @Min(3)
+  @Max(20)
+  hba1c?: number | null;
+
+  @clean()
+  @IsOptional()
+  @IsString()
+  @MaxLength(2000)
+  nextVisitNote?: string | null;
 }
 
 /** The text and number fields, in the table's column order. */
@@ -128,4 +148,7 @@ export const CONSULTATION_FIELDS = [
   ['temperature', 'temperature'],
   ['weight_kg', 'weightKg'],
   ['glycemia', 'glycemia'],
+  ['glycemia_postprandial', 'glycemiaPostprandial'],
+  ['hba1c', 'hba1c'],
+  ['next_visit_note', 'nextVisitNote'],
 ] as const satisfies readonly (readonly [string, keyof ConsultationDto])[];

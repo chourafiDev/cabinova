@@ -147,6 +147,11 @@ export type MedicalProfile = {
 	surgicalHistory: string | null;
 	familyHistory: string | null;
 	currentTreatments: string | null;
+	toxicHabits: string | null;
+	gynecoHistory: string | null;
+	riskFactors: string | null;
+	/** Shown at the top of every visit; edited on its own (the dossier). */
+	permanentNote: string | null;
 	updatedAt: string;
 };
 
@@ -155,10 +160,19 @@ export const PROFILE_FIELDS = [
 	{ name: "allergies", placeholder: true, alert: true },
 	{ name: "currentTreatments", placeholder: true },
 	{ name: "chronicConditions", placeholder: true },
+	{ name: "riskFactors", placeholder: true },
 	{ name: "medicalHistory" },
 	{ name: "surgicalHistory" },
 	{ name: "familyHistory" },
-] as const satisfies readonly { name: keyof MedicalProfile; placeholder?: boolean; alert?: boolean }[];
+	{ name: "toxicHabits", placeholder: true },
+	{ name: "gynecoHistory", placeholder: true, female: true },
+] as const satisfies readonly {
+	name: keyof MedicalProfile;
+	placeholder?: boolean;
+	alert?: boolean;
+	/** Only asked for women. */
+	female?: boolean;
+}[];
 
 /** GET /patients/:id — `medicalProfile` only for doctors (undefined otherwise, null when empty). */
 export type PatientFile = Patient & { medicalProfile?: MedicalProfile | null };

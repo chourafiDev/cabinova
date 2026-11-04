@@ -55,6 +55,8 @@ function Entry({ consultation: c, open }: { consultation: PastConsultation; open
 				["spo2", "%"],
 				["weightKg", "kg"],
 				["glycemia", "g/L"],
+				["glycemiaPostprandial", "g/L PP"],
+				["hba1c", "% HbA1c"],
 			] as [VitalField, string][]
 		).map(([f, unit]) => c[f] != null && { key: f, text: `${c[f]} ${unit}`, abnormal: isAbnormal(f, c[f]) }),
 		bmi && { key: "bmi", text: `IMC ${bmi}`, abnormal: false },

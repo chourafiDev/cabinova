@@ -16,7 +16,7 @@ import {
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Textarea } from "@/components/ui/textarea";
 import { api } from "@/lib/api-client";
-import { BLOOD_GROUPS, type MedicalProfile as Profile, PROFILE_FIELDS } from "@/lib/patients";
+import { BLOOD_GROUPS, type MedicalProfile as Profile, PROFILE_FIELDS, type Sex } from "@/lib/patients";
 import { useFormat } from "@/lib/use-format";
 import { cn } from "@/lib/utils";
 
@@ -36,11 +36,14 @@ export function MedicalProfile({
 	patientId,
 	profile,
 	readOnly,
+	sex,
 	onSaved,
 }: {
 	patientId: string;
 	profile: Profile | null;
 	readOnly: boolean;
+	/** Gyneco-obstetric history is asked for women only. */
+	sex?: Sex;
 	onSaved: () => void;
 }) {
 	const [open, setOpen] = useState(false);
@@ -48,7 +51,8 @@ export function MedicalProfile({
 	const [saving, setSaving] = useState(false);
 	const t = useTranslations("patients.medical");
 	const format = useFormat();
-	const filled = PROFILE_FIELDS.filter((f) => profile?.[f.name]);
+	const fields = PROFILE_FIELDS.filter((f) => !("female" in f) || sex !== "male");
+	const filled = fields.filter((f) => profile?.[f.name]);
 	const empty = !profile?.bloodGroup && filled.length === 0;
 
 	const edit = () => {
@@ -60,7 +64,8 @@ export function MedicalProfile({
 		try {
 			await api(`/patients/${patientId}/medical-profile`, {
 				method: "PUT",
-				body: JSON.stringify({ ...draft, bloodGroup: draft.bloodGroup || null }),
+				// The permanent note is edited on its own: kept as it is.
+				body: JSON.stringify({ ...draft, bloodGroup: draft.bloodGroup || null, permanentNote: profile?.permanentNote ?? null }),
 			});
 			toast.success(t("saved"));
 			setOpen(false);
@@ -163,7 +168,7 @@ export function MedicalProfile({
 								))}
 							</div>
 						</Field>
-						{PROFILE_FIELDS.map((f) => (
+						{fields.map((f) => (
 							<Field key={f.name}>
 								<FieldLabel htmlFor={f.name}>{t(`fields.${f.name}`)}</FieldLabel>
 								<Textarea

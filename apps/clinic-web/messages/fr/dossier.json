@@ -23,7 +23,8 @@
     "vitals": "Constantes",
     "examination": "Examen clinique",
     "diagnosis": "Diagnostic",
-    "plan": "Conduite à tenir"
+    "plan": "Conduite à tenir",
+    "nextVisit": "Pour la prochaine visite"
   },
   "fields": {
     "complaint": "Motif de consultation",
@@ -38,7 +39,8 @@
     "history": "Début, évolution, signes associés, traitements déjà pris…",
     "examination": "Examen général et par appareil…",
     "diagnosis": "Diagnostic retenu ou hypothèses",
-    "plan": "Traitement, examens demandés, conseils, prochain contrôle…"
+    "plan": "Traitement, examens demandés, conseils, prochain contrôle…",
+    "nextVisitNote": "Ex. : contrôler la TA, revoir le bilan lipidique…"
   },
   "vitals": {
     "checkRed": "Vérifiez les valeurs en rouge",
@@ -49,7 +51,7 @@
     "weight": "Poids",
     "height": "Taille",
     "bmi": "IMC",
-    "glycemia": "Glycémie",
+    "glycemia": "À jeun",
     "reuse": "Reprendre {value}",
     "last": "Dernier : {value} ({date})",
     "bmiCategory": {
@@ -57,6 +59,15 @@
       "normal": "Normal",
       "over": "Surpoids",
       "obese": "Obésité"
+    },
+    "glycemiaPostprandial": "Post-prandiale",
+    "hba1c": "HbA1c",
+    "systolic": "Systolique",
+    "diastolic": "Diastolique",
+    "groups": {
+      "general": "Générales",
+      "cardio": "Cardio-vasculaire",
+      "glycemia": "Glycémie"
     }
   },
   "aside": {
@@ -69,5 +80,39 @@
     "title": "Consultations précédentes",
     "empty": "Première consultation : aucun historique pour l’instant.",
     "noDiagnosis": "Sans diagnostic noté"
+  },
+  "nextVisitHint": "Rappel affiché en haut du dossier à la prochaine consultation.",
+  "timerTitle": "Durée de la consultation",
+  "justStarted": "À l’instant",
+  "phrases": {
+    "button": "Modèles",
+    "empty": "Aucun modèle pour ce champ. Enregistrez les phrases que vous écrivez souvent.",
+    "remove": "Supprimer",
+    "newPlaceholder": "Nouveau modèle…",
+    "add": "Ajouter",
+    "saveCurrent": "Enregistrer le texte du champ comme modèle",
+    "saved": "Modèle enregistré",
+    "saveError": "Enregistrement impossible."
+  },
+  "notes": {
+    "reminder": "À revoir aujourd’hui (note du {date})",
+    "permanent": "Note permanente",
+    "permanentPlaceholder": "Ce que tout médecin doit savoir à chaque visite (ex. : malentendant, parler fort)",
+    "edit": "Modifier",
+    "add": "Ajouter une note permanente",
+    "cancel": "Annuler",
+    "save": "Enregistrer",
+    "saveError": "Enregistrement impossible."
+  },
+  "trends": {
+    "title": "Évolution",
+    "empty": "Les courbes apparaissent dès qu’une mesure est prise à deux consultations.",
+    "measures": {
+      "weight": "Poids",
+      "pressure": "TA",
+      "glycemia": "Glycémie",
+      "hba1c": "HbA1c"
+    },
+    "unit": "En {unit}"
   }
 }

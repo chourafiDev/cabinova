@@ -50,6 +50,8 @@ export type Appointment = {
 	walkIn: boolean;
 	/** Left the waiting room unseen (the visit is then cancelled). */
 	leftAt: string | null;
+	/** When the doctor took the patient (the visit's timer). */
+	consultationStartedAt: string | null;
 	patient: {
 		id: string;
 		firstName: string;

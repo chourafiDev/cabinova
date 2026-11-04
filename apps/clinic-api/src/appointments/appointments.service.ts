@@ -32,7 +32,7 @@ const HISTORY_LIMIT = 200;
 const APPOINTMENT = `
   a.id, a.starts_at as "startsAt", a.ends_at as "endsAt", a.status,
   a.reason, a.notes, a.arrived_at as "arrivedAt", a.walk_in as "walkIn",
-  a.left_at as "leftAt",
+  a.left_at as "leftAt", a.consultation_started_at as "consultationStartedAt",
   json_build_object('id', p.id, 'firstName', p.first_name, 'lastName', p.last_name,
     'fileNumber', p.file_number, 'phone', p.phone, 'birthDate', to_char(p.birth_date, 'YYYY-MM-DD'),
     'sex', p.sex, 'noShows', ${noShowsOf('p.id')}) as patient,
@@ -289,9 +289,13 @@ export class AppointmentsService {
             : 'null';
       await tx.query(
         `update appointments set status = $3, arrived_at = ${arrived}, left_at = null,
+           consultation_started_at = case when $4
+             then coalesce(consultation_started_at, now()) else consultation_started_at end,
            updated_at = now()
           where id = $1 and space_id = $2`,
-        [id, spaceId, status],
+        // The timer starts when the doctor takes the patient (a separate
+        // parameter: $3 is the status enum, it can't be compared as text too).
+        [id, spaceId, status, status === 'in_consultation'],
       );
       return this.find(tx, spaceId, id);
     });

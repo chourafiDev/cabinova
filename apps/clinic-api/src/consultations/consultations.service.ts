@@ -9,7 +9,9 @@ const CONSULTATION = `
   c.examination, c.diagnosis, c.plan, c.systolic, c.diastolic,
   c.heart_rate as "heartRate", c.spo2, c.height_cm as "heightCm",
   c.temperature::float8 as temperature, c.weight_kg::float8 as "weightKg",
-  c.glycemia::float8 as glycemia, c.updated_at as "updatedAt"`;
+  c.glycemia::float8 as glycemia,
+  c.glycemia_postprandial::float8 as "glycemiaPostprandial", c.hba1c::float8 as hba1c,
+  c.next_visit_note as "nextVisitNote", c.updated_at as "updatedAt"`;
 
 /** The doctor's notes of each visit. Callers check the user is a doctor. */
 @Injectable()

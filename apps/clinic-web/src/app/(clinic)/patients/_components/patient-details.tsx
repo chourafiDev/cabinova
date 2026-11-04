@@ -470,6 +470,7 @@ export function PatientDetails({
 							patientId={patient.id}
 							profile={patient.medicalProfile ?? null}
 							readOnly={archived}
+							sex={patient.sex}
 							onSaved={onChanged}
 						/>
 					</TabsContent>

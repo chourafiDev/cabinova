@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useImperativeHandle, useRef, useState } from "react";
 import {
 	LuActivity,
+	LuCalendarClock,
 	LuClipboardList,
 	LuMessageSquareText,
 	LuScanSearch,
@@ -21,6 +22,7 @@ import {
 	NOTE_FIELDS,
 	type NoteField,
 	type PastConsultation,
+	type PhraseField,
 	toDraft,
 	toNumber,
 	VITAL_FIELDS,
@@ -29,6 +31,7 @@ import {
 } from "@/lib/consultations";
 import { useFormat } from "@/lib/use-format";
 import { cn } from "@/lib/utils";
+import { PhrasesMenu } from "./phrases-menu";
 import type { SaveState } from "./save-status";
 
 /** Saved this long after the doctor stops typing. */
@@ -45,6 +48,8 @@ const BOUNDS: Record<VitalField, [number, number, number]> = {
 	weightKg: [0.5, 400, 1],
 	heightCm: [30, 250, 0],
 	glycemia: [0.2, 10, 2],
+	glycemiaPostprandial: [0.2, 10, 2],
+	hba1c: [3, 20, 1],
 };
 
 const outOfBounds = (field: VitalField, value: string) => {
@@ -164,6 +169,15 @@ export function ConsultationWorkspace({
 		};
 	}, [flush, save]);
 
+	/** A saved phrase goes on its own line, after what's written. */
+	const insert = (field: PhraseField, text: string) => {
+		const current = latest.current[field].trimEnd();
+		change(field, current ? `${current}\n${text}` : text);
+	};
+	const phrases = (field: PhraseField) => (
+		<PhrasesMenu field={field} value={draft[field]} onInsert={(text) => insert(field, text)} />
+	);
+
 	/** Grows with the text, from a height that says how much is expected. */
 	const note = (field: NoteField, minHeight: string, placeholder?: string) => (
 		<Textarea
@@ -180,7 +194,7 @@ export function ConsultationWorkspace({
 		<div className="grid gap-4">
 			<Section icon={LuMessageSquareText} title={t("sections.complaint")}>
 				<div className="grid gap-3">
-					<Labeled label={t("fields.complaint")} htmlFor="consultation-complaint">
+					<Labeled label={t("fields.complaint")} htmlFor="consultation-complaint" aside={phrases("complaint")}>
 						{note(
 							"complaint",
 							"min-h-16",
@@ -189,7 +203,7 @@ export function ConsultationWorkspace({
 								: undefined,
 						)}
 					</Labeled>
-					<Labeled label={t("fields.history")} htmlFor="consultation-history">
+					<Labeled label={t("fields.history")} htmlFor="consultation-history" aside={phrases("history")}>
 						{note("history", "min-h-24")}
 					</Labeled>
 				</div>
@@ -203,16 +217,23 @@ export function ConsultationWorkspace({
 				<Vitals draft={draft} previous={previous} onChange={change} invalid={invalid} />
 			</Section>
 
-			<Section icon={LuScanSearch} title={t("sections.examination")}>
+			<Section icon={LuScanSearch} title={t("sections.examination")} aside={phrases("examination")}>
 				{note("examination", "min-h-32")}
 			</Section>
 
-			<Section icon={LuStethoscope} title={t("sections.diagnosis")}>
+			<Section icon={LuStethoscope} title={t("sections.diagnosis")} aside={phrases("diagnosis")}>
 				{note("diagnosis", "min-h-16")}
 			</Section>
 
-			<Section icon={LuClipboardList} title={t("sections.plan")}>
+			<Section icon={LuClipboardList} title={t("sections.plan")} aside={phrases("plan")}>
 				{note("plan", "min-h-32")}
+			</Section>
+
+			<Section icon={LuCalendarClock} title={t("sections.nextVisit")}>
+				<div className="grid gap-1.5">
+					{note("nextVisitNote", "min-h-12")}
+					<p className="text-muted-foreground text-xs">{t("nextVisitHint")}</p>
+				</div>
 			</Section>
 		</div>
 	);
@@ -243,12 +264,25 @@ function Section({
 	);
 }
 
-function Labeled({ label, htmlFor, children }: { label: string; htmlFor: string; children: React.ReactNode }) {
+function Labeled({
+	label,
+	htmlFor,
+	aside,
+	children,
+}: {
+	label: string;
+	htmlFor: string;
+	aside?: React.ReactNode;
+	children: React.ReactNode;
+}) {
 	return (
 		<div className="grid gap-1.5">
-			<label htmlFor={htmlFor} className="text-muted-foreground text-xs font-medium">
-				{label}
-			</label>
+			<div className="flex items-center justify-between gap-2">
+				<label htmlFor={htmlFor} className="text-muted-foreground text-xs font-medium">
+					{label}
+				</label>
+				{aside}
+			</div>
 			{children}
 		</div>
 	);
@@ -327,49 +361,76 @@ function Vitals({
 			</span>
 		) : null;
 
+	const group = (title: string, children: React.ReactNode) => (
+		<div className="grid gap-2">
+			<p className="text-muted-foreground text-[11px] font-semibold tracking-wide uppercase">{title}</p>
+			<div className="grid grid-cols-2 gap-x-3 gap-y-4 sm:grid-cols-4">{children}</div>
+		</div>
+	);
+
+	// Grouped like a paper chart: general, cardio-vascular, blood sugar.
 	return (
-		<div className="grid grid-cols-2 gap-x-3 gap-y-4 sm:grid-cols-4">
-			{cell(
-				t("bloodPressure"),
-				"vital-systolic",
-				<div className="flex items-center gap-1.5">
-					{input("systolic", "", "min-w-0 flex-1")}
-					<span className="text-muted-foreground">/</span>
-					{input("diastolic", "", "min-w-0 flex-1")}
-					<span className="text-muted-foreground shrink-0 text-xs">mmHg</span>
-				</div>,
+		<div className="grid gap-5">
+			{group(
+				t("groups.general"),
+				<>
+					{cell(t("weight"), "vital-weightKg", input("weightKg", "kg"), lastWeight)}
+					{cell(t("height"), "vital-heightCm", input("heightCm", "cm"), reuseHeight)}
+				{cell(
+					t("bmi"),
+					"vital-bmi",
+					<div
+						id="vital-bmi"
+						className={cn(
+							"bg-muted/50 flex h-10 items-center justify-between rounded-md px-3 text-sm",
+							bmi === null && "text-muted-foreground",
+						)}
+					>
+						<span className="font-semibold tabular-nums">{bmi ?? "—"}</span>
+						{bmi !== null && (
+							<span
+								className={cn(
+									"rounded px-1.5 text-[11px] font-medium",
+									bmiCategory(bmi) === "normal"
+										? "bg-emerald-100 text-emerald-800"
+										: "bg-amber-100 text-amber-800",
+								)}
+							>
+								{t(`bmiCategory.${bmiCategory(bmi)}`)}
+							</span>
+						)}
+					</div>,
+				)}
+					{cell(t("temperature"), "vital-temperature", input("temperature", "°C"))}
+				</>,
 			)}
-			{cell(t("heartRate"), "vital-heartRate", input("heartRate", "bpm"))}
-			{cell(t("temperature"), "vital-temperature", input("temperature", "°C"))}
-			{cell(t("spo2"), "vital-spo2", input("spo2", "%"))}
-			{cell(t("weight"), "vital-weightKg", input("weightKg", "kg"), lastWeight)}
-			{cell(t("height"), "vital-heightCm", input("heightCm", "cm"), reuseHeight)}
-			{cell(
-				t("bmi"),
-				"vital-bmi",
-				<div
-					id="vital-bmi"
-					className={cn(
-						"bg-muted/50 flex h-10 items-center justify-between rounded-md px-3 text-sm",
-						bmi === null && "text-muted-foreground",
-					)}
-				>
-					<span className="font-semibold tabular-nums">{bmi ?? "—"}</span>
-					{bmi !== null && (
-						<span
-							className={cn(
-								"rounded px-1.5 text-[11px] font-medium",
-								bmiCategory(bmi) === "normal"
-									? "bg-emerald-100 text-emerald-800"
-									: "bg-amber-100 text-amber-800",
-							)}
-						>
-							{t(`bmiCategory.${bmiCategory(bmi)}`)}
-						</span>
-					)}
-				</div>,
+			{group(
+				t("groups.cardio"),
+				<>
+					<div className="col-span-2">
+						{cell(
+							t("bloodPressure"),
+							"vital-systolic",
+							<div className="flex items-center gap-1.5">
+								{input("systolic", "", "min-w-0 flex-1")}
+								<span className="text-muted-foreground">/</span>
+								{input("diastolic", "", "min-w-0 flex-1")}
+								<span className="text-muted-foreground shrink-0 text-xs">mmHg</span>
+							</div>,
+						)}
+					</div>
+					{cell(t("heartRate"), "vital-heartRate", input("heartRate", "bpm"))}
+					{cell(t("spo2"), "vital-spo2", input("spo2", "%"))}
+				</>,
 			)}
-			{cell(t("glycemia"), "vital-glycemia", input("glycemia", "g/L"))}
+			{group(
+				t("groups.glycemia"),
+				<>
+					{cell(t("glycemia"), "vital-glycemia", input("glycemia", "g/L"))}
+					{cell(t("glycemiaPostprandial"), "vital-glycemiaPostprandial", input("glycemiaPostprandial", "g/L"))}
+					{cell(t("hba1c"), "vital-hba1c", input("hba1c", "%"))}
+				</>,
+			)}
 		</div>
 	);
 }
