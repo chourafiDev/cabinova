@@ -4,7 +4,7 @@ import { differenceInMinutes } from "date-fns";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
-import { LuArmchair, LuCheck, LuDoorOpen, LuLogOut, LuStethoscope, LuUndo2, LuUserPlus } from "react-icons/lu";
+import { LuArmchair, LuCheck, LuFolderOpen, LuLogOut, LuStethoscope, LuUndo2, LuUserPlus } from "react-icons/lu";
 import { NoShowBadge } from "@/components/no-show-badge";
 import { useCurrentUser } from "@/components/current-user";
 import { Button } from "@/components/ui/button";
@@ -26,7 +26,8 @@ const VERY_LONG_WAIT = 45;
 
 /**
  * Today's waiting room. Patients with an appointment arrive from the agenda;
- * one without is added here ("Patient sans RDV"). The doctor calls them in;
+ * one without is added here ("Patient sans RDV"). The doctor takes them by
+ * opening their file;
  * the front desk only notes who left unseen, and who came back.
  */
 export function WaitingRoom({ practitioners }: { practitioners: Practitioner[] }) {
@@ -197,8 +198,8 @@ function WaitingTable({ waiting, doctor, actions }: { waiting: Appointment[]; do
 													</TooltipTrigger>
 													<TooltipContent>{t("left")}</TooltipContent>
 												</Tooltip>
-												<Button size="sm" disabled={busy} onClick={() => actions.callIn(a)}>
-													<LuDoorOpen /> {panel("call")}
+												<Button size="sm" disabled={busy} onClick={() => actions.openFile(a)}>
+													<LuFolderOpen /> {panel("openFile")}
 												</Button>
 											</>
 										) : (

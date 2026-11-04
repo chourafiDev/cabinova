@@ -1,24 +1,26 @@
 "use client";
 
 import { useQueryClient } from "@tanstack/react-query";
+import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { toast } from "sonner";
 import { api } from "./api-client";
 import { type Appointment, APPOINTMENTS_KEY, patchAppointment } from "./appointments";
-import { fullName } from "./patients";
+import { fullName, patientHref } from "./patients";
 
-type Visit = Pick<Appointment, "id"> & { patient: Pick<Appointment["patient"], "firstName" | "lastName"> };
+type Visit = Pick<Appointment, "id"> & { patient: Pick<Appointment["patient"], "id" | "firstName" | "lastName"> };
 
 /**
  * The waiting room's moves, the same everywhere (table, agenda panel, walk-in
  * sheet): shown at once, undone if the server refuses.
- * - call in / finish: the doctor's steps;
+ * - open the file / finish: the doctor's steps (opening a waiting patient's file calls them in);
  * - left: the patient went away unseen (the visit is cancelled), with "Annuler" in the toast;
  * - back: they came back that day, behind those already waiting.
  */
 export function useWaitingActions() {
 	const queryClient = useQueryClient();
+	const router = useRouter();
 	const [busy, setBusy] = useState<string | null>(null);
 	const t = useTranslations("agenda.waiting");
 	const panel = useTranslations("agenda.panel");
@@ -40,13 +42,21 @@ export function useWaitingActions() {
 		}
 	}
 
-	const setStatus = async (a: Visit, status: "in_consultation" | "completed") => {
-		const done = await run(
+	const setStatus = async (a: Visit, status: "in_consultation" | "completed") =>
+		run(
 			a.id,
 			{ status },
 			() => api(`/appointments/${a.id}/status`, { method: "POST", body: JSON.stringify({ status }) }),
 			panel("statusChanged", { status: statusLabel(status).toLowerCase() }),
 		);
+
+	/** The doctor takes a waiting patient: in consultation, and straight to their file. */
+	const openFile = async (a: Visit) => {
+		if (await setStatus(a, "in_consultation")) router.push(patientHref(a.patient.id));
+	};
+
+	const finish = async (a: Visit) => {
+		const done = await setStatus(a, "completed");
 		if (done) toast.success(done);
 	};
 
@@ -75,8 +85,8 @@ export function useWaitingActions() {
 
 	return {
 		busy,
-		callIn: (a: Visit) => setStatus(a, "in_consultation"),
-		finish: (a: Visit) => setStatus(a, "completed"),
+		openFile,
+		finish,
 		left,
 		back,
 	};

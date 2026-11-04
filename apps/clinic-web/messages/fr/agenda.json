@@ -26,7 +26,6 @@
     "appointment": "Rendez-vous",
     "patient": "Patient",
     "arrived": "Patient arrivé",
-    "call": "Faire entrer",
     "finish": "Terminer",
     "statusChanged": "Rendez-vous : {status}",
     "statusError": "Changement impossible",

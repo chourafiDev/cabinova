@@ -26,7 +26,6 @@
     "appointment": "الموعد",
     "patient": "المريض",
     "arrived": "وصل المريض",
-    "call": "إدخال المريض",
     "finish": "إنهاء",
     "statusChanged": "الموعد: {status}",
     "statusError": "تعذر تغيير الحالة",

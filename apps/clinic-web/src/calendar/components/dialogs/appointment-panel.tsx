@@ -11,6 +11,7 @@ import {
   LuClock,
   LuExternalLink,
   LuFileText,
+  LuFolderOpen,
   LuHistory,
   LuLoader,
   LuLogOut,
@@ -65,10 +66,11 @@ import { useFormat } from "@/lib/use-format";
 import { useWaitingActions } from "@/lib/use-waiting-actions";
 
 /** The usual next step: the desk checks patients in, the doctor calls them in and finishes. */
-const NEXT_STEP: Partial<Record<AppointmentStatus, { status: AppointmentStatus; label: "arrived" | "call" | "finish" }>> = {
+const NEXT_STEP: Partial<Record<AppointmentStatus, { status: AppointmentStatus; label: "arrived" | "openFile" | "finish" }>> = {
   scheduled: { status: "arrived", label: "arrived" },
   confirmed: { status: "arrived", label: "arrived" },
-  arrived: { status: "in_consultation", label: "call" },
+  // The doctor takes the patient by opening their file.
+  arrived: { status: "in_consultation", label: "openFile" },
   in_consultation: { status: "completed", label: "finish" },
 };
 /** The doctor's statuses: the front desk neither sets them nor changes them. */
@@ -268,8 +270,16 @@ function PanelContent({ event, onClose }: { event: IEvent; onClose: () => void }
       {canWrite && (
         <footer className="grid gap-2 border-t p-4">
           {next && (
-            <Button type="button" disabled={busy} onClick={() => setStatus(next.status)}>
-              {busy && <LuLoader className="size-4 animate-spin" />}
+            <Button
+              type="button"
+              disabled={busy || waiting.busy === event.id}
+              onClick={() => (next.status === "in_consultation" ? waiting.openFile(event) : setStatus(next.status))}
+            >
+              {busy || waiting.busy === event.id ? (
+                <LuLoader className="size-4 animate-spin" />
+              ) : (
+                next.status === "in_consultation" && <LuFolderOpen className="size-4" />
+              )}
               {panel(next.label)}
             </Button>
           )}
