@@ -3,6 +3,7 @@ import type { Pool, PoolClient } from '@neondatabase/serverless';
 import {
   BadRequestException,
   ConflictException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -26,6 +27,7 @@ const HISTORY_LIMIT = 200;
 const APPOINTMENT = `
   a.id, a.starts_at as "startsAt", a.ends_at as "endsAt", a.status,
   a.reason, a.notes, a.arrived_at as "arrivedAt", a.walk_in as "walkIn",
+  a.left_at as "leftAt",
   json_build_object('id', p.id, 'firstName', p.first_name, 'lastName', p.last_name,
     'fileNumber', p.file_number, 'phone', p.phone, 'birthDate', to_char(p.birth_date, 'YYYY-MM-DD'),
     'sex', p.sex) as patient,
@@ -42,6 +44,15 @@ const time = (d: Date) =>
     minute: '2-digit',
     timeZone: moroccoZone(d),
   });
+
+/**
+ * The doctor's steps: calling the patient in, and finishing. The front desk
+ * checks patients in and out, but never moves a visit into or out of them.
+ */
+const DOCTOR_STATUSES: readonly AppointmentStatus[] = [
+  'in_consultation',
+  'completed',
+];
 
 /** New appointments name their act; older ones without one can still be edited. */
 function requireReason(reason: string | null | undefined) {
@@ -213,9 +224,22 @@ export class AppointmentsService {
     spaceId: string,
     id: string,
     status: AppointmentStatus,
+    /** A doctor (or the owner): only they call patients in and finish. */
+    medical: boolean,
   ) {
     return this.transaction(db, async (tx) => {
       const current = await this.find(tx, spaceId, id);
+      if (
+        !medical &&
+        (DOCTOR_STATUSES.includes(status) ||
+          DOCTOR_STATUSES.includes(current.status))
+      ) {
+        throw new ForbiddenException({
+          code: 'DOCTOR_STEP',
+          message:
+            'C’est le médecin qui fait entrer le patient et termine la consultation.',
+        });
+      }
       // Re-activating a cancelled appointment needs its slot to still be free.
       if (
         RELEASED_STATUSES.includes(current.status) &&
@@ -240,9 +264,63 @@ export class AppointmentsService {
             ? 'arrived_at'
             : 'null';
       await tx.query(
-        `update appointments set status = $3, arrived_at = ${arrived}, updated_at = now()
+        `update appointments set status = $3, arrived_at = ${arrived}, left_at = null,
+           updated_at = now()
           where id = $1 and space_id = $2`,
         [id, spaceId, status],
+      );
+      return this.find(tx, spaceId, id);
+    });
+  }
+
+  /**
+   * The patient left the waiting room without being seen: the visit is
+   * cancelled (the slot is free again), remembering when they left.
+   */
+  async left(db: Pool, spaceId: string, id: string) {
+    return this.transaction(db, async (tx) => {
+      const current = await this.find(tx, spaceId, id);
+      if (current.status !== 'arrived') {
+        throw new BadRequestException({
+          code: 'NOT_WAITING',
+          message: 'Ce patient n’est pas en salle d’attente.',
+        });
+      }
+      await tx.query(
+        `update appointments set status = 'cancelled', left_at = now(), updated_at = now()
+          where id = $1 and space_id = $2`,
+        [id, spaceId],
+      );
+      return this.find(tx, spaceId, id);
+    });
+  }
+
+  /**
+   * They came back the same day: into the waiting room again, behind those
+   * already there. Another day, they're booked again (or come as a walk-in).
+   */
+  async returned(db: Pool, spaceId: string, id: string) {
+    return this.transaction(db, async (tx) => {
+      const current = await this.find(tx, spaceId, id);
+      const zone = moroccoZone(new Date());
+      const day = (d: Date) =>
+        d.toLocaleDateString('en-CA', { timeZone: zone });
+      if (
+        current.status !== 'cancelled' ||
+        !current.leftAt ||
+        day(new Date(current.leftAt)) !== day(new Date())
+      ) {
+        throw new BadRequestException({
+          code: 'CANNOT_RETURN',
+          message:
+            'Seul un patient parti aujourd’hui peut revenir en salle d’attente.',
+        });
+      }
+      await tx.query(
+        `update appointments set status = 'arrived', arrived_at = now(), left_at = null,
+           updated_at = now()
+          where id = $1 and space_id = $2`,
+        [id, spaceId],
       );
       return this.find(tx, spaceId, id);
     });
@@ -269,6 +347,7 @@ export class AppointmentsService {
       status: AppointmentStatus;
       startsAt: string;
       endsAt: string;
+      leftAt: string | null;
       practitioner: { id: string; name: string };
     }>(
       `select ${APPOINTMENT} from ${FROM} where a.id = $1 and a.space_id = $2`,

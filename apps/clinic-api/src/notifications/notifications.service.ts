@@ -85,7 +85,11 @@ export class NotificationsService {
     status: string,
     actorId: string,
   ) {
-    if (!['arrived', 'no_show', 'cancelled'].includes(status)) return;
+    if (
+      !['arrived', 'no_show', 'cancelled', 'left', 'returned'].includes(status)
+    ) {
+      return;
+    }
     try {
       const { rows } = await db.query<{
         practitioner_id: string;
@@ -111,6 +115,8 @@ export class NotificationsService {
       if (!a) return;
       const title = {
         arrived: `${a.patient} est en salle d’attente`,
+        left: `${a.patient} est parti(e) sans consultation`,
+        returned: `${a.patient} est revenu(e) en salle d’attente`,
         no_show: `${a.patient} n’est pas venu(e)`,
         cancelled: `Rendez-vous de ${a.patient} annulé`,
       }[status]!;
@@ -127,7 +133,11 @@ export class NotificationsService {
         db,
         [...recipients].map((userId) => ({
           userId,
-          kind: status as Notification['kind'],
+          kind: (status === 'left'
+            ? 'cancelled'
+            : status === 'returned'
+              ? 'arrived'
+              : status) as Notification['kind'],
           title,
           body: [
             a.walk_in ? 'Sans rendez-vous' : `Rendez-vous de ${a.time}`,
@@ -144,10 +154,14 @@ export class NotificationsService {
           },
           // An arrival opens the waiting room; the rest, that day's agenda.
           href:
-            status === 'arrived'
+            status === 'arrived' || status === 'left' || status === 'returned'
               ? '/appointments?tab=waiting'
               : `/appointments?view=day&date=${a.day}`,
-          dedupeKey: `appointment:${id}:${status}`,
+          // Leaving and coming back can happen more than once.
+          dedupeKey:
+            status === 'left' || status === 'returned'
+              ? `appointment:${id}:${status}:${Date.now()}`
+              : `appointment:${id}:${status}`,
         })),
       );
     } catch (err) {

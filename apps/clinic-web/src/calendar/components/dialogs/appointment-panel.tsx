@@ -5,6 +5,7 @@ import { differenceInMinutes, parseISO } from "date-fns";
 import { useTranslations } from "next-intl";
 import { useEffect, useState, useSyncExternalStore } from "react";
 import {
+  LuArmchair,
   LuCalendar,
   LuChevronDown,
   LuClock,
@@ -12,6 +13,7 @@ import {
   LuFileText,
   LuHistory,
   LuLoader,
+  LuLogOut,
   LuPencil,
   LuPhone,
   LuReceipt,
@@ -59,14 +61,17 @@ import {
   patientHref,
 } from "@/lib/patients";
 import { useFormat } from "@/lib/use-format";
+import { useWaitingActions } from "@/lib/use-waiting-actions";
 
-/** The usual next step at the front desk. */
+/** The usual next step: the desk checks patients in, the doctor calls them in and finishes. */
 const NEXT_STEP: Partial<Record<AppointmentStatus, { status: AppointmentStatus; label: "arrived" | "call" | "finish" }>> = {
   scheduled: { status: "arrived", label: "arrived" },
   confirmed: { status: "arrived", label: "arrived" },
   arrived: { status: "in_consultation", label: "call" },
   in_consultation: { status: "completed", label: "finish" },
 };
+/** The doctor's statuses: the front desk neither sets them nor changes them. */
+const DOCTOR_STATUSES: AppointmentStatus[] = ["in_consultation", "completed"];
 
 /** From this width the panel sits beside the calendar; below, it slides over it. */
 const WIDE = "(min-width: 1280px)";
@@ -144,7 +149,11 @@ function PanelContent({ event, onClose }: { event: IEvent; onClose: () => void }
   const patientId = event.patient.id;
   const start = parseISO(event.startDate);
   const end = parseISO(event.endDate);
-  const next = NEXT_STEP[event.status];
+  const doctor = isMedicalRole(role);
+  const step = NEXT_STEP[event.status];
+  const next = step && (doctor || !DOCTOR_STATUSES.includes(step.status)) ? step : undefined;
+  const lockedForDesk = !doctor && DOCTOR_STATUSES.includes(event.status);
+  const waiting = useWaitingActions();
 
   const { data: patient } = useQuery({
     queryKey: ["patient", patientId],
@@ -260,10 +269,31 @@ function PanelContent({ event, onClose }: { event: IEvent; onClose: () => void }
               {panel(next.label)}
             </Button>
           )}
+          {!doctor && event.status === "arrived" && (
+            <>
+              <p className="text-muted-foreground flex items-center justify-center gap-1.5 text-xs">
+                <LuArmchair className="size-3.5" /> {panel("waitingDoctor")}
+              </p>
+              <Button
+                type="button"
+                variant="outline"
+                disabled={busy || waiting.busy === event.id}
+                onClick={() => waiting.left(event)}
+              >
+                <LuLogOut className="size-4 rtl:-scale-x-100" />
+                {t("agenda.waiting.left")}
+              </Button>
+            </>
+          )}
+          {lockedForDesk && (
+            <p className="text-muted-foreground flex items-center justify-center gap-1.5 text-xs">
+              <LuStethoscope className="size-3.5" /> {panel("doctorStep")}
+            </p>
+          )}
           <div className="flex gap-2">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button type="button" variant="outline" size="sm" className="flex-1" disabled={busy}>
+                <Button type="button" variant="outline" size="sm" className="flex-1" disabled={busy || lockedForDesk}>
                   {panel("status")}
                   <LuChevronDown className="size-4" />
                 </Button>
@@ -273,7 +303,7 @@ function PanelContent({ event, onClose }: { event: IEvent; onClose: () => void }
                   {panel("changeStatus")}
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                {APPOINTMENT_STATUSES.filter((s) => s !== event.status).map((s) => (
+                {APPOINTMENT_STATUSES.filter((s) => s !== event.status && (doctor || !DOCTOR_STATUSES.includes(s))).map((s) => (
                   <DropdownMenuItem
                     key={s}
                     onSelect={() => setStatus(s)}

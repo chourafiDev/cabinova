@@ -3,7 +3,7 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
-import { LuCalendarCheck, LuLoader, LuTriangleAlert } from "react-icons/lu";
+import { LuCalendarCheck, LuLoader, LuTriangleAlert, LuUndo2 } from "react-icons/lu";
 import { toast } from "sonner";
 import { type PickedPatient, PatientPicker } from "@/components/patient-picker";
 import { Button } from "@/components/ui/button";
@@ -24,6 +24,7 @@ import { type Appointment, APPOINTMENTS_KEY, type Practitioner, patchAppointment
 import { EMPTY_PATIENT } from "@/lib/patients";
 import type { Act } from "@/lib/payments";
 import { useFormat } from "@/lib/use-format";
+import { useWaitingActions } from "@/lib/use-waiting-actions";
 import { PatientForm } from "../../patients/_components/patient-form";
 import { useToday } from "./use-today";
 
@@ -79,6 +80,9 @@ function WalkInForm({ practitioners, onDone }: { practitioners: Practitioner[]; 
 	const todays = patient ? (today.data ?? []).filter((a) => a.patient.id === patient.id) : [];
 	const present = todays.find((a) => a.status === "arrived" || a.status === "in_consultation");
 	const booked = todays.find((a) => a.status === "scheduled" || a.status === "confirmed");
+	// Left unseen earlier today: back into the waiting room rather than a second visit.
+	const gone = todays.find((a) => a.status === "cancelled" && a.leftAt);
+	const actions = useWaitingActions();
 
 	const pick = (p: PickedPatient) => {
 		setPatient(p);
@@ -109,7 +113,7 @@ function WalkInForm({ practitioners, onDone }: { practitioners: Practitioner[]; 
 			reason: reason ? undefined : form("chooseReason"),
 		};
 		setErrors(next);
-		if (Object.values(next).some(Boolean) || !patient || present) return;
+		if (Object.values(next).some(Boolean) || !patient || present || gone) return;
 		setSaving(true);
 		try {
 			await api<Appointment>("/appointments/walk-in", {
@@ -184,6 +188,25 @@ function WalkInForm({ practitioners, onDone }: { practitioners: Practitioner[]; 
 								<LuTriangleAlert className="mt-0.5 size-4 shrink-0" />
 								{statusLabel(present.status)} · {t("alreadyHere")}
 							</p>
+						) : gone ? (
+							<div className="grid gap-2 rounded-lg border bg-accent/50 p-3 text-sm">
+								<p className="flex items-start gap-2">
+									<LuUndo2 className="text-primary mt-0.5 size-4 shrink-0 rtl:-scale-x-100" />
+									{t("goneToday", { time: gone.leftAt ? fmt.clock(gone.leftAt) : "—" })}
+								</p>
+								<Button
+									type="button"
+									size="sm"
+									variant="outline"
+									className="w-fit"
+									disabled={actions.busy === gone.id}
+									onClick={async () => {
+										if (await actions.back(gone)) onDone();
+									}}
+								>
+									{t("putBack")}
+								</Button>
+							</div>
 						) : booked ? (
 							<div className="grid gap-2 rounded-lg border bg-accent/50 p-3 text-sm">
 								<p className="flex items-start gap-2">
@@ -268,7 +291,7 @@ function WalkInForm({ practitioners, onDone }: { practitioners: Practitioner[]; 
 						<Button type="button" variant="ghost" onClick={onDone}>
 							{form("cancel")}
 						</Button>
-						<Button type="submit" disabled={saving || !!present}>
+						<Button type="submit" disabled={saving || !!present || !!gone}>
 							{saving && <LuLoader className="animate-spin" />}
 							{t("submit")}
 						</Button>

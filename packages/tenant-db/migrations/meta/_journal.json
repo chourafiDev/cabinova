@@ -120,6 +120,13 @@
       "when": 1793799536018,
       "tag": "0016_walk_in",
       "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1793800992720,
+      "tag": "0017_left_waiting_room",
+      "breakpoints": true
     }
   ]
 }

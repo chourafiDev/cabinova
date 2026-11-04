@@ -103,7 +103,9 @@
       "invoice_overdue": "Facture {number} en retard",
       "invoice_paid": "Facture {number} disponible",
       "meeting_invite": "{by} vous invite à une réunion",
-      "meeting_cancelled": "Réunion annulée par {by}"
+      "meeting_cancelled": "Réunion annulée par {by}",
+      "left": "{patient} est parti(e) sans consultation",
+      "returned": "{patient} est revenu(e) en salle d’attente"
     },
     "meetingNow": "{title} · maintenant",
     "meetingAt": "{title} · {date} à {time}"

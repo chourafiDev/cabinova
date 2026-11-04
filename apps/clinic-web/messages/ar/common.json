@@ -103,7 +103,9 @@
       "invoice_overdue": "الفاتورة {number} متأخرة",
       "invoice_paid": "الفاتورة {number} متاحة",
       "meeting_invite": "يدعوك {by} إلى اجتماع",
-      "meeting_cancelled": "ألغى {by} الاجتماع"
+      "meeting_cancelled": "ألغى {by} الاجتماع",
+      "left": "غادر {patient} دون استشارة",
+      "returned": "عاد {patient} إلى قاعة الانتظار"
     },
     "meetingNow": "{title} · الآن",
     "meetingAt": "{title} · {date} على الساعة {time}"

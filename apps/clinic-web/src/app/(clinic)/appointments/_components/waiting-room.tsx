@@ -1,20 +1,20 @@
 "use client";
 
-import { useQueryClient } from "@tanstack/react-query";
 import { differenceInMinutes } from "date-fns";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
-import { LuArmchair, LuDoorOpen, LuUserPlus } from "react-icons/lu";
-import { toast } from "sonner";
+import { LuArmchair, LuCheck, LuDoorOpen, LuLogOut, LuStethoscope, LuUndo2, LuUserPlus } from "react-icons/lu";
+import { useCurrentUser } from "@/components/current-user";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { api } from "@/lib/api-client";
-import { type Appointment, APPOINTMENTS_KEY, type Practitioner, patchAppointment } from "@/lib/appointments";
-import { formatFileNumber, fullName, patientHref } from "@/lib/patients";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import type { Appointment, Practitioner } from "@/lib/appointments";
+import { formatFileNumber, fullName, isMedicalRole, patientHref } from "@/lib/patients";
 import { useFormat } from "@/lib/use-format";
 import { useNow } from "@/lib/use-now";
+import { useWaitingActions } from "@/lib/use-waiting-actions";
 import { cn } from "@/lib/utils";
 import { useWaiting } from "./use-today";
 import { WalkInSheet } from "./walk-in-sheet";
@@ -24,79 +24,90 @@ const LONG_WAIT = 20;
 const VERY_LONG_WAIT = 45;
 
 /**
- * The waiting room as a table: who came first, how long they've waited, and
- * "Faire entrer". Patients with an appointment arrive from the agenda; one
- * without is added here ("Patient sans RDV").
+ * Today's waiting room. Patients with an appointment arrive from the agenda;
+ * one without is added here ("Patient sans RDV"). The doctor calls them in;
+ * the front desk only notes who left unseen, and who came back.
  */
 export function WaitingRoom({ practitioners }: { practitioners: Practitioner[] }) {
 	const [adding, setAdding] = useState(false);
 	const t = useTranslations("agenda.waiting");
-	const { waiting } = useWaiting();
+	const { waiting, inConsultation, left, isPending, isError } = useWaiting();
+	const actions = useWaitingActions();
+	const doctor = isMedicalRole(useCurrentUser().role);
 
 	return (
-		<div className="grid gap-3">
+		<div className="grid gap-4">
 			<div className="flex flex-wrap items-center justify-between gap-3">
-				<p className="text-muted-foreground text-sm">{t("count", { count: waiting.length })}</p>
+				<p className="text-muted-foreground text-sm">{!isPending && t("count", { count: waiting.length })}</p>
 				<Button size="sm" onClick={() => setAdding(true)}>
 					<LuUserPlus /> {t("walkIn")}
 				</Button>
 			</div>
-			<WaitingTable />
+
+			{inConsultation.length > 0 && (
+				<InConsultation visits={inConsultation} doctor={doctor} actions={actions} />
+			)}
+
+			{isPending ? (
+				<div className="bg-card grid gap-2 rounded-xl border p-4">
+					{[0, 1, 2].map((i) => (
+						<Skeleton key={i} className="h-10 w-full" />
+					))}
+				</div>
+			) : isError ? (
+				<p className="text-destructive text-sm">{t("loadError")}</p>
+			) : waiting.length === 0 ? (
+				<div className="bg-card flex flex-col items-center gap-2 rounded-xl border px-6 py-16 text-center">
+					<LuArmchair className="text-muted-foreground size-6" />
+					<p className="font-medium">{t("empty")}</p>
+					<p className="text-muted-foreground max-w-sm text-sm">{t("emptyHint")}</p>
+				</div>
+			) : (
+				<WaitingTable waiting={waiting} doctor={doctor} actions={actions} />
+			)}
+
+			{left.length > 0 && <LeftToday visits={left} actions={actions} />}
+
 			<WalkInSheet practitioners={practitioners} open={adding} onOpenChange={setAdding} />
 		</div>
 	);
 }
 
-function WaitingTable() {
-	const { waiting, isPending, isError } = useWaiting();
-	const queryClient = useQueryClient();
-	const [calling, setCalling] = useState<string | null>(null);
+type Actions = ReturnType<typeof useWaitingActions>;
+
+/** Who is with a doctor now: the desk knows the room is taken; the doctor finishes from here. */
+function InConsultation({ visits, doctor, actions }: { visits: Appointment[]; doctor: boolean; actions: Actions }) {
+	const t = useTranslations("agenda.waiting");
+	const panel = useTranslations("agenda.panel");
+	return (
+		<div className="grid gap-2">
+			{visits.map((a) => (
+				<div key={a.id} className="bg-accent/60 flex flex-wrap items-center gap-3 rounded-xl px-4 py-3">
+					<span className="bg-primary/10 text-primary flex size-8 shrink-0 items-center justify-center rounded-lg">
+						<LuStethoscope className="size-4" />
+					</span>
+					<div className="min-w-0 flex-1">
+						<p className="text-primary text-xs">{t("inConsultation")}</p>
+						<p className="truncate text-sm font-semibold">
+							{fullName(a.patient)} <span className="text-muted-foreground font-normal">· {a.practitioner.name}</span>
+						</p>
+					</div>
+					{doctor && (
+						<Button size="sm" variant="outline" disabled={actions.busy === a.id} onClick={() => actions.finish(a)}>
+							<LuCheck /> {panel("finish")}
+						</Button>
+					)}
+				</div>
+			))}
+		</div>
+	);
+}
+
+function WaitingTable({ waiting, doctor, actions }: { waiting: Appointment[]; doctor: boolean; actions: Actions }) {
 	const now = useNow();
 	const t = useTranslations("agenda.waiting");
 	const panel = useTranslations("agenda.panel");
-	const statusLabel = useTranslations("common.appointmentStatus");
 	const fmt = useFormat();
-
-	async function call(a: Appointment) {
-		setCalling(a.id);
-		// Leaves the table at once; comes back if the server refuses.
-		const undo = patchAppointment(queryClient, a.id, { status: "in_consultation" });
-		try {
-			await api(`/appointments/${a.id}/status`, {
-				method: "POST",
-				body: JSON.stringify({ status: "in_consultation" }),
-			});
-			toast.success(panel("statusChanged", { status: statusLabel("in_consultation").toLowerCase() }));
-		} catch (err) {
-			undo();
-			toast.error(err instanceof Error ? err.message : panel("statusError"));
-		} finally {
-			setCalling(null);
-			void queryClient.invalidateQueries({ queryKey: APPOINTMENTS_KEY });
-		}
-	}
-
-	if (isPending) {
-		return (
-			<div className="bg-card grid gap-2 rounded-xl border p-4">
-				{[0, 1, 2].map((i) => (
-					<Skeleton key={i} className="h-10 w-full" />
-				))}
-			</div>
-		);
-	}
-
-	if (isError) return <p className="text-destructive text-sm">{t("loadError")}</p>;
-
-	if (waiting.length === 0) {
-		return (
-			<div className="bg-card flex flex-col items-center gap-2 rounded-xl border px-6 py-16 text-center">
-				<LuArmchair className="text-muted-foreground size-6" />
-				<p className="font-medium">{t("empty")}</p>
-				<p className="text-muted-foreground max-w-sm text-sm">{t("emptyHint")}</p>
-			</div>
-		);
-	}
 
 	return (
 		<div className="bg-card overflow-hidden rounded-xl border">
@@ -118,6 +129,7 @@ function WaitingTable() {
 				<TableBody>
 					{waiting.map((a, i) => {
 						const minutes = a.arrivedAt ? Math.max(0, differenceInMinutes(now, new Date(a.arrivedAt))) : null;
+						const busy = actions.busy === a.id;
 						return (
 							<TableRow key={a.id}>
 								<TableCell>
@@ -165,10 +177,34 @@ function WaitingTable() {
 								<TableCell className="text-muted-foreground hidden max-w-48 truncate xl:table-cell">
 									{a.reason ?? "—"}
 								</TableCell>
-								<TableCell className="text-end">
-									<Button size="sm" disabled={calling !== null} onClick={() => call(a)}>
-										<LuDoorOpen /> {panel("call")}
-									</Button>
+								<TableCell>
+									<div className="flex items-center justify-end gap-1.5">
+										{doctor ? (
+											<>
+												<Tooltip>
+													<TooltipTrigger asChild>
+														<Button
+															size="icon-sm"
+															variant="ghost"
+															aria-label={t("left")}
+															disabled={busy}
+															onClick={() => actions.left(a)}
+														>
+															<LuLogOut className="rtl:-scale-x-100" />
+														</Button>
+													</TooltipTrigger>
+													<TooltipContent>{t("left")}</TooltipContent>
+												</Tooltip>
+												<Button size="sm" disabled={busy} onClick={() => actions.callIn(a)}>
+													<LuDoorOpen /> {panel("call")}
+												</Button>
+											</>
+										) : (
+											<Button size="sm" variant="outline" disabled={busy} onClick={() => actions.left(a)}>
+												<LuLogOut className="rtl:-scale-x-100" /> {t("left")}
+											</Button>
+										)}
+									</div>
 								</TableCell>
 							</TableRow>
 						);
@@ -176,5 +212,36 @@ function WaitingTable() {
 				</TableBody>
 			</Table>
 		</div>
+	);
+}
+
+/** Left unseen today: their visit is cancelled, one click puts them back if they return. */
+function LeftToday({ visits, actions }: { visits: Appointment[]; actions: Actions }) {
+	const t = useTranslations("agenda.waiting");
+	const fmt = useFormat();
+	return (
+		<section className="grid gap-2" aria-label={t("leftTitle")}>
+			<h2 className="text-muted-foreground flex items-center gap-1.5 text-sm font-medium">
+				<LuLogOut className="size-3.5 rtl:-scale-x-100" /> {t("leftTitle")}
+			</h2>
+			<ul className="bg-card divide-y rounded-xl border">
+				{visits.map((a) => (
+					<li key={a.id} className="flex flex-wrap items-center gap-3 px-4 py-2.5">
+						<div className="min-w-0 flex-1">
+							<p className="text-muted-foreground truncate text-sm font-medium">
+								{fullName(a.patient)}
+							</p>
+							<p className="text-muted-foreground text-xs">
+								{t("leftAt", { time: a.leftAt ? fmt.clock(a.leftAt) : "—" })} ·{" "}
+								{a.walkIn ? t("noAppointment") : t("appointmentAt", { time: fmt.clock(a.startsAt) })}
+							</p>
+						</div>
+						<Button size="sm" variant="outline" disabled={actions.busy === a.id} onClick={() => actions.back(a)}>
+							<LuUndo2 className="rtl:-scale-x-100" /> {t("back")}
+						</Button>
+					</li>
+				))}
+			</ul>
+		</section>
 	);
 }

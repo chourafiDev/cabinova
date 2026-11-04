@@ -114,6 +114,8 @@
       "appointment_update": "عدّل موعد",
       "appointment_status": "غيّر حالة موعد",
       "appointment_walk_in": "أدخل إلى قاعة الانتظار بدون موعد",
+      "appointment_left": "سجّل مغادرة دون استشارة لـ",
+      "appointment_return": "أعاد إلى قاعة الانتظار",
       "payment_checkout": "حصّل زيارة",
       "payment_cancel": "ألغى دفعة لـ",
       "payment_refund": "أعاد مبلغًا لـ",

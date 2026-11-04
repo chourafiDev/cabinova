@@ -48,6 +48,8 @@ export type Appointment = {
 	arrivedAt: string | null;
 	/** Came without an appointment (booked on arrival). */
 	walkIn: boolean;
+	/** Left the waiting room unseen (the visit is then cancelled). */
+	leftAt: string | null;
 	patient: {
 		id: string;
 		firstName: string;

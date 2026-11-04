@@ -38,7 +38,9 @@
     "status": "Statut",
     "changeStatus": "Changer le statut",
     "collect": "Encaisser",
-    "edit": "Modifier"
+    "edit": "Modifier",
+    "waitingDoctor": "En attente du médecin",
+    "doctorStep": "Le médecin fait entrer le patient et termine la consultation."
   },
   "form": {
     "choosePatient": "Choisissez un patient",
@@ -98,7 +100,16 @@
     "loadError": "Impossible de charger la salle d’attente.",
     "count": "{count, plural, =0 {Personne en attente} one {# patient en attente} other {# patients en attente}}",
     "walkIn": "Patient sans RDV",
-    "noAppointment": "Sans RDV"
+    "noAppointment": "Sans RDV",
+    "inConsultation": "En consultation",
+    "left": "Il est parti",
+    "leftTitle": "Partis sans consultation aujourd’hui",
+    "leftAt": "Parti(e) à {time}",
+    "appointmentAt": "RDV {time}",
+    "back": "Il est revenu",
+    "leftToast": "{patient} est parti(e) : visite annulée",
+    "backToast": "{patient} est de retour en salle d’attente",
+    "undo": "Annuler"
   },
   "walkIn": {
     "title": "Patient sans rendez-vous",
@@ -114,6 +125,8 @@
     "fromNow": "La visite commence maintenant, pour la durée habituelle.",
     "submit": "Mettre en salle d’attente",
     "added": "Patient ajouté à la salle d’attente",
-    "error": "Ajout impossible"
+    "error": "Ajout impossible",
+    "goneToday": "Ce patient est parti à {time} sans consultation.",
+    "putBack": "Le remettre en salle d’attente"
   }
 }
