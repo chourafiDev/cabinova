@@ -77,5 +77,23 @@
     "empty": "Aucun patient trouvé."
   },
   "smallScreenHint": "Passez en vue jour ou mois.",
-  "multiDay": "Jour {day}/{total}"
+  "multiDay": "Jour {day}/{total}",
+  "tabs": {
+    "waiting": "Salle d’attente",
+    "agenda": "Agenda"
+  },
+  "waiting": {
+    "order": "N°",
+    "patient": "Patient",
+    "appointment": "RDV",
+    "arrived": "Arrivé(e) à",
+    "wait": "Attente",
+    "practitioner": "Médecin",
+    "reason": "Acte",
+    "actions": "Actions",
+    "justNow": "À l’instant",
+    "empty": "La salle d’attente est vide.",
+    "emptyHint": "Quand un patient arrive, marquez son rendez-vous « Patient arrivé » dans l’agenda : il apparaît ici, dans l’ordre d’arrivée.",
+    "loadError": "Impossible de charger la salle d’attente."
+  }
 }

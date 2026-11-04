@@ -6,10 +6,11 @@ import { getClinicState } from "@/lib/session";
 import { type AgendaSettings, DEFAULT_OPENING_HOURS } from "@/lib/settings";
 import { spaceLabel } from "@/lib/spaces";
 import { Agenda } from "./_components/agenda";
+import { AppointmentsTabs } from "./_components/appointments-tabs";
 
 export const generateMetadata = () => pageTitle("appointments");
 
-/** The current space's agenda. Every member of its staff books and moves appointments. */
+/** The waiting room and the current space's agenda. Every member of its staff books and moves appointments. */
 export default async function AppointmentsPage() {
 	const [practitioners, state, agenda] = await Promise.all([
 		apiGet<Practitioner[]>("/appointments/practitioners"),
@@ -20,18 +21,22 @@ export default async function AppointmentsPage() {
 	const t = await getTranslations("agenda");
 
 	return (
-		<div className="grid gap-3">
-			{space && (
-				<p className="text-muted-foreground text-sm">
-					{t("spaceAgenda")} <span className="text-foreground font-medium">{spaceLabel(space)}</span>
-				</p>
-			)}
-			<Agenda
-				practitioners={practitioners}
-				canWrite
-				openingHours={space?.openingHours ?? DEFAULT_OPENING_HOURS}
-				defaultDuration={agenda.defaultAppointmentMinutes}
-			/>
-		</div>
+		<AppointmentsTabs
+			agenda={
+				<>
+					{space && (
+						<p className="text-muted-foreground text-sm">
+							{t("spaceAgenda")} <span className="text-foreground font-medium">{spaceLabel(space)}</span>
+						</p>
+					)}
+					<Agenda
+						practitioners={practitioners}
+						canWrite
+						openingHours={space?.openingHours ?? DEFAULT_OPENING_HOURS}
+						defaultDuration={agenda.defaultAppointmentMinutes}
+					/>
+				</>
+			}
+		/>
 	);
 }

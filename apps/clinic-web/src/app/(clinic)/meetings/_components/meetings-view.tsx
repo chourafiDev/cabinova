@@ -3,7 +3,7 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { HiVideoCamera } from "react-icons/hi2";
 import {
 	LuCalendarX,
@@ -51,6 +51,7 @@ import {
 	type MeetingStatus,
 } from "@/lib/meetings";
 import { useFormat } from "@/lib/use-format";
+import { useNow } from "@/lib/use-now";
 import { cn } from "@/lib/utils";
 
 const STATUS_STYLES: Record<MeetingStatus, string> = {
@@ -259,16 +260,6 @@ function People({ people, max = 4 }: { people: MeetingPerson[]; max?: number }) 
 /** Emerald into teal, sky and a touch of violet, around a running meeting. */
 const LIVE_BORDER =
 	"linear-gradient(var(--card), var(--card)) padding-box, linear-gradient(135deg, #34d399, #10b981 30%, #14b8a6 55%, #38bdf8 80%, #a78bfa) border-box";
-
-/** Re-renders now and then: "dans 5 minutes" keeps counting down. */
-function useNow(every = 30_000) {
-	const [now, setNow] = useState(() => Date.now());
-	useEffect(() => {
-		const id = setInterval(() => setNow(Date.now()), every);
-		return () => clearInterval(id);
-	}, [every]);
-	return now;
-}
 
 function MeetingCard({
 	meeting: m,
