@@ -1,6 +1,8 @@
+import { moroccoHolidayOn } from "@cabinova/morocco-time";
 import { type Fmt, WEEK } from "@/calendar/locale";
 import { addDays, addMonths, addWeeks, subDays, subMonths, subWeeks, isSameWeek, isSameDay, isSameMonth, startOfWeek, startOfMonth, endOfMonth, endOfWeek, parseISO, differenceInMinutes, eachDayOfInterval, startOfDay, differenceInDays, endOfYear, startOfYear, subYears, addYears, isSameYear, isWithinInterval } from "date-fns";
 
+import { format } from "date-fns";
 import type { ICalendarCell, IEvent } from "@/calendar/interfaces";
 import type { TCalendarView, TVisibleHours, TWorkingHours } from "@/calendar/types";
 
@@ -117,14 +119,20 @@ export function getEventBlockStyle(event: IEvent, day: Date, groupIndex: number,
 }
 
 /** The hour row is (at least partly) within opening hours. */
+/** The Moroccan public holiday on this day: the cabinet is closed, whatever its hours. */
+export const holidayOf = (day: Date) => moroccoHolidayOn(format(day, "yyyy-MM-dd"));
+
+/** The day's opening periods: none on a public holiday. */
+const periodsOf = (day: Date, workingHours: TWorkingHours) => (holidayOf(day) ? [] : (workingHours[day.getDay()] ?? []));
+
 export function isWorkingHour(day: Date, hour: number, workingHours: TWorkingHours) {
-  return (workingHours[day.getDay()] ?? []).some((p) => p.from < (hour + 1) * 60 && p.to > hour * 60);
+  return periodsOf(day, workingHours).some((p) => p.from < (hour + 1) * 60 && p.to > hour * 60);
 }
 
 /** The quarter of an hour overlaps opening hours. */
 export function isWorkingSlot(day: Date, hour: number, minute: number, workingHours: TWorkingHours) {
   const from = hour * 60 + minute;
-  return (workingHours[day.getDay()] ?? []).some((p) => p.from < from + 15 && p.to > from);
+  return periodsOf(day, workingHours).some((p) => p.from < from + 15 && p.to > from);
 }
 
 /** The whole appointment is open; back-to-back periods count as one (same rule as the API). */
@@ -132,7 +140,7 @@ export function isWithinWorkingHours(start: Date, end: Date, workingHours: TWork
   const from = start.getHours() * 60 + start.getMinutes();
   const to = from + Math.round((end.getTime() - start.getTime()) / 60_000);
   let reached = from;
-  for (const p of workingHours[start.getDay()] ?? []) {
+  for (const p of periodsOf(start, workingHours)) {
     if (p.from <= reached && p.to > reached) reached = p.to;
   }
   return reached >= to;

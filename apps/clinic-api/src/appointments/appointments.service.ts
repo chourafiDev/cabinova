@@ -1,4 +1,8 @@
-import { moroccoZone } from '@cabinova/morocco-time';
+import {
+  moroccoDay,
+  moroccoHolidayOn,
+  moroccoZone,
+} from '@cabinova/morocco-time';
 import type { Pool, PoolClient } from '@neondatabase/serverless';
 import {
   BadRequestException,
@@ -45,6 +49,25 @@ const time = (d: Date) =>
     minute: '2-digit',
     timeZone: moroccoZone(d),
   });
+
+/** The holidays' names in the API's messages (the app words them itself). */
+const HOLIDAY_NAMES: Record<string, string> = {
+  newYear: 'Nouvel an',
+  independenceManifesto: 'Manifeste de l’Indépendance',
+  amazighNewYear: 'Nouvel an amazigh',
+  labourDay: 'Fête du Travail',
+  throneDay: 'Fête du Trône',
+  ouedEdDahab: 'Allégeance Oued Ed-Dahab',
+  revolutionDay: 'Révolution du Roi et du Peuple',
+  youthDay: 'Fête de la Jeunesse',
+  unityDay: 'Fête de l’Unité',
+  greenMarch: 'Marche Verte',
+  independenceDay: 'Fête de l’Indépendance',
+  islamicNewYear: 'Nouvel an de l’Hégire',
+  mawlid: 'Aïd Al Mawlid',
+  eidAlFitr: 'Aïd Al Fitr',
+  eidAlAdha: 'Aïd Al Adha',
+};
 
 /**
  * The doctor's steps: calling the patient in, and finishing. The front desk
@@ -445,6 +468,15 @@ export class AppointmentsService {
     startsAt: Date,
     endsAt: Date,
   ) {
+    // Public holidays close every cabinet, whatever its opening hours.
+    const holiday = moroccoHolidayOn(moroccoDay(startsAt));
+    if (holiday) {
+      throw new BadRequestException({
+        code: 'HOLIDAY',
+        params: { holiday: holiday.key },
+        message: `Jour férié (${HOLIDAY_NAMES[holiday.key]}) : le cabinet est fermé.`,
+      });
+    }
     const { rows } = await tx.query<{ opening_hours: OpeningHours }>(
       'select opening_hours from spaces where id = $1',
       [spaceId],

@@ -14,6 +14,7 @@ import { DayViewMultiDayEventsRow } from "@/calendar/components/week-and-day-vie
 
 import { cn } from "@/lib/utils";
 import { TimeSlot } from "@/calendar/components/week-and-day-view/time-slot";
+import { HolidayLabel } from "@/calendar/components/holiday-label";
 import { groupEvents, getEventBlockStyle, isWorkingHour, getCurrentEvents, getVisibleHours } from "@/calendar/helpers";
 
 import type { IEvent } from "@/calendar/interfaces";
@@ -57,8 +58,11 @@ export function CalendarDayView({ singleDayEvents, multiDayEvents }: IProps) {
           {/* Day header */}
           <div className="relative z-20 flex border-b">
             <div className="w-18"></div>
-            <span className="flex-1 border-s py-2 text-center text-xs font-medium text-muted-foreground">
-              {fmt(selectedDate, "EEE")} <span className="font-semibold text-foreground">{fmt(selectedDate, "d")}</span>
+            <span className="flex flex-1 items-center justify-center gap-2 border-s py-2 text-center text-xs font-medium text-muted-foreground">
+              <span>
+                {fmt(selectedDate, "EEE")} <span className="font-semibold text-foreground">{fmt(selectedDate, "d")}</span>
+              </span>
+              <HolidayLabel date={selectedDate} />
             </span>
           </div>
         </div>

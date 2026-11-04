@@ -11,7 +11,7 @@ import { toast } from "sonner";
 import { z } from "zod";
 
 import { useCalendar } from "@/calendar/contexts/calendar-context";
-import { isWithinWorkingHours } from "@/calendar/helpers";
+import { holidayOf, isWithinWorkingHours } from "@/calendar/helpers";
 import { useFmt } from "@/calendar/locale";
 import type { IEvent } from "@/calendar/interfaces";
 import { NoShowNote } from "@/components/no-show-badge";
@@ -83,6 +83,7 @@ export function AppointmentFormDialog({
 	const { users, selectedDate, selectedUserId, defaultDuration, workingHours, openingHours } = useCalendar();
 	const queryClient = useQueryClient();
 	const t = useTranslations("agenda.form");
+	const tc = useTranslations("common");
 	const format = useFormat();
 	const fmt = useFmt();
 	// The motif is one of the cabinet's acts (Paramètres › Tarifs).
@@ -256,12 +257,14 @@ export function AppointmentFormDialog({
 							<p role="alert" className="text-destructive -mt-2 flex items-start gap-1.5 text-xs">
 								<LuClock className="mt-px size-3.5 shrink-0" />
 								<span>
-									{t("closed", {
+									{holidayOf(outsideHours)
+										? t("holiday", { holiday: tc(`holidays.names.${holidayOf(outsideHours)!.key}`) })
+										: t("closed", {
 										day: fmt(outsideHours, "EEEE"),
 										hours: format
 											.periods(openingHours[String(outsideHours.getDay()) as keyof typeof openingHours])
 											.toLowerCase(),
-									})}
+										})}
 								</span>
 							</p>
 						)}

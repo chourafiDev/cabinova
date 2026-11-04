@@ -178,5 +178,25 @@
     "tooltip": "{count} absences aux rendez-vous : confirmez ses rendez-vous à l’avance.",
     "noteTitle": "Ce patient a manqué {count} rendez-vous.",
     "noteAdvice": "Pensez à l’appeler la veille pour confirmer sa venue."
+  },
+  "holidays": {
+    "estimated": "Date estimée : elle dépend de l’observation de la lune (± 1 jour).",
+    "names": {
+      "newYear": "Nouvel an",
+      "independenceManifesto": "Manifeste de l’Indépendance",
+      "amazighNewYear": "Nouvel an amazigh",
+      "labourDay": "Fête du Travail",
+      "throneDay": "Fête du Trône",
+      "ouedEdDahab": "Oued Ed-Dahab",
+      "revolutionDay": "Révolution du Roi et du Peuple",
+      "youthDay": "Fête de la Jeunesse",
+      "unityDay": "Fête de l’Unité",
+      "greenMarch": "Marche Verte",
+      "independenceDay": "Fête de l’Indépendance",
+      "islamicNewYear": "1er Moharram",
+      "mawlid": "Aïd Al Mawlid",
+      "eidAlFitr": "Aïd Al Fitr",
+      "eidAlAdha": "Aïd Al Adha"
+    }
   }
 }

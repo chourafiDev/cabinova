@@ -61,6 +61,7 @@
     "time": "Heure",
     "duration": "Durée",
     "closed": "Cabinet fermé à ce créneau. Horaires ({day} : {hours}).",
+    "holiday": "Jour férié ({holiday}) : le cabinet est fermé ce jour-là.",
     "reason": "Acte",
     "reasonPlaceholder": "Choisir un acte…",
     "noReason": "Aucun",

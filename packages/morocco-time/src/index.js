@@ -9,3 +9,5 @@ export const moroccoZone = (date) =>
 
 export const moroccoDay = (date = new Date()) =>
   new Intl.DateTimeFormat('en-CA', { timeZone: moroccoZone(date) }).format(new Date(date));
+
+export { moroccoHolidayOn, moroccoHolidays } from './holidays.js';

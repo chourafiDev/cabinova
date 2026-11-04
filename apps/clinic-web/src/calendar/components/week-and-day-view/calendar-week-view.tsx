@@ -12,6 +12,7 @@ import { WeekViewMultiDayEventsRow } from "@/calendar/components/week-and-day-vi
 
 import { cn } from "@/lib/utils";
 import { TimeSlot } from "@/calendar/components/week-and-day-view/time-slot";
+import { HolidayLabel } from "@/calendar/components/holiday-label";
 import { groupEvents, getEventBlockStyle, isWorkingHour, getVisibleHours } from "@/calendar/helpers";
 
 import type { IEvent } from "@/calendar/interfaces";
@@ -47,8 +48,11 @@ export function CalendarWeekView({ singleDayEvents, multiDayEvents }: IProps) {
             <div className="w-18"></div>
             <div className="grid flex-1 grid-cols-7 divide-x rtl:divide-x-reverse border-s">
               {weekDays.map((day, index) => (
-                <span key={index} className="py-2 text-center text-xs font-medium text-muted-foreground">
-                  {fmt(day, "EEE")} <span className="ms-1 font-semibold text-foreground">{fmt(day, "d")}</span>
+                <span key={index} className="flex min-w-0 flex-col items-center gap-1 px-1 py-2 text-center text-xs font-medium text-muted-foreground">
+                  <span>
+                    {fmt(day, "EEE")} <span className="ms-1 font-semibold text-foreground">{fmt(day, "d")}</span>
+                  </span>
+                  <HolidayLabel date={day} />
                 </span>
               ))}
             </div>

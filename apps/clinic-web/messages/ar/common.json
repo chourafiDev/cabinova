@@ -178,5 +178,25 @@
     "tooltip": "تغيّب {count} مرات عن مواعيده: أكّد مواعيده مسبقًا.",
     "noteTitle": "تغيّب هذا المريض عن {count} مواعيد.",
     "noteAdvice": "اتصل به في اليوم السابق لتأكيد حضوره."
+  },
+  "holidays": {
+    "estimated": "تاريخ تقديري: يتوقف على رؤية الهلال (± يوم واحد).",
+    "names": {
+      "newYear": "رأس السنة الميلادية",
+      "independenceManifesto": "ذكرى تقديم وثيقة الاستقلال",
+      "amazighNewYear": "رأس السنة الأمازيغية",
+      "labourDay": "عيد الشغل",
+      "throneDay": "عيد العرش",
+      "ouedEdDahab": "ذكرى استرجاع وادي الذهب",
+      "revolutionDay": "ذكرى ثورة الملك والشعب",
+      "youthDay": "عيد الشباب",
+      "unityDay": "عيد الوحدة",
+      "greenMarch": "ذكرى المسيرة الخضراء",
+      "independenceDay": "عيد الاستقلال",
+      "islamicNewYear": "فاتح محرم",
+      "mawlid": "عيد المولد النبوي",
+      "eidAlFitr": "عيد الفطر",
+      "eidAlAdha": "عيد الأضحى"
+    }
   }
 }
