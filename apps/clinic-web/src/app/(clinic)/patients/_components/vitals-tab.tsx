@@ -87,7 +87,7 @@ export function VitalsTab({ patientId, archived }: { patientId: string; archived
 	const field = (measure: Measure, label: string) => {
 		const issue = showErrors || draft[measure] ? problem(measure, draft[measure]) : null;
 		return (
-			<label key={measure} className="grid gap-1 text-sm">
+			<label key={measure} className="grid content-start gap-1 text-sm">
 				<span className="text-muted-foreground text-xs">{label}</span>
 				<span className="relative">
 					<Input
@@ -122,7 +122,7 @@ export function VitalsTab({ patientId, archived }: { patientId: string; archived
 								<div className="grid gap-3 sm:grid-cols-3">
 									{key === "cardio" &&
 										ARMS.map((arm) => (
-											<div key={arm} className="grid gap-1 text-sm sm:col-span-3">
+											<div key={arm} className="grid content-start gap-1 text-sm sm:col-span-3">
 												<span className="text-muted-foreground text-xs">{t(`bp${arm}`)}</span>
 												<div className="grid grid-cols-2 gap-3 sm:max-w-sm">
 													{field(`bp${arm}Systolic`, t("systolic"))}
@@ -133,7 +133,7 @@ export function VitalsTab({ patientId, archived }: { patientId: string; archived
 									{measures.map((m) => field(m, t(`fields.${m}`)))}
 									{key === "general" && (
 										<>
-											<div className="grid gap-1 text-sm">
+											<div className="grid content-start gap-1 text-sm">
 												<span className="text-muted-foreground text-xs">{t("fields.bmi")}</span>
 												<p className="bg-muted/60 flex h-9 items-center gap-2 rounded-lg border px-2.5 tabular-nums">
 													{bmi ?? "—"}
@@ -141,10 +141,10 @@ export function VitalsTab({ patientId, archived }: { patientId: string; archived
 												</p>
 												<span className="text-muted-foreground text-xs">{t("bmiAuto")}</span>
 											</div>
-											<label className="grid gap-1 text-sm">
+											<label className="grid content-start gap-1 text-sm">
 												<span className="text-muted-foreground text-xs">{t("fields.bloodGroup")}</span>
 												<Select value={draft.bloodGroup} onValueChange={(v) => set("bloodGroup", v)}>
-													<SelectTrigger className="w-full">
+													<SelectTrigger className="w-full data-[size=default]:h-9">
 														<SelectValue />
 													</SelectTrigger>
 													<SelectContent>
@@ -164,7 +164,7 @@ export function VitalsTab({ patientId, archived }: { patientId: string; archived
 						);
 					})}
 
-					<label className="grid gap-1 text-sm">
+					<label className="grid content-start gap-1 text-sm">
 						<span className="text-muted-foreground text-xs">{t("note")}</span>
 						<Textarea rows={2} maxLength={500} value={draft.note} placeholder={t("notePlaceholder")} onChange={(e) => set("note", e.target.value)} />
 					</label>
