@@ -10,15 +10,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { api } from "@/lib/api-client";
-import { type Act, parseMad, toInput } from "@/lib/payments";
+import { type Act, actMatches, parseMad, toInput } from "@/lib/payments";
 import { useFormat } from "@/lib/use-format";
 import { SettingsCard } from "../../_components/settings-card";
-
-/** "cs" finds Consultation by its abbreviation, "bilan" by its name. */
-const matches = (act: Act, search: string) => {
-	const q = search.trim().toLowerCase();
-	return !q || act.name.toLowerCase().includes(q) || !!act.abbreviation?.toLowerCase().includes(q);
-};
 
 /**
  * Tarifs: the price list as a table (libellé, abréviation, montant), searched
@@ -30,8 +24,8 @@ export function ActsManager({ acts }: { acts: Act[] }) {
 	const [search, setSearch] = useState("");
 	const t = useTranslations("settings.acts");
 	const active = acts.filter((a) => a.active);
-	const shown = active.filter((a) => matches(a, search));
-	const archived = acts.filter((a) => !a.active && matches(a, search));
+	const shown = active.filter((a) => actMatches(a, search));
+	const archived = acts.filter((a) => !a.active && actMatches(a, search));
 
 	return (
 		<>

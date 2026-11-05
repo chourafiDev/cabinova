@@ -27,6 +27,15 @@ export type HistoryPreset = (typeof HISTORY_PRESETS)[number]["key"];
 /** A price-list act; `abbreviation` ("CS", "CTR") shows on the agenda and is searched by. */
 export type Act = { id: string; name: string; abbreviation: string | null; price: number; active: boolean };
 
+/** Lower case, without accents: "echo" finds Échographie. */
+const fold = (text: string) => text.normalize("NFD").replace(/\p{Diacritic}/gu, "").toLowerCase();
+
+/** "cs" finds Consultation by its abbreviation, "bilan" by its name. */
+export const actMatches = (act: Act, search: string) => {
+	const q = fold(search.trim());
+	return !q || fold(act.name).includes(q) || !!act.abbreviation && fold(act.abbreviation).includes(q);
+};
+
 export type Movement = {
 	id: string;
 	kind: "payment" | "refund";

@@ -16,7 +16,6 @@ import {
 	LuX,
 } from "react-icons/lu";
 import { toast } from "sonner";
-import { ActPicker } from "@/components/act-picker";
 import { useCurrentUser } from "@/components/current-user";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -36,6 +35,7 @@ import { formatFileNumber } from "@/lib/patients";
 import {
 	type Account,
 	type Act,
+	actMatches,
 	METHODS,
 	type PaymentMethod,
 	parseMad,
@@ -180,6 +180,8 @@ function CheckoutForm({
 	const [error, setError] = useState<string | null>(null);
 	const [saving, setSaving] = useState(false);
 	const [paid, setPaid] = useState<{ id: string; receiptNumber: string | null; amount: number } | null>(null);
+	const [search, setSearch] = useState("");
+	const [creating, setCreating] = useState(false);
 	const t = useTranslations("payments.checkout");
 	const payments = useTranslations("payments");
 	const format = useFormat();
@@ -282,7 +284,10 @@ function CheckoutForm({
 
 	const locked = account.dayClosed;
 	const methodInfo = METHODS.find((m) => m.value === method)!;
-	const suggestions = acts.filter((a) => !rows.some((r) => r.actId === a.id)).slice(0, 8);
+	// The price list, searched by name or abbreviation; without a search, the first few.
+	const available = acts.filter((a) => !rows.some((r) => r.actId === a.id) && actMatches(a, search));
+	const suggestions = search.trim() ? available : available.slice(0, 8);
+	const hidden = available.length - suggestions.length;
 
 	return (
 		<div className="grid gap-5">
@@ -352,30 +357,69 @@ function CheckoutForm({
 						))}
 					</ul>
 				)}
+				{acts.length > 0 && (
+					<div className="relative">
+						<LuSearch className="text-muted-foreground absolute start-2.5 top-1/2 size-4 -translate-y-1/2" />
+						<Input
+							type="search"
+							value={search}
+							onChange={(e) => setSearch(e.target.value)}
+							onKeyDown={(e) => {
+								// Enter adds the first match, so typing "cs" ⏎ adds the consultation.
+								if (e.key === "Enter" && suggestions[0]) {
+									e.preventDefault();
+									addAct(suggestions[0]);
+									setSearch("");
+								}
+							}}
+							placeholder={t("searchActs")}
+							aria-label={t("searchActs")}
+							className="h-9 ps-8"
+						/>
+					</div>
+				)}
 				<div className="flex flex-wrap gap-1.5">
 					{suggestions.map((a) => (
 						<Button key={a.id} type="button" variant="outline" size="sm" className="h-7 font-normal" onClick={() => addAct(a)}>
 							<LuPlus /> {a.name} <span className="text-muted-foreground tabular-nums">{mad(a.price)}</span>
 						</Button>
 					))}
-					{/* The whole price list, searched by name or abbreviation ("cs"). */}
-					{acts.length > suggestions.length && (
-						<ActPicker acts={acts} onChange={(act) => act && addAct(act)}>
-							<Button type="button" variant="ghost" size="sm" className="h-7 font-normal">
-								<LuSearch /> {t("findAct")}
-							</Button>
-						</ActPicker>
+					{hidden > 0 && (
+						<span className="text-muted-foreground self-center px-1 text-xs">{t("moreActs", { count: hidden })}</span>
 					)}
-					<Button
-						type="button"
-						variant="ghost"
-						size="sm"
-						className="text-muted-foreground h-7 font-normal"
-						onClick={() => setRows((all) => [...all, rowOf({ actId: null, label: "", unitPrice: 0, quantity: 1 })])}
-					>
-						<LuPlus /> {t("freeLine")}
-					</Button>
+					{search.trim() && suggestions.length === 0 && (
+						<span className="text-muted-foreground self-center px-1 text-xs">{t("noMatch")}</span>
+					)}
+					{/* The owner adds a tarif to the price list from here; the others type a free line. */}
+					{owner ? (
+						!creating && (
+							<Button type="button" variant="ghost" size="sm" className="text-primary h-7 font-normal" onClick={() => setCreating(true)}>
+								<LuPlus /> {suggestions.length === 0 && search.trim() ? t("createAct", { name: search.trim() }) : t("newAct")}
+							</Button>
+						)
+					) : (
+						<Button
+							type="button"
+							variant="ghost"
+							size="sm"
+							className="text-muted-foreground h-7 font-normal"
+							onClick={() => setRows((all) => [...all, rowOf({ actId: null, label: "", unitPrice: 0, quantity: 1 })])}
+						>
+							<LuPlus /> {t("freeLine")}
+						</Button>
+					)}
 				</div>
+				{creating && (
+					<NewActForm
+						name={suggestions.length === 0 ? search.trim() : ""}
+						onCancel={() => setCreating(false)}
+						onCreated={(act) => {
+							addAct(act);
+							setSearch("");
+							setCreating(false);
+						}}
+					/>
+				)}
 				{acts.length === 0 && (
 					<p className="text-muted-foreground text-xs">
 						{owner ? t("noActsOwner") : t("noActs")}
@@ -498,6 +542,102 @@ function CheckoutForm({
 				</Footer>
 			)}
 		</div>
+	);
+}
+
+/**
+ * A new tarif straight from the checkout (owner): saved to the price list
+ * (Paramètres › Tarifs), then added to the visit.
+ */
+function NewActForm({
+	name: initialName,
+	onCancel,
+	onCreated,
+}: {
+	name: string;
+	onCancel: () => void;
+	onCreated: (act: Act) => void;
+}) {
+	const queryClient = useQueryClient();
+	const [name, setName] = useState(initialName);
+	const [abbreviation, setAbbreviation] = useState("");
+	const [price, setPrice] = useState("");
+	const [error, setError] = useState<string | null>(null);
+	const [saving, setSaving] = useState(false);
+	const t = useTranslations("payments.checkout");
+
+	const save = async (e: React.FormEvent) => {
+		e.preventDefault();
+		const value = parseMad(price);
+		if (name.trim().length < 2) return setError(t("newActName"));
+		if (value === null) return setError(t("newActPrice"));
+		setSaving(true);
+		setError(null);
+		try {
+			const act = await api<Act>("/acts", {
+				method: "POST",
+				body: JSON.stringify({ name, abbreviation: abbreviation.trim() || null, price: value }),
+			});
+			await queryClient.invalidateQueries({ queryKey: ["acts"] });
+			toast.success(t("newActSaved", { name: act.name }));
+			onCreated(act);
+		} catch (err) {
+			setError(err instanceof Error ? err.message : t("saveError"));
+		} finally {
+			setSaving(false);
+		}
+	};
+
+	return (
+		<form onSubmit={save} className="bg-muted/40 grid gap-2 rounded-lg border p-3">
+			<p className="text-sm font-medium">{t("newAct")}</p>
+			<div className="grid grid-cols-[minmax(0,1fr)_6rem_7rem] gap-2">
+				<Input
+					autoFocus
+					value={name}
+					maxLength={120}
+					placeholder={t("newActNamePlaceholder")}
+					aria-label={t("label")}
+					onChange={(e) => setName(e.target.value)}
+					className="h-9"
+				/>
+				<Input
+					value={abbreviation}
+					maxLength={20}
+					placeholder={t("newActAbbreviation")}
+					aria-label={t("newActAbbreviation")}
+					onChange={(e) => setAbbreviation(e.target.value.toUpperCase())}
+					className="h-9 font-mono"
+				/>
+				<div className="relative">
+					<Input
+						inputMode="decimal"
+						value={price}
+						placeholder="250"
+						aria-label={t("unitPrice")}
+						onChange={(e) => setPrice(e.target.value)}
+						className="h-9 pe-10 text-end tabular-nums"
+					/>
+					<span className="text-muted-foreground pointer-events-none absolute end-2.5 top-1/2 -translate-y-1/2 text-xs">MAD</span>
+				</div>
+			</div>
+			<div className="flex items-center justify-between gap-2">
+				<p className="text-muted-foreground text-xs">{t("newActHint")}</p>
+				<div className="flex gap-2">
+					<Button type="button" variant="ghost" size="sm" onClick={onCancel}>
+						{t("cancelNewAct")}
+					</Button>
+					<Button type="submit" size="sm" disabled={saving}>
+						{saving ? <LuLoader className="animate-spin" /> : <LuPlus />} {t("addNewAct")}
+					</Button>
+				</div>
+			</div>
+			{error && (
+				<p role="alert" className="text-destructive text-xs">
+					{error}
+				</p>
+			)}
+		</form>
 	);
 }
 

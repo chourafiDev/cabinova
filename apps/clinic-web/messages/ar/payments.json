@@ -156,7 +156,19 @@
     "collect": "تحصيل",
     "close": "إغلاق",
     "saveActs": "حفظ الأعمال",
-    "findAct": "البحث عن عمل"
+    "searchActs": "ابحث عن تعريفة (الاسم أو الاختصار)…",
+    "moreActs": "+ {count} أخرى: ابحث عنها",
+    "noMatch": "لا توجد تعريفة مطابقة.",
+    "newAct": "تعريفة جديدة",
+    "createAct": "إنشاء « {name} »",
+    "newActName": "التسمية: حرفان على الأقل.",
+    "newActPrice": "سعر غير صالح (مثال 250 أو 250,50).",
+    "newActSaved": "تمت إضافة « {name} » إلى التعريفات",
+    "newActNamePlaceholder": "التسمية (مثال: استشارة)",
+    "newActAbbreviation": "الاختصار",
+    "newActHint": "تُحفظ في الإعدادات › التعريفات وتُضاف إلى الزيارة.",
+    "cancelNewAct": "إلغاء",
+    "addNewAct": "إضافة"
   },
   "movements": {
     "payments": "المدفوعات",

@@ -156,7 +156,19 @@
     "collect": "Encaisser",
     "close": "Fermer",
     "saveActs": "Enregistrer les actes",
-    "findAct": "Chercher un acte"
+    "searchActs": "Chercher un tarif (nom ou abréviation)…",
+    "moreActs": "+ {count} autres : cherchez-les",
+    "noMatch": "Aucun tarif ne correspond.",
+    "newAct": "Nouveau tarif",
+    "createAct": "Créer « {name} »",
+    "newActName": "Libellé : 2 caractères minimum.",
+    "newActPrice": "Prix invalide (ex. 250 ou 250,50).",
+    "newActSaved": "« {name} » ajouté aux tarifs",
+    "newActNamePlaceholder": "Libellé (ex. Consultation)",
+    "newActAbbreviation": "Abrév.",
+    "newActHint": "Enregistré dans Paramètres › Tarifs et ajouté à la visite.",
+    "cancelNewAct": "Annuler",
+    "addNewAct": "Ajouter"
   },
   "movements": {
     "payments": "Paiements",
