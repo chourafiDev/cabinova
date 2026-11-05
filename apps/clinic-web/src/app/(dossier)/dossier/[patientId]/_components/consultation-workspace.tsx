@@ -2,7 +2,7 @@
 
 import { useQueryClient } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
-import { useCallback, useEffect, useImperativeHandle, useRef, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useImperativeHandle, useRef, useState } from "react";
 import {
 	LuActivity,
 	LuCalendarClock,
@@ -63,21 +63,38 @@ const outOfBounds = (field: VitalField, value: string) => {
 
 export type WorkspaceHandle = { flush: () => Promise<boolean> };
 
+type Draft = {
+	draft: ConsultationDraft;
+	change: (field: NoteField | VitalField, value: string) => void;
+	invalid: VitalField[];
+	previous: PastConsultation | undefined;
+	visit: Visit;
+	phrases: (field: PhraseField) => React.ReactNode;
+	note: (field: NoteField, minHeight: string, placeholder?: string) => React.ReactNode;
+};
+const DraftContext = createContext<Draft | null>(null);
+
+/** What is being written today, for a part of the page that only shows it (null outside a visit). */
+export const useConsultationDraft = () => useContext(DraftContext)?.draft ?? null;
+
 /**
- * Today's consultation, written top to bottom like a paper sheet: motif,
- * constantes, examen, diagnostic, conduite à tenir. Saved as the doctor
- * types; out-of-range constants are flagged, never refused silently.
+ * Today's consultation: one draft, saved as the doctor types, whose parts
+ * (motif, constantes, examen…) the dossier places in its tabs with
+ * ConsultationSections. Out-of-range constants are flagged, never refused
+ * silently.
  */
-export function ConsultationWorkspace({
+export function ConsultationDraft({
 	ref,
 	visit,
 	previous,
 	onSaveState,
+	children,
 }: {
 	ref: React.Ref<WorkspaceHandle>;
 	visit: Visit;
 	previous: PastConsultation | undefined;
 	onSaveState: (state: SaveState) => void;
+	children: React.ReactNode;
 }) {
 	const t = useTranslations("dossier");
 	const queryClient = useQueryClient();
@@ -191,16 +208,32 @@ export function ConsultationWorkspace({
 	);
 
 	return (
-		<div className="grid gap-4">
-			<Section icon={LuMessageSquareText} title={t("sections.complaint")}>
+		<DraftContext value={{ draft, change, invalid, previous, visit, phrases, note }}>{children}</DraftContext>
+	);
+}
+
+export type SectionKey = "complaint" | "vitals" | "examination" | "diagnosis" | "plan" | "nextVisit";
+
+/**
+ * Parts of today's consultation, wherever the page puts them: all read and
+ * write the one draft above, saved as the doctor types. `bare` drops the
+ * card, for a part shown inside a tab that already names it.
+ */
+export function ConsultationSections({ sections, bare }: { sections: SectionKey[]; bare?: boolean }) {
+	const t = useTranslations("dossier");
+	const context = useContext(DraftContext);
+	if (!context) throw new Error("ConsultationSections outside ConsultationDraft");
+	const { draft, change, invalid, previous, visit, phrases, note } = context;
+
+	const parts: Record<SectionKey, React.ReactNode> = {
+		complaint: (
+			<Section key="complaint" bare={bare} icon={LuMessageSquareText} title={t("sections.complaint")}>
 				<div className="grid gap-3">
 					<Labeled label={t("fields.complaint")} htmlFor="consultation-complaint" aside={phrases("complaint")}>
 						{note(
 							"complaint",
 							"min-h-16",
-							visit.appointment.reason
-								? t("placeholders.complaintWithAct", { act: visit.appointment.reason })
-								: undefined,
+							visit.appointment.reason ? t("placeholders.complaintWithAct", { act: visit.appointment.reason }) : undefined,
 						)}
 					</Labeled>
 					<Labeled label={t("fields.history")} htmlFor="consultation-history" aside={phrases("history")}>
@@ -208,48 +241,66 @@ export function ConsultationWorkspace({
 					</Labeled>
 				</div>
 			</Section>
-
+		),
+		vitals: (
 			<Section
+				key="vitals"
+				bare={bare}
 				icon={LuActivity}
 				title={t("sections.vitals")}
 				aside={invalid.length > 0 && <span className="text-destructive text-xs">{t("vitals.checkRed")}</span>}
 			>
 				<Vitals draft={draft} previous={previous} onChange={change} invalid={invalid} />
 			</Section>
-
-			<Section icon={LuScanSearch} title={t("sections.examination")} aside={phrases("examination")}>
+		),
+		examination: (
+			<Section key="examination" bare={bare} icon={LuScanSearch} title={t("sections.examination")} aside={phrases("examination")}>
 				{note("examination", "min-h-32")}
 			</Section>
-
-			<Section icon={LuStethoscope} title={t("sections.diagnosis")} aside={phrases("diagnosis")}>
+		),
+		diagnosis: (
+			<Section key="diagnosis" bare={bare} icon={LuStethoscope} title={t("sections.diagnosis")} aside={phrases("diagnosis")}>
 				{note("diagnosis", "min-h-16")}
 			</Section>
-
-			<Section icon={LuClipboardList} title={t("sections.plan")} aside={phrases("plan")}>
+		),
+		plan: (
+			<Section key="plan" bare={bare} icon={LuClipboardList} title={t("sections.plan")} aside={phrases("plan")}>
 				{note("plan", "min-h-32")}
 			</Section>
-
-			<Section icon={LuCalendarClock} title={t("sections.nextVisit")}>
+		),
+		nextVisit: (
+			<Section key="nextVisit" bare={bare} icon={LuCalendarClock} title={t("sections.nextVisit")}>
 				<div className="grid gap-1.5">
 					{note("nextVisitNote", "min-h-12")}
 					<p className="text-muted-foreground text-xs">{t("nextVisitHint")}</p>
 				</div>
 			</Section>
-		</div>
-	);
+		),
+	};
+	return <div className="grid gap-4">{sections.map((key) => parts[key])}</div>;
 }
 
 function Section({
 	icon: Icon,
 	title,
 	aside,
+	bare,
 	children,
 }: {
 	icon: React.ComponentType<{ className?: string }>;
 	title: string;
 	aside?: React.ReactNode;
+	bare?: boolean;
 	children: React.ReactNode;
 }) {
+	if (bare) {
+		return (
+			<div className="grid gap-2">
+				{aside && <div className="flex justify-end">{aside}</div>}
+				{children}
+			</div>
+		);
+	}
 	return (
 		<section className="bg-card rounded-xl border">
 			<header className="flex items-center gap-2 px-4 pt-4 pb-3">

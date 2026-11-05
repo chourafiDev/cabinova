@@ -118,8 +118,14 @@
     "unit": "En {unit}"
   },
   "tabs": {
-    "consultation": "Consultation",
-    "prescription": "Ordonnance"
+    "prescription": "Ordonnance",
+    "interrogatoire": "Interrogatoire",
+    "examen": "Examen clinique",
+    "certificat": "Certificat",
+    "prix": "Prix consultation",
+    "bilan": "Bilan biologique",
+    "compteRendu": "Compte rendu",
+    "historique": "Historique"
   },
   "prescription": {
     "title": "Ordonnance",
@@ -140,9 +146,48 @@
       "notes": "À prendre au cours des repas, revoir dans 1 mois avec le bilan…"
     }
   },
-  "recorded": {
-    "title": "Constantes relevées",
-    "empty": "Aucune constante relevée par l’équipe.",
-    "count": "{count}"
+  "side": {
+    "summary": "Résumé",
+    "medications": "Médicaments",
+    "patientNote": "Note patient",
+    "todo": "À faire",
+    "permanent": "Note permanente",
+    "nextVisit": "Prochaine visite",
+    "control": "Contrôle",
+    "posology": "Posologie"
+  },
+  "summary": {
+    "visit": "Visite",
+    "act": "Acte",
+    "prescription": "Ordonnance",
+    "lines": "{count, plural, =0 {Aucun médicament} one {# médicament} other {# médicaments}}",
+    "noMedication": "Aucun médicament prescrit pour l’instant."
+  },
+  "latest": {
+    "title": "Dernières constantes",
+    "history": "Historique",
+    "empty": "Aucune constante prise pour l’instant.",
+    "lastOn": "Dernière mesure le {date}",
+    "sheetTitle": "Historique des constantes",
+    "sheetDescription": "{count, plural, one {# mesure} other {# mesures}}, prises par l’équipe ou en consultation.",
+    "source": {
+      "staff": "Équipe",
+      "visit": "Consultation"
+    }
+  },
+  "price": {
+    "title": "Prix de la consultation",
+    "hint": "Choisissez les actes de la visite et encaissez le paiement.",
+    "open": "Encaisser la visite"
+  },
+  "planned": {
+    "title": "Bientôt disponible",
+    "certificat": {
+      "oneDay": "Certificat d’un jour (date)",
+      "period": "Certificat d’une période (nombre de jours, début, fin)",
+      "content": "Contenu du certificat"
+    },
+    "bilan": "Analyses biologiques demandées",
+    "compteRendu": "Compte rendu de la consultation"
   }
 }

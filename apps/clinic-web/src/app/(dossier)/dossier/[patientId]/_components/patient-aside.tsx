@@ -10,25 +10,31 @@ import type { Appointment } from "@/lib/appointments";
 import { formatPhone, type PatientFile, patientHref } from "@/lib/patients";
 import { useFormat } from "@/lib/use-format";
 
-/** Left column: what the doctor checks before writing — antécédents, the next visit, how to reach the patient. */
+/** The antécédents and current treatments, editable by the doctor. */
+export function MedicalCard({ patient }: { patient: PatientFile }) {
+	const t = useTranslations("dossier");
+	const queryClient = useQueryClient();
+	return (
+		<Card icon={LuHeartPulse} title={t("aside.medical")}>
+			<MedicalProfile
+				patientId={patient.id}
+				profile={patient.medicalProfile ?? null}
+				readOnly={false}
+				sex={patient.sex}
+				onSaved={() => void queryClient.invalidateQueries({ queryKey: ["patient", patient.id] })}
+			/>
+		</Card>
+	);
+}
+
+/** Left column: who the patient is — how to reach them, their balance, the next visit. */
 export function PatientAside({ patient, next }: { patient: PatientFile; next: Appointment | undefined }) {
 	const t = useTranslations("dossier");
 	const common = useTranslations("common");
 	const format = useFormat();
-	const queryClient = useQueryClient();
 
 	return (
 		<div className="grid gap-4">
-			<Card icon={LuHeartPulse} title={t("aside.medical")}>
-				<MedicalProfile
-					patientId={patient.id}
-					profile={patient.medicalProfile ?? null}
-					readOnly={false}
-					sex={patient.sex}
-					onSaved={() => void queryClient.invalidateQueries({ queryKey: ["patient", patient.id] })}
-				/>
-			</Card>
-
 			<PatientBalance patientId={patient.id} />
 
 			{next && (

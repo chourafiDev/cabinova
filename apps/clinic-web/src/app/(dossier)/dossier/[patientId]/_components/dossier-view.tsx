@@ -8,12 +8,20 @@ import { useRef, useState } from "react";
 import {
 	LuArrowLeft,
 	LuCalendarClock,
-	LuNotebookPen,
+	LuSignature,
+	LuFileText,
+	LuFlaskConical,
+	LuHistory,
+	LuMessageSquareText,
 	LuPill,
+	LuReceipt,
+	LuScanSearch,
 	LuStethoscope,
 	LuTimer,
 	LuTriangleAlert,
+	LuWallet,
 } from "react-icons/lu";
+import { CheckoutDialog } from "@/app/(clinic)/payments/_components/checkout-dialog";
 import { AppointmentStatusBadge } from "@/components/appointment-status-badge";
 import { NoShowBadge } from "@/components/no-show-badge";
 import { Button } from "@/components/ui/button";
@@ -22,26 +30,28 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { api } from "@/lib/api-client";
 import type { Appointment } from "@/lib/appointments";
 import type { PastConsultation, Visit } from "@/lib/consultations";
-import { toPoint, type VitalSigns, vitalsKey } from "@/lib/vitals";
 import { initials } from "@/lib/format";
 import { ageOf, formatFileNumber, fullName, type PatientFile } from "@/lib/patients";
 import type { PastPrescription, Prescription } from "@/lib/prescriptions";
 import { useFormat } from "@/lib/use-format";
 import { useNow } from "@/lib/use-now";
-import { ConsultationWorkspace, type WorkspaceHandle } from "./consultation-workspace";
+import { toPoint, type VitalSigns, vitalsKey } from "@/lib/vitals";
+import { ConsultationDraft, ConsultationSections, type WorkspaceHandle } from "./consultation-workspace";
 import { FinishButton } from "./finish-button";
 import { HistoryPanel } from "./history-panel";
-import { RecordedVitals } from "./recorded-vitals";
-import { PatientNotes } from "./patient-notes";
+import { Card, MedicalCard, PatientAside } from "./patient-aside";
+import { PermanentNote, VisitReminder } from "./patient-notes";
 import { PrescriptionEditor } from "./prescription-editor";
-import { type Point, TrendsCard } from "./trends-card";
-import { PatientAside } from "./patient-aside";
 import { SaveStatus, type SaveState } from "./save-status";
+import { Medications, Planned, TabBox, VisitSummary } from "./side-panels";
+import type { Point } from "./trends-card";
+import { consultationVitals, LatestVitals, type VitalsEntry } from "./vitals-history";
 
 /**
- * The doctor's page for one patient. Top: who they are and today's visit.
- * Middle: the consultation being written (saved as the doctor types).
- * Around it: the antécédents and contact on the left, past visits on the right.
+ * The doctor's page for one patient, in three parts that each scroll on
+ * their own on a wide screen. Left: who the patient is and their latest
+ * constantes. Centre: today's consultation, tab by tab (saved as the doctor
+ * types). Right: today at a glance and the notes that follow the patient.
  */
 export function DossierView({ patientId, visitId }: { patientId: string; visitId: string | null }) {
 	const t = useTranslations("dossier");
@@ -51,6 +61,7 @@ export function DossierView({ patientId, visitId }: { patientId: string; visitId
 	const prescriptionEditor = useRef<WorkspaceHandle>(null);
 	const [tab, setTab] = useQueryState("onglet", TAB.withOptions({ history: "replace" }));
 	const [saveState, setSaveState] = useState<SaveState>({ status: "idle" });
+	const [checkout, setCheckout] = useState(false);
 
 	const patient = useQuery({
 		queryKey: ["patient", patientId],
@@ -99,6 +110,14 @@ export function DossierView({ patientId, visitId }: { patientId: string; visitId
 		...(current && appointment ? [{ ...current, date: appointment.startsAt }] : []),
 		...(recorded.data ?? []).map(toPoint),
 	].sort((a, b) => a.date.localeCompare(b.date));
+	// Every measurement, newest first: the team's and the consultations'.
+	const measurements: VitalsEntry[] = [
+		...(recorded.data ?? []).map((vitals) => ({ source: "staff" as const, vitals })),
+		...(past ?? []).map((c) => consultationVitals(c, c.date, c.practitioner)),
+		...(current && appointment ? [consultationVitals(current, appointment.startsAt, appointment.practitioner.name)] : []),
+	]
+		.filter((e) => e !== null)
+		.sort((a, b) => b.vitals.measuredAt.localeCompare(a.vitals.measuredAt));
 	const next = appointments.data
 		?.filter((a) => a.id !== visitId && new Date(a.startsAt) > new Date() && ["scheduled", "confirmed"].includes(a.status))
 		.at(-1);
@@ -114,10 +133,153 @@ export function DossierView({ patientId, visitId }: { patientId: string; visitId
 		);
 	}
 
+	const ready = !!visitId && !!visit.data && !prescription.isPending && !prescription.isError;
+	/** What needs today's visit: shown once it is loaded, or why it can't be. */
+	const withVisit = (content: React.ReactNode, compact?: boolean) =>
+		ready ? (
+			content
+		) : !visitId ? (
+			compact ? (
+				<p className="text-muted-foreground text-xs">{t("noVisit")}</p>
+			) : (
+				<NoVisit />
+			)
+		) : visit.isPending || prescription.isPending ? (
+			<Skeleton className={compact ? "h-16" : "h-40 rounded-xl"} />
+		) : (
+			<p className="text-destructive text-sm">{t("visitError")}</p>
+		);
+
+	const tabs: { value: Tab; icon: React.ComponentType; label: string; badge?: number }[] = [
+		{ value: "interrogatoire", icon: LuMessageSquareText, label: t("tabs.interrogatoire") },
+		{ value: "examen", icon: LuScanSearch, label: t("tabs.examen") },
+		{ value: "certificat", icon: LuSignature, label: t("tabs.certificat") },
+		{ value: "prix", icon: LuReceipt, label: t("tabs.prix") },
+		{ value: "ordonnance", icon: LuPill, label: t("tabs.prescription"), badge: lines },
+		{ value: "bilan", icon: LuFlaskConical, label: t("tabs.bilan") },
+		{ value: "compte-rendu", icon: LuFileText, label: t("tabs.compteRendu") },
+		{ value: "historique", icon: LuHistory, label: t("tabs.historique") },
+	];
+
+	const page = (
+		<main className="mx-auto grid w-full max-w-[1700px] grid-cols-1 gap-4 px-4 xl:min-h-0 xl:flex-1 xl:grid-cols-[300px_minmax(0,1fr)_380px]">
+			<div className="order-3 grid grid-cols-1 content-start gap-4 pb-4 xl:order-1 xl:overflow-y-auto xl:py-4">
+				{p && <PatientAside patient={p} next={next} />}
+				<LatestVitals entries={measurements} points={points} loading={recorded.isPending || history.isPending} />
+			</div>
+
+			<section className="order-1 min-w-0 xl:order-2 xl:overflow-y-auto" aria-label={t("consultation")}>
+				<Tabs value={tab} onValueChange={(v) => void setTab(v as Tab)} className="gap-4 pb-4">
+					{/* The tabs stay at the top while the consultation scrolls under them. */}
+					<div className="bg-background sticky top-0 z-10 overflow-x-auto pt-4">
+						<TabsList variant="line" className="w-full min-w-max justify-start border-b">
+							{tabs.map(({ value, icon: Icon, label, badge }) => (
+								<TabsTrigger key={value} value={value} className="flex-none px-3">
+									<Icon /> {label}
+									{!!badge && (
+										<span className="bg-primary/12 text-primary rounded px-1.5 text-xs tabular-nums">{badge}</span>
+									)}
+								</TabsTrigger>
+							))}
+						</TabsList>
+					</div>
+
+					<TabsContent value="interrogatoire" className="grid gap-4">
+						{withVisit(<ConsultationSections sections={["complaint"]} />)}
+						{p && <MedicalCard patient={p} />}
+					</TabsContent>
+					<TabsContent value="examen">
+						{withVisit(<ConsultationSections sections={["vitals", "examination", "diagnosis"]} />)}
+					</TabsContent>
+					<TabsContent value="certificat">
+						<Planned fields={[t("planned.certificat.oneDay"), t("planned.certificat.period"), t("planned.certificat.content")]} />
+					</TabsContent>
+					<TabsContent value="prix">
+						{withVisit(
+							<Card icon={LuReceipt} title={t("price.title")}>
+								<p className="text-muted-foreground text-sm">{t("price.hint")}</p>
+								<Button className="w-fit" onClick={() => setCheckout(true)}>
+									<LuWallet /> {t("price.open")}
+								</Button>
+							</Card>,
+						)}
+					</TabsContent>
+					{/* Kept mounted: switching tabs never loses the medications being typed. */}
+					<TabsContent value="ordonnance" forceMount className="data-[state=inactive]:hidden">
+						{withVisit(
+							visit.data && (
+								<PrescriptionEditor
+									ref={prescriptionEditor}
+									key={visit.data.appointment.id}
+									appointmentId={visit.data.appointment.id}
+									prescription={prescription.data ?? null}
+									previous={pastPrescriptions?.[0]}
+									onSaveState={setSaveState}
+								/>
+							),
+						)}
+					</TabsContent>
+					<TabsContent value="bilan">
+						<Planned fields={[t("planned.bilan")]} />
+					</TabsContent>
+					<TabsContent value="compte-rendu">
+						<Planned fields={[t("planned.compteRendu")]} />
+					</TabsContent>
+					<TabsContent value="historique">
+						<HistoryPanel consultations={past} prescriptions={pastPrescriptions} loading={history.isPending} />
+					</TabsContent>
+				</Tabs>
+			</section>
+
+			<aside className="order-2 grid grid-cols-1 content-start gap-4 pb-4 xl:order-3 xl:overflow-y-auto xl:py-4">
+				<TabBox
+					tabs={[
+						{
+							value: "summary",
+							label: t("side.summary"),
+							content: withVisit(
+								appointment && <VisitSummary appointment={appointment} prescription={prescription.data ?? null} />,
+								true,
+							),
+						},
+						{
+							value: "medications",
+							label: t("side.medications"),
+							content: withVisit(<Medications prescription={prescription.data ?? null} />, true),
+						},
+						{ value: "patientNote", label: t("side.patientNote"), content: <Planned fields={[]} /> },
+						{
+							value: "todo",
+							label: t("side.todo"),
+							content: withVisit(<ConsultationSections sections={["plan"]} bare />, true),
+						},
+					]}
+				/>
+				<TabBox
+					tabs={[
+						{ value: "permanent", label: t("side.permanent"), content: p && <PermanentNote patient={p} /> },
+						{
+							value: "nextVisit",
+							label: t("side.nextVisit"),
+							content: (
+								<div className="grid gap-3">
+									<VisitReminder last={visitId ? past?.[0] : undefined} />
+									{withVisit(<ConsultationSections sections={["nextVisit"]} bare />, true)}
+								</div>
+							),
+						},
+						{ value: "control", label: t("side.control"), content: <Planned fields={[]} /> },
+						{ value: "posology", label: t("side.posology"), content: <Planned fields={[]} /> },
+					]}
+				/>
+			</aside>
+		</main>
+	);
+
 	return (
-		<div className="flex min-h-svh flex-col">
-			<header className="bg-background/95 supports-[backdrop-filter]:bg-background/80 sticky top-0 z-20 border-b backdrop-blur">
-				<div className="mx-auto flex max-w-[1600px] flex-wrap items-center gap-x-4 gap-y-3 px-4 py-3">
+		<div className="flex min-h-svh flex-col xl:h-svh xl:overflow-hidden">
+			<header className="bg-background/95 supports-[backdrop-filter]:bg-background/80 sticky top-0 z-20 shrink-0 border-b backdrop-blur">
+				<div className="mx-auto flex max-w-[1700px] flex-wrap items-center gap-x-4 gap-y-3 px-4 py-3">
 					<Button asChild variant="ghost" size="sm" className="-ms-2">
 						<Link href="/appointments">
 							<LuArrowLeft className="rtl:-scale-x-100" /> {t("back")}
@@ -188,7 +350,7 @@ export function DossierView({ patientId, visitId }: { patientId: string; visitId
 
 				{allergies && (
 					<div className="border-t border-red-200 bg-red-50 text-red-900">
-						<p className="mx-auto flex max-w-[1600px] items-start gap-2 px-4 py-2 text-sm">
+						<p className="mx-auto flex max-w-[1700px] items-start gap-2 px-4 py-2 text-sm">
 							<LuTriangleAlert className="mt-0.5 size-4 shrink-0" />
 							<span>
 								<span className="font-semibold">{t("allergies")} </span>
@@ -199,74 +361,39 @@ export function DossierView({ patientId, visitId }: { patientId: string; visitId
 				)}
 			</header>
 
-			<main className="mx-auto grid w-full max-w-[1600px] flex-1 items-start gap-4 p-4 lg:grid-cols-[minmax(0,1fr)_340px] xl:grid-cols-[300px_minmax(0,1fr)_340px]">
-				<div className="order-2 hidden xl:order-1 xl:block">
-					{p && <PatientAside patient={p} next={next} />}
-				</div>
-
-				<section className="order-1 grid min-w-0 gap-4 xl:order-2" aria-label={t("consultation")}>
-					{p && <PatientNotes patient={p} last={visitId ? past?.[0] : undefined} />}
-					{!visitId ? (
-						<NoVisit />
-					) : visit.isPending || prescription.isPending ? (
-						<div className="grid gap-4">
-							<Skeleton className="h-40 rounded-xl" />
-							<Skeleton className="h-32 rounded-xl" />
-							<Skeleton className="h-56 rounded-xl" />
-						</div>
-					) : visit.isError || !visit.data || prescription.isError ? (
-						<p className="text-destructive text-sm">{t("visitError")}</p>
-					) : (
-						// Both stay mounted: switching tabs never loses what's being typed.
-						<Tabs value={tab} onValueChange={(v) => void setTab(v as Tab)} className="gap-4">
-							<TabsList className="w-full sm:w-fit">
-								<TabsTrigger value="consultation" className="sm:px-4">
-									<LuNotebookPen /> {t("tabs.consultation")}
-								</TabsTrigger>
-								<TabsTrigger value="ordonnance" className="sm:px-4">
-									<LuPill /> {t("tabs.prescription")}
-									{lines > 0 && (
-										<span className="bg-primary/12 text-primary rounded px-1.5 text-xs tabular-nums">{lines}</span>
-									)}
-								</TabsTrigger>
-							</TabsList>
-							<TabsContent value="consultation" forceMount className="data-[state=inactive]:hidden">
-								<ConsultationWorkspace
-									ref={workspace}
-									key={visit.data.appointment.id}
-									visit={visit.data}
-									previous={history.data?.find((c) => c.appointmentId !== visitId)}
-									onSaveState={setSaveState}
-								/>
-							</TabsContent>
-							<TabsContent value="ordonnance" forceMount className="data-[state=inactive]:hidden">
-								<PrescriptionEditor
-									ref={prescriptionEditor}
-									key={visit.data.appointment.id}
-									appointmentId={visit.data.appointment.id}
-									prescription={prescription.data ?? null}
-									previous={pastPrescriptions?.[0]}
-									onSaveState={setSaveState}
-								/>
-							</TabsContent>
-						</Tabs>
-					)}
-					{/* Below xl the left column moves under the consultation. */}
-					<div className="xl:hidden">{p && <PatientAside patient={p} next={next} />}</div>
-				</section>
-
-				<aside className="order-3 grid min-w-0 gap-4">
-					<TrendsCard points={points} />
-					<RecordedVitals vitals={recorded.data} loading={recorded.isPending} />
-					<HistoryPanel consultations={past} prescriptions={pastPrescriptions} loading={history.isPending} />
-				</aside>
-			</main>
+			{ready && visit.data ? (
+				// One draft for every part of today's consultation, wherever the tabs put it.
+				<ConsultationDraft
+					ref={workspace}
+					key={visit.data.appointment.id}
+					visit={visit.data}
+					previous={history.data?.find((c) => c.appointmentId !== visitId)}
+					onSaveState={setSaveState}
+				>
+					{page}
+				</ConsultationDraft>
+			) : (
+				page
+			)}
+			{appointment && (
+				<CheckoutDialog appointmentId={checkout ? appointment.id : null} onOpenChange={(open) => !open && setCheckout(false)} />
+			)}
 		</div>
 	);
 }
 
-const TAB = parseAsStringLiteral(["consultation", "ordonnance"] as const).withDefault("consultation");
-type Tab = "consultation" | "ordonnance";
+const TABS = [
+	"interrogatoire",
+	"examen",
+	"certificat",
+	"prix",
+	"ordonnance",
+	"bilan",
+	"compte-rendu",
+	"historique",
+] as const;
+const TAB = parseAsStringLiteral(TABS).withDefault("interrogatoire");
+type Tab = (typeof TABS)[number];
 
 /** Opened outside a visit (from the patient's file): nothing to write, the history is beside. */
 function NoVisit() {

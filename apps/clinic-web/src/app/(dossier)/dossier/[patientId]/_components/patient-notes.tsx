@@ -12,14 +12,26 @@ import type { PastConsultation } from "@/lib/consultations";
 import type { PatientFile } from "@/lib/patients";
 import { useFormat } from "@/lib/use-format";
 
-/**
- * Above the consultation, what the doctor must not miss: the patient's
- * permanent note ("malentendant, parler fort"), and what the last visit
- * asked to check today ("contrôler la TA").
- */
-export function PatientNotes({ patient, last }: { patient: PatientFile; last: PastConsultation | undefined }) {
+/** What the last visit asked to check today ("contrôler la TA"). */
+export function VisitReminder({ last }: { last: PastConsultation | undefined }) {
 	const t = useTranslations("dossier.notes");
 	const fmt = useFormat();
+	const reminder = last?.nextVisitNote;
+	if (!reminder) return null;
+	return (
+		<div className="flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-amber-900">
+			<LuBellRing className="mt-0.5 size-4 shrink-0" />
+			<div className="min-w-0 text-sm">
+				<p className="font-semibold">{t("reminder", { date: fmt.date(last.date) })}</p>
+				<p className="whitespace-pre-line">{reminder}</p>
+			</div>
+		</div>
+	);
+}
+
+/** The patient's permanent note ("malentendant, parler fort"), shown at every visit. */
+export function PermanentNote({ patient }: { patient: PatientFile }) {
+	const t = useTranslations("dossier.notes");
 	const queryClient = useQueryClient();
 	const permanent = patient.medicalProfile?.permanentNote ?? null;
 	const [editing, setEditing] = useState(false);
@@ -56,20 +68,8 @@ export function PatientNotes({ patient, last }: { patient: PatientFile; last: Pa
 		}
 	}
 
-	const reminder = last?.nextVisitNote;
-
 	return (
 		<div className="grid gap-2">
-			{reminder && (
-				<div className="flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-amber-900">
-					<LuBellRing className="mt-0.5 size-4 shrink-0" />
-					<div className="min-w-0 text-sm">
-						<p className="font-semibold">{t("reminder", { date: fmt.date(last.date) })}</p>
-						<p className="whitespace-pre-line">{reminder}</p>
-					</div>
-				</div>
-			)}
-
 			{editing ? (
 				<div className="bg-card grid gap-2 rounded-xl border p-3">
 					<label htmlFor="permanent-note" className="flex items-center gap-1.5 text-xs font-medium">
