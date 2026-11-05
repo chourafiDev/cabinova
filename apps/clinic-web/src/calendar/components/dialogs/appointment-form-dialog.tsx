@@ -31,11 +31,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { ApiError, api } from "@/lib/api-client";
 import { APPOINTMENTS_KEY, DURATIONS } from "@/lib/appointments";
+import { ActPicker } from "@/components/act-picker";
 import type { Act } from "@/lib/payments";
 import { useFormat } from "@/lib/use-format";
-
-/** The select's "Aucun" (Radix wants a non-empty value). */
-const NO_REASON = "__none";
 
 const schemaOf = (
 	t: (key: "choosePatient" | "choosePractitioner" | "dateRequired" | "timeRequired" | "chooseReason") => string,
@@ -286,39 +284,19 @@ export function AppointmentFormDialog({
 							<Controller
 								control={form.control}
 								name="reason"
-								render={({ field }) => {
-									const list = acts.data ?? [];
-									// A motif typed before tarifs were used stays selectable.
-									const kept = field.value && !list.some((a) => a.name === field.value) ? field.value : null;
-									const empty = list.length === 0 && !kept;
-									return (
-										<Select
-											value={field.value || (reasonRequired ? "" : NO_REASON)}
-											onValueChange={(v) => field.onChange(v === NO_REASON ? "" : v)}
-											disabled={acts.isPending || empty}
-										>
-											<SelectTrigger id="appointment-reason" className="w-full" aria-invalid={!!errors.reason}>
-												<SelectValue placeholder={t("reasonPlaceholder")} />
-											</SelectTrigger>
-											<SelectContent>
-												{!reasonRequired && (
-													<SelectItem value={NO_REASON}>
-														<span className="text-muted-foreground">{t("noReason")}</span>
-													</SelectItem>
-												)}
-												{kept && <SelectItem value={kept}>{kept}</SelectItem>}
-												{list.map((act) => (
-													<SelectItem key={act.id} value={act.name} className="[&>span:last-child]:flex-1">
-														<span className="flex w-full items-center justify-between gap-3">
-															<span className="truncate">{act.name}</span>
-															<span className="text-muted-foreground tabular-nums">{format.mad(act.price)}</span>
-														</span>
-													</SelectItem>
-												))}
-											</SelectContent>
-										</Select>
-									);
-								}}
+								render={({ field }) => (
+									// A motif typed before tarifs were used stays shown as it is.
+									<ActPicker
+										id="appointment-reason"
+										acts={acts.data ?? []}
+										value={field.value}
+										onChange={(act) => field.onChange(act?.name ?? "")}
+										none={reasonRequired ? undefined : t("noReason")}
+										placeholder={t("reasonPlaceholder")}
+										invalid={!!errors.reason}
+										disabled={acts.isPending || (acts.data?.length === 0 && !field.value)}
+									/>
+								)}
 							/>
 							{acts.isSuccess && acts.data.length === 0 && (
 								<p className="text-muted-foreground text-xs">{t("noActs")}</p>

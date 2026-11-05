@@ -79,6 +79,7 @@ describe('clinic: getting-started checklist', () => {
         practitionerId: me.user.id,
         startsAt: `${MONDAY}T10:00:00+00:00`,
         endsAt: `${MONDAY}T10:30:00+00:00`,
+        reason: 'Consultation',
       })
       .expect(201);
     expect(await steps()).toEqual({

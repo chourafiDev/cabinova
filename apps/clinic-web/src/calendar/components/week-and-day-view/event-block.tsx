@@ -12,6 +12,7 @@ import { cn } from "@/lib/utils";
 import type { HTMLAttributes } from "react";
 import type { IEvent } from "@/calendar/interfaces";
 import type { VariantProps } from "class-variance-authority";
+import { Abbreviation } from "@/components/act-picker";
 
 const calendarWeekEventCardVariants = cva(
   "flex select-none flex-col gap-0.5 truncate whitespace-nowrap rounded-md border px-2 py-1.5 text-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
@@ -77,6 +78,7 @@ export function EventBlock({ event, className }: IProps) {
               </svg>
             )}
 
+            {event.reasonShort && <Abbreviation className="bg-background/60 text-current">{event.reasonShort}</Abbreviation>}
             <p dir="auto" className="truncate font-semibold">{event.title}</p>
           </div>
 

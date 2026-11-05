@@ -162,6 +162,13 @@
       "when": 1793880661485,
       "tag": "0022_vital_signs",
       "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "7",
+      "when": 1793898991258,
+      "tag": "0023_act_abbreviation",
+      "breakpoints": true
     }
   ]
 }

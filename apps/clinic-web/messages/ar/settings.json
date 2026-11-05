@@ -76,7 +76,22 @@
     "added": "تمت إضافة «{name}»",
     "namePlaceholder": "مثال: استشارة",
     "nameLabel": "اسم العمل",
-    "priceLabel": "السعر بالدرهم"
+    "priceLabel": "السعر بالدرهم",
+    "search": "بحث (الاسم أو الاختصار)",
+    "noMatch": "لا يوجد عمل مطابق.",
+    "columns": {
+      "name": "التسمية",
+      "abbreviation": "الاختصار",
+      "price": "المبلغ",
+      "actions": "الإجراءات"
+    },
+    "abbreviationPlaceholder": "مثال CS",
+    "abbreviationLabel": "الاختصار",
+    "delete": "حذف",
+    "deleteLabel": "حذف {name}",
+    "confirmDelete": "حذف؟",
+    "deletedDone": "تم حذف « {name} »",
+    "keptArchived": "سبق تحصيل « {name} »: تمت أرشفته للحفاظ على السجل."
   },
   "activity": {
     "title": "سجل النشاط",
@@ -124,6 +139,7 @@
       "act_update": "عدّل العمل",
       "act_archive": "أرشف العمل",
       "act_restore": "استعاد العمل",
+      "act_delete": "حذف العمل",
       "team_invite": "دعا",
       "team_joined": "انضم إلى الفريق",
       "team_update": "عدّل دور أو فضاءات",

@@ -43,6 +43,8 @@ export type Appointment = {
 	endsAt: string;
 	status: AppointmentStatus;
 	reason: string | null;
+	/** The act's abbreviation (Paramètres › Tarifs), when the reason is one of them. */
+	reasonShort: string | null;
 	notes: string | null;
 	/** Checked in at the front desk (waiting room order). */
 	arrivedAt: string | null;
@@ -97,6 +99,7 @@ export const toEvent = (a: Appointment): IEvent => ({
 	status: a.status,
 	patient: a.patient,
 	reason: a.reason,
+	reasonShort: a.reasonShort,
 	notes: a.notes,
 });
 

@@ -12,6 +12,7 @@ import { cn } from "@/lib/utils";
 
 import type { IEvent } from "@/calendar/interfaces";
 import type { VariantProps } from "class-variance-authority";
+import { Abbreviation } from "@/components/act-picker";
 
 const eventBadgeVariants = cva(
   "mx-1 flex size-auto h-6.5 select-none items-center justify-between gap-1.5 truncate whitespace-nowrap rounded-md border px-2 text-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
@@ -107,6 +108,9 @@ export function MonthEventBadge({ event, cellDate, eventCurrentDay, eventTotalDa
               </svg>
             )}
 
+            {renderBadgeText && event.reasonShort && (
+              <Abbreviation className="bg-background/60 text-current">{event.reasonShort}</Abbreviation>
+            )}
             {renderBadgeText && (
               <p className="flex-1 truncate font-semibold">
                 {eventCurrentDay && (

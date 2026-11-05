@@ -76,7 +76,22 @@
     "added": "« {name} » ajouté",
     "namePlaceholder": "Ex. Consultation",
     "nameLabel": "Nom de l’acte",
-    "priceLabel": "Prix en MAD"
+    "priceLabel": "Prix en MAD",
+    "search": "Rechercher (libellé ou abréviation)",
+    "noMatch": "Aucun acte ne correspond.",
+    "columns": {
+      "name": "Libellé",
+      "abbreviation": "Abrév.",
+      "price": "Montant",
+      "actions": "Actions"
+    },
+    "abbreviationPlaceholder": "Ex. CS",
+    "abbreviationLabel": "Abréviation",
+    "delete": "Supprimer",
+    "deleteLabel": "Supprimer {name}",
+    "confirmDelete": "Supprimer ?",
+    "deletedDone": "« {name} » supprimé",
+    "keptArchived": "« {name} » a déjà été encaissé : il est archivé pour garder l’historique."
   },
   "activity": {
     "title": "Journal d’activité",
@@ -124,6 +139,7 @@
       "act_update": "a modifié l’acte",
       "act_archive": "a archivé l’acte",
       "act_restore": "a restauré l’acte",
+      "act_delete": "a supprimé l’acte",
       "team_invite": "a invité",
       "team_joined": "a rejoint l’équipe",
       "team_update": "a modifié le rôle ou les espaces de",

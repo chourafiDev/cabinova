@@ -564,6 +564,8 @@ export const acts = pgTable(
   {
     id: uuid('id').primaryKey().defaultRandom(),
     name: text('name').notNull(),
+    /** Short code ("CS", "CTR", "BL+CG"), shown on the agenda and searched by. */
+    abbreviation: text('abbreviation'),
     price: integer('price').notNull(),
     /** Archived acts stay on past visits but are no longer offered. */
     active: boolean('active').notNull().default(true),

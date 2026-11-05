@@ -70,6 +70,7 @@ describe('clinic: payments', () => {
         practitionerId: me.user.id,
         startsAt: todayAt('10:00'),
         endsAt: todayAt('10:30'),
+        reason: 'Consultation',
       })
       .expect(201);
     appointmentId = appointment.id;
@@ -165,6 +166,42 @@ describe('clinic: payments', () => {
       balance: 0,
     });
     expect(desk.closed).toBeNull();
+  });
+
+  it('abbreviates acts; deletes one never charged, archives one that was', async () => {
+    const { body: edited } = await cab(owner)
+      .put(`/acts/${consultation.id}`)
+      .send({ name: consultation.name, abbreviation: ' CS ', price: consultation.price })
+      .expect(200);
+    expect(edited.abbreviation).toBe('CS');
+    // The agenda shows the act's abbreviation (the appointment keeps its name).
+    const { body: list } = await cab()
+      .get('/appointments')
+      .query({ patientId })
+      .expect(200);
+    expect(list.find((a: { id: string }) => a.id === appointmentId)).toMatchObject({
+      reason: 'Consultation',
+      reasonShort: 'CS',
+    });
+
+    const { body: control } = await cab(owner)
+      .post('/acts')
+      .send({ name: 'Contrôle', abbreviation: 'CTR', price: 0 })
+      .expect(201);
+    expect(control.abbreviation).toBe('CTR');
+    await cab().delete(`/acts/${control.id}`).expect(403);
+    expect(
+      (await cab(owner).delete(`/acts/${control.id}`).expect(200)).body,
+    ).toEqual({ deleted: true });
+    // ECG was charged on the visit: archived, so the visit and receipt keep it.
+    const { body: kept } = await cab(owner)
+      .delete(`/acts/${ecg.id}`)
+      .expect(200);
+    expect(kept).toMatchObject({ deleted: false, act: { id: ecg.id, active: false } });
+    await cab(owner).post(`/acts/${ecg.id}/restore`).expect(200);
+    await cab(owner)
+      .delete('/acts/00000000-0000-4000-8000-000000000000')
+      .expect(404);
   });
 
   it('cancels a mistake and refunds, with a reason; totals are the owner’s', async () => {

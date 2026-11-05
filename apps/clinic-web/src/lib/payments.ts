@@ -24,7 +24,8 @@ export const HISTORY_PRESETS = [
 export type HistoryPreset = (typeof HISTORY_PRESETS)[number]["key"];
 
 /** A price-list act (GET /acts). */
-export type Act = { id: string; name: string; price: number; active: boolean };
+/** A price-list act; `abbreviation` ("CS", "CTR") shows on the agenda and is searched by. */
+export type Act = { id: string; name: string; abbreviation: string | null; price: number; active: boolean };
 
 export type Movement = {
 	id: string;

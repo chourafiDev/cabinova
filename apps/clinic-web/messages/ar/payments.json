@@ -155,7 +155,8 @@
     "saveOnly": "حفظ دون تحصيل",
     "collect": "تحصيل",
     "close": "إغلاق",
-    "saveActs": "حفظ الأعمال"
+    "saveActs": "حفظ الأعمال",
+    "findAct": "البحث عن عمل"
   },
   "movements": {
     "payments": "المدفوعات",

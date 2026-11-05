@@ -13,6 +13,7 @@ import { EventDetailsTrigger } from "@/calendar/components/dialogs/event-details
 
 import type { IEvent } from "@/calendar/interfaces";
 import type { VariantProps } from "class-variance-authority";
+import { Abbreviation } from "@/components/act-picker";
 
 const agendaEventCardVariants = cva(
   "flex select-none items-center justify-between gap-3 rounded-md border p-3 text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
@@ -79,6 +80,7 @@ export function AgendaEventCard({ event, eventCurrentDay, eventTotalDays }: IPro
               </svg>
             )}
 
+            {event.reasonShort && <Abbreviation className="bg-background/60 text-current">{event.reasonShort}</Abbreviation>}
             <p className="font-medium">
               {eventCurrentDay && eventTotalDays && (
                 <span className="me-1 text-xs">

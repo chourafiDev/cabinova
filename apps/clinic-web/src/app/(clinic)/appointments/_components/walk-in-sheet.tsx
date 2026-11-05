@@ -22,6 +22,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { api } from "@/lib/api-client";
 import { type Appointment, APPOINTMENTS_KEY, type Practitioner, patchAppointment } from "@/lib/appointments";
 import { EMPTY_PATIENT } from "@/lib/patients";
+import { ActPicker } from "@/components/act-picker";
 import type { Act } from "@/lib/payments";
 import { useFormat } from "@/lib/use-format";
 import { useWaitingActions } from "@/lib/use-waiting-actions";
@@ -245,28 +246,18 @@ function WalkInForm({ practitioners, onDone }: { practitioners: Practitioner[]; 
 
 						<Field data-invalid={!!errors.reason}>
 							<FieldLabel htmlFor="walk-in-reason">{form("reason")}</FieldLabel>
-							<Select
+							<ActPicker
+								id="walk-in-reason"
+								acts={acts.data ?? []}
 								value={reason}
-								onValueChange={(v) => {
-									setReason(v);
+								onChange={(act) => {
+									setReason(act?.name ?? "");
 									setErrors((e) => ({ ...e, reason: undefined }));
 								}}
+								placeholder={form("reasonPlaceholder")}
+								invalid={!!errors.reason}
 								disabled={acts.isPending || acts.data?.length === 0}
-							>
-								<SelectTrigger id="walk-in-reason" className="w-full" aria-invalid={!!errors.reason}>
-									<SelectValue placeholder={form("reasonPlaceholder")} />
-								</SelectTrigger>
-								<SelectContent>
-									{(acts.data ?? []).map((act) => (
-										<SelectItem key={act.id} value={act.name} className="[&>span:last-child]:flex-1">
-											<span className="flex w-full items-center justify-between gap-3">
-												<span className="truncate">{act.name}</span>
-												<span className="text-muted-foreground tabular-nums">{fmt.mad(act.price)}</span>
-											</span>
-										</SelectItem>
-									))}
-								</SelectContent>
-							</Select>
+							/>
 							{acts.isSuccess && acts.data.length === 0 && (
 								<p className="text-muted-foreground text-xs">{form("noActs")}</p>
 							)}

@@ -29,6 +29,8 @@ export interface IEvent {
     noShows?: number;
   };
   reason: string | null;
+  /** The act's short code ("CS"), shown before the patient on the cards. */
+  reasonShort?: string | null;
   notes: string | null;
 }
 

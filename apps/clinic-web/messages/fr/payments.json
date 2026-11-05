@@ -155,7 +155,8 @@
     "saveOnly": "Enregistrer sans encaisser",
     "collect": "Encaisser",
     "close": "Fermer",
-    "saveActs": "Enregistrer les actes"
+    "saveActs": "Enregistrer les actes",
+    "findAct": "Chercher un acte"
   },
   "movements": {
     "payments": "Paiements",

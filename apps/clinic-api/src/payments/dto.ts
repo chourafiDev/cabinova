@@ -41,6 +41,13 @@ export class ActDto {
   @MaxLength(120)
   name: string;
 
+  /** "CS", "CTR"… empty clears it. */
+  @clean()
+  @IsOptional()
+  @IsString()
+  @MaxLength(20)
+  abbreviation?: string | null;
+
   @IsInt()
   @Min(0)
   @Max(MAX_AMOUNT)

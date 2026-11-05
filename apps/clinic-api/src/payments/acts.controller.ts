@@ -2,6 +2,7 @@ import {
   Body,
   ConflictException,
   Controller,
+  Delete,
   Get,
   HttpCode,
   NotFoundException,
@@ -20,11 +21,12 @@ import { Clinic } from '../tenancy/decorators.js';
 import type { ClinicContext } from '../tenancy/tenancy.service.js';
 import { ActDto, ActsQuery } from './dto.js';
 
-const COLUMNS = 'id, name, price, active';
+const COLUMNS = 'id, name, abbreviation, price, active';
 
 /**
  * Tarifs: the cabinet's acts and prices. Everyone reads the active ones
- * (checkout); the owner edits them. An act in use is archived, never deleted.
+ * (checkout); the owner edits them. An act already charged on a visit is
+ * archived, never deleted.
  */
 @Controller('acts')
 export class ActsController {
@@ -53,8 +55,8 @@ export class ActsController {
     return unique(() =>
       db
         .query(
-          `insert into acts (name, price) values ($1, $2) returning ${COLUMNS}`,
-          [dto.name, dto.price],
+          `insert into acts (name, abbreviation, price) values ($1, $2, $3) returning ${COLUMNS}`,
+          [dto.name, dto.abbreviation ?? null, dto.price],
         )
         .then((r) => r.rows[0]),
     );
@@ -73,9 +75,9 @@ export class ActsController {
     return unique(() =>
       setOne(
         db,
-        `update acts set name = $2, price = $3, updated_at = now() where id = $1
-         returning ${COLUMNS}`,
-        [id, dto.name, dto.price],
+        `update acts set name = $2, abbreviation = $3, price = $4, updated_at = now()
+          where id = $1 returning ${COLUMNS}`,
+        [id, dto.name, dto.abbreviation ?? null, dto.price],
       ),
     );
   }
@@ -94,6 +96,33 @@ export class ActsController {
       `update acts set active = false, updated_at = now() where id = $1 returning ${COLUMNS}`,
       [id],
     );
+  }
+
+  /**
+   * Deleted for good when no visit was charged with it; otherwise archived,
+   * so past visits and receipts keep their act.
+   */
+  @Activity('act.delete', 'act')
+  @Delete(':id')
+  async remove(
+    @Clinic() { db }: ClinicContext,
+    @CurrentUser() user: ClinicUser,
+    @Param('id', ParseUUIDPipe) id: string,
+  ) {
+    assertOwner(user);
+    const { rows } = await db.query(
+      `delete from acts where id = $1
+          and not exists (select 1 from charge_items where act_id = $1)
+        returning id`,
+      [id],
+    );
+    if (rows[0]) return { deleted: true };
+    const act = await setOne(
+      db,
+      `update acts set active = false, updated_at = now() where id = $1 returning ${COLUMNS}`,
+      [id],
+    );
+    return { deleted: false, act };
   }
 
   @Activity('act.restore', 'act')

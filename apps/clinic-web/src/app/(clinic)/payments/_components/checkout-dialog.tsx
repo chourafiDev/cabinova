@@ -11,10 +11,12 @@ import {
 	LuPlus,
 	LuPrinter,
 	LuReceipt,
+	LuSearch,
 	LuUndo2,
 	LuX,
 } from "react-icons/lu";
 import { toast } from "sonner";
+import { ActPicker } from "@/components/act-picker";
 import { useCurrentUser } from "@/components/current-user";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -356,6 +358,14 @@ function CheckoutForm({
 							<LuPlus /> {a.name} <span className="text-muted-foreground tabular-nums">{mad(a.price)}</span>
 						</Button>
 					))}
+					{/* The whole price list, searched by name or abbreviation ("cs"). */}
+					{acts.length > suggestions.length && (
+						<ActPicker acts={acts} onChange={(act) => act && addAct(act)}>
+							<Button type="button" variant="ghost" size="sm" className="h-7 font-normal">
+								<LuSearch /> {t("findAct")}
+							</Button>
+						</ActPicker>
+					)}
 					<Button
 						type="button"
 						variant="ghost"

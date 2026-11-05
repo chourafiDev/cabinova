@@ -198,5 +198,10 @@
       "eidAlFitr": "Aïd Al Fitr",
       "eidAlAdha": "Aïd Al Adha"
     }
+  },
+  "actPicker": {
+    "placeholder": "Choisir un acte",
+    "search": "Nom ou abréviation (ex. CS)…",
+    "empty": "Aucun acte trouvé."
   }
 }
