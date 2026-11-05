@@ -72,9 +72,21 @@
   },
   "aside": {
     "medical": "السوابق",
-    "next": "الموعد القادم",
-    "contact": "المريض",
-    "adminFile": "البطاقة الإدارية"
+    "contact": "معلومات المريض",
+    "adminFile": "البطاقة الإدارية",
+    "civility": {
+      "male": "السيد",
+      "female": "السيدة"
+    },
+    "exactAge": "{years, plural, =0 {} one {سنة واحدة } two {سنتان } few {# سنوات } many {# سنة } other {# سنة }}{months, plural, =0 {} one {شهر واحد } two {شهران } few {# أشهر } many {# شهرًا } other {# شهر }}{days, plural, =0 {} one {يوم واحد} two {يومان} few {# أيام} many {# يومًا} other {# يوم}}",
+    "birthDate": "تاريخ الازدياد",
+    "coverage": "التغطية الصحية",
+    "city": "المدينة",
+    "phone": "الهاتف",
+    "email": "البريد الإلكتروني",
+    "cin": "البطاقة الوطنية",
+    "address": "العنوان",
+    "emergency": "شخص للاتصال"
   },
   "history": {
     "title": "الاستشارات السابقة",
@@ -167,13 +179,19 @@
     "title": "آخر المؤشرات الحيوية",
     "history": "السجل",
     "empty": "لم تُسجَّل أي مؤشرات بعد.",
-    "lastOn": "آخر قياس في {date}",
     "sheetTitle": "سجل المؤشرات الحيوية",
     "sheetDescription": "{count, plural, one {قياس واحد} two {قياسان} few {# قياسات} many {# قياسًا} other {# قياس}}، سجّلها الفريق أو أُخذت أثناء الاستشارة.",
     "source": {
       "staff": "الفريق",
       "visit": "استشارة"
-    }
+    },
+    "bloodPressure": "ضغط الدم",
+    "arm": {
+      "Right": "الذراع الأيمن",
+      "Left": "الذراع الأيسر"
+    },
+    "unusual": "قيمة غير معتادة",
+    "previous": "القياس السابق: {value}"
   },
   "price": {
     "title": "ثمن الاستشارة",

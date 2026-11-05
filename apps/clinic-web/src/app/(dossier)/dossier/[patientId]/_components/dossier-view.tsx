@@ -28,7 +28,6 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { api } from "@/lib/api-client";
-import type { Appointment } from "@/lib/appointments";
 import type { PastConsultation, Visit } from "@/lib/consultations";
 import { initials } from "@/lib/format";
 import { ageOf, formatFileNumber, fullName, type PatientFile } from "@/lib/patients";
@@ -90,10 +89,6 @@ export function DossierView({ patientId, visitId }: { patientId: string; visitId
 		queryKey: ["prescriptions", patientId],
 		queryFn: () => api<PastPrescription[]>(`/prescriptions?patientId=${patientId}`),
 	});
-	const appointments = useQuery({
-		queryKey: ["patient-appointments", patientId],
-		queryFn: () => api<Appointment[]>(`/appointments?patientId=${patientId}`),
-	});
 
 	const p = patient.data;
 	const appointment = visit.data?.appointment;
@@ -118,9 +113,6 @@ export function DossierView({ patientId, visitId }: { patientId: string; visitId
 	]
 		.filter((e) => e !== null)
 		.sort((a, b) => b.vitals.measuredAt.localeCompare(a.vitals.measuredAt));
-	const next = appointments.data
-		?.filter((a) => a.id !== visitId && new Date(a.startsAt) > new Date() && ["scheduled", "confirmed"].includes(a.status))
-		.at(-1);
 
 	if (patient.isError) {
 		return (
@@ -164,15 +156,15 @@ export function DossierView({ patientId, visitId }: { patientId: string; visitId
 	const page = (
 		<main className="mx-auto grid w-full max-w-[1700px] grid-cols-1 gap-4 px-4 xl:min-h-0 xl:flex-1 xl:grid-cols-[300px_minmax(0,1fr)_380px]">
 			<div className="order-3 grid grid-cols-1 content-start gap-4 pb-4 xl:order-1 xl:overflow-y-auto xl:py-4">
-				{p && <PatientAside patient={p} next={next} />}
+				{p && <PatientAside patient={p} />}
 				<LatestVitals entries={measurements} points={points} loading={recorded.isPending || history.isPending} />
 			</div>
 
 			<section className="order-1 min-w-0 xl:order-2 xl:overflow-y-auto" aria-label={t("consultation")}>
 				<Tabs value={tab} onValueChange={(v) => void setTab(v as Tab)} className="gap-4 pb-4">
 					{/* The tabs stay at the top while the consultation scrolls under them. */}
-					<div className="bg-background sticky top-0 z-10 overflow-x-auto pt-4">
-						<TabsList variant="line" className="w-full min-w-max justify-start border-b">
+					<div className="bg-background sticky top-0 z-10 overflow-x-auto pt-4 pb-1">
+						<TabsList className="w-full min-w-max justify-start">
 							{tabs.map(({ value, icon: Icon, label, badge }) => (
 								<TabsTrigger key={value} value={value} className="flex-none px-3">
 									<Icon /> {label}

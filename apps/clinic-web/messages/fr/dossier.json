@@ -72,9 +72,21 @@
   },
   "aside": {
     "medical": "Antécédents",
-    "next": "Prochain rendez-vous",
-    "contact": "Patient",
-    "adminFile": "Fiche administrative"
+    "contact": "Informations patient",
+    "adminFile": "Fiche administrative",
+    "civility": {
+      "male": "M.",
+      "female": "Mme"
+    },
+    "exactAge": "{years, plural, =0 {} one {# an } other {# ans }}{months, plural, =0 {} other {# mois }}{days, plural, =0 {} one {# jour} other {# jours}}",
+    "birthDate": "Né(e) le",
+    "coverage": "Mutuelle",
+    "city": "Ville",
+    "phone": "GSM",
+    "email": "E-mail",
+    "cin": "CIN",
+    "address": "Adresse",
+    "emergency": "À prévenir"
   },
   "history": {
     "title": "Consultations précédentes",
@@ -167,13 +179,19 @@
     "title": "Dernières constantes",
     "history": "Historique",
     "empty": "Aucune constante prise pour l’instant.",
-    "lastOn": "Dernière mesure le {date}",
     "sheetTitle": "Historique des constantes",
     "sheetDescription": "{count, plural, one {# mesure} other {# mesures}}, prises par l’équipe ou en consultation.",
     "source": {
       "staff": "Équipe",
       "visit": "Consultation"
-    }
+    },
+    "bloodPressure": "Tension artérielle",
+    "arm": {
+      "Right": "Bras droit",
+      "Left": "Bras gauche"
+    },
+    "unusual": "Valeur inhabituelle",
+    "previous": "Mesure précédente : {value}"
   },
   "price": {
     "title": "Prix de la consultation",

@@ -1,13 +1,12 @@
 "use client";
 
 import { useQueryClient } from "@tanstack/react-query";
+import { intervalToDuration, parseISO } from "date-fns";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
-import { LuCalendarClock, LuContactRound, LuExternalLink, LuHeartPulse, LuIdCard, LuPhone, LuShieldCheck } from "react-icons/lu";
+import { LuContactRound, LuExternalLink, LuHeartPulse } from "react-icons/lu";
 import { MedicalProfile } from "@/app/(clinic)/patients/_components/medical-profile-card";
-import { PatientBalance } from "@/app/(clinic)/patients/_components/patient-payments";
-import type { Appointment } from "@/lib/appointments";
-import { formatPhone, type PatientFile, patientHref } from "@/lib/patients";
+import { formatPhone, fullName, type PatientFile, patientHref } from "@/lib/patients";
 import { useFormat } from "@/lib/use-format";
 
 /** The antécédents and current treatments, editable by the doctor. */
@@ -27,68 +26,113 @@ export function MedicalCard({ patient }: { patient: PatientFile }) {
 	);
 }
 
-/** Left column: who the patient is — how to reach them, their balance, the next visit. */
-export function PatientAside({ patient, next }: { patient: PatientFile; next: Appointment | undefined }) {
-	const t = useTranslations("dossier");
+/** Left column: who the patient is and how to reach them; only what the file holds. */
+export function PatientAside({ patient }: { patient: PatientFile }) {
+	const t = useTranslations("dossier.aside");
 	const common = useTranslations("common");
 	const format = useFormat();
+	const age = exactAge(patient.birthDate);
+	const coverage = patient.coverage !== "none" || patient.insurer;
+
+	const rows: { label: string; value: React.ReactNode }[] = [
+		patient.birthDate && {
+			label: t("birthDate"),
+			value: format.date(patient.birthDate, { day: "2-digit", month: "2-digit", year: "numeric" }),
+		},
+		coverage && {
+			label: t("coverage"),
+			value: (
+				<>
+					{[patient.coverage !== "none" && common(`coverage.${patient.coverage}`), patient.insurer]
+						.filter(Boolean)
+						.join(" · ")}
+					{patient.coverageNumber && (
+						<span className="text-muted-foreground block font-mono text-xs">{patient.coverageNumber}</span>
+					)}
+				</>
+			),
+		},
+		patient.city && { label: t("city"), value: patient.city },
+		patient.phone && {
+			label: t("phone"),
+			value: (
+				<a href={`tel:${patient.phone}`} className="tabular-nums hover:underline">
+					{formatPhone(patient.phone)}
+				</a>
+			),
+		},
+		patient.email && {
+			label: t("email"),
+			value: (
+				<a href={`mailto:${patient.email}`} className="break-all hover:underline">
+					{patient.email}
+				</a>
+			),
+		},
+		patient.cin && { label: t("cin"), value: <span className="font-mono">{patient.cin}</span> },
+		patient.address && { label: t("address"), value: <span className="whitespace-pre-line">{patient.address}</span> },
+		patient.emergencyContactName && {
+			label: t("emergency"),
+			value: (
+				<>
+					{patient.emergencyContactName}
+					{patient.emergencyContactPhone && (
+						<a href={`tel:${patient.emergencyContactPhone}`} className="text-muted-foreground block tabular-nums hover:underline">
+							{formatPhone(patient.emergencyContactPhone)}
+						</a>
+					)}
+				</>
+			),
+		},
+	].filter((row) => !!row);
 
 	return (
 		<div className="grid gap-4">
-			<PatientBalance patientId={patient.id} />
-
-			{next && (
-				<Card icon={LuCalendarClock} title={t("aside.next")}>
-					<p className="text-sm font-medium first-letter:uppercase">
-						{format.date(next.startsAt, { weekday: "long" })} · {format.clock(next.startsAt)}
-					</p>
-					<p className="text-muted-foreground text-xs">
-						{[next.reason, next.practitioner.name].filter(Boolean).join(" · ")}
-					</p>
-				</Card>
-			)}
-
 			<Card
 				icon={LuContactRound}
-				title={t("aside.contact")}
+				title={t("contact")}
 				aside={
 					<Link
 						href={patientHref(patient.id)}
-						className="text-muted-foreground hover:text-foreground flex items-center gap-1 text-xs"
+						title={t("adminFile")}
+						aria-label={t("adminFile")}
+						className="text-muted-foreground hover:text-foreground hover:bg-muted flex size-7 items-center justify-center rounded-md"
 					>
-						{t("aside.adminFile")} <LuExternalLink className="size-3 rtl:-scale-x-100" />
+						<LuExternalLink className="size-3.5 rtl:-scale-x-100" />
 					</Link>
 				}
 			>
-				<dl className="grid gap-2.5 text-sm">
-					{patient.phone && (
-						<Row icon={LuPhone}>
-							<a href={`tel:${patient.phone}`} className="tabular-nums hover:underline">
-								{formatPhone(patient.phone)}
-							</a>
-						</Row>
+				<div className="bg-muted/50 grid gap-0.5 rounded-lg px-3 py-2.5 text-center">
+					<p className="font-semibold">
+						<span className="text-muted-foreground font-normal">{t(`civility.${patient.sex}`)} </span>
+						{fullName(patient)}
+					</p>
+					{age && (
+						<p className="text-primary text-sm font-medium tabular-nums">
+							{t("exactAge", { years: age.years, months: age.months, days: age.days })}
+						</p>
 					)}
-					{patient.cin && (
-						<Row icon={LuIdCard}>
-							<span className="font-mono text-xs">{patient.cin}</span>
-						</Row>
-					)}
-					<Row icon={LuShieldCheck}>
-						{common(`coverage.${patient.coverage}`)}
-						{patient.coverageNumber && <span className="text-muted-foreground"> · {patient.coverageNumber}</span>}
-					</Row>
-					{patient.emergencyContactName && (
-						<Row icon={LuContactRound}>
-							<span>{patient.emergencyContactName}</span>
-							{patient.emergencyContactPhone && (
-								<span className="text-muted-foreground tabular-nums"> · {formatPhone(patient.emergencyContactPhone)}</span>
-							)}
-						</Row>
-					)}
-				</dl>
+				</div>
+				{rows.length > 0 && (
+					<dl className="divide-y text-sm">
+						{rows.map(({ label, value }) => (
+							<div key={label} className="grid grid-cols-[6.5rem_minmax(0,1fr)] gap-3 py-2 first:pt-0 last:pb-0">
+								<dt className="text-muted-foreground text-xs leading-5">{label}</dt>
+								<dd className="min-w-0 leading-5">{value}</dd>
+							</div>
+						))}
+					</dl>
+				)}
 			</Card>
 		</div>
 	);
+}
+
+/** "37 ans 5 mois 17 jours": the age as the doctor reads it, down to the day. */
+function exactAge(birthDate: string | null) {
+	if (!birthDate) return null;
+	const { years = 0, months = 0, days = 0 } = intervalToDuration({ start: parseISO(birthDate), end: new Date() });
+	return { years, months, days };
 }
 
 export function Card({
@@ -111,14 +155,5 @@ export function Card({
 			</header>
 			{children}
 		</section>
-	);
-}
-
-function Row({ icon: Icon, children }: { icon: React.ComponentType<{ className?: string }>; children: React.ReactNode }) {
-	return (
-		<div className="flex items-start gap-2.5">
-			<Icon className="text-muted-foreground mt-0.5 size-4 shrink-0" />
-			<div className="min-w-0">{children}</div>
-		</div>
 	);
 }
