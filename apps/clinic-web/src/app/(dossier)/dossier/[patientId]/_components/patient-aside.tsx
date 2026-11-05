@@ -4,10 +4,25 @@ import { useQueryClient } from "@tanstack/react-query";
 import { intervalToDuration, parseISO } from "date-fns";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
-import { LuContactRound, LuExternalLink, LuHeartPulse } from "react-icons/lu";
+import type { IconType } from "react-icons";
+import {
+	LuCake,
+	LuChevronRight,
+	LuContactRound,
+	LuHash,
+	LuHeartPulse,
+	LuHouse,
+	LuIdCard,
+	LuMail,
+	LuMapPin,
+	LuPhone,
+	LuShieldCheck,
+} from "react-icons/lu";
 import { MedicalProfile } from "@/app/(clinic)/patients/_components/medical-profile-card";
-import { formatPhone, fullName, type PatientFile, patientHref } from "@/lib/patients";
+import { initials } from "@/lib/format";
+import { formatFileNumber, formatPhone, fullName, type PatientFile, patientHref } from "@/lib/patients";
 import { useFormat } from "@/lib/use-format";
+import { cn } from "@/lib/utils";
 
 /** The antécédents and current treatments, editable by the doctor. */
 export function MedicalCard({ patient }: { patient: PatientFile }) {
@@ -34,96 +49,154 @@ export function PatientAside({ patient }: { patient: PatientFile }) {
 	const age = exactAge(patient.birthDate);
 	const coverage = patient.coverage !== "none" || patient.insurer;
 
-	const rows: { label: string; value: React.ReactNode }[] = [
+	const details: { label: string; icon: IconType; value: React.ReactNode; wide?: boolean }[] = [
 		patient.birthDate && {
 			label: t("birthDate"),
+			icon: LuCake,
 			value: format.date(patient.birthDate, { day: "2-digit", month: "2-digit", year: "numeric" }),
 		},
 		coverage && {
 			label: t("coverage"),
-			value: (
-				<>
-					{[patient.coverage !== "none" && common(`coverage.${patient.coverage}`), patient.insurer]
-						.filter(Boolean)
-						.join(" · ")}
-					{patient.coverageNumber && (
-						<span className="text-muted-foreground block font-mono text-xs">{patient.coverageNumber}</span>
-					)}
-				</>
-			),
+			icon: LuShieldCheck,
+			value: [patient.coverage !== "none" && common(`coverage.${patient.coverage}`), patient.insurer]
+				.filter(Boolean)
+				.join(" · "),
 		},
-		patient.city && { label: t("city"), value: patient.city },
 		patient.phone && {
 			label: t("phone"),
+			icon: LuPhone,
 			value: (
 				<a href={`tel:${patient.phone}`} className="tabular-nums hover:underline">
 					{formatPhone(patient.phone)}
 				</a>
 			),
 		},
+		patient.cin && { label: t("cin"), icon: LuIdCard, value: <span className="font-mono">{patient.cin}</span> },
+		patient.city && { label: t("city"), icon: LuMapPin, value: patient.city },
+		patient.coverageNumber && {
+			label: t("coverageNumber"),
+			icon: LuHash,
+			value: <span className="font-mono">{patient.coverageNumber}</span>,
+		},
 		patient.email && {
 			label: t("email"),
+			icon: LuMail,
+			wide: true,
 			value: (
 				<a href={`mailto:${patient.email}`} className="break-all hover:underline">
 					{patient.email}
 				</a>
 			),
 		},
-		patient.cin && { label: t("cin"), value: <span className="font-mono">{patient.cin}</span> },
-		patient.address && { label: t("address"), value: <span className="whitespace-pre-line">{patient.address}</span> },
+		patient.address && { label: t("address"), icon: LuHouse, wide: true, value: patient.address },
 		patient.emergencyContactName && {
 			label: t("emergency"),
+			icon: LuContactRound,
+			wide: true,
 			value: (
 				<>
 					{patient.emergencyContactName}
 					{patient.emergencyContactPhone && (
-						<a href={`tel:${patient.emergencyContactPhone}`} className="text-muted-foreground block tabular-nums hover:underline">
+						<a href={`tel:${patient.emergencyContactPhone}`} className="text-muted-foreground tabular-nums hover:underline">
+							{" · "}
 							{formatPhone(patient.emergencyContactPhone)}
 						</a>
 					)}
 				</>
 			),
 		},
-	].filter((row) => !!row);
+	].filter((d) => !!d);
+	// An odd last half-width card spans the row rather than leaving a hole.
+	const halves = details.filter((d) => !d.wide);
+	const lastHalf = halves.length % 2 === 1 ? halves.at(-1) : undefined;
 
 	return (
-		<div className="grid gap-4">
-			<Card
-				icon={LuContactRound}
+		<section className="grid grid-cols-1 gap-3" aria-label={t("contact")}>
+			<SectionHeading
 				title={t("contact")}
-				aside={
-					<Link
-						href={patientHref(patient.id)}
-						title={t("adminFile")}
-						aria-label={t("adminFile")}
-						className="text-muted-foreground hover:text-foreground hover:bg-muted flex size-7 items-center justify-center rounded-md"
-					>
-						<LuExternalLink className="size-3.5 rtl:-scale-x-100" />
+				action={
+					<Link href={patientHref(patient.id)} className="text-primary flex items-center gap-0.5 text-xs font-medium hover:underline">
+						{t("adminFile")} <LuChevronRight className="size-3.5 rtl:-scale-x-100" />
 					</Link>
 				}
-			>
-				<div className="bg-muted/50 grid gap-0.5 rounded-lg px-3 py-2.5 text-center">
-					<p className="font-semibold">
+			/>
+			<div className="bg-card flex items-center gap-3 rounded-xl border p-3">
+				<span className="bg-primary/12 text-primary flex size-11 shrink-0 items-center justify-center rounded-xl text-base font-semibold">
+					{initials(`${patient.firstName} ${patient.lastName}`)}
+				</span>
+				<div className="min-w-0">
+					<Eyebrow>
+						{common(`sex.${patient.sex}`)} · {formatFileNumber(patient.fileNumber)}
+					</Eyebrow>
+					<p className="truncate font-semibold">
 						<span className="text-muted-foreground font-normal">{t(`civility.${patient.sex}`)} </span>
 						{fullName(patient)}
 					</p>
 					{age && (
-						<p className="text-primary text-sm font-medium tabular-nums">
+						<p className="text-primary text-sm tabular-nums">
 							{t("exactAge", { years: age.years, months: age.months, days: age.days })}
 						</p>
 					)}
 				</div>
-				{rows.length > 0 && (
-					<dl className="divide-y text-sm">
-						{rows.map(({ label, value }) => (
-							<div key={label} className="grid grid-cols-[6.5rem_minmax(0,1fr)] gap-3 py-2 first:pt-0 last:pb-0">
-								<dt className="text-muted-foreground text-xs leading-5">{label}</dt>
-								<dd className="min-w-0 leading-5">{value}</dd>
-							</div>
-						))}
-					</dl>
-				)}
-			</Card>
+			</div>
+			{details.length > 0 && (
+				<dl className="grid grid-cols-2 gap-2">
+					{details.map((d) => (
+						<SmallCard key={d.label} icon={d.icon} label={d.label} wide={d.wide || d === lastHalf}>
+							<dd className="text-sm font-medium break-words">{d.value}</dd>
+						</SmallCard>
+					))}
+				</dl>
+			)}
+		</section>
+	);
+}
+
+/** A title above its cards, with a link at the end ("Historique ›"). */
+export function SectionHeading({ title, action }: { title: string; action?: React.ReactNode }) {
+	return (
+		<header className="flex items-center justify-between gap-2">
+			<h2 className="text-base font-semibold">{title}</h2>
+			{action}
+		</header>
+	);
+}
+
+/** Small capitals over a value, as on the KPI cards. */
+export function Eyebrow({ className, children }: { className?: string; children: React.ReactNode }) {
+	return (
+		<p className={cn("text-muted-foreground text-[11px] font-medium tracking-wide uppercase", className)}>{children}</p>
+	);
+}
+
+/** A small card: a round icon and its label in capitals, then the content. */
+export function SmallCard({
+	icon: Icon,
+	label,
+	wide,
+	title,
+	className,
+	children,
+}: {
+	icon: IconType;
+	label: string;
+	/** The full name, when the label is short. */
+	title?: string;
+	wide?: boolean;
+	className?: string;
+	children: React.ReactNode;
+}) {
+	return (
+		<div className={cn("bg-card grid min-w-0 content-start gap-2 rounded-xl border p-3", wide && "col-span-2", className)}>
+			<dt className="flex min-w-0 items-center gap-2">
+				<span className="bg-muted text-muted-foreground flex size-7 shrink-0 items-center justify-center rounded-full">
+					<Icon className="size-3.5" />
+				</span>
+				<Eyebrow className="truncate">
+					<span title={title ?? label}>{label}</span>
+				</Eyebrow>
+			</dt>
+			{children}
 		</div>
 	);
 }
@@ -147,7 +220,7 @@ export function Card({
 	children: React.ReactNode;
 }) {
 	return (
-		<section className="bg-card grid gap-3 rounded-xl border p-4">
+		<section className="bg-card grid grid-cols-1 gap-3 rounded-xl border p-4">
 			<header className="flex items-center gap-2">
 				<Icon className="text-muted-foreground size-4" />
 				<h2 className="text-sm font-semibold">{title}</h2>

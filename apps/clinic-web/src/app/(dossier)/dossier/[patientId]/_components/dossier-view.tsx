@@ -41,7 +41,7 @@ import { Card, MedicalCard, PatientAside } from "./patient-aside";
 import { PermanentNote, VisitReminder } from "./patient-notes";
 import { PrescriptionEditor } from "./prescription-editor";
 import { SaveStatus, type SaveState } from "./save-status";
-import { Medications, Planned, TabBox, VisitSummary } from "./side-panels";
+import { Planned } from "./planned";
 import type { Point } from "./trends-card";
 import { consultationVitals, LatestVitals, type VitalsEntry } from "./vitals-history";
 
@@ -126,17 +126,13 @@ export function DossierView({ patientId, visitId }: { patientId: string; visitId
 
 	const ready = !!visitId && !!visit.data && !prescription.isPending && !prescription.isError;
 	/** What needs today's visit: shown once it is loaded, or why it can't be. */
-	const withVisit = (content: React.ReactNode, compact?: boolean) =>
+	const withVisit = (content: React.ReactNode) =>
 		ready ? (
 			content
 		) : !visitId ? (
-			compact ? (
-				<p className="text-muted-foreground text-xs">{t("noVisit")}</p>
-			) : (
-				<NoVisit />
-			)
+			<NoVisit />
 		) : visit.isPending || prescription.isPending ? (
-			<Skeleton className={compact ? "h-16" : "h-40 rounded-xl"} />
+			<Skeleton className="h-40 rounded-xl" />
 		) : (
 			<p className="text-destructive text-sm">{t("visitError")}</p>
 		);
@@ -152,16 +148,16 @@ export function DossierView({ patientId, visitId }: { patientId: string; visitId
 	];
 
 	const page = (
-		<main className="mx-auto grid w-full max-w-[1700px] grid-cols-1 gap-4 px-4 xl:min-h-0 xl:flex-1 xl:grid-cols-[300px_minmax(0,1fr)_380px]">
-			<div className="order-3 grid grid-cols-1 content-start gap-4 pb-4 xl:order-1 xl:overflow-y-auto xl:py-4">
+		<main className="mx-auto grid w-full max-w-[1700px] grid-cols-1 gap-4 px-4 xl:min-h-0 xl:flex-1 xl:grid-cols-[360px_minmax(0,1fr)]">
+			<div className="no-scrollbar order-2 grid grid-cols-1 content-start gap-4 pb-4 xl:order-1 xl:overflow-y-auto xl:py-4">
 				{p && <PatientAside patient={p} />}
 				<LatestVitals entries={measurements} points={points} loading={recorded.isPending || history.isPending} />
 			</div>
 
-			<section className="order-1 min-w-0 xl:order-2 xl:overflow-y-auto" aria-label={t("consultation")}>
+			<section className="no-scrollbar order-1 min-w-0 xl:order-2 xl:overflow-y-auto" aria-label={t("consultation")}>
 				<Tabs value={tab} onValueChange={(v) => void setTab(v as Tab)} className="gap-4 pb-4">
 					{/* The tabs stay at the top while the consultation scrolls under them. */}
-					<div className="bg-background sticky top-0 z-10 overflow-x-auto pt-4 pb-1">
+					<div className="bg-background no-scrollbar sticky top-0 z-10 overflow-x-auto pt-4 pb-1">
 						<TabsList className="w-full min-w-max justify-start">
 							{tabs.map(({ value, icon: Icon, label, badge }) => (
 								<TabsTrigger key={value} value={value} className="flex-none px-3">
@@ -176,9 +172,14 @@ export function DossierView({ patientId, visitId }: { patientId: string; visitId
 
 					{/* Interrogatoire then examen, as the doctor goes through them. */}
 					<TabsContent value="interrogatoire" className="grid gap-4">
+						{/* What the doctor must not miss: the last visit's reminder, the permanent note. */}
+						<VisitReminder last={visitId ? past?.[0] : undefined} />
+						{p && <PermanentNote patient={p} />}
 						{withVisit(<ConsultationSections sections={["complaint"]} />)}
 						{p && <MedicalCard patient={p} />}
-						{ready && <ConsultationSections sections={["vitals", "examination", "diagnosis"]} />}
+						{ready && (
+							<ConsultationSections sections={["vitals", "examination", "diagnosis", "plan", "nextVisit"]} />
+						)}
 					</TabsContent>
 					<TabsContent value="certificat">
 						<Planned fields={[t("planned.certificat.oneDay"), t("planned.certificat.period"), t("planned.certificat.content")]} />
@@ -220,48 +221,6 @@ export function DossierView({ patientId, visitId }: { patientId: string; visitId
 				</Tabs>
 			</section>
 
-			<aside className="order-2 grid grid-cols-1 content-start gap-4 pb-4 xl:order-3 xl:overflow-y-auto xl:py-4">
-				<TabBox
-					tabs={[
-						{
-							value: "summary",
-							label: t("side.summary"),
-							content: withVisit(
-								appointment && <VisitSummary appointment={appointment} prescription={prescription.data ?? null} />,
-								true,
-							),
-						},
-						{
-							value: "medications",
-							label: t("side.medications"),
-							content: withVisit(<Medications prescription={prescription.data ?? null} />, true),
-						},
-						{ value: "patientNote", label: t("side.patientNote"), content: <Planned fields={[]} /> },
-						{
-							value: "todo",
-							label: t("side.todo"),
-							content: withVisit(<ConsultationSections sections={["plan"]} bare />, true),
-						},
-					]}
-				/>
-				<TabBox
-					tabs={[
-						{ value: "permanent", label: t("side.permanent"), content: p && <PermanentNote patient={p} /> },
-						{
-							value: "nextVisit",
-							label: t("side.nextVisit"),
-							content: (
-								<div className="grid gap-3">
-									<VisitReminder last={visitId ? past?.[0] : undefined} />
-									{withVisit(<ConsultationSections sections={["nextVisit"]} bare />, true)}
-								</div>
-							),
-						},
-						{ value: "control", label: t("side.control"), content: <Planned fields={[]} /> },
-						{ value: "posology", label: t("side.posology"), content: <Planned fields={[]} /> },
-					]}
-				/>
-			</aside>
 		</main>
 	);
 

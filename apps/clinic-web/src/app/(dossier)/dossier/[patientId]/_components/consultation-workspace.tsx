@@ -74,9 +74,6 @@ type Draft = {
 };
 const DraftContext = createContext<Draft | null>(null);
 
-/** What is being written today, for a part of the page that only shows it (null outside a visit). */
-export const useConsultationDraft = () => useContext(DraftContext)?.draft ?? null;
-
 /**
  * Today's consultation: one draft, saved as the doctor types, whose parts
  * (motif, constantes, examen…) the dossier places in its tabs with
@@ -216,10 +213,9 @@ export type SectionKey = "complaint" | "vitals" | "examination" | "diagnosis" | 
 
 /**
  * Parts of today's consultation, wherever the page puts them: all read and
- * write the one draft above, saved as the doctor types. `bare` drops the
- * card, for a part shown inside a tab that already names it.
+ * write the one draft above, saved as the doctor types.
  */
-export function ConsultationSections({ sections, bare }: { sections: SectionKey[]; bare?: boolean }) {
+export function ConsultationSections({ sections }: { sections: SectionKey[] }) {
 	const t = useTranslations("dossier");
 	const context = useContext(DraftContext);
 	if (!context) throw new Error("ConsultationSections outside ConsultationDraft");
@@ -227,7 +223,7 @@ export function ConsultationSections({ sections, bare }: { sections: SectionKey[
 
 	const parts: Record<SectionKey, React.ReactNode> = {
 		complaint: (
-			<Section key="complaint" bare={bare} icon={LuMessageSquareText} title={t("sections.complaint")}>
+			<Section key="complaint" icon={LuMessageSquareText} title={t("sections.complaint")}>
 				<div className="grid gap-3">
 					<Labeled label={t("fields.complaint")} htmlFor="consultation-complaint" aside={phrases("complaint")}>
 						{note(
@@ -245,7 +241,6 @@ export function ConsultationSections({ sections, bare }: { sections: SectionKey[
 		vitals: (
 			<Section
 				key="vitals"
-				bare={bare}
 				icon={LuActivity}
 				title={t("sections.vitals")}
 				aside={invalid.length > 0 && <span className="text-destructive text-xs">{t("vitals.checkRed")}</span>}
@@ -254,22 +249,22 @@ export function ConsultationSections({ sections, bare }: { sections: SectionKey[
 			</Section>
 		),
 		examination: (
-			<Section key="examination" bare={bare} icon={LuScanSearch} title={t("sections.examination")} aside={phrases("examination")}>
+			<Section key="examination" icon={LuScanSearch} title={t("sections.examination")} aside={phrases("examination")}>
 				{note("examination", "min-h-32")}
 			</Section>
 		),
 		diagnosis: (
-			<Section key="diagnosis" bare={bare} icon={LuStethoscope} title={t("sections.diagnosis")} aside={phrases("diagnosis")}>
+			<Section key="diagnosis" icon={LuStethoscope} title={t("sections.diagnosis")} aside={phrases("diagnosis")}>
 				{note("diagnosis", "min-h-16")}
 			</Section>
 		),
 		plan: (
-			<Section key="plan" bare={bare} icon={LuClipboardList} title={t("sections.plan")} aside={phrases("plan")}>
+			<Section key="plan" icon={LuClipboardList} title={t("sections.plan")} aside={phrases("plan")}>
 				{note("plan", "min-h-32")}
 			</Section>
 		),
 		nextVisit: (
-			<Section key="nextVisit" bare={bare} icon={LuCalendarClock} title={t("sections.nextVisit")}>
+			<Section key="nextVisit" icon={LuCalendarClock} title={t("sections.nextVisit")}>
 				<div className="grid gap-1.5">
 					{note("nextVisitNote", "min-h-12")}
 					<p className="text-muted-foreground text-xs">{t("nextVisitHint")}</p>
@@ -284,23 +279,13 @@ function Section({
 	icon: Icon,
 	title,
 	aside,
-	bare,
 	children,
 }: {
 	icon: React.ComponentType<{ className?: string }>;
 	title: string;
 	aside?: React.ReactNode;
-	bare?: boolean;
 	children: React.ReactNode;
 }) {
-	if (bare) {
-		return (
-			<div className="grid gap-2">
-				{aside && <div className="flex justify-end">{aside}</div>}
-				{children}
-			</div>
-		);
-	}
 	return (
 		<section className="bg-card rounded-xl border">
 			<header className="flex items-center gap-2 px-4 pt-4 pb-3">

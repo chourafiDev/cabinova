@@ -72,7 +72,7 @@
   },
   "aside": {
     "medical": "السوابق",
-    "contact": "معلومات المريض",
+    "contact": "المريض",
     "adminFile": "البطاقة الإدارية",
     "civility": {
       "male": "السيد",
@@ -86,7 +86,8 @@
     "email": "البريد الإلكتروني",
     "cin": "البطاقة الوطنية",
     "address": "العنوان",
-    "emergency": "شخص للاتصال"
+    "emergency": "شخص للاتصال",
+    "coverageNumber": "الانخراط"
   },
   "history": {
     "title": "الاستشارات السابقة",
@@ -157,23 +158,6 @@
       "notes": "يؤخذ أثناء الأكل، المراجعة بعد شهر مع التحاليل…"
     }
   },
-  "side": {
-    "summary": "ملخص",
-    "medications": "الأدوية",
-    "patientNote": "ملاحظة المريض",
-    "todo": "للقيام",
-    "permanent": "ملاحظة دائمة",
-    "nextVisit": "الزيارة القادمة",
-    "control": "المراقبة",
-    "posology": "الجرعات"
-  },
-  "summary": {
-    "visit": "الزيارة",
-    "act": "الإجراء",
-    "prescription": "الوصفة",
-    "lines": "{count, plural, =0 {لا دواء} one {دواء واحد} two {دواءان} few {# أدوية} many {# دواءً} other {# دواء}}",
-    "noMedication": "لم يُوصف أي دواء بعد."
-  },
   "latest": {
     "title": "آخر المؤشرات الحيوية",
     "history": "السجل",
@@ -184,13 +168,18 @@
       "staff": "الفريق",
       "visit": "استشارة"
     },
-    "bloodPressure": "ضغط الدم",
-    "arm": {
-      "Right": "الذراع الأيمن",
-      "Left": "الذراع الأيسر"
-    },
     "unusual": "قيمة غير معتادة",
-    "previous": "القياس السابق: {value}"
+    "takenOn": "قيس في {date}",
+    "first": "أول قياس",
+    "stable": "مستقر",
+    "change": "{value} مقارنة بالسابق",
+    "normal": "طبيعية",
+    "bp": {
+      "Right": "الضغط، الذراع الأيمن",
+      "Left": "الضغط، الذراع الأيسر"
+    },
+    "watch": "للمراقبة",
+    "historyCount": "السجل ({count})"
   },
   "price": {
     "title": "ثمن الاستشارة",

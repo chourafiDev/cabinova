@@ -72,7 +72,7 @@
   },
   "aside": {
     "medical": "Antécédents",
-    "contact": "Informations patient",
+    "contact": "Patient",
     "adminFile": "Fiche administrative",
     "civility": {
       "male": "M.",
@@ -86,7 +86,8 @@
     "email": "E-mail",
     "cin": "CIN",
     "address": "Adresse",
-    "emergency": "À prévenir"
+    "emergency": "À prévenir",
+    "coverageNumber": "Affiliation"
   },
   "history": {
     "title": "Consultations précédentes",
@@ -157,23 +158,6 @@
       "notes": "À prendre au cours des repas, revoir dans 1 mois avec le bilan…"
     }
   },
-  "side": {
-    "summary": "Résumé",
-    "medications": "Médicaments",
-    "patientNote": "Note patient",
-    "todo": "À faire",
-    "permanent": "Note permanente",
-    "nextVisit": "Prochaine visite",
-    "control": "Contrôle",
-    "posology": "Posologie"
-  },
-  "summary": {
-    "visit": "Visite",
-    "act": "Acte",
-    "prescription": "Ordonnance",
-    "lines": "{count, plural, =0 {Aucun médicament} one {# médicament} other {# médicaments}}",
-    "noMedication": "Aucun médicament prescrit pour l’instant."
-  },
   "latest": {
     "title": "Dernières constantes",
     "history": "Historique",
@@ -184,13 +168,18 @@
       "staff": "Équipe",
       "visit": "Consultation"
     },
-    "bloodPressure": "Tension artérielle",
-    "arm": {
-      "Right": "Bras droit",
-      "Left": "Bras gauche"
-    },
     "unusual": "Valeur inhabituelle",
-    "previous": "Mesure précédente : {value}"
+    "takenOn": "Mesuré le {date}",
+    "first": "Première mesure",
+    "stable": "Stable",
+    "change": "{value} vs avant",
+    "normal": "Normale",
+    "bp": {
+      "Right": "TA bras droit",
+      "Left": "TA bras gauche"
+    },
+    "watch": "À surveiller",
+    "historyCount": "Historique ({count})"
   },
   "price": {
     "title": "Prix de la consultation",

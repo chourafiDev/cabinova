@@ -2,9 +2,22 @@
 
 import { useTranslations } from "next-intl";
 import { useState } from "react";
-import { LuActivity, LuArrowDown, LuArrowUp, LuDroplet, LuHistory, LuTriangleAlert } from "react-icons/lu";
+import type { IconType } from "react-icons";
+import {
+	LuActivity,
+	LuChevronRight,
+	LuDroplet,
+	LuDroplets,
+	LuFlaskConical,
+	LuGauge,
+	LuHeartPulse,
+	LuRuler,
+	LuScale,
+	LuThermometer,
+	LuTriangleAlert,
+	LuWind,
+} from "react-icons/lu";
 import { VitalsChips } from "@/components/vitals-chips";
-import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Skeleton } from "@/components/ui/skeleton";
 import { moroccoDay } from "@cabinova/morocco-time";
@@ -12,7 +25,7 @@ import { bmiCategory, bmiOf, type Consultation, isAbnormal, VITAL_FIELDS, type V
 import { useFormat } from "@/lib/use-format";
 import { cn } from "@/lib/utils";
 import { ARMS, bmiFor, MEASURES, type Measure, type VitalSigns } from "@/lib/vitals";
-import { Card } from "./patient-aside";
+import { Eyebrow, SectionHeading, SmallCard } from "./patient-aside";
 import { type Point, TrendsCard } from "./trends-card";
 
 /** One dated measurement: taken by the team, or during a consultation. */
@@ -69,6 +82,7 @@ export function LatestVitals({
 }) {
 	const t = useTranslations("dossier.latest");
 	const fields = useTranslations("patients.vitals.fields");
+	const short = useTranslations("patients.vitals.short");
 	const bmiLabel = useTranslations("patients.vitals.bmiCategory");
 	const format = useFormat();
 	const [open, setOpen] = useState(false);
@@ -85,127 +99,151 @@ export function LatestVitals({
 			date: entries[i].vitals.measuredAt,
 		};
 	};
-	const bloodGroup = entries.find((e) => e.vitals.bloodGroup)?.vitals.bloodGroup;
-	const arms = ARMS.map((arm) => ({
-		arm,
-		systolic: reading((v) => v[`bp${arm}Systolic`]),
-		diastolic: reading((v) => v[`bp${arm}Diastolic`]),
-	})).filter((a) => a.systolic && a.diastolic);
+	/** Under the value: unusual, taken earlier, how it moved, or within range. */
+	const status = (r: Reading, abnormal: boolean, unit = "", ruled = false) => {
+		if (abnormal) return t("unusual");
+		if (latest && moroccoDay(new Date(r.date)) !== moroccoDay(new Date(latest.vitals.measuredAt))) {
+			return t("takenOn", { date: format.date(r.date, { day: "numeric", month: "short" }) });
+		}
+		const change = r.previous == null ? 0 : Math.round((r.value - r.previous) * 10) / 10;
+		if (change !== 0) {
+			return t("change", { value: `${change > 0 ? "+" : "−"}${format.number(Math.abs(change))} ${unit}`.trim() });
+		}
+		if (ruled) return t("normal");
+		return r.previous == null ? t("first") : t("stable");
+	};
+
+	const results: Result[] = [];
+	for (const arm of ARMS) {
+		const sys = reading((v) => v[`bp${arm}Systolic`]);
+		const dia = reading((v) => v[`bp${arm}Diastolic`]);
+		if (!sys || !dia) continue;
+		const abnormal = isAbnormal("systolic", sys.value) || isAbnormal("diastolic", dia.value);
+		results.push({
+			key: arm,
+			icon: LuHeartPulse,
+			label: short(`bp${arm}`),
+			title: t(`bp.${arm}`),
+			value: `${sys.value}/${dia.value}`,
+			unit: "mmHg",
+			abnormal,
+			status: status(sys, abnormal, "", true),
+		});
+	}
+	for (const { measure, rule, icon } of TILES) {
+		const r = reading((v) => v[measure]);
+		if (!r) continue;
+		const abnormal = rule ? isAbnormal(rule, r.value) : false;
+		const unit = MEASURES[measure].unit;
+		results.push({
+			key: measure,
+			icon,
+			label: short(measure),
+			title: fields(measure),
+			value: format.number(r.value),
+			unit,
+			abnormal,
+			status: status(r, abnormal, unit, !!rule),
+		});
+	}
 	const weight = reading((v) => v.weightKg);
 	const height = reading((v) => v.heightCm);
 	const bmi = weight && height ? bmiOf(weight.value, height.value) : null;
-	const tiles = TILES.map(({ measure, rule }) => ({ measure, rule, reading: reading((v) => v[measure]) })).filter(
-		(tile) => tile.reading,
-	);
-	const sizes = SIZES.map((measure) => ({ measure, reading: reading((v) => v[measure]) })).filter((s) => s.reading);
-	/** A value from an older measurement than the latest shows its own date. */
-	const olderDate = (date: string) =>
-		latest && moroccoDay(new Date(date)) !== moroccoDay(new Date(latest.vitals.measuredAt))
-			? format.date(date, { day: "numeric", month: "short" })
-			: null;
+	if (bmi != null) {
+		results.push({
+			key: "bmi",
+			icon: LuGauge,
+			label: short("bmi"),
+			title: fields("bmi"),
+			value: format.number(bmi),
+			abnormal: bmi >= 30 || bmi < 18.5,
+			status: bmiLabel(bmiCategory(bmi)),
+		});
+	}
+	const bloodGroup = entries.find((e) => e.vitals.bloodGroup)?.vitals.bloodGroup;
+	if (bloodGroup) {
+		results.push({ key: "blood", icon: LuDroplets, label: short("bloodGroup"),
+			title: fields("bloodGroup"), value: bloodGroup, abnormal: false, status: fields("bloodGroup") });
+	}
+
+	const unusual = results.filter((r) => r.abnormal);
 
 	return (
-		<Card
-			icon={LuActivity}
-			title={t("title")}
-			aside={
-				<Button size="xs" variant="outline" onClick={() => setOpen(true)} disabled={entries.length === 0}>
-					<LuHistory /> {t("history")}
-				</Button>
-			}
-		>
+		<section className="grid grid-cols-1 gap-3" aria-label={t("title")}>
+			<SectionHeading
+				title={t("title")}
+				action={
+					entries.length > 0 && (
+						<button
+							type="button"
+							onClick={() => setOpen(true)}
+							className="text-primary flex items-center gap-0.5 text-xs font-medium hover:underline"
+						>
+							{t("historyCount", { count: entries.length })} <LuChevronRight className="size-3.5 rtl:-scale-x-100" />
+						</button>
+					)
+				}
+			/>
 			{loading ? (
 				<div className="grid grid-cols-2 gap-2">
-					<Skeleton className="col-span-2 h-16" />
-					<Skeleton className="h-16" />
-					<Skeleton className="h-16" />
+					{[0, 1, 2, 3].map((i) => (
+						<Skeleton key={i} className="h-20 rounded-xl" />
+					))}
 				</div>
 			) : !latest ? (
-				<div className="flex flex-col items-center gap-1.5 rounded-lg border border-dashed px-4 py-6 text-center">
-					<LuActivity className="text-muted-foreground size-5" />
-					<p className="text-muted-foreground text-xs">{t("empty")}</p>
-				</div>
+				<p className="bg-card text-muted-foreground rounded-xl border px-4 py-3 text-xs">{t("empty")}</p>
 			) : (
-				<div className="grid grid-cols-1 gap-3">
-					<div className="flex items-center justify-between gap-2">
-						<p className="text-muted-foreground min-w-0 truncate text-xs">
-							{format.date(latest.vitals.measuredAt, { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}
-							{" · "}
-							{t(`source.${latest.source}`)}
-							{latest.vitals.recordedBy && ` · ${latest.vitals.recordedBy}`}
-						</p>
-						{bloodGroup && (
-							<span
-								className="flex shrink-0 items-center gap-1 rounded-full bg-rose-50 px-2 py-0.5 text-xs font-semibold text-rose-700 dark:bg-rose-950/50 dark:text-rose-300"
-								title={fields("bloodGroup")}
-							>
-								<LuDroplet className="size-3" /> {bloodGroup}
-							</span>
-						)}
-					</div>
-
-					<div className="grid grid-cols-2 gap-2">
-						{arms.length > 0 && (
-							<Tile
-								wide
-								label={t("bloodPressure")}
-								unit="mmHg"
-								abnormal={arms.some(
-									(a) => isAbnormal("systolic", a.systolic!.value) || isAbnormal("diastolic", a.diastolic!.value),
-								)}
-							>
-								<div className="flex flex-wrap gap-x-5 gap-y-1">
-									{arms.map(({ arm, systolic, diastolic }) => (
-										<div key={arm} className="grid">
-											<span className="text-muted-foreground text-[11px]">{t(`arm.${arm}`)}</span>
-											<span
-												className={cn(
-													"text-lg leading-tight font-semibold tabular-nums",
-													(isAbnormal("systolic", systolic!.value) || isAbnormal("diastolic", diastolic!.value)) &&
-														"text-amber-700 dark:text-amber-300",
-												)}
-											>
-												{systolic!.value}/{diastolic!.value}
+				<>
+					<Eyebrow>
+						{format.date(latest.vitals.measuredAt, { day: "numeric", month: "long", hour: "2-digit", minute: "2-digit" })}
+						{" · "}
+						{latest.vitals.recordedBy ?? t(`source.${latest.source}`)}
+					</Eyebrow>
+					{unusual.length > 0 && (
+						<div className="flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 p-3 text-amber-900">
+							<div className="grid min-w-0 flex-1 gap-1">
+								<Eyebrow className="text-amber-800">{t("watch")}</Eyebrow>
+								<ul className="grid gap-0.5 text-sm font-medium">
+									{unusual.map((r) => (
+										<li key={r.key} className="flex justify-between gap-2">
+											<span className="truncate">{r.title}</span>
+											<span dir="ltr" className="shrink-0 tabular-nums">
+												{r.value} {r.unit}
 											</span>
-											{olderDate(systolic!.date) && (
-												<span className="text-muted-foreground text-[11px]">{olderDate(systolic!.date)}</span>
-											)}
-										</div>
+										</li>
 									))}
-								</div>
-							</Tile>
-						)}
-						{tiles.map(({ measure, rule, reading: r }) => (
-							<Tile
-								key={measure}
-								label={fields(measure)}
-								unit={MEASURES[measure].unit}
-								abnormal={rule ? isAbnormal(rule, r!.value) : false}
-								reading={r!}
-								older={olderDate(r!.date)}
-							/>
-						))}
-						{bmi != null && (
-							<Tile label={fields("bmi")} abnormal={bmi >= 30 || bmi < 18.5} reading={{ value: bmi, previous: null, date: "" }}>
-								<span className="text-muted-foreground text-[11px]">{bmiLabel(bmiCategory(bmi))}</span>
-							</Tile>
-						)}
-					</div>
-
-					{sizes.length > 0 && (
-						<dl className="grid gap-1.5 border-t pt-3 text-xs">
-							{sizes.map(({ measure, reading: r }) => (
-								<div key={measure} className="flex items-baseline justify-between gap-3">
-									<dt className="text-muted-foreground truncate">{fields(measure)}</dt>
-									<dd className="shrink-0 tabular-nums">
-										<span className="font-medium">{format.number(r!.value)}</span> {MEASURES[measure].unit}
-										{olderDate(r!.date) && <span className="text-muted-foreground"> · {olderDate(r!.date)}</span>}
-									</dd>
-								</div>
-							))}
-						</dl>
+								</ul>
+							</div>
+							<LuTriangleAlert className="mt-0.5 size-4 shrink-0" />
+						</div>
 					)}
-				</div>
+					<dl className="grid grid-cols-2 gap-2">
+						{results.map((r) => (
+							<SmallCard key={r.key} icon={r.icon} label={r.label} title={r.title}>
+								<dd className="grid gap-0.5">
+									<span
+										dir="ltr"
+										className={cn(
+											"text-base font-semibold tabular-nums rtl:text-end",
+											r.abnormal && "text-amber-700",
+										)}
+									>
+										{r.value}
+										{r.unit && <span className="text-muted-foreground ms-1 text-xs font-normal">{r.unit}</span>}
+									</span>
+									<span
+										className={cn(
+											"truncate text-xs",
+											r.abnormal ? "text-amber-700" : "text-muted-foreground",
+										)}
+									>
+										{r.status}
+									</span>
+								</dd>
+							</SmallCard>
+						))}
+					</dl>
+				</>
 			)}
 
 			<Sheet open={open} onOpenChange={setOpen}>
@@ -242,92 +280,27 @@ export function LatestVitals({
 					</div>
 				</SheetContent>
 			</Sheet>
-		</Card>
+		</section>
 	);
 }
 
 /** A measure's latest value, and the one before it when there is one. */
 type Reading = { value: number; previous: number | null; date: string };
 
-/** The tiles, most looked-at first; the abnormal rule each follows. */
-const TILES: { measure: Measure; rule?: Parameters<typeof isAbnormal>[0] }[] = [
-	{ measure: "heartRate", rule: "heartRate" },
-	{ measure: "spo2", rule: "spo2" },
-	{ measure: "temperatureC", rule: "temperature" },
-	{ measure: "weightKg" },
-	{ measure: "heightCm" },
-	{ measure: "glycemia", rule: "glycemia" },
-	{ measure: "glycemiaPostprandial", rule: "glycemiaPostprandial" },
-	{ measure: "hba1c", rule: "hba1c" },
-];
-/** Body measurements: looked at less, listed under the tiles. */
-const SIZES: Measure[] = ["waistCm", "abdominalCircumferenceCm", "headCircumferenceCm"];
+/** One result panel: the measure, its value, a word on it. */
+type Result = { key: string; icon: IconType; label: string; title: string; value: string; unit?: string; abnormal: boolean; status: string };
 
-/** One constante: label, value large with its unit, the change since last time; amber when unusual. */
-function Tile({
-	label,
-	unit,
-	abnormal,
-	reading,
-	older,
-	wide,
-	children,
-}: {
-	label: string;
-	unit?: string;
-	abnormal: boolean;
-	reading?: Reading;
-	older?: string | null;
-	wide?: boolean;
-	children?: React.ReactNode;
-}) {
-	const t = useTranslations("dossier.latest");
-	const format = useFormat();
-	const change = reading && reading.previous != null ? Math.round((reading.value - reading.previous) * 10) / 10 : 0;
-	return (
-		<div
-			className={cn(
-				"grid content-start gap-1 rounded-lg border p-2.5",
-				wide && "col-span-2",
-				abnormal
-					? "border-amber-200 bg-amber-50/70 dark:border-amber-900 dark:bg-amber-950/30"
-					: "bg-muted/40 border-transparent",
-			)}
-		>
-			<p className="text-muted-foreground flex items-center gap-1 text-[11px] leading-tight">
-				<span className="min-w-0 truncate" title={label}>
-					{label}
-				</span>
-				{abnormal && (
-					<LuTriangleAlert className="size-3 shrink-0 text-amber-600 dark:text-amber-400" aria-label={t("unusual")} />
-				)}
-				{wide && unit && <span className="ms-auto shrink-0">{unit}</span>}
-			</p>
-			{reading && (
-				<p className="flex flex-wrap items-baseline gap-x-1">
-					<span
-						className={cn(
-							"text-lg leading-tight font-semibold tabular-nums",
-							abnormal && "text-amber-700 dark:text-amber-300",
-						)}
-					>
-						{format.number(reading.value)}
-					</span>
-					{unit && <span className="text-muted-foreground text-xs">{unit}</span>}
-				</p>
-			)}
-			{children}
-			{reading && (change !== 0 || older) && (
-				<p className="text-muted-foreground flex items-center gap-1.5 text-[11px] tabular-nums">
-					{change !== 0 && (
-						<span className="flex items-center gap-0.5" title={t("previous", { value: format.number(reading.previous!) })}>
-							{change > 0 ? <LuArrowUp className="size-3" /> : <LuArrowDown className="size-3" />}
-							{format.number(Math.abs(change))}
-						</span>
-					)}
-					{older && <span>{older}</span>}
-				</p>
-			)}
-		</div>
-	);
-}
+/** The panels after the blood pressure, most looked-at first; the abnormal rule each follows. */
+const TILES: { measure: Measure; icon: IconType; rule?: Parameters<typeof isAbnormal>[0] }[] = [
+	{ measure: "heartRate", icon: LuActivity, rule: "heartRate" },
+	{ measure: "spo2", icon: LuWind, rule: "spo2" },
+	{ measure: "temperatureC", icon: LuThermometer, rule: "temperature" },
+	{ measure: "weightKg", icon: LuScale },
+	{ measure: "heightCm", icon: LuRuler },
+	{ measure: "glycemia", icon: LuDroplet, rule: "glycemia" },
+	{ measure: "glycemiaPostprandial", icon: LuDroplet, rule: "glycemiaPostprandial" },
+	{ measure: "hba1c", icon: LuFlaskConical, rule: "hba1c" },
+	{ measure: "waistCm", icon: LuRuler },
+	{ measure: "abdominalCircumferenceCm", icon: LuRuler },
+	{ measure: "headCircumferenceCm", icon: LuRuler },
+];
