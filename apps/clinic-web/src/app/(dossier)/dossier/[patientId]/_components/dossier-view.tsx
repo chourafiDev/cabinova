@@ -148,8 +148,8 @@ export function DossierView({ patientId, visitId }: { patientId: string; visitId
 	];
 
 	const page = (
-		<main className="mx-auto grid w-full max-w-[1700px] grid-cols-1 gap-4 px-4 xl:min-h-0 xl:flex-1 xl:grid-cols-[360px_minmax(0,1fr)]">
-			<div className="no-scrollbar order-2 grid grid-cols-1 content-start gap-4 pb-4 xl:order-1 xl:overflow-y-auto xl:py-4">
+		<main className="mx-auto grid w-full max-w-[1700px] grid-cols-1 gap-4 px-4 xl:min-h-0 xl:flex-1 xl:grid-cols-[376px_minmax(0,1fr)]">
+			<div className="no-scrollbar order-2 grid grid-cols-1 content-start gap-4 pb-4 xl:order-1 xl:overflow-y-auto xl:border-e xl:py-4 xl:pe-4">
 				{p && <PatientAside patient={p} />}
 				<LatestVitals entries={measurements} points={points} loading={recorded.isPending || history.isPending} />
 			</div>
