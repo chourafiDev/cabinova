@@ -18,10 +18,9 @@ import {
 	LuStethoscope,
 	LuTimer,
 	LuTriangleAlert,
-	LuWallet,
 } from "react-icons/lu";
 import { PatientSheet } from "@/app/(clinic)/patients/_components/patient-sheet";
-import { CheckoutDialog } from "@/app/(clinic)/payments/_components/checkout-dialog";
+import { CheckoutPanel } from "@/app/(clinic)/payments/_components/checkout-dialog";
 import { AppointmentStatusBadge } from "@/components/appointment-status-badge";
 import { NoShowBadge } from "@/components/no-show-badge";
 import { Button } from "@/components/ui/button";
@@ -38,7 +37,7 @@ import { toPoint, type VitalSigns, vitalsKey } from "@/lib/vitals";
 import { ConsultationDraft, ConsultationSections, type WorkspaceHandle } from "./consultation-workspace";
 import { FinishButton } from "./finish-button";
 import { HistoryPanel } from "./history-panel";
-import { Card, MedicalCard, PatientAside } from "./patient-aside";
+import { MedicalCard, PatientAside } from "./patient-aside";
 import { PermanentNote, VisitReminder } from "./patient-notes";
 import { PrescriptionEditor } from "./prescription-editor";
 import { SaveStatus, type SaveState } from "./save-status";
@@ -60,7 +59,6 @@ export function DossierView({ patientId, visitId }: { patientId: string; visitId
 	const prescriptionEditor = useRef<WorkspaceHandle>(null);
 	const [tab, setTab] = useQueryState("onglet", TAB.withOptions({ history: "replace" }));
 	const [saveState, setSaveState] = useState<SaveState>({ status: "idle" });
-	const [checkout, setCheckout] = useState(false);
 
 	const patient = useQuery({
 		queryKey: ["patient", patientId],
@@ -186,13 +184,13 @@ export function DossierView({ patientId, visitId }: { patientId: string; visitId
 						<Planned fields={[t("planned.certificat.oneDay"), t("planned.certificat.period"), t("planned.certificat.content")]} />
 					</TabsContent>
 					<TabsContent value="prix">
+						{/* The acts and the payment, right here: no dialog over the consultation. */}
 						{withVisit(
-							<Card icon={LuReceipt} title={t("price.title")}>
-								<p className="text-muted-foreground text-sm">{t("price.hint")}</p>
-								<Button className="w-fit" onClick={() => setCheckout(true)}>
-									<LuWallet /> {t("price.open")}
-								</Button>
-							</Card>,
+							appointment && (
+								<div className="bg-card rounded-xl border p-5">
+									<CheckoutPanel appointmentId={appointment.id} />
+								</div>
+							),
 						)}
 					</TabsContent>
 					{/* Kept mounted: switching tabs never loses the medications being typed. */}
@@ -326,9 +324,6 @@ export function DossierView({ patientId, visitId }: { patientId: string; visitId
 			)}
 			{/* The administrative file (?patient=…), opened from the patient section. */}
 			<PatientSheet medical withinDossier />
-			{appointment && (
-				<CheckoutDialog appointmentId={checkout ? appointment.id : null} onOpenChange={(open) => !open && setCheckout(false)} />
-			)}
 		</div>
 	);
 }

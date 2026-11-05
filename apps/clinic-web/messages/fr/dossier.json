@@ -181,11 +181,6 @@
     "watch": "À surveiller",
     "historyCount": "Historique ({count})"
   },
-  "price": {
-    "title": "Prix de la consultation",
-    "hint": "Choisissez les actes de la visite et encaissez le paiement.",
-    "open": "Encaisser la visite"
-  },
   "planned": {
     "title": "Bientôt disponible",
     "certificat": {

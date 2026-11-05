@@ -3,7 +3,7 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { useState } from "react";
+import { createContext, useContext, useState } from "react";
 import {
 	LuCircleCheck,
 	LuLoader,
@@ -78,6 +78,52 @@ export function CheckoutDialog({
 	);
 }
 
+/**
+ * The same checkout, laid out in the page instead of a dialog (the
+ * dossier's Prix tab). After a payment or a save it starts over on the
+ * visit's updated account.
+ */
+export function CheckoutPanel({ appointmentId }: { appointmentId: string }) {
+	const user = useCurrentUser();
+	const [round, setRound] = useState(0);
+	return (
+		<Inline value>
+			<Checkout key={`${appointmentId}-${round}`} appointmentId={appointmentId} user={user} onDone={() => setRound((r) => r + 1)} />
+		</Inline>
+	);
+}
+
+/** In the page rather than a dialog: plain title and footer, nothing to close. */
+const Inline = createContext(false);
+
+function Head({ children }: { children: React.ReactNode }) {
+	return useContext(Inline) ? <div className="grid gap-1.5">{children}</div> : <DialogHeader>{children}</DialogHeader>;
+}
+
+function Title({ className, children }: { className?: string; children: React.ReactNode }) {
+	return useContext(Inline) ? (
+		<h2 className={cn("font-heading text-lg leading-snug font-semibold tracking-tight", className)}>{children}</h2>
+	) : (
+		<DialogTitle className={className}>{children}</DialogTitle>
+	);
+}
+
+function Description({ className, children }: { className?: string; children: React.ReactNode }) {
+	return useContext(Inline) ? (
+		<p className={cn("text-muted-foreground text-sm", className)}>{children}</p>
+	) : (
+		<DialogDescription className={className}>{children}</DialogDescription>
+	);
+}
+
+function Footer({ className, children }: { className?: string; children: React.ReactNode }) {
+	return useContext(Inline) ? (
+		<div className={cn("flex flex-col-reverse gap-2 border-t pt-4 sm:flex-row sm:justify-end", className)}>{children}</div>
+	) : (
+		<DialogFooter className={className}>{children}</DialogFooter>
+	);
+}
+
 function Checkout({
 	appointmentId,
 	user,
@@ -97,10 +143,10 @@ function Checkout({
 	if (!account.data || !acts.data) {
 		return (
 			<div className="grid gap-4">
-				<DialogHeader>
-					<DialogTitle>{t("title")}</DialogTitle>
-					<DialogDescription>{t("loading")}</DialogDescription>
-				</DialogHeader>
+				<Head>
+					<Title>{t("title")}</Title>
+					<Description>{t("loading")}</Description>
+				</Head>
 				<Skeleton className="h-32" />
 				{account.error && <p className="text-destructive text-sm">{account.error.message}</p>}
 			</div>
@@ -122,6 +168,7 @@ function CheckoutForm({
 }) {
 	const router = useRouter();
 	const queryClient = useQueryClient();
+	const inline = useContext(Inline);
 	const { appointment: visit } = account;
 	const owner = user.role === "owner";
 	const [rows, setRows] = useState<Row[]>(() => account.items.map(rowOf));
@@ -203,10 +250,10 @@ function CheckoutForm({
 	if (paid) {
 		return (
 			<div className="grid gap-5">
-				<DialogHeader>
-					<DialogTitle className="sr-only">{t("paidTitle")}</DialogTitle>
-					<DialogDescription className="sr-only">{t("receiptReady")}</DialogDescription>
-				</DialogHeader>
+				<Head>
+					<Title className="sr-only">{t("paidTitle")}</Title>
+					<Description className="sr-only">{t("receiptReady")}</Description>
+				</Head>
 				<div className="flex flex-col items-center gap-2 py-4 text-center">
 					<span className="flex size-12 items-center justify-center rounded-full bg-emerald-50 text-emerald-600 dark:bg-emerald-500/15 dark:text-emerald-300">
 						<LuCircleCheck className="size-6" />
@@ -217,7 +264,7 @@ function CheckoutForm({
 						{account.balance > 0 ? ` · ${t("remaining", { amount: mad(account.balance) })}` : ` · ${t("settled")}`}
 					</p>
 				</div>
-				<DialogFooter>
+				<Footer>
 					<Button variant="outline" onClick={onDone}>
 						{t("finish")}
 					</Button>
@@ -226,7 +273,7 @@ function CheckoutForm({
 							<LuPrinter /> {t("print")}
 						</a>
 					</Button>
-				</DialogFooter>
+				</Footer>
 			</div>
 		);
 	}
@@ -237,15 +284,15 @@ function CheckoutForm({
 
 	return (
 		<div className="grid gap-5">
-			<DialogHeader>
-				<DialogTitle>{t("titleFor", { name: patientName })}</DialogTitle>
-				<DialogDescription>
+			<Head>
+				<Title>{t("titleFor", { name: patientName })}</Title>
+				<Description>
 					<span className="first-letter:uppercase">
 						{format.date(visit.startsAt, { weekday: "long", year: undefined, hour: "2-digit", minute: "2-digit" })}
 					</span>{" "}
 					· {visit.practitioner.name} · {formatFileNumber(visit.patient.fileNumber)}
-				</DialogDescription>
-			</DialogHeader>
+				</Description>
+			</Head>
 
 			{locked && (
 				<p className="bg-muted text-muted-foreground flex items-start gap-2 rounded-lg p-3 text-sm">
@@ -411,30 +458,35 @@ function CheckoutForm({
 				</p>
 			)}
 
-			<DialogFooter className="gap-2">
-				{!locked && remaining > 0 ? (
-					<>
-						<Button type="button" variant="outline" disabled={saving || !changed} onClick={() => save(false)}>
-							{t("saveOnly")}
-						</Button>
-						<Button type="button" disabled={saving} onClick={() => save(true)}>
-							{saving ? <LuLoader className="animate-spin" /> : <LuReceipt />} {t("collect")}{" "}
-							{amountValue ? mad(amountValue) : ""}
-						</Button>
-					</>
-				) : (
-					<>
-						<Button type="button" variant="outline" onClick={onDone}>
-							{t("close")}
-						</Button>
-						{changed && (
-							<Button type="button" disabled={saving} onClick={() => save(false)}>
-								{saving && <LuLoader className="animate-spin" />} {t("saveActs")}
+			{/* In the page there is nothing to close: no footer when nothing is left to do. */}
+			{(!inline || (!locked && remaining > 0) || changed) && (
+				<Footer className="gap-2">
+					{!locked && remaining > 0 ? (
+						<>
+							<Button type="button" variant="outline" disabled={saving || !changed} onClick={() => save(false)}>
+								{t("saveOnly")}
 							</Button>
-						)}
-					</>
-				)}
-			</DialogFooter>
+							<Button type="button" disabled={saving} onClick={() => save(true)}>
+								{saving ? <LuLoader className="animate-spin" /> : <LuReceipt />} {t("collect")}{" "}
+								{amountValue ? mad(amountValue) : ""}
+							</Button>
+						</>
+					) : (
+						<>
+							{!inline && (
+								<Button type="button" variant="outline" onClick={onDone}>
+									{t("close")}
+								</Button>
+							)}
+							{changed && (
+								<Button type="button" disabled={saving} onClick={() => save(false)}>
+									{saving && <LuLoader className="animate-spin" />} {t("saveActs")}
+								</Button>
+							)}
+						</>
+					)}
+				</Footer>
+			)}
 		</div>
 	);
 }
