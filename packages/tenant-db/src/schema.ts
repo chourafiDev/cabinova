@@ -555,6 +555,72 @@ export const prescriptions = pgTable(
   (t) => [index('prescriptions_patient_idx').on(t.patientId)],
 );
 
+// ── Certificats ───────────────────────────────────────────────────────────
+
+/** A certificate for one day, or for a period (repos, arrêt de travail). */
+export const certificateKind = pgEnum('certificate_kind', ['day', 'period']);
+
+/**
+ * A medical certificate given to a patient (doctors only), printed on the
+ * cabinet's letterhead. A legal document: never edited once given; a
+ * mistake is cancelled, and stays in the history marked so.
+ */
+export const certificates = pgTable(
+  'certificates',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    patientId: uuid('patient_id')
+      .notNull()
+      .references(() => patients.id, { onDelete: 'restrict' }),
+    /** The visit it was written at, if any. */
+    appointmentId: uuid('appointment_id').references(() => appointments.id, {
+      onDelete: 'set null',
+    }),
+    practitionerId: uuid('practitioner_id').references(() => users.id, {
+      onDelete: 'set null',
+    }),
+    kind: certificateKind('kind').notNull(),
+    /** The day, or the first day of the period. */
+    startsOn: date('starts_on').notNull(),
+    /** Last day of the period (inclusive); null for a one-day certificate. */
+    endsOn: date('ends_on'),
+    /** The text as printed: sanitized HTML from the editor. */
+    body: text('body').notNull(),
+    cancelledAt: timestamp('cancelled_at', { withTimezone: true }),
+    cancelledBy: uuid('cancelled_by').references(() => users.id, {
+      onDelete: 'set null',
+    }),
+    ...timestamps,
+  },
+  (t) => [
+    index('certificates_patient_idx').on(t.patientId),
+    check(
+      'certificates_period',
+      sql`(${t.kind} = 'day' and ${t.endsOn} is null) or (${t.kind} = 'period' and ${t.endsOn} >= ${t.startsOn})`,
+    ),
+  ],
+);
+
+/**
+ * A doctor's own certificate models (arrêt de travail, aptitude au sport…):
+ * text with blanks ({patient}, {du}, {au}, {jours}…) filled in when used.
+ */
+export const certificateModels = pgTable(
+  'certificate_models',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    practitionerId: uuid('practitioner_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    name: text('name').notNull(),
+    body: text('body').notNull(),
+    ...timestamps,
+  },
+  (t) => [
+    uniqueIndex('certificate_models_name_idx').on(t.practitionerId, sql`lower(${t.name})`),
+  ],
+);
+
 // ── Encaissements ─────────────────────────────────────────────────────────
 // Amounts are integers in centimes of MAD, like the platform's invoices.
 

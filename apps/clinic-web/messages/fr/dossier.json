@@ -183,12 +183,60 @@
   },
   "planned": {
     "title": "Bientôt disponible",
-    "certificat": {
-      "oneDay": "Certificat d’un jour (date)",
-      "period": "Certificat d’une période (nombre de jours, début, fin)",
-      "content": "Contenu du certificat"
-    },
     "bilan": "Analyses biologiques demandées",
     "compteRendu": "Compte rendu de la consultation"
+  },
+  "certificate": {
+    "title": "Certificat médical",
+    "kind": {
+      "day": "Certificat d’un jour",
+      "period": "Certificat d’une période"
+    },
+    "date": "Date",
+    "days": "Nb jours",
+    "from": "Du",
+    "to": "Au (inclus)",
+    "models": "Modèles :",
+    "builtIn": {
+      "rest": "Repos (période)",
+      "medical": "Certificat médical (jour)"
+    },
+    "manageModels": "Gérer mes modèles",
+    "reapply": "Réappliquer le modèle (le texte suivra de nouveau les dates)",
+    "final": "Un certificat enregistré ne se modifie plus : en cas d’erreur, annulez-le et refaites-le.",
+    "saveAndPrint": "Enregistrer et imprimer",
+    "saved": "Certificat enregistré",
+    "saveError": "Enregistrement impossible.",
+    "datesError": "La fin de la période doit suivre son début.",
+    "history": "Historique des certificats",
+    "empty": "Aucun certificat pour ce patient.",
+    "periodSummary": "Repos de {days, plural, one {# jour} other {# jours}} · du {from} au {to}",
+    "daySummary": "Certificat du {date}",
+    "givenOn": "Délivré le {date} par {by}",
+    "cancelledOn": "annulé le {date} par {by}",
+    "cancelled": "Annulé",
+    "print": "Imprimer",
+    "cancel": "Annuler",
+    "confirmCancel": "Annuler le certificat ?",
+    "cancelDone": "Certificat annulé",
+    "modelsSheet": {
+      "title": "Mes modèles de certificat",
+      "description": "Écrits une fois, ils se remplissent avec le patient et les dates. Seul vous les voyez.",
+      "new": "Nouveau modèle",
+      "empty": "Aucun modèle : les modèles Cabinova restent disponibles.",
+      "name": "Nom du modèle",
+      "namePlaceholder": "Ex. Arrêt de travail, Aptitude au sport",
+      "text": "Texte",
+      "blanks": "Blancs remplis automatiquement :",
+      "nameError": "Nom du modèle : 2 caractères minimum.",
+      "saved": "Modèle enregistré",
+      "error": "Opération impossible.",
+      "cancel": "Annuler",
+      "save": "Enregistrer",
+      "edit": "Modifier {name}",
+      "delete": "Supprimer {name}",
+      "confirmDelete": "Supprimer ?",
+      "deleted": "« {name} » supprimé"
+    }
   }
 }

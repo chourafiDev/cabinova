@@ -27,6 +27,11 @@ import { ConsultationsService } from './consultations/consultations.service.js';
 import { ClosuresController } from './closures/closures.controller.js';
 import { ClosuresService } from './closures/closures.service.js';
 import { PhrasesController } from './phrases/phrases.controller.js';
+import {
+  CertificateModelsController,
+  CertificatesController,
+} from './certificates/certificates.controller.js';
+import { CertificatesService } from './certificates/certificates.service.js';
 import { PrescriptionsController } from './prescriptions/prescriptions.controller.js';
 import { PrescriptionsService } from './prescriptions/prescriptions.service.js';
 import { CatalogModule } from './database/catalog.module.js';
@@ -88,6 +93,8 @@ import { TenancyService } from './tenancy/tenancy.service.js';
     ConsultationsController,
     PhrasesController,
     PrescriptionsController,
+    CertificatesController,
+    CertificateModelsController,
     DashboardController,
     SettingsController,
     TeamController,
@@ -113,6 +120,7 @@ import { TenancyService } from './tenancy/tenancy.service.js';
     ClosuresService,
     ConsultationsService,
     PrescriptionsService,
+    CertificatesService,
     DashboardService,
     CabinetService,
     MailService,

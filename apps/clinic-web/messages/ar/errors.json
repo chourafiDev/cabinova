@@ -113,5 +113,11 @@
   "BP_ORDER": "يجب أن يكون الضغط الانقباضي أعلى من الانبساطي.",
   "MEASURED_IN_FUTURE": "لا يمكن أن يكون تاريخ القياس في المستقبل.",
   "VITALS_NOT_FOUND": "القياس غير موجود.",
-  "VITALS_NOT_YOURS": "لا يمكن حذف هذا القياس إلا من طرف من سجله أو الطبيب المسؤول."
+  "VITALS_NOT_YOURS": "لا يمكن حذف هذا القياس إلا من طرف من سجله أو الطبيب المسؤول.",
+  "CERTIFICATE_NOT_FOUND": "الشهادة غير موجودة.",
+  "CERTIFICATE_CANCELLED": "تم إلغاء هذه الشهادة.",
+  "CERTIFICATE_DATES": "يجب أن تأتي نهاية المدة بعد بدايتها.",
+  "CERTIFICATE_EMPTY": "الشهادة فارغة.",
+  "CERTIFICATE_MODEL_NOT_FOUND": "النموذج غير موجود.",
+  "CERTIFICATE_MODEL_NAME_TAKEN": "يوجد نموذج يحمل هذا الاسم."
 }

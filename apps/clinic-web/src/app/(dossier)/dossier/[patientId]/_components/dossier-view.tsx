@@ -34,6 +34,7 @@ import type { PastPrescription, Prescription } from "@/lib/prescriptions";
 import { useFormat } from "@/lib/use-format";
 import { useNow } from "@/lib/use-now";
 import { toPoint, type VitalSigns, vitalsKey } from "@/lib/vitals";
+import { CertificateTab } from "./certificate-tab";
 import { ConsultationDraft, ConsultationSections, type WorkspaceHandle } from "./consultation-workspace";
 import { FinishButton } from "./finish-button";
 import { HistoryPanel } from "./history-panel";
@@ -181,7 +182,7 @@ export function DossierView({ patientId, visitId }: { patientId: string; visitId
 						)}
 					</TabsContent>
 					<TabsContent value="certificat">
-						<Planned fields={[t("planned.certificat.oneDay"), t("planned.certificat.period"), t("planned.certificat.content")]} />
+						{p && <CertificateTab patient={p} appointmentId={visitId && visit.data ? visit.data.appointment.id : null} />}
 					</TabsContent>
 					<TabsContent value="prix">
 						{/* The acts and the payment, right here: no dialog over the consultation. */}

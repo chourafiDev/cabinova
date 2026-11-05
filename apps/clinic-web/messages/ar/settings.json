@@ -170,6 +170,8 @@
       "integrations_google_disconnect": "فصل حساب Google",
       "consultation_save": "حرّر استشارة",
       "prescription_save": "حرّر وصفة",
+      "certificate_create": "سلّم شهادة طبية لـ",
+      "certificate_cancel": "ألغى شهادة طبية لـ",
       "closure_create": "سجّل غيابًا",
       "closure_delete": "حذف غيابًا",
       "patient_vitals": "سجّل المؤشرات الحيوية لـ",

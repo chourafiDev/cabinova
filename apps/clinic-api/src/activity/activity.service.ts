@@ -20,7 +20,8 @@ export type ActivityEntity =
   | 'payment'
   | 'charge'
   | 'session'
-  | 'meeting';
+  | 'meeting'
+  | 'certificate';
 
 const PATIENT_NAME = `upper(p.last_name) || ' ' || p.first_name`;
 
@@ -36,6 +37,9 @@ const DESCRIBE: Record<ActivityEntity, string> = {
   act: 'select name as target from acts where id = $1',
   space: 'select name as target from spaces where id = $1',
   meeting: 'select title as target from meetings where id = $1',
+  certificate: `select ${PATIENT_NAME} as target
+                  from certificates c join patients p on p.id = c.patient_id
+                 where c.id = $1`,
   payment: `select ${PATIENT_NAME} || coalesce(' · ' || c.receipt_number, '') as target
               from payments c join patients p on p.id = c.patient_id
              where c.id = $1`,
@@ -46,7 +50,7 @@ const DESCRIBE: Record<ActivityEntity, string> = {
 
 /** The prefixes of each filter in the journal. */
 const CATEGORIES: Record<string, string[]> = {
-  patients: ['patient.', 'consultation.', 'prescription.'],
+  patients: ['patient.', 'consultation.', 'prescription.', 'certificate.'],
   appointments: ['appointment.', 'closure.'],
   payments: ['payment.', 'cashier.', 'act.'],
   team: ['team.', 'meeting.'],

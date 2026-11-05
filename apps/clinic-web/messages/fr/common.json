@@ -203,5 +203,20 @@
     "placeholder": "Choisir un acte",
     "search": "Nom ou abréviation (ex. CS)…",
     "empty": "Aucun acte trouvé."
+  },
+  "editor": {
+    "toolbar": "Mise en forme",
+    "bold": "Gras",
+    "italic": "Italique",
+    "underline": "Souligné",
+    "strike": "Barré",
+    "left": "Aligner à gauche",
+    "center": "Centrer",
+    "right": "Aligner à droite",
+    "justify": "Justifier",
+    "bulletList": "Liste à puces",
+    "orderedList": "Liste numérotée",
+    "undo": "Annuler",
+    "redo": "Rétablir"
   }
 }

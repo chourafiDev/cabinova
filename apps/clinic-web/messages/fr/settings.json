@@ -170,6 +170,8 @@
       "integrations_google_disconnect": "a déconnecté le compte Google",
       "consultation_save": "a rédigé la consultation de",
       "prescription_save": "a rédigé l’ordonnance de",
+      "certificate_create": "a délivré un certificat à",
+      "certificate_cancel": "a annulé un certificat de",
       "closure_create": "a enregistré une absence",
       "closure_delete": "a supprimé une absence",
       "patient_vitals": "a enregistré les constantes de",
