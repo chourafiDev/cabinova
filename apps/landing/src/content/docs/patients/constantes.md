@@ -3,11 +3,10 @@ Les constantes sont les mesures prises au cabinet : poids, tension, glycémie…
 ## Saisir des constantes
 
 1. Ouvrez la fiche du patient, puis l’onglet **Constantes**.
-2. Vérifiez la date de la mesure : elle est réglée sur maintenant.
-3. Remplissez les valeurs mesurées, et seulement celles-là.
-4. Cliquez sur **Enregistrer les constantes**.
+2. Remplissez les valeurs mesurées, et seulement celles-là.
+3. Cliquez sur **Enregistrer les constantes**.
 
-Chaque saisie est datée et s’ajoute à l’historique, sans remplacer la précédente.
+Chaque saisie est datée automatiquement au moment de l’enregistrement, et s’ajoute à l’historique sans remplacer la précédente.
 
 ## Les mesures disponibles
 

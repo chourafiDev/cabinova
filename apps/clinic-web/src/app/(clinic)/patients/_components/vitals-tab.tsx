@@ -1,7 +1,6 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { format as formatDay } from "date-fns";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { LuActivity, LuHeartPulse, LuLoader, LuRuler, LuThermometer } from "react-icons/lu";
@@ -18,14 +17,12 @@ import { ARMS, INTEGER_MEASURES, MEASURES, type Measure, SECTIONS, type VitalSig
 const ICONS = { general: LuRuler, endocrinology: LuActivity, cardio: LuHeartPulse, other: LuThermometer } as const;
 const NONE = "none";
 
-type Draft = Record<Measure, string> & { bloodGroup: string; note: string; measuredAt: string };
+type Draft = Record<Measure, string> & { bloodGroup: string; note: string };
 
-const now = () => formatDay(new Date(), "yyyy-MM-dd'T'HH:mm");
 const empty = (): Draft => ({
 	...(Object.fromEntries(Object.keys(MEASURES).map((m) => [m, ""])) as Record<Measure, string>),
 	bloodGroup: NONE,
 	note: "",
-	measuredAt: now(),
 });
 
 /** What's wrong with a typed value, or null. */
@@ -69,7 +66,6 @@ export function VitalsTab({ patientId, archived }: { patientId: string; archived
 					...Object.fromEntries((Object.keys(MEASURES) as Measure[]).map((m) => [m, toNumber(draft[m])])),
 					bloodGroup: draft.bloodGroup === NONE ? null : draft.bloodGroup,
 					note: draft.note.trim() || null,
-					measuredAt: new Date(draft.measuredAt).toISOString(),
 				}),
 			}),
 		onSuccess: () => {
@@ -116,11 +112,6 @@ export function VitalsTab({ patientId, archived }: { patientId: string; archived
 				<p className="bg-muted/60 rounded-xl px-4 py-3 text-sm">{t("archived")}</p>
 			) : (
 				<form onSubmit={submit} noValidate className="grid gap-4">
-					<label className="grid max-w-xs gap-1 text-sm">
-						<span className="text-muted-foreground text-xs">{t("measuredAt")}</span>
-						<Input type="datetime-local" value={draft.measuredAt} max={now()} onChange={(e) => set("measuredAt", e.target.value)} />
-					</label>
-
 					{SECTIONS.map(({ key, measures }) => {
 						const Icon = ICONS[key];
 						return (

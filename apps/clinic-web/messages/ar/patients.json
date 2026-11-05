@@ -185,7 +185,6 @@
   },
   "vitals": {
     "title": "المؤشرات الحيوية",
-    "measuredAt": "تاريخ القياس",
     "groups": {
       "general": "معلومات عامة",
       "endocrinology": "الغدد الصماء",

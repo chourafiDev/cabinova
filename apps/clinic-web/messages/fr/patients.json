@@ -185,7 +185,6 @@
   },
   "vitals": {
     "title": "Constantes",
-    "measuredAt": "Date de la mesure",
     "groups": {
       "general": "Informations générales",
       "endocrinology": "Endocrinologie",
