@@ -27,7 +27,8 @@ export const DOCS: DocSection[] = [
 		title: "Patients",
 		pages: [
 			{ slug: "patients/dossiers", title: "Dossiers patients", description: "Créer, retrouver et compléter un dossier." },
-			{ slug: "patients/antecedents", title: "Antécédents", description: "Le profil médical, réservé aux médecins." },
+			{ slug: "patients/constantes", title: "Constantes", description: "Poids, tension, glycémie : les mesures prises au cabinet." },
+			{ slug: "patients/antecedents", title: "Antécédents", description: "Le profil médical, dans le dossier médical du médecin." },
 			{ slug: "patients/archivage", title: "Archiver un dossier", description: "Sortir un dossier de la liste sans jamais le supprimer." },
 		],
 	},

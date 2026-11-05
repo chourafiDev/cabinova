@@ -22,6 +22,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { api } from "@/lib/api-client";
 import type { Appointment } from "@/lib/appointments";
 import type { PastConsultation, Visit } from "@/lib/consultations";
+import { toPoint, type VitalSigns, vitalsKey } from "@/lib/vitals";
 import { initials } from "@/lib/format";
 import { ageOf, formatFileNumber, fullName, type PatientFile } from "@/lib/patients";
 import type { PastPrescription, Prescription } from "@/lib/prescriptions";
@@ -30,6 +31,7 @@ import { useNow } from "@/lib/use-now";
 import { ConsultationWorkspace, type WorkspaceHandle } from "./consultation-workspace";
 import { FinishButton } from "./finish-button";
 import { HistoryPanel } from "./history-panel";
+import { RecordedVitals } from "./recorded-vitals";
 import { PatientNotes } from "./patient-notes";
 import { PrescriptionEditor } from "./prescription-editor";
 import { type Point, TrendsCard } from "./trends-card";
@@ -69,6 +71,10 @@ export function DossierView({ patientId, visitId }: { patientId: string; visitId
 			api<{ prescription: Prescription | null }>(`/prescriptions/visit/${visitId}`).then((r) => r.prescription),
 		enabled: !!visitId,
 	});
+	const recorded = useQuery({
+		queryKey: vitalsKey(patientId),
+		queryFn: () => api<VitalSigns[]>(`/patients/${patientId}/vitals`),
+	});
 	const prescriptions = useQuery({
 		queryKey: ["prescriptions", patientId],
 		queryFn: () => api<PastPrescription[]>(`/prescriptions?patientId=${patientId}`),
@@ -87,10 +93,12 @@ export function DossierView({ patientId, visitId }: { patientId: string; visitId
 	const current = visit.data?.consultation;
 	const pastPrescriptions = prescriptions.data?.filter((r) => r.appointmentId !== visitId);
 	const lines = prescription.data?.items.length ?? 0;
+	// Front-desk measurements join the curves, in date order with the visits.
 	const points: Point[] = [
 		...(past ?? []).toReversed(),
 		...(current && appointment ? [{ ...current, date: appointment.startsAt }] : []),
-	];
+		...(recorded.data ?? []).map(toPoint),
+	].sort((a, b) => a.date.localeCompare(b.date));
 	const next = appointments.data
 		?.filter((a) => a.id !== visitId && new Date(a.startsAt) > new Date() && ["scheduled", "confirmed"].includes(a.status))
 		.at(-1);
@@ -249,6 +257,7 @@ export function DossierView({ patientId, visitId }: { patientId: string; visitId
 
 				<aside className="order-3 grid min-w-0 gap-4">
 					<TrendsCard points={points} />
+					<RecordedVitals vitals={recorded.data} loading={recorded.isPending} />
 					<HistoryPanel consultations={past} prescriptions={pastPrescriptions} loading={history.isPending} />
 				</aside>
 			</main>

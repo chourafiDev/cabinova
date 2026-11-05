@@ -52,7 +52,8 @@
       "overview": "نظرة عامة",
       "appointments": "المواعيد",
       "payments": "المدفوعات",
-      "medical": "السوابق"
+      "medical": "السوابق",
+      "vitals": "المؤشرات"
     },
     "knownAllergies": "حساسية معروفة",
     "archivedOn": "أُرشف الملف بتاريخ {date}: يمكن الاطلاع عليه دون تعديله. استعده لتعديله أو تحديد موعد.",
@@ -181,5 +182,74 @@
     "date": "تاريخ غير صالح",
     "cin": "رقم البطاقة غير صالح (مثال: BK123456)",
     "email": "البريد الإلكتروني غير صالح"
+  },
+  "vitals": {
+    "title": "المؤشرات الحيوية",
+    "measuredAt": "تاريخ القياس",
+    "groups": {
+      "general": "معلومات عامة",
+      "endocrinology": "الغدد الصماء",
+      "cardio": "القلب والشرايين",
+      "other": "أخرى"
+    },
+    "fields": {
+      "weightKg": "الوزن",
+      "heightCm": "الطول",
+      "bmi": "مؤشر كتلة الجسم",
+      "temperatureC": "درجة الحرارة",
+      "bloodGroup": "فصيلة الدم",
+      "glycemiaPostprandial": "السكر بعد الأكل",
+      "glycemia": "السكر على الريق",
+      "hba1c": "الهيموغلوبين السكري HbA1c",
+      "heartRate": "نبضات القلب",
+      "spo2": "تشبع الأكسجين SaO₂",
+      "waistCm": "محيط الخصر",
+      "headCircumferenceCm": "محيط الرأس",
+      "abdominalCircumferenceCm": "محيط البطن (السرة)"
+    },
+    "bpRight": "ضغط الدم، الذراع الأيمن",
+    "bpLeft": "ضغط الدم، الذراع الأيسر",
+    "systolic": "الانقباضي",
+    "diastolic": "الانبساطي",
+    "noBloodGroup": "غير مُدخل",
+    "bmiAuto": "يُحسب من الوزن والطول",
+    "bmiCategory": {
+      "under": "نحافة",
+      "normal": "طبيعي",
+      "over": "زيادة الوزن",
+      "obese": "سمنة"
+    },
+    "note": "ملاحظة",
+    "notePlaceholder": "مثال: المريض صائم، قياس بعد مجهود…",
+    "save": "حفظ المؤشرات",
+    "saved": "تم حفظ المؤشرات",
+    "saveError": "تعذر الحفظ",
+    "range": "بين {min} و{max}",
+    "emptyForm": "أدخل مؤشرًا واحدًا على الأقل.",
+    "halfPressure": "أدخل قيمتي ضغط الدم: الانقباضي والانبساطي.",
+    "history": "آخر القياسات",
+    "empty": "لا توجد مؤشرات مسجلة لهذا المريض.",
+    "by": "بواسطة {name}",
+    "delete": "حذف القياس",
+    "confirmDelete": "تأكيد الحذف",
+    "deleted": "تم حذف القياس",
+    "archived": "هذا الملف مؤرشف: لا يمكن إضافة مؤشرات إليه.",
+    "short": {
+      "weightKg": "الوزن",
+      "heightCm": "الطول",
+      "temperatureC": "الحرارة",
+      "glycemia": "السكر",
+      "glycemiaPostprandial": "السكر بعد الأكل",
+      "hba1c": "HbA1c",
+      "heartRate": "النبض",
+      "spo2": "SaO₂",
+      "waistCm": "محيط الخصر",
+      "headCircumferenceCm": "محيط الرأس",
+      "abdominalCircumferenceCm": "محيط البطن",
+      "bpRight": "ض.د يمين",
+      "bpLeft": "ض.د يسار",
+      "bmi": "م.ك.ج",
+      "bloodGroup": "الفصيلة"
+    }
   }
 }

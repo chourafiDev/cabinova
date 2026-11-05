@@ -155,7 +155,9 @@
       "consultation_save": "حرّر استشارة",
       "prescription_save": "حرّر وصفة",
       "closure_create": "سجّل غيابًا",
-      "closure_delete": "حذف غيابًا"
+      "closure_delete": "حذف غيابًا",
+      "patient_vitals": "سجّل المؤشرات الحيوية لـ",
+      "patient_vitals_delete": "حذف قياسًا من المؤشرات الحيوية لـ"
     }
   },
   "cabinet": {

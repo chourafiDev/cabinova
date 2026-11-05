@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpCode,
   Param,
@@ -18,14 +19,23 @@ import { CurrentSpace, SpaceGuard } from '../spaces/space.guard.js';
 import type { Space } from '../spaces/spaces.service.js';
 import { Clinic } from '../tenancy/decorators.js';
 import type { ClinicContext } from '../tenancy/tenancy.service.js';
-import { ListPatientsQuery, MedicalProfileDto, PatientDto } from './dto.js';
+import {
+  ListPatientsQuery,
+  MedicalProfileDto,
+  PatientDto,
+  VitalSignsDto,
+} from './dto.js';
 import { PatientsService } from './patients.service.js';
+import { VitalsService } from './vitals.service.js';
 
 /** The current space's patients, for its staff; antécédents for doctors only. */
 @UseGuards(SpaceGuard)
 @Controller('patients')
 export class PatientsController {
-  constructor(private readonly patients: PatientsService) {}
+  constructor(
+    private readonly patients: PatientsService,
+    private readonly vitals: VitalsService,
+  ) {}
 
   @Get()
   list(
@@ -90,6 +100,40 @@ export class PatientsController {
     @Param('id', ParseUUIDPipe) id: string,
   ) {
     return this.patients.setArchived(db, space.id, id, false);
+  }
+
+  /** Constantes, for the whole staff. */
+  @Get(':id/vitals')
+  listVitals(
+    @Clinic() { db }: ClinicContext,
+    @CurrentSpace() space: Space,
+    @Param('id', ParseUUIDPipe) id: string,
+  ) {
+    return this.vitals.list(db, space.id, id);
+  }
+
+  @Activity('patient.vitals', 'patient')
+  @Post(':id/vitals')
+  addVitals(
+    @Clinic() { db }: ClinicContext,
+    @CurrentSpace() space: Space,
+    @CurrentUser() user: ClinicUser,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: VitalSignsDto,
+  ) {
+    return this.vitals.create(db, space.id, id, dto, user.id);
+  }
+
+  @Activity('patient.vitals_delete', 'patient')
+  @Delete(':id/vitals/:vitalsId')
+  removeVitals(
+    @Clinic() { db }: ClinicContext,
+    @CurrentSpace() space: Space,
+    @CurrentUser() user: ClinicUser,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Param('vitalsId', ParseUUIDPipe) vitalsId: string,
+  ) {
+    return this.vitals.remove(db, space.id, id, vitalsId, user);
   }
 
   @Activity('patient.medical_update', 'patient')

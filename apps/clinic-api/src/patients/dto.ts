@@ -4,6 +4,7 @@ import {
   IsIn,
   IsInt,
   IsISO8601,
+  IsNumber,
   IsOptional,
   IsString,
   Matches,
@@ -238,4 +239,76 @@ export class MedicalProfileDto {
   @IsString()
   @MaxLength(1000)
   permanentNote?: string | null;
+}
+
+const measure =
+  (min: number, max: number, integer = false) =>
+  (target: object, key: string) => {
+    Type(() => Number)(target, key);
+    IsOptional()(target, key);
+    (integer ? IsInt() : IsNumber({ maxDecimalPlaces: 2 }))(target, key);
+    Min(min)(target, key);
+    Max(max)(target, key);
+  };
+
+/** One measurement session; every value optional, at least one required (service). */
+export class VitalSignsDto {
+  @IsOptional()
+  @IsISO8601()
+  measuredAt?: string;
+
+  @measure(0.5, 400)
+  weightKg?: number | null;
+
+  @measure(30, 250)
+  heightCm?: number | null;
+
+  @measure(30, 45)
+  temperatureC?: number | null;
+
+  @IsOptional()
+  @IsIn(BLOOD_GROUPS)
+  bloodGroup?: (typeof BLOOD_GROUPS)[number] | null;
+
+  @measure(0.2, 6)
+  glycemia?: number | null;
+
+  @measure(0.2, 8)
+  glycemiaPostprandial?: number | null;
+
+  @measure(3, 20)
+  hba1c?: number | null;
+
+  @measure(50, 300, true)
+  bpRightSystolic?: number | null;
+
+  @measure(20, 200, true)
+  bpRightDiastolic?: number | null;
+
+  @measure(50, 300, true)
+  bpLeftSystolic?: number | null;
+
+  @measure(20, 200, true)
+  bpLeftDiastolic?: number | null;
+
+  @measure(20, 250, true)
+  heartRate?: number | null;
+
+  @measure(50, 100, true)
+  spo2?: number | null;
+
+  @measure(10, 250)
+  waistCm?: number | null;
+
+  @measure(10, 100)
+  headCircumferenceCm?: number | null;
+
+  @measure(10, 250)
+  abdominalCircumferenceCm?: number | null;
+
+  @clean()
+  @IsOptional()
+  @IsString()
+  @MaxLength(500)
+  note?: string | null;
 }

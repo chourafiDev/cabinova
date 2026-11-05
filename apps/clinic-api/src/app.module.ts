@@ -45,6 +45,7 @@ import { PaymentsController } from './payments/payments.controller.js';
 import { PaymentsService } from './payments/payments.service.js';
 import { PatientsController } from './patients/patients.controller.js';
 import { PatientsService } from './patients/patients.service.js';
+import { VitalsService } from './patients/vitals.service.js';
 import { CabinetService } from './settings/cabinet.service.js';
 import { ReportsController } from './reports/reports.controller.js';
 import { ReportsService } from './reports/reports.service.js';
@@ -105,6 +106,7 @@ import { TenancyService } from './tenancy/tenancy.service.js';
     OnboardingService,
     NotificationsService,
     PatientsService,
+    VitalsService,
     SpacesService,
     SpaceGuard,
     AppointmentsService,

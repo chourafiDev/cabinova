@@ -139,5 +139,10 @@
       "duration": "Durée : 3 mois",
       "notes": "À prendre au cours des repas, revoir dans 1 mois avec le bilan…"
     }
+  },
+  "recorded": {
+    "title": "Constantes relevées",
+    "empty": "Aucune constante relevée par l’équipe.",
+    "count": "{count}"
   }
 }

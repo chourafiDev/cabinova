@@ -52,7 +52,8 @@
       "overview": "Aperçu",
       "appointments": "Rendez-vous",
       "payments": "Paiements",
-      "medical": "Antécédents"
+      "medical": "Antécédents",
+      "vitals": "Constantes"
     },
     "knownAllergies": "allergies connues",
     "archivedOn": "Dossier archivé le {date} : consultable, mais plus modifiable. Restaurez-le pour le modifier ou prendre rendez-vous.",
@@ -181,5 +182,74 @@
     "date": "Date invalide",
     "cin": "CIN invalide (ex. BK123456)",
     "email": "E-mail invalide"
+  },
+  "vitals": {
+    "title": "Constantes",
+    "measuredAt": "Date de la mesure",
+    "groups": {
+      "general": "Informations générales",
+      "endocrinology": "Endocrinologie",
+      "cardio": "Cardiologie",
+      "other": "Autres"
+    },
+    "fields": {
+      "weightKg": "Poids",
+      "heightCm": "Taille",
+      "bmi": "IMC",
+      "temperatureC": "Température",
+      "bloodGroup": "Groupe sanguin",
+      "glycemia": "Glycémie à jeun",
+      "glycemiaPostprandial": "Glycémie postprandiale",
+      "hba1c": "HbA1c",
+      "heartRate": "Fréquence cardiaque",
+      "spo2": "SaO₂",
+      "waistCm": "Tour de taille",
+      "headCircumferenceCm": "Périmètre crânien",
+      "abdominalCircumferenceCm": "Périmètre ombilical (abdominal)"
+    },
+    "bpRight": "Tension artérielle, bras droit",
+    "bpLeft": "Tension artérielle, bras gauche",
+    "systolic": "Systolique",
+    "diastolic": "Diastolique",
+    "noBloodGroup": "Non renseigné",
+    "bmiAuto": "Calculé avec le poids et la taille",
+    "bmiCategory": {
+      "under": "Maigreur",
+      "normal": "Normal",
+      "over": "Surpoids",
+      "obese": "Obésité"
+    },
+    "note": "Note",
+    "notePlaceholder": "Ex. patient à jeun, mesure après effort…",
+    "save": "Enregistrer les constantes",
+    "saved": "Constantes enregistrées",
+    "saveError": "Enregistrement impossible",
+    "range": "Entre {min} et {max}",
+    "emptyForm": "Saisissez au moins une constante.",
+    "halfPressure": "Saisissez les deux valeurs de la tension : systolique et diastolique.",
+    "history": "Dernières mesures",
+    "empty": "Aucune constante enregistrée pour ce patient.",
+    "by": "par {name}",
+    "delete": "Supprimer la mesure",
+    "confirmDelete": "Confirmer la suppression",
+    "deleted": "Mesure supprimée",
+    "archived": "Ce dossier est archivé : vous ne pouvez plus y ajouter de constantes.",
+    "short": {
+      "weightKg": "Poids",
+      "heightCm": "Taille",
+      "temperatureC": "T°",
+      "glycemia": "Glycémie",
+      "glycemiaPostprandial": "Glyc. PP",
+      "hba1c": "HbA1c",
+      "heartRate": "FC",
+      "spo2": "SaO₂",
+      "waistCm": "Tour de taille",
+      "headCircumferenceCm": "PC",
+      "abdominalCircumferenceCm": "Péri. ombilical",
+      "bpRight": "TA D",
+      "bpLeft": "TA G",
+      "bmi": "IMC",
+      "bloodGroup": "Groupe"
+    }
   }
 }

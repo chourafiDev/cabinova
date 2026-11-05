@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { differenceInMinutes } from "date-fns";
 import { useTranslations } from "next-intl";
-import { LuArchive, LuArchiveRestore, LuCalendarClock, LuCalendarPlus, LuContactRound, LuEllipsis, LuIdCard, LuMail, LuMapPin, LuPencil, LuPhone, LuShieldCheck, LuStethoscope, LuStickyNote, LuTriangleAlert } from "react-icons/lu";
+import { LuArchive, LuArchiveRestore, LuCalendarClock, LuCalendarPlus, LuContactRound, LuEllipsis, LuIdCard, LuMail, LuMapPin, LuPencil, LuPhone, LuShieldCheck, LuStethoscope, LuStickyNote } from "react-icons/lu";
 import { NoShowBadge } from "@/components/no-show-badge";
 import { useState } from "react";
 import { AppointmentStatusBadge } from "@/components/appointment-status-badge";
@@ -24,7 +24,7 @@ import { useFormat } from "@/lib/use-format";
 import { cn } from "@/lib/utils";
 import { ArchiveDialog } from "./archive-button";
 import { PatientBalance, PatientPayments } from "./patient-payments";
-import { MedicalProfile } from "./medical-profile-card";
+import { VitalsTab } from "./vitals-tab";
 
 /** Upcoming vs past appointments (outside render: React Compiler purity). */
 const now = () => Date.now();
@@ -260,7 +260,6 @@ export function PatientDetails({
 		.sort((a, b) => a.startsAt.localeCompare(b.startsAt));
 	const past = list.filter((a) => !upcoming.includes(a));
 	const next = upcoming[0];
-	const allergies = medical ? patient.medicalProfile?.allergies : null;
 	const archived = patient.archivedAt !== null;
 	const complete = archived ? undefined : onEdit;
 
@@ -293,12 +292,7 @@ export function PatientDetails({
 						<TabsTrigger value="payments">
 							{t("tabs.payments")}
 						</TabsTrigger>
-						{medical && (
-							<TabsTrigger value="medical">
-								{t("tabs.medical")}
-								{allergies && <span className="size-1.5 rounded-full bg-red-500" aria-label={t("knownAllergies")} />}
-							</TabsTrigger>
-						)}
+						<TabsTrigger value="vitals">{t("tabs.vitals")}</TabsTrigger>
 					</TabsList>
 				</div>
 
@@ -308,15 +302,6 @@ export function PatientDetails({
 							<p className="bg-muted/60 rounded-xl px-4 py-3 text-sm">
 								{t("archivedOn", { date: format.date(patient.archivedAt!) })}
 							</p>
-						)}
-						{allergies && (
-							<div className="flex items-start gap-3 rounded-xl border border-red-200 bg-red-50 p-4 text-red-900">
-								<LuTriangleAlert className="mt-0.5 size-4 shrink-0" />
-								<div className="min-w-0">
-									<p className="text-sm font-semibold">{t("allergies")}</p>
-									<p className="text-sm whitespace-pre-line">{allergies}</p>
-								</div>
-							</div>
 						)}
 
 						<PatientBalance patientId={patient.id} />
@@ -464,17 +449,9 @@ export function PatientDetails({
 					<PatientPayments patientId={patient.id} />
 				</TabsContent>
 
-				{medical && (
-					<TabsContent value="medical" className="min-h-0 overflow-y-auto p-5">
-						<MedicalProfile
-							patientId={patient.id}
-							profile={patient.medicalProfile ?? null}
-							readOnly={archived}
-							sex={patient.sex}
-							onSaved={onChanged}
-						/>
-					</TabsContent>
-				)}
+				<TabsContent value="vitals" className="min-h-0 overflow-y-auto p-5">
+					<VitalsTab patientId={patient.id} archived={archived} />
+				</TabsContent>
 			</Tabs>
 		</>
 	);

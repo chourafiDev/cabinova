@@ -293,6 +293,63 @@ export const medicalProfiles = pgTable('medical_profiles', {
     .defaultNow(),
 });
 
+/**
+ * Constantes: one row per measurement session (weight, blood pressure…),
+ * taken by any member of the staff. Every value is optional; IMC is
+ * computed from weight and height, never stored.
+ */
+export const vitalSigns = pgTable(
+  'vital_signs',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    patientId: uuid('patient_id')
+      .notNull()
+      .references(() => patients.id, { onDelete: 'cascade' }),
+    measuredAt: timestamp('measured_at', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    recordedBy: uuid('recorded_by').references(() => users.id, {
+      onDelete: 'set null',
+    }),
+    weightKg: numeric('weight_kg', { precision: 5, scale: 2 }),
+    heightCm: numeric('height_cm', { precision: 4, scale: 1 }),
+    temperatureC: numeric('temperature_c', { precision: 3, scale: 1 }),
+    bloodGroup: bloodGroup('blood_group'),
+    /** g/L, fasting. */
+    glycemia: numeric('glycemia', { precision: 4, scale: 2 }),
+    /** g/L, after a meal. */
+    glycemiaPostprandial: numeric('glycemia_postprandial', {
+      precision: 4,
+      scale: 2,
+    }),
+    /** %. */
+    hba1c: numeric('hba1c', { precision: 3, scale: 1 }),
+    /** mmHg, right and left arm. */
+    bpRightSystolic: smallint('bp_right_systolic'),
+    bpRightDiastolic: smallint('bp_right_diastolic'),
+    bpLeftSystolic: smallint('bp_left_systolic'),
+    bpLeftDiastolic: smallint('bp_left_diastolic'),
+    /** Beats per minute. */
+    heartRate: smallint('heart_rate'),
+    /** %. */
+    spo2: smallint('spo2'),
+    waistCm: numeric('waist_cm', { precision: 4, scale: 1 }),
+    headCircumferenceCm: numeric('head_circumference_cm', {
+      precision: 4,
+      scale: 1,
+    }),
+    abdominalCircumferenceCm: numeric('abdominal_circumference_cm', {
+      precision: 4,
+      scale: 1,
+    }),
+    note: text('note'),
+    createdAt: timestamp('created_at', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [index('vital_signs_patient_idx').on(t.patientId, t.measuredAt)],
+);
+
 // ── Agenda ────────────────────────────────────────────────────────────────
 
 export const appointmentStatus = pgEnum('appointment_status', [

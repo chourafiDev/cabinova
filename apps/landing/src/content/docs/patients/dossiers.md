@@ -20,10 +20,10 @@ Cliquez sur un patient pour ouvrir sa fiche par-dessus la liste. Elle comporte q
 
 | Onglet | Contenu |
 |---|---|
-| **Aperçu** | Allergies, reste à payer, prochain rendez-vous, identité, adresse, couverture, contact d’urgence |
+| **Aperçu** | Reste à payer, prochain rendez-vous, identité, adresse, couverture, contact d’urgence |
 | **Rendez-vous** | Les rendez-vous à venir et l’historique |
 | **Paiements** | Les visites, le payé et le reste dû |
-| **Antécédents** | Le [profil médical](/docs/patients/antecedents), pour les médecins |
+| **Constantes** | Les [mesures](/docs/patients/constantes) prises au cabinet : poids, tension, glycémie… |
 
 ## La couverture médicale
 

@@ -155,7 +155,9 @@
       "consultation_save": "a rédigé la consultation de",
       "prescription_save": "a rédigé l’ordonnance de",
       "closure_create": "a enregistré une absence",
-      "closure_delete": "a supprimé une absence"
+      "closure_delete": "a supprimé une absence",
+      "patient_vitals": "a enregistré les constantes de",
+      "patient_vitals_delete": "a supprimé une mesure des constantes de"
     }
   },
   "cabinet": {
