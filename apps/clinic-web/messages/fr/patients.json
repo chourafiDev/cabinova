@@ -227,12 +227,7 @@
     "range": "Entre {min} et {max}",
     "emptyForm": "Saisissez au moins une constante.",
     "halfPressure": "Saisissez les deux valeurs de la tension : systolique et diastolique.",
-    "history": "Dernières mesures",
-    "empty": "Aucune constante enregistrée pour ce patient.",
     "by": "par {name}",
-    "delete": "Supprimer la mesure",
-    "confirmDelete": "Confirmer la suppression",
-    "deleted": "Mesure supprimée",
     "archived": "Ce dossier est archivé : vous ne pouvez plus y ajouter de constantes.",
     "short": {
       "weightKg": "Poids",

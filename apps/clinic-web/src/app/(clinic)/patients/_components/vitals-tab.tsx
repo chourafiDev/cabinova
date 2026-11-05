@@ -4,21 +4,16 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { format as formatDay } from "date-fns";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
-import { LuActivity, LuHeartPulse, LuLoader, LuRuler, LuThermometer, LuTrash2 } from "react-icons/lu";
+import { LuActivity, LuHeartPulse, LuLoader, LuRuler, LuThermometer } from "react-icons/lu";
 import { toast } from "sonner";
-import { useCurrentUser } from "@/components/current-user";
-import { VitalsChips } from "@/components/vitals-chips";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
 import { api } from "@/lib/api-client";
 import { bmiOf, bmiCategory, toNumber } from "@/lib/consultations";
 import { BLOOD_GROUPS } from "@/lib/patients";
-import { useFormat } from "@/lib/use-format";
-import { cn } from "@/lib/utils";
-import { ARMS, bmiFor, INTEGER_MEASURES, MEASURES, type Measure, SECTIONS, type VitalSigns, vitalsKey } from "@/lib/vitals";
+import { ARMS, INTEGER_MEASURES, MEASURES, type Measure, SECTIONS, type VitalSigns, vitalsKey } from "@/lib/vitals";
 
 const ICONS = { general: LuRuler, endocrinology: LuActivity, cardio: LuHeartPulse, other: LuThermometer } as const;
 const NONE = "none";
@@ -46,7 +41,7 @@ function problem(measure: Measure, text: string) {
 
 /**
  * Constantes, for the whole staff: the secretary takes them at the front
- * desk, the doctor finds them in the patient's dossier.
+ * desk, the doctor reads the history in the patient's dossier.
  */
 export function VitalsTab({ patientId, archived }: { patientId: string; archived: boolean }) {
 	const t = useTranslations("patients.vitals");
@@ -196,75 +191,6 @@ export function VitalsTab({ patientId, archived }: { patientId: string; archived
 				</form>
 			)}
 
-			<History patientId={patientId} vitals={vitals.data} loading={vitals.isPending} onChanged={refresh} />
 		</div>
-	);
-}
-
-function History({
-	patientId,
-	vitals,
-	loading,
-	onChanged,
-}: {
-	patientId: string;
-	vitals: VitalSigns[] | undefined;
-	loading: boolean;
-	onChanged: () => void;
-}) {
-	const t = useTranslations("patients.vitals");
-	const user = useCurrentUser();
-	const format = useFormat();
-	const [confirming, setConfirming] = useState<string | null>(null);
-	const remove = useMutation({
-		mutationFn: (id: string) => api(`/patients/${patientId}/vitals/${id}`, { method: "DELETE" }),
-		onSuccess: () => {
-			toast.success(t("deleted"));
-			setConfirming(null);
-			onChanged();
-		},
-		onError: (err) => toast.error(err instanceof Error ? err.message : t("saveError")),
-	});
-
-	return (
-		<section className="grid gap-2">
-			<h3 className="text-sm font-semibold">{t("history")}</h3>
-			{loading ? (
-				<Skeleton className="h-20" />
-			) : !vitals?.length ? (
-				<p className="text-muted-foreground rounded-xl border border-dashed px-4 py-6 text-center text-sm">{t("empty")}</p>
-			) : (
-				<ul className="divide-y rounded-xl border">
-					{vitals.map((v) => (
-						<li key={v.id} className="grid gap-1.5 px-4 py-3">
-							<div className="flex items-center gap-2">
-								<p className="text-muted-foreground min-w-0 flex-1 text-xs">
-									{format.date(v.measuredAt, { month: "short", hour: "2-digit", minute: "2-digit" })}
-									{v.recordedBy && ` · ${t("by", { name: v.recordedBy })}`}
-								</p>
-								{(user.role === "owner" || v.recordedById === user.id) &&
-									(confirming === v.id ? (
-										<Button size="sm" variant="destructive" className="h-7" disabled={remove.isPending} onClick={() => remove.mutate(v.id)}>
-											{t("confirmDelete")}
-										</Button>
-									) : (
-										<Button
-											size="icon"
-											variant="ghost"
-											className="text-muted-foreground size-7"
-											aria-label={t("delete")}
-											onClick={() => setConfirming(v.id)}
-										>
-											<LuTrash2 />
-										</Button>
-									))}
-							</div>
-							<VitalsChips vitals={v} bmi={bmiFor(v, vitals)} />
-							{v.note && <p className={cn("text-muted-foreground text-xs whitespace-pre-line")}>{v.note}</p>}
-						</li>
-					))}
-				</ul>
-			)}
-		</section>
 	);
 }

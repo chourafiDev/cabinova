@@ -24,14 +24,12 @@ L’IMC est calculé à partir du poids et de la taille. Si la taille n’est pa
 
 ## Les valeurs hors norme
 
-Une valeur inhabituelle, comme une tension élevée ou une SaO₂ basse, s’affiche en orange dans l’historique. C’est un repère pour le médecin, jamais un blocage.
+Dans le dossier médical, une valeur inhabituelle, comme une tension élevée ou une SaO₂ basse, s’affiche en orange. C’est un repère pour le médecin, jamais un blocage.
 
 ## Retrouver les mesures
 
-L’onglet **Constantes** montre les dernières mesures, avec leur date et la personne qui les a prises. Dans le **Dossier médical**, le médecin les voit dans **Constantes relevées**, et elles s’ajoutent aux courbes d’évolution du poids, de la tension et de la glycémie.
+Les mesures ne s’affichent pas dans la fiche du patient. Le médecin les retrouve dans le **Dossier médical**, sous **Constantes relevées**, avec leur date et la personne qui les a prises. Elles s’ajoutent aussi aux courbes d’évolution du poids, de la tension et de la glycémie.
 
-## Supprimer une mesure
-
-En cas d’erreur, la personne qui a saisi la mesure ou le médecin responsable peut la supprimer depuis l’historique. La saisie et la suppression sont inscrites au [journal d’activité](/docs/securite/journal).
+Chaque saisie est inscrite au [journal d’activité](/docs/securite/journal).
 
 > [!NOTE] Sur un dossier archivé, les constantes restent consultables mais aucune ne peut être ajoutée.
