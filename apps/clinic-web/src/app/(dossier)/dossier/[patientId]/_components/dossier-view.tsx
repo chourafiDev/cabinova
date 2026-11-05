@@ -15,7 +15,6 @@ import {
 	LuMessageSquareText,
 	LuPill,
 	LuReceipt,
-	LuScanSearch,
 	LuStethoscope,
 	LuTimer,
 	LuTriangleAlert,
@@ -144,7 +143,6 @@ export function DossierView({ patientId, visitId }: { patientId: string; visitId
 
 	const tabs: { value: Tab; icon: React.ComponentType; label: string; badge?: number }[] = [
 		{ value: "interrogatoire", icon: LuMessageSquareText, label: t("tabs.interrogatoire") },
-		{ value: "examen", icon: LuScanSearch, label: t("tabs.examen") },
 		{ value: "certificat", icon: LuSignature, label: t("tabs.certificat") },
 		{ value: "prix", icon: LuReceipt, label: t("tabs.prix") },
 		{ value: "ordonnance", icon: LuPill, label: t("tabs.prescription"), badge: lines },
@@ -176,12 +174,11 @@ export function DossierView({ patientId, visitId }: { patientId: string; visitId
 						</TabsList>
 					</div>
 
+					{/* Interrogatoire then examen, as the doctor goes through them. */}
 					<TabsContent value="interrogatoire" className="grid gap-4">
 						{withVisit(<ConsultationSections sections={["complaint"]} />)}
 						{p && <MedicalCard patient={p} />}
-					</TabsContent>
-					<TabsContent value="examen">
-						{withVisit(<ConsultationSections sections={["vitals", "examination", "diagnosis"]} />)}
+						{ready && <ConsultationSections sections={["vitals", "examination", "diagnosis"]} />}
 					</TabsContent>
 					<TabsContent value="certificat">
 						<Planned fields={[t("planned.certificat.oneDay"), t("planned.certificat.period"), t("planned.certificat.content")]} />
@@ -376,7 +373,6 @@ export function DossierView({ patientId, visitId }: { patientId: string; visitId
 
 const TABS = [
 	"interrogatoire",
-	"examen",
 	"certificat",
 	"prix",
 	"ordonnance",

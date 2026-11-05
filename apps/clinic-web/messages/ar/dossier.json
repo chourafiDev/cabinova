@@ -131,8 +131,7 @@
   },
   "tabs": {
     "prescription": "الوصفة",
-    "interrogatoire": "الاستجواب",
-    "examen": "الفحص السريري",
+    "interrogatoire": "الاستجواب والفحص",
     "certificat": "الشهادة",
     "prix": "ثمن الاستشارة",
     "bilan": "التحاليل البيولوجية",

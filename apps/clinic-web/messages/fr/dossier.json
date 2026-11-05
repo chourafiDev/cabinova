@@ -131,8 +131,7 @@
   },
   "tabs": {
     "prescription": "Ordonnance",
-    "interrogatoire": "Interrogatoire",
-    "examen": "Examen clinique",
+    "interrogatoire": "Interrogatoire et examen",
     "certificat": "Certificat",
     "prix": "Prix consultation",
     "bilan": "Bilan biologique",
