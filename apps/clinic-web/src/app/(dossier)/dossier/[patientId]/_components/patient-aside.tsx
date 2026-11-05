@@ -2,8 +2,8 @@
 
 import { useQueryClient } from "@tanstack/react-query";
 import { intervalToDuration, parseISO } from "date-fns";
-import Link from "next/link";
 import { useTranslations } from "next-intl";
+import { parseAsString, useQueryState } from "nuqs";
 import type { IconType } from "react-icons";
 import {
 	LuCake,
@@ -20,7 +20,7 @@ import {
 } from "react-icons/lu";
 import { MedicalProfile } from "@/app/(clinic)/patients/_components/medical-profile-card";
 import { initials } from "@/lib/format";
-import { formatFileNumber, formatPhone, fullName, type PatientFile, patientHref } from "@/lib/patients";
+import { formatFileNumber, formatPhone, fullName, type PatientFile } from "@/lib/patients";
 import { useFormat } from "@/lib/use-format";
 import { cn } from "@/lib/utils";
 
@@ -44,6 +44,8 @@ export function MedicalCard({ patient }: { patient: PatientFile }) {
 /** Left column: who the patient is and how to reach them; only what the file holds. */
 export function PatientAside({ patient }: { patient: PatientFile }) {
 	const t = useTranslations("dossier.aside");
+	// The administrative file opens over the dossier (the patients page's sheet), never away from it.
+	const [, openFile] = useQueryState("patient", parseAsString.withOptions({ history: "push", scroll: false }));
 	const common = useTranslations("common");
 	const format = useFormat();
 	const age = exactAge(patient.birthDate);
@@ -115,9 +117,13 @@ export function PatientAside({ patient }: { patient: PatientFile }) {
 			<SectionHeading
 				title={t("contact")}
 				action={
-					<Link href={patientHref(patient.id)} className="text-primary flex items-center gap-0.5 text-xs font-medium hover:underline">
+					<button
+						type="button"
+						onClick={() => void openFile(patient.id)}
+						className="text-primary flex items-center gap-0.5 text-xs font-medium hover:underline"
+					>
 						{t("adminFile")} <LuChevronRight className="size-3.5 rtl:-scale-x-100" />
-					</Link>
+					</button>
 				}
 			/>
 			<div className="bg-card flex items-center gap-3 rounded-xl border p-3">

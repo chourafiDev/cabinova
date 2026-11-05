@@ -20,6 +20,7 @@ import {
 	LuTriangleAlert,
 	LuWallet,
 } from "react-icons/lu";
+import { PatientSheet } from "@/app/(clinic)/patients/_components/patient-sheet";
 import { CheckoutDialog } from "@/app/(clinic)/payments/_components/checkout-dialog";
 import { AppointmentStatusBadge } from "@/components/appointment-status-badge";
 import { NoShowBadge } from "@/components/no-show-badge";
@@ -323,6 +324,8 @@ export function DossierView({ patientId, visitId }: { patientId: string; visitId
 			) : (
 				page
 			)}
+			{/* The administrative file (?patient=…), opened from the patient section. */}
+			<PatientSheet medical withinDossier />
 			{appointment && (
 				<CheckoutDialog appointmentId={checkout ? appointment.id : null} onOpenChange={(open) => !open && setCheckout(false)} />
 			)}

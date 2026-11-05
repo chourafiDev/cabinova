@@ -37,12 +37,15 @@ const dayLabel = (format: ReturnType<typeof useFormat>, iso: string) =>
 export function PatientHeader({
 	patient,
 	medical,
+	withinDossier,
 	onEdit,
 	onArchive,
 }: {
 	patient: PatientFile;
 	/** A doctor: the medical dossier is one click away. */
 	medical?: boolean;
+	/** Opened over the dossier: no link takes the doctor away from it. */
+	withinDossier?: boolean;
 	onEdit: () => void;
 	onArchive: () => void;
 }) {
@@ -115,12 +118,14 @@ export function PatientHeader({
 					</Button>
 				) : (
 					<>
-						<Button asChild size="sm">
-							<Link href={`/appointments?book=${patient.id}`}>
-								<LuCalendarPlus /> {t("book")}
-							</Link>
-						</Button>
-						{medical && (
+						{!withinDossier && (
+							<Button asChild size="sm">
+								<Link href={`/appointments?book=${patient.id}`}>
+									<LuCalendarPlus /> {t("book")}
+								</Link>
+							</Button>
+						)}
+						{medical && !withinDossier && (
 							<Button asChild variant="outline" size="sm">
 								<Link href={dossierHref(patient.id)}>
 									<LuStethoscope /> {t("dossier")}
@@ -240,12 +245,15 @@ export function PatientDetails({
 	patient,
 	appointments,
 	medical,
+	withinDossier,
 	onEdit,
 	onChanged,
 }: {
 	patient: PatientFile;
 	appointments: Appointment[] | undefined;
 	medical: boolean;
+	/** Opened over the dossier: no link takes the doctor away from it. */
+	withinDossier?: boolean;
 	onEdit: () => void;
 	onChanged: () => void;
 }) {
@@ -265,7 +273,13 @@ export function PatientDetails({
 
 	return (
 		<>
-			<PatientHeader patient={patient} medical={medical} onEdit={onEdit} onArchive={() => setArchiving(true)} />
+			<PatientHeader
+				patient={patient}
+				medical={medical}
+				withinDossier={withinDossier}
+				onEdit={onEdit}
+				onArchive={() => setArchiving(true)}
+			/>
 			<ArchiveDialog
 				open={archiving}
 				onOpenChange={setArchiving}
@@ -327,7 +341,7 @@ export function PatientDetails({
 							) : (
 								<p className="text-muted-foreground text-sm">
 									{t("noAppointment")}
-									{!archived && (
+									{!archived && !withinDossier && (
 										<>
 											{" · "}
 											<Link
@@ -411,7 +425,7 @@ export function PatientDetails({
 						<div className="flex flex-col items-center gap-3 py-12 text-center">
 							<LuCalendarClock className="text-muted-foreground size-6" />
 							<p className="text-muted-foreground text-sm">{t("noAppointments")}</p>
-							{!archived && (
+							{!archived && !withinDossier && (
 								<Button asChild size="sm" variant="outline">
 									<Link href={`/appointments?book=${patient.id}`}>
 										<LuCalendarPlus /> {t("book")}

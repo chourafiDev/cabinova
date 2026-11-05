@@ -27,7 +27,14 @@ const params = {
  * refresh, back and shared links reopen it. The list behind refreshes after
  * a change.
  */
-export function PatientSheet({ medical }: { medical: boolean }) {
+export function PatientSheet({
+	medical,
+	withinDossier,
+}: {
+	medical: boolean;
+	/** Over the doctor's dossier: the file only, nothing that leaves the page. */
+	withinDossier?: boolean;
+}) {
 	const router = useRouter();
 	const queryClient = useQueryClient();
 	const t = useTranslations("patients");
@@ -133,6 +140,7 @@ export function PatientSheet({ medical }: { medical: boolean }) {
 						patient={p}
 						appointments={appointments.data}
 						medical={medical}
+						withinDossier={withinDossier}
 						onEdit={() => setParams({ modifier: "1" })}
 						onChanged={refresh}
 					/>
