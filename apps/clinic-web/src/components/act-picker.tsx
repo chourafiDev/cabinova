@@ -2,7 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import { useState } from "react";
-import { LuCheck, LuChevronsUpDown } from "react-icons/lu";
+import { IconCheck, IconChevronsUpDown } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -65,7 +65,7 @@ export function ActPicker({
 							{selected?.abbreviation && <Abbreviation>{selected.abbreviation}</Abbreviation>}
 							<span className="truncate">{value || placeholder || t("placeholder")}</span>
 						</span>
-						<LuChevronsUpDown className="size-4 shrink-0 opacity-50" />
+						<IconChevronsUpDown className="size-4 shrink-0 opacity-50" />
 					</Button>
 				)}
 			</PopoverTrigger>
@@ -78,7 +78,7 @@ export function ActPicker({
 							{none && (
 								<CommandItem value="__none__" onSelect={() => pick(null)}>
 									<span className="text-muted-foreground flex-1">{none}</span>
-									<LuCheck className={cn("size-4", !value ? "opacity-100" : "opacity-0")} />
+									<IconCheck className={cn("size-4", !value ? "opacity-100" : "opacity-0")} />
 								</CommandItem>
 							)}
 							{acts.map((act) => (
@@ -91,7 +91,7 @@ export function ActPicker({
 									{act.abbreviation && <Abbreviation>{act.abbreviation}</Abbreviation>}
 									<span className="min-w-0 flex-1 truncate">{act.name}</span>
 									<span className="text-muted-foreground text-xs tabular-nums">{format.mad(act.price)}</span>
-									<LuCheck className={cn("size-4", value === act.name ? "opacity-100" : "opacity-0")} />
+									<IconCheck className={cn("size-4", value === act.name ? "opacity-100" : "opacity-0")} />
 								</CommandItem>
 							))}
 						</CommandGroup>

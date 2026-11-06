@@ -113,6 +113,15 @@ export class CheckoutDto {
   @ValidateNested()
   @Type(() => PaymentDto)
   payment?: PaymentDto;
+
+  /**
+   * Remboursement (centimes): taken off what the patient pays. Doctors
+   * only; left out, the visit keeps the one it has.
+   */
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  discount?: number;
 }
 
 export class CancelPaymentDto {

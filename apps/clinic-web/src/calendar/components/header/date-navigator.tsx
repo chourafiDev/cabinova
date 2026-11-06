@@ -2,10 +2,10 @@ import { useTranslations } from "next-intl";
 import { useFmt } from "@/calendar/locale";
 import { useMemo } from "react";
 
-import { LuChevronLeft, LuChevronRight } from "react-icons/lu";
 
 import { useCalendar } from "@/calendar/contexts/calendar-context";
 
+import { IconChevronLeft, IconChevronRight } from "@/components/icons";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
@@ -45,13 +45,13 @@ export function DateNavigator({ view, events }: IProps) {
 
       <div className="flex items-center gap-2">
         <Button variant="outline" aria-label={t("previous")} className="size-6.5 px-0 [&_svg]:size-4.5" onClick={handlePrevious}>
-          <LuChevronLeft className="rtl:rotate-180" />
+          <IconChevronLeft className="rtl:rotate-180" />
         </Button>
 
         <p className="text-sm text-muted-foreground">{rangeText(view, selectedDate, fmt)}</p>
 
         <Button variant="outline" aria-label={t("next")} className="size-6.5 px-0 [&_svg]:size-4.5" onClick={handleNext}>
-          <LuChevronRight className="rtl:rotate-180" />
+          <IconChevronRight className="rtl:rotate-180" />
         </Button>
       </div>
     </div>

@@ -4,23 +4,23 @@ import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { HiIdentification } from "react-icons/hi2";
-import {
-	LuCalendarClock,
-	LuEllipsis,
-	LuKeyRound,
-	LuLoader,
-	LuMail,
-	LuMapPin,
-	LuPencil,
-	LuShieldCheck,
-	LuShieldOff,
-	LuTrash2,
-	LuUserCheck,
-	LuUserPlus,
-	LuUserX,
-} from "react-icons/lu";
 import { toast } from "sonner";
+import {
+	IconCalendarClock,
+	IconEdit,
+	IconIdCard,
+	IconKey,
+	IconLocation,
+	IconMail,
+	IconMore,
+	IconShieldCheck,
+	IconShieldOff,
+	IconSpinner,
+	IconTrash,
+	IconUserAdd,
+	IconUserCheck,
+	IconUserRemove,
+} from "@/components/icons";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
@@ -88,7 +88,7 @@ export function TeamManager({ team, plan }: { team: Team; plan: string | null })
 			<header className="flex flex-wrap items-center justify-between gap-3">
 				<div className="flex items-center gap-3">
 					<span className="bg-primary/10 text-primary flex size-9 items-center justify-center rounded-lg">
-						<HiIdentification className="size-4" />
+						<IconIdCard className="size-4" />
 					</span>
 					<div>
 						<h1 className="text-lg font-semibold leading-tight">{t("title")}</h1>
@@ -103,7 +103,7 @@ export function TeamManager({ team, plan }: { team: Team; plan: string | null })
 					disabled={noRoom}
 					title={noRoom ? t("full") : undefined}
 				>
-					<LuUserPlus /> {t("invite")}
+					<IconUserAdd /> {t("invite")}
 				</Button>
 			</header>
 
@@ -122,7 +122,7 @@ export function TeamManager({ team, plan }: { team: Team; plan: string | null })
 				</ul>
 				{current.length === 1 && (
 					<div className="flex flex-col items-center gap-2 border-t px-6 py-10 text-center">
-						<LuUserPlus className="text-muted-foreground size-6" />
+						<IconUserAdd className="text-muted-foreground size-6" />
 						<p className="font-medium">{t("alone")}</p>
 						<p className="text-muted-foreground max-w-sm text-sm">
 							{t("aloneHint")}
@@ -176,7 +176,7 @@ function RequireTwoFactor({ required, ownEnabled }: { required: boolean; ownEnab
 	};
 	return (
 		<section className="bg-brand dark:bg-brand/10 flex items-center gap-3 rounded-xl dark:border p-4">
-			<LuShieldCheck className="text-white size-5 shrink-0" />
+			<IconShieldCheck className="text-white size-5 shrink-0" />
 			<div className="min-w-0 flex-1">
 				<p className="text-sm text-white font-medium">{t("twoFactor.required")}</p>
 				<p className="text-white/60 text-xs">
@@ -312,7 +312,7 @@ function MemberRow({
 					</Badge>
 					{m.twoFactor && (
 						<Badge variant="outline" className="gap-1 border-transparent bg-emerald-50 font-normal text-emerald-700">
-							<LuShieldCheck className="size-3" /> 2FA
+							<IconShieldCheck className="size-3" /> 2FA
 						</Badge>
 					)}
 					{!owner && m.status !== "active" && (
@@ -326,20 +326,20 @@ function MemberRow({
 					{owner ? (
 						spaces.length > 1 && (
 							<span className="inline-flex items-center gap-1">
-								<LuMapPin className="size-3" /> {t("row.allSpaces")}
+								<IconLocation className="size-3" /> {t("row.allSpaces")}
 							</span>
 						)
 					) : (
 						spaces.length > 1 &&
 						memberSpaces.length > 0 && (
 							<span className="inline-flex items-center gap-1">
-								<LuMapPin className="size-3" /> {memberSpaces.map(spaceLabel).join(", ")}
+								<IconLocation className="size-3" /> {memberSpaces.map(spaceLabel).join(", ")}
 							</span>
 						)
 					)}
 					{m.role !== "secretary" && m.upcomingAppointments > 0 && (
 						<span className="inline-flex items-center gap-1">
-							<LuCalendarClock className="size-3" /> {t("row.upcoming", { count: m.upcomingAppointments })}
+							<IconCalendarClock className="size-3" /> {t("row.upcoming", { count: m.upcomingAppointments })}
 						</span>
 					)}
 					<span>
@@ -357,43 +357,43 @@ function MemberRow({
 			{!owner &&
 				(m.status === "disabled" ? (
 					<Button variant="outline" size="sm" disabled={pending} onClick={reactivate}>
-						{pending ? <LuLoader className="animate-spin" /> : <LuUserCheck />} {t("row.reactivate")}
+						{pending ? <IconSpinner className="animate-spin" /> : <IconUserCheck />} {t("row.reactivate")}
 					</Button>
 				) : (
 					<DropdownMenu>
 						<DropdownMenuTrigger asChild>
 							<Button variant="ghost" size="icon" className="size-8" disabled={pending} aria-label={t("row.actionsFor", { name: m.name })}>
-								{pending ? <LuLoader className="animate-spin" /> : <LuEllipsis />}
+								{pending ? <IconSpinner className="animate-spin" /> : <IconMore />}
 							</Button>
 						</DropdownMenuTrigger>
 						<DropdownMenuContent align="end" className="min-w-56">
 							<DropdownMenuItem onSelect={() => onEdit(m)}>
-								<LuPencil /> {t("row.edit")}
+								<IconEdit /> {t("row.edit")}
 							</DropdownMenuItem>
 							<DropdownMenuItem onSelect={issueLink}>
 								{joined ? (
 									<>
-										<LuKeyRound /> {t("row.passwordLink")}
+										<IconKey /> {t("row.passwordLink")}
 									</>
 								) : (
 									<>
-										<LuMail /> {t("row.resend")}
+										<IconMail /> {t("row.resend")}
 									</>
 								)}
 							</DropdownMenuItem>
 							{m.twoFactor && (
 								<DropdownMenuItem onSelect={() => onConfirm({ kind: "reset2fa", member: m })}>
-									<LuShieldOff /> {t("row.reset2fa")}
+									<IconShieldOff /> {t("row.reset2fa")}
 								</DropdownMenuItem>
 							)}
 							<DropdownMenuSeparator />
 							{joined ? (
 								<DropdownMenuItem variant="destructive" onSelect={() => onConfirm({ kind: "deactivate", member: m })}>
-									<LuUserX /> {t("row.deactivate")}
+									<IconUserRemove /> {t("row.deactivate")}
 								</DropdownMenuItem>
 							) : (
 								<DropdownMenuItem variant="destructive" onSelect={() => onConfirm({ kind: "delete", member: m })}>
-									<LuTrash2 /> {t("row.deleteInvite")}
+									<IconTrash /> {t("row.deleteInvite")}
 								</DropdownMenuItem>
 							)}
 						</DropdownMenuContent>
@@ -463,7 +463,7 @@ function ConfirmDialog({ value, onOpenChange }: { value: Confirm | null; onOpenC
 						{t("confirm.cancel")}
 					</Button>
 					<Button variant="destructive" disabled={pending} onClick={confirm}>
-						{pending && <LuLoader className="animate-spin" />} {reset ? t("confirm.reset") : deactivate ? t("confirm.deactivate") : t("confirm.delete")}
+						{pending && <IconSpinner className="animate-spin" />} {reset ? t("confirm.reset") : deactivate ? t("confirm.deactivate") : t("confirm.delete")}
 					</Button>
 				</DialogFooter>
 			</DialogContent>

@@ -219,6 +219,7 @@ describe('clinic: team', () => {
       .send({
         patientId: patient.id,
         practitionerId: doctorId,
+        reason: 'Consultation',
         startsAt: '2030-01-07T10:00:00+00:00',
         endsAt: '2030-01-07T10:30:00+00:00',
       })

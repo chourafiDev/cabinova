@@ -2,8 +2,8 @@
 
 import { useTranslations } from "next-intl";
 import { useState } from "react";
-import { LuChartLine } from "react-icons/lu";
 import { CartesianGrid, Line, LineChart, XAxis, YAxis } from "recharts";
+import { IconTrend } from "@/components/icons";
 import { type ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { Consultation, VitalField } from "@/lib/consultations";
@@ -40,7 +40,7 @@ export function TrendsCard({ points }: { points: Point[] }) {
 
 	if (!measure) {
 		return (
-			<Card icon={LuChartLine} title={t("title")}>
+			<Card icon={IconTrend} title={t("title")}>
 				<p className="text-muted-foreground text-xs">{t("empty")}</p>
 			</Card>
 		);
@@ -55,7 +55,7 @@ export function TrendsCard({ points }: { points: Point[] }) {
 	) satisfies ChartConfig;
 
 	return (
-		<Card icon={LuChartLine} title={t("title")}>
+		<Card icon={IconTrend} title={t("title")}>
 			<Tabs value={measure} onValueChange={(v) => setChosen(v as Measure)}>
 				<TabsList className="w-full">
 					{available.map((m) => (

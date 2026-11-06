@@ -1,6 +1,7 @@
 {
   "groups": {
     "cabinet": "Cabinet",
+    "agenda": "Agenda",
     "management": "Gestion",
     "administration": "Administration"
   },
@@ -13,7 +14,10 @@
     "payments": "Encaissements",
     "reports": "Statistiques",
     "staff": "Équipe",
-    "settings": "Paramètres"
+    "settings": "Paramètres",
+    "calendar": "Calendrier",
+    "waiting": "Salle d’attente",
+    "seen": "Patients vus"
   },
   "home": "{cabinet} — tableau de bord",
   "titles": {

@@ -3,8 +3,8 @@
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
-import { LuGlobe, LuLoader, LuLock } from "react-icons/lu";
 import { toast } from "sonner";
+import { IconGlobe, IconLock, IconSpinner } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import { Field, FieldDescription, FieldError, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
@@ -94,7 +94,7 @@ export function CabinetForm({ initial }: { initial: CabinetIdentity }) {
 							{t("visible")}
 						</p>
 						<Button type="submit" size="sm" disabled={!dirty || saving}>
-							{saving && <LuLoader className="animate-spin" />} {common("save")}
+							{saving && <IconSpinner className="animate-spin" />} {common("save")}
 						</Button>
 					</>
 				}
@@ -126,9 +126,9 @@ export function CabinetForm({ initial }: { initial: CabinetIdentity }) {
 
 			<SettingsCard title={t("webTitle")} description={t("webHint")}>
 				<div className="bg-muted/50 flex items-center gap-2 rounded-lg border px-3 py-2 text-sm">
-					<LuGlobe className="text-muted-foreground size-4" />
+					<IconGlobe className="text-muted-foreground size-4" />
 					<span dir="ltr" className="font-mono">{initial.subdomain}.cabinova.ma</span>
-					<LuLock className="text-muted-foreground ms-auto size-3.5" aria-label={t("locked")} />
+					<IconLock className="text-muted-foreground ms-auto size-3.5" aria-label={t("locked")} />
 				</div>
 				<p className="text-muted-foreground mt-2 text-xs">{t("webContact")}</p>
 			</SettingsCard>

@@ -1,12 +1,12 @@
 "use client";
 
-import { LuPrinter } from "react-icons/lu";
+import { IconPrinter } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 
 export function PrintButton() {
 	return (
 		<Button onClick={() => window.print()} className="print:hidden">
-			<LuPrinter /> Imprimer / PDF
+			<IconPrinter /> Imprimer / PDF
 		</Button>
 	);
 }

@@ -3,7 +3,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
-import { LuVideo } from "react-icons/lu";
+import { IconVideo } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import { api } from "@/lib/api-client";
 import { CURRENT_MEETINGS_KEY, type Meeting } from "@/lib/meetings";
@@ -55,7 +55,7 @@ export function LiveMeetingStrip() {
 						</p>
 						<Button asChild size="sm" className="bg-emerald-600 text-white hover:bg-emerald-700">
 							<a href={m.meetUrl} target="_blank" rel="noopener noreferrer">
-								<LuVideo /> {t("join")}
+								<IconVideo /> {t("join")}
 							</a>
 						</Button>
 					</div>

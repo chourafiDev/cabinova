@@ -1,7 +1,7 @@
 import { moroccoDay } from "@cabinova/morocco-time";
 import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
-import { HiChartBar } from "react-icons/hi2";
+import { IconChart } from "@/components/icons";
 import { pageTitle } from "@/i18n/titles";
 import { COVERAGE_LABELS, type Coverage } from "@/lib/patients";
 import { getFormat } from "@/lib/get-format";
@@ -363,7 +363,7 @@ export default async function ReportsPage({ searchParams }: PageProps<"/reports"
 
 				{empty ? (
 					<div className="bg-card flex flex-col items-center gap-2 rounded-xl border border-dashed px-6 py-16 text-center">
-						<HiChartBar className="text-muted-foreground size-6" />
+						<IconChart className="text-muted-foreground size-6" />
 						<p className="font-medium">{m("empty.title")}</p>
 						<p className="text-muted-foreground max-w-sm text-sm">
 							{m("empty.hint")}

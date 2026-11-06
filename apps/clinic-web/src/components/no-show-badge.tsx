@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { LuCalendarX2, LuTriangleAlert } from "react-icons/lu";
+import { IconCalendarRemove, IconWarning } from "@/components/icons";
 import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
@@ -20,7 +20,7 @@ export function NoShowBadge({ count, className }: { count: number | undefined; c
 		<Tooltip>
 			<TooltipTrigger asChild>
 				<Badge variant="destructive" className={cn("cursor-default align-middle", className)} tabIndex={0}>
-					<LuCalendarX2 /> {t("label")}
+					<IconCalendarRemove /> {t("label")}
 				</Badge>
 			</TooltipTrigger>
 			<TooltipContent>{t("tooltip", { count })}</TooltipContent>
@@ -37,7 +37,7 @@ export function NoShowNote({ count }: { count: number | undefined }) {
 			role="note"
 			className="flex items-start gap-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-900"
 		>
-			<LuTriangleAlert className="mt-0.5 size-4 shrink-0" />
+			<IconWarning className="mt-0.5 size-4 shrink-0" />
 			<span>
 				<span className="font-semibold">{t("noteTitle", { count })}</span> {t("noteAdvice")}
 			</span>

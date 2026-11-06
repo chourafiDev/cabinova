@@ -2,21 +2,20 @@
 
 import { useTranslations } from "next-intl";
 import { useState } from "react";
-import type { IconType } from "react-icons";
 import {
-	LuActivity,
-	LuChevronRight,
-	LuDroplet,
-	LuDroplets,
-	LuFlaskConical,
-	LuGauge,
-	LuHeartPulse,
-	LuRuler,
-	LuScale,
-	LuThermometer,
-	LuTriangleAlert,
-	LuWind,
-} from "react-icons/lu";
+	type AppIcon,
+	IconActivity,
+	IconChevronRight,
+	IconDrop,
+	IconGauge,
+	IconHeartPulse,
+	IconLab,
+	IconRuler,
+	IconThermometer,
+	IconWarning,
+	IconWeight,
+	IconWind,
+} from "@/components/icons";
 import { VitalsChips } from "@/components/vitals-chips";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -121,7 +120,7 @@ export function LatestVitals({
 		const abnormal = isAbnormal("systolic", sys.value) || isAbnormal("diastolic", dia.value);
 		results.push({
 			key: arm,
-			icon: LuHeartPulse,
+			icon: IconHeartPulse,
 			label: short(`bp${arm}`),
 			title: t(`bp.${arm}`),
 			value: `${sys.value}/${dia.value}`,
@@ -152,7 +151,7 @@ export function LatestVitals({
 	if (bmi != null) {
 		results.push({
 			key: "bmi",
-			icon: LuGauge,
+			icon: IconGauge,
 			label: short("bmi"),
 			title: fields("bmi"),
 			value: format.number(bmi),
@@ -162,7 +161,7 @@ export function LatestVitals({
 	}
 	const bloodGroup = entries.find((e) => e.vitals.bloodGroup)?.vitals.bloodGroup;
 	if (bloodGroup) {
-		results.push({ key: "blood", icon: LuDroplets, label: short("bloodGroup"),
+		results.push({ key: "blood", icon: IconDrop, label: short("bloodGroup"),
 			title: fields("bloodGroup"), value: bloodGroup, abnormal: false, status: fields("bloodGroup") });
 	}
 
@@ -179,7 +178,7 @@ export function LatestVitals({
 							onClick={() => setOpen(true)}
 							className="text-primary flex items-center gap-0.5 text-xs font-medium hover:underline"
 						>
-							{t("historyCount", { count: entries.length })} <LuChevronRight className="size-3.5 rtl:-scale-x-100" />
+							{t("historyCount", { count: entries.length })} <IconChevronRight className="size-3.5 rtl:-scale-x-100" />
 						</button>
 					)
 				}
@@ -214,7 +213,7 @@ export function LatestVitals({
 									))}
 								</ul>
 							</div>
-							<LuTriangleAlert className="mt-0.5 size-4 shrink-0" />
+							<IconWarning className="mt-0.5 size-4 shrink-0" />
 						</div>
 					)}
 					<dl className="grid grid-cols-2 gap-2">
@@ -288,19 +287,19 @@ export function LatestVitals({
 type Reading = { value: number; previous: number | null; date: string };
 
 /** One result panel: the measure, its value, a word on it. */
-type Result = { key: string; icon: IconType; label: string; title: string; value: string; unit?: string; abnormal: boolean; status: string };
+type Result = { key: string; icon: AppIcon; label: string; title: string; value: string; unit?: string; abnormal: boolean; status: string };
 
 /** The panels after the blood pressure, most looked-at first; the abnormal rule each follows. */
-const TILES: { measure: Measure; icon: IconType; rule?: Parameters<typeof isAbnormal>[0] }[] = [
-	{ measure: "heartRate", icon: LuActivity, rule: "heartRate" },
-	{ measure: "spo2", icon: LuWind, rule: "spo2" },
-	{ measure: "temperatureC", icon: LuThermometer, rule: "temperature" },
-	{ measure: "weightKg", icon: LuScale },
-	{ measure: "heightCm", icon: LuRuler },
-	{ measure: "glycemia", icon: LuDroplet, rule: "glycemia" },
-	{ measure: "glycemiaPostprandial", icon: LuDroplet, rule: "glycemiaPostprandial" },
-	{ measure: "hba1c", icon: LuFlaskConical, rule: "hba1c" },
-	{ measure: "waistCm", icon: LuRuler },
-	{ measure: "abdominalCircumferenceCm", icon: LuRuler },
-	{ measure: "headCircumferenceCm", icon: LuRuler },
+const TILES: { measure: Measure; icon: AppIcon; rule?: Parameters<typeof isAbnormal>[0] }[] = [
+	{ measure: "heartRate", icon: IconActivity, rule: "heartRate" },
+	{ measure: "spo2", icon: IconWind, rule: "spo2" },
+	{ measure: "temperatureC", icon: IconThermometer, rule: "temperature" },
+	{ measure: "weightKg", icon: IconWeight },
+	{ measure: "heightCm", icon: IconRuler },
+	{ measure: "glycemia", icon: IconDrop, rule: "glycemia" },
+	{ measure: "glycemiaPostprandial", icon: IconDrop, rule: "glycemiaPostprandial" },
+	{ measure: "hba1c", icon: IconLab, rule: "hba1c" },
+	{ measure: "waistCm", icon: IconRuler },
+	{ measure: "abdominalCircumferenceCm", icon: IconRuler },
+	{ measure: "headCircumferenceCm", icon: IconRuler },
 ];

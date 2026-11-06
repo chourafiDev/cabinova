@@ -175,7 +175,9 @@
       "closure_create": "سجّل غيابًا",
       "closure_delete": "حذف غيابًا",
       "patient_vitals": "سجّل المؤشرات الحيوية لـ",
-      "patient_vitals_delete": "حذف قياسًا من المؤشرات الحيوية لـ"
+      "patient_vitals_delete": "حذف قياسًا من المؤشرات الحيوية لـ",
+      "document_upload": "أضاف وثيقة إلى ملف",
+      "document_delete": "حذف وثيقة من ملف"
     }
   },
   "cabinet": {

@@ -14,7 +14,7 @@ type Visit = Pick<Appointment, "id"> & { patient: Pick<Appointment["patient"], "
 /**
  * The waiting room's moves, the same everywhere (table, agenda panel, walk-in
  * sheet): shown at once, undone if the server refuses.
- * - open the file / finish: the doctor's steps (opening a waiting patient's file calls them in);
+ * - open the file: the doctor takes the patient (the visit is finished from the dossier);
  * - left: the patient went away unseen (the visit is cancelled), with "Annuler" in the toast;
  * - back: they came back that day, behind those already waiting.
  */
@@ -42,7 +42,7 @@ export function useWaitingActions() {
 		}
 	}
 
-	const setStatus = async (a: Visit, status: "in_consultation" | "completed") =>
+	const setStatus = async (a: Visit, status: "in_consultation") =>
 		run(
 			a.id,
 			{ status },
@@ -53,11 +53,6 @@ export function useWaitingActions() {
 	/** The doctor takes a waiting patient: in consultation, and straight to their dossier. */
 	const openFile = async (a: Visit) => {
 		if (await setStatus(a, "in_consultation")) router.push(dossierHref(a.patient.id, a.id));
-	};
-
-	const finish = async (a: Visit) => {
-		const done = await setStatus(a, "completed");
-		if (done) toast.success(done);
 	};
 
 	const back = async (a: Visit) => {
@@ -86,7 +81,6 @@ export function useWaitingActions() {
 	return {
 		busy,
 		openFile,
-		finish,
 		left,
 		back,
 	};

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { useTranslations } from "next-intl";
-import { LuCalendarPlus, LuUserPlus } from "react-icons/lu";
+import { IconCalendarAdd, IconUserAdd } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import { NEW_PATIENT_HREF } from "@/lib/patients";
 import type { ClinicSession } from "@/lib/session";
@@ -32,12 +32,12 @@ export function WelcomeBanner({
 				<div className="mt-4 flex flex-wrap gap-2">
 					<Button asChild size="sm" className="bg-white text-black hover:bg-white/90">
 						<Link href="/appointments?view=day">
-							<LuCalendarPlus /> {t("newAppointment")}
+							<IconCalendarAdd /> {t("newAppointment")}
 						</Link>
 					</Button>
 					<Button asChild size="sm" variant="outline" className="border-white/30 bg-transparent text-white hover:bg-white/10 hover:text-white">
 						<Link href={NEW_PATIENT_HREF}>
-							<LuUserPlus /> {t("newPatient")}
+							<IconUserAdd /> {t("newPatient")}
 						</Link>
 					</Button>
 				</div>

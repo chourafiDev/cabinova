@@ -79,15 +79,12 @@
       "female": "Mme"
     },
     "exactAge": "{years, plural, =0 {} one {# an } other {# ans }}{months, plural, =0 {} other {# mois }}{days, plural, =0 {} one {# jour} other {# jours}}",
-    "birthDate": "Né(e) le",
     "coverage": "Mutuelle",
-    "city": "Ville",
     "phone": "GSM",
     "email": "E-mail",
     "cin": "CIN",
     "address": "Adresse",
-    "emergency": "À prévenir",
-    "coverageNumber": "Affiliation"
+    "emergency": "À prévenir"
   },
   "history": {
     "title": "Consultations précédentes",

@@ -1,5 +1,5 @@
 import { useTranslations } from "next-intl";
-import { LuArmchair, LuStethoscope } from "react-icons/lu";
+import { IconClock, IconStethoscope } from "@/components/icons";
 import { NoShowBadge } from "@/components/no-show-badge";
 import type { DashboardData } from "@/lib/dashboard";
 import { fullName } from "@/lib/patients";
@@ -20,7 +20,7 @@ export function WaitingRoom({ appointments }: { appointments: NonNullable<Dashbo
 			<div className="grid gap-3">
 				<div className="rounded-lg bg-accent/60 p-3">
 					<p className="mb-1 flex items-center gap-1.5 text-xs text-primary">
-						<LuStethoscope className="size-3.5" /> {t("current")}
+						<IconStethoscope className="size-3.5" /> {t("current")}
 					</p>
 					{current.length > 0 ? (
 						current.map((a) => (
@@ -38,7 +38,7 @@ export function WaitingRoom({ appointments }: { appointments: NonNullable<Dashbo
 
 				<div>
 					<p className="mb-2 flex items-center gap-1.5 text-xs text-muted-foreground">
-						<LuArmchair className="size-3.5" /> {t("waiting", { count: waiting.length })}
+						<IconClock className="size-3.5" /> {t("waiting", { count: waiting.length })}
 					</p>
 					{waiting.length === 0 ? (
 						<p className="text-sm text-muted-foreground">{t("empty")}</p>

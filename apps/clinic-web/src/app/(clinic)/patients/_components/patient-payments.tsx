@@ -3,7 +3,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
-import { LuReceipt, LuWallet } from "react-icons/lu";
+import { IconReceipt, IconWallet } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { api } from "@/lib/api-client";
@@ -26,7 +26,7 @@ export function PatientBalance({ patientId }: { patientId: string }) {
 	if (!data || data.balance <= 0) return null;
 	return (
 		<p className="flex items-center gap-2 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
-			<LuWallet className="size-4 shrink-0" />
+			<IconWallet className="size-4 shrink-0" />
 			<span>
 				{t("due")} <strong className="tabular-nums">{format.mad(data.balance)}</strong>
 			</span>
@@ -45,7 +45,7 @@ export function PatientPayments({ patientId }: { patientId: string }) {
 	if (data.visits.length === 0) {
 		return (
 			<div className="flex flex-col items-center gap-3 py-12 text-center">
-				<LuWallet className="text-muted-foreground size-6" />
+				<IconWallet className="text-muted-foreground size-6" />
 				<p className="text-muted-foreground text-sm">{t("noVisits")}</p>
 			</div>
 		);
@@ -68,7 +68,16 @@ export function PatientPayments({ patientId }: { patientId: string }) {
 							<p className="text-muted-foreground truncate text-xs">{v.acts.join(", ")}</p>
 						</div>
 						<div className="text-end text-sm tabular-nums">
-							<p className="font-medium">{format.mad(v.total)}</p>
+							{/* What the patient pays; the acts' price struck through when the doctor reduced it. */}
+							<p className="font-medium">
+								{v.discount > 0 && (
+									<span className="text-muted-foreground me-1.5 text-xs font-normal line-through">{format.mad(v.subtotal)}</span>
+								)}
+								{format.mad(v.total)}
+							</p>
+							{v.discount > 0 && (
+								<p className="text-xs text-emerald-700">{t("discount", { amount: format.mad(v.discount) })}</p>
+							)}
 							<p className={cn("text-xs", v.balance > 0 ? "text-amber-700 dark:text-amber-300" : "text-muted-foreground")}>
 								{v.balance > 0
 									? t("remaining", { amount: format.mad(v.balance) })
@@ -80,7 +89,7 @@ export function PatientPayments({ patientId }: { patientId: string }) {
 						<Button size="sm" variant={v.balance > 0 ? "default" : "outline"} onClick={() => setCheckout(v.appointmentId)}>
 							{v.balance > 0 ? (
 								<>
-									<LuReceipt /> {t("collect")}
+									<IconReceipt /> {t("collect")}
 								</>
 							) : (
 								t("view")

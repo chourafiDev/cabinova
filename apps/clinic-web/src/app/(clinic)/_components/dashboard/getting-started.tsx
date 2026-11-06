@@ -4,8 +4,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
-import { LuArrowRight, LuCheck, LuX } from "react-icons/lu";
 import { toast } from "sonner";
+import { IconArrowRight, IconCheck, IconClose } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import { api } from "@/lib/api-client";
 import { NEW_PATIENT_HREF } from "@/lib/patients";
@@ -69,7 +69,7 @@ export function GettingStarted({ steps }: { steps: ChecklistSteps }) {
 					disabled={saving}
 					onClick={() => post("dismiss")}
 				>
-					<LuX />
+					<IconClose />
 				</Button>
 			</header>
 
@@ -97,7 +97,7 @@ export function GettingStarted({ steps }: { steps: ChecklistSteps }) {
 									isNext && "border-primary",
 								)}
 							>
-								{isDone && <LuCheck className="size-3" />}
+								{isDone && <IconCheck className="size-3" />}
 								<span className="sr-only">{isDone ? t("done") : t("todo")}</span>
 							</span>
 							<div className="min-w-0 flex-1 basis-52">
@@ -113,7 +113,7 @@ export function GettingStarted({ steps }: { steps: ChecklistSteps }) {
 									)}
 									<Button asChild size="sm" variant={isNext ? "default" : "outline"}>
 										<Link href={step.href}>
-											{t(`${step.key}.action`)} {isNext && <LuArrowRight className="rtl:rotate-180" />}
+											{t(`${step.key}.action`)} {isNext && <IconArrowRight className="rtl:rotate-180" />}
 										</Link>
 									</Button>
 								</div>

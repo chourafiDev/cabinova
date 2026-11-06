@@ -5,7 +5,7 @@ import { cn } from "cn"
 import { Dialog as SheetPrimitive } from "radix-ui"
 
 import { Button } from "@/components/ui/button"
-import { LuX } from "react-icons/lu";
+import { IconClose } from "@/components/icons";
 import { useTranslations } from "next-intl";
 
 function Sheet({ ...props }: React.ComponentProps<typeof SheetPrimitive.Root>) {
@@ -81,7 +81,7 @@ function SheetContent({
               className="text-muted-foreground absolute top-4 end-4"
               size="icon-sm"
             >
-              <LuX
+              <IconClose
               />
               <span className="sr-only">{t("close")}</span>
             </Button>

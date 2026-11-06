@@ -30,6 +30,11 @@ export default defineConfig({
       WEB_ORIGIN: 'http://localhost:3000',
       SEED_ADMIN_EMAIL: 'admin@e2e.test',
       SEED_ADMIN_PASSWORD: 'e2e-admin-password',
+      // The S3 mock in test/docker-compose.yml (accepts any key).
+      S3_ENDPOINT: `http://${process.env.E2E_S3_HOST ?? 'localhost:59090'}`,
+      S3_BUCKET: 'cabinova-test',
+      S3_ACCESS_KEY_ID: 'e2e',
+      S3_SECRET_ACCESS_KEY: 'e2e',
     },
   },
 });

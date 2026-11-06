@@ -2,7 +2,7 @@
 
 import { useTheme } from "next-themes"
 import { Toaster as Sonner, type ToasterProps } from "sonner"
-import { LuCircleCheck, LuInfo, LuLoaderCircle, LuOctagonX, LuTriangleAlert } from "react-icons/lu";
+import { IconCheckCircle, IconError, IconInfo, IconSpinnerCircle, IconWarning } from "@/components/icons";
 import { cn } from "cn"
 
 // Toasts for the admin and the storefront. Sonner keeps the positioning,
@@ -29,27 +29,27 @@ const Toaster = ({ ...props }: ToasterProps) => {
       icons={{
         success: (
           <Badge className="bg-emerald-100 text-emerald-700">
-            <LuCircleCheck className="size-[18px]" strokeWidth={2} />
+            <IconCheckCircle className="size-[18px]" strokeWidth={2} />
           </Badge>
         ),
         info: (
           <Badge className="bg-sky-100 text-sky-700">
-            <LuInfo className="size-[18px]" strokeWidth={2} />
+            <IconInfo className="size-[18px]" strokeWidth={2} />
           </Badge>
         ),
         warning: (
           <Badge className="bg-amber-100 text-amber-700">
-            <LuTriangleAlert className="size-[18px]" strokeWidth={2} />
+            <IconWarning className="size-[18px]" strokeWidth={2} />
           </Badge>
         ),
         error: (
           <Badge className="bg-red-100 text-red-700">
-            <LuOctagonX className="size-[18px]" strokeWidth={2} />
+            <IconError className="size-[18px]" strokeWidth={2} />
           </Badge>
         ),
         loading: (
           <Badge className="bg-muted text-muted-foreground">
-            <LuLoaderCircle className="size-[18px] animate-spin" strokeWidth={2} />
+            <IconSpinnerCircle className="size-[18px] animate-spin" strokeWidth={2} />
           </Badge>
         ),
       }}

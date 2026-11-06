@@ -23,7 +23,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
-import { LuPanelLeft } from "react-icons/lu";
+import { IconSidebar } from "@/components/icons";
 import { focusRing } from "@/lib/focus-ring"
 
 const SIDEBAR_COOKIE_NAME = "sidebar_state"
@@ -274,7 +274,7 @@ function SidebarTrigger({
       }}
       {...props}
     >
-      <LuPanelLeft className="rtl:rotate-180" />
+      <IconSidebar className="rtl:rotate-180" />
       <span className="sr-only">{t("toggleMenu")}</span>
     </Button>
   )

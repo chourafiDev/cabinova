@@ -4,19 +4,19 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { createContext, useContext, useState } from "react";
-import {
-	LuCircleCheck,
-	LuLoader,
-	LuLock,
-	LuPlus,
-	LuPrinter,
-	LuReceipt,
-	LuSearch,
-	LuUndo2,
-	LuX,
-} from "react-icons/lu";
 import { toast } from "sonner";
 import { useCurrentUser } from "@/components/current-user";
+import {
+	IconCheckCircle,
+	IconClose,
+	IconLock,
+	IconPlus,
+	IconPrinter,
+	IconReceipt,
+	IconSearch,
+	IconSpinner,
+	IconUndo,
+} from "@/components/icons";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -31,7 +31,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { api } from "@/lib/api-client";
-import { formatFileNumber } from "@/lib/patients";
+import { formatFileNumber, isMedicalRole } from "@/lib/patients";
 import {
 	type Account,
 	type Act,
@@ -45,7 +45,8 @@ import { useFormat } from "@/lib/use-format";
 import { cn } from "@/lib/utils";
 
 /** Queries a checkout refreshes (desk, patient file, visit). */
-export const PAYMENT_KEYS = [["account"], ["desk"], ["patient-account"]] as const;
+// Appointments carry their account too (Patients vus: réglé or not).
+export const PAYMENT_KEYS = [["account"], ["desk"], ["patient-account"], ["appointments"]] as const;
 
 type Row = { key: number; actId: string | null; label: string; price: string; quantity: number };
 
@@ -73,7 +74,7 @@ export function CheckoutDialog({
 	const user = useCurrentUser();
 	return (
 		<Dialog open={appointmentId !== null} onOpenChange={onOpenChange}>
-			<DialogContent className="max-h-[92svh] overflow-y-auto sm:max-w-xl">
+			<DialogContent className="max-h-[92svh] overflow-y-auto sm:max-w-4xl">
 				{appointmentId && <Checkout key={appointmentId} appointmentId={appointmentId} user={user} onDone={() => onOpenChange(false)} />}
 			</DialogContent>
 		</Dialog>
@@ -81,9 +82,9 @@ export function CheckoutDialog({
 }
 
 /**
- * The same checkout, laid out in the page instead of a dialog (the
- * dossier's Prix tab). After a payment or a save it starts over on the
- * visit's updated account.
+ * The doctor's side, in the page (the dossier's Prix tab): the acts and a
+ * remboursement, saved with one button. No money here: the front desk
+ * collects it from the patient's file (Paiements › Encaisser).
  */
 export function CheckoutPanel({ appointmentId }: { appointmentId: string }) {
 	const user = useCurrentUser();
@@ -173,7 +174,12 @@ function CheckoutForm({
 	const inline = useContext(Inline);
 	const { appointment: visit } = account;
 	const owner = user.role === "owner";
+	// The remboursement is the doctor's; the desk sees it, never changes it.
+	const medical = isMedicalRole(user.role);
+	// The dossier records the acts; money is taken at the desk.
+	const collects = !inline;
 	const [rows, setRows] = useState<Row[]>(() => account.items.map(rowOf));
+	const [discountText, setDiscountText] = useState(() => (account.discount ? toInput(account.discount) : ""));
 	const [amount, setAmount] = useState<string | null>(null);
 	const [method, setMethod] = useState<PaymentMethod>("cash");
 	const [reference, setReference] = useState("");
@@ -189,14 +195,19 @@ function CheckoutForm({
 
 	const prices = rows.map((r) => parseMad(r.price));
 	const invalid = rows.some((r, i) => prices[i] === null || !r.label.trim());
-	const total = rows.reduce((s, r, i) => s + (prices[i] ?? 0) * r.quantity, 0);
+	const subtotal = rows.reduce((s, r, i) => s + (prices[i] ?? 0) * r.quantity, 0);
+	const typedDiscount = discountText.trim() ? parseMad(discountText) : 0;
+	const discountInvalid = medical && (typedDiscount === null || typedDiscount > subtotal);
+	const discount = medical ? Math.min(typedDiscount ?? 0, subtotal) : Math.min(account.discount, subtotal);
+	const total = subtotal - discount;
 	const remaining = total - account.paid;
 	// The amount follows the remaining balance until it's typed.
 	const amountText = amount ?? (remaining > 0 ? toInput(remaining) : "");
 	const amountValue = parseMad(amountText);
 	const changed =
 		JSON.stringify(rows.map((r, i) => [r.actId, r.label.trim(), prices[i], r.quantity])) !==
-		JSON.stringify(account.items.map((i) => [i.actId, i.label, i.unitPrice, i.quantity]));
+			JSON.stringify(account.items.map((i) => [i.actId, i.label, i.unitPrice, i.quantity])) ||
+		(medical && typedDiscount !== account.discount);
 
 	const setRow = (key: number, change: Partial<Row>) =>
 		setRows((all) => all.map((r) => (r.key === key ? { ...r, ...change } : r)));
@@ -215,6 +226,7 @@ function CheckoutForm({
 		setError(null);
 		if (rows.length === 0) return setError(t("addAct"));
 		if (invalid) return setError(t("checkActs"));
+		if (discountInvalid) return setError(t("discountInvalid", { amount: mad(subtotal) }));
 		if (withPayment && (amountValue === null || amountValue <= 0)) return setError(t("invalidAmount"));
 		if (withPayment && amountValue! > remaining) return setError(t("tooMuch", { amount: mad(remaining) }));
 		setSaving(true);
@@ -228,6 +240,7 @@ function CheckoutForm({
 						unitPrice: prices[i],
 						quantity: r.quantity,
 					})),
+					...(medical && { discount }),
 					...(withPayment && {
 						payment: { amount: amountValue, method, reference: reference.trim() || undefined },
 					}),
@@ -239,7 +252,9 @@ function CheckoutForm({
 				const payment = res.payments.find((p) => p.id === res.paymentId)!;
 				setPaid({ id: payment.id, receiptNumber: payment.receiptNumber, amount: payment.amount });
 			} else {
-				toast.success(t("actsSaved"));
+				toast.success(
+					collects || res.balance <= 0 ? t("actsSaved") : t("savedForDesk", { amount: mad(res.balance) }),
+				);
 				onDone();
 			}
 		} catch (err) {
@@ -260,7 +275,7 @@ function CheckoutForm({
 				</Head>
 				<div className="flex flex-col items-center gap-2 py-4 text-center">
 					<span className="flex size-12 items-center justify-center rounded-full bg-emerald-50 text-emerald-600 dark:bg-emerald-500/15 dark:text-emerald-300">
-						<LuCircleCheck className="size-6" />
+						<IconCheckCircle className="size-6" />
 					</span>
 					<p className="text-lg font-semibold">{t("received", { amount: mad(paid.amount) })}</p>
 					<p className="text-muted-foreground text-sm">
@@ -274,7 +289,7 @@ function CheckoutForm({
 					</Button>
 					<Button asChild>
 						<a href={`/receipts/${paid.id}`} target="_blank" rel="noopener">
-							<LuPrinter /> {t("print")}
+							<IconPrinter /> {t("print")}
 						</a>
 					</Button>
 				</Footer>
@@ -292,7 +307,7 @@ function CheckoutForm({
 	return (
 		<div className="grid gap-5">
 			<Head>
-				<Title>{t("titleFor", { name: patientName })}</Title>
+				<Title>{collects ? t("titleFor", { name: patientName }) : t("priceTitle", { name: patientName })}</Title>
 				<Description>
 					<span className="first-letter:uppercase">
 						{format.date(visit.startsAt, { weekday: "long", year: undefined, hour: "2-digit", minute: "2-digit" })}
@@ -303,7 +318,7 @@ function CheckoutForm({
 
 			{locked && (
 				<p className="bg-muted text-muted-foreground flex items-start gap-2 rounded-lg p-3 text-sm">
-					<LuLock className="mt-0.5 size-4 shrink-0" />
+					<IconLock className="mt-0.5 size-4 shrink-0" />
 					{t("locked")}
 				</p>
 			)}
@@ -351,7 +366,7 @@ function CheckoutForm({
 									aria-label={t("remove", { label: r.label })}
 									onClick={() => setRows((all) => all.filter((x) => x.key !== r.key))}
 								>
-									<LuX />
+									<IconClose />
 								</Button>
 							</li>
 						))}
@@ -359,7 +374,7 @@ function CheckoutForm({
 				)}
 				{acts.length > 0 && (
 					<div className="relative">
-						<LuSearch className="text-muted-foreground absolute start-2.5 top-1/2 size-4 -translate-y-1/2" />
+						<IconSearch className="text-muted-foreground absolute start-2.5 top-1/2 size-4 -translate-y-1/2" />
 						<Input
 							type="search"
 							value={search}
@@ -381,7 +396,7 @@ function CheckoutForm({
 				<div className="flex flex-wrap gap-1.5">
 					{suggestions.map((a) => (
 						<Button key={a.id} type="button" variant="outline" size="sm" className="h-7 font-normal" onClick={() => addAct(a)}>
-							<LuPlus /> {a.name} <span className="text-muted-foreground tabular-nums">{mad(a.price)}</span>
+							<IconPlus /> {a.name} <span className="text-muted-foreground tabular-nums">{mad(a.price)}</span>
 						</Button>
 					))}
 					{hidden > 0 && (
@@ -394,7 +409,7 @@ function CheckoutForm({
 					{owner ? (
 						!creating && (
 							<Button type="button" variant="ghost" size="sm" className="text-primary h-7 font-normal" onClick={() => setCreating(true)}>
-								<LuPlus /> {suggestions.length === 0 && search.trim() ? t("createAct", { name: search.trim() }) : t("newAct")}
+								<IconPlus /> {suggestions.length === 0 && search.trim() ? t("createAct", { name: search.trim() }) : t("newAct")}
 							</Button>
 						)
 					) : (
@@ -405,7 +420,7 @@ function CheckoutForm({
 							className="text-muted-foreground h-7 font-normal"
 							onClick={() => setRows((all) => [...all, rowOf({ actId: null, label: "", unitPrice: 0, quantity: 1 })])}
 						>
-							<LuPlus /> {t("freeLine")}
+							<IconPlus /> {t("freeLine")}
 						</Button>
 					)}
 				</div>
@@ -427,11 +442,50 @@ function CheckoutForm({
 				)}
 			</section>
 
+			{medical && (
+				<section className="grid gap-1.5">
+					<label htmlFor="checkout-discount" className="text-sm font-medium">
+						{t("discount")}
+					</label>
+					<div className="relative w-40">
+						<Input
+							id="checkout-discount"
+							inputMode="decimal"
+							value={discountText}
+							placeholder="0"
+							aria-invalid={discountInvalid}
+							aria-describedby="checkout-discount-hint"
+							onChange={(e) => setDiscountText(e.target.value)}
+							className="h-9 pe-10 text-end tabular-nums"
+						/>
+						<span className="text-muted-foreground pointer-events-none absolute end-2.5 top-1/2 -translate-y-1/2 text-xs">
+							MAD
+						</span>
+					</div>
+					<p id="checkout-discount-hint" className="text-muted-foreground text-xs">
+						{discountInvalid ? t("discountInvalid", { amount: mad(subtotal) }) : t("discountHint")}
+					</p>
+				</section>
+			)}
+
 			<dl className="bg-muted/50 grid gap-1.5 rounded-lg p-3 text-sm">
 				<div className="flex justify-between">
-					<dt className="text-muted-foreground">{t("total")}</dt>
-					<dd className="font-medium tabular-nums">{mad(total)}</dd>
+					<dt className="text-muted-foreground">{discount > 0 ? t("actsTotal") : t("total")}</dt>
+					<dd className="font-medium tabular-nums">{mad(subtotal)}</dd>
 				</div>
+				{discount > 0 && (
+					<div className="flex justify-between">
+						<dt className="text-muted-foreground">{t("discount")}</dt>
+						<dd className="tabular-nums text-emerald-700">− {mad(discount)}</dd>
+					</div>
+				)}
+				{/* Once something was paid, what the patient owes in all, before the rest. */}
+				{discount > 0 && account.paid !== 0 && (
+					<div className="flex justify-between">
+						<dt className="text-muted-foreground">{t("patientPays")}</dt>
+						<dd className="font-medium tabular-nums">{mad(total)}</dd>
+					</div>
+				)}
 				{account.paid !== 0 && (
 					<div className="flex justify-between">
 						<dt className="text-muted-foreground">{t("alreadyPaid")}</dt>
@@ -439,7 +493,9 @@ function CheckoutForm({
 					</div>
 				)}
 				<div className="flex justify-between border-t pt-1.5">
-					<dt className="font-medium">{remaining < 0 ? t("overpaid") : t("due")}</dt>
+					<dt className="font-medium">
+						{remaining < 0 ? t("overpaid") : discount > 0 && account.paid === 0 ? t("patientPays") : t("due")}
+					</dt>
 					<dd className="font-semibold tabular-nums">{mad(Math.abs(remaining))}</dd>
 				</div>
 			</dl>
@@ -455,7 +511,7 @@ function CheckoutForm({
 				/>
 			)}
 
-			{!locked && remaining > 0 && (
+			{collects && !locked && remaining > 0 && (
 				<section className="grid gap-3">
 					<h3 className="text-sm font-medium">{t("payment")}</h3>
 					<div className="flex flex-wrap gap-1.5" role="radiogroup" aria-label={payments("methods.label")}>
@@ -512,8 +568,17 @@ function CheckoutForm({
 				</p>
 			)}
 
-			{/* In the page there is nothing to close: no footer when nothing is left to do. */}
-			{(!inline || (!locked && remaining > 0) || changed) && (
+			{!collects ? (
+				// The doctor's one button: the desk collects from the patient's file.
+				<Footer className="items-center gap-2">
+					{!changed && account.chargeId && remaining > 0 && (
+						<p className="text-muted-foreground me-auto text-xs">{t("deskWillCollect", { amount: mad(remaining) })}</p>
+					)}
+					<Button type="button" disabled={saving || !changed || rows.length === 0} onClick={() => save(false)}>
+						{saving && <IconSpinner className="animate-spin" />} {t("save")}
+					</Button>
+				</Footer>
+			) : (
 				<Footer className="gap-2">
 					{!locked && remaining > 0 ? (
 						<>
@@ -521,7 +586,7 @@ function CheckoutForm({
 								{t("saveOnly")}
 							</Button>
 							<Button type="button" disabled={saving} onClick={() => save(true)}>
-								{saving ? <LuLoader className="animate-spin" /> : <LuReceipt />} {t("collect")}{" "}
+								{saving ? <IconSpinner className="animate-spin" /> : <IconReceipt />} {t("collect")}{" "}
 								{amountValue ? mad(amountValue) : ""}
 							</Button>
 						</>
@@ -534,7 +599,7 @@ function CheckoutForm({
 							)}
 							{changed && (
 								<Button type="button" disabled={saving} onClick={() => save(false)}>
-									{saving && <LuLoader className="animate-spin" />} {t("saveActs")}
+									{saving && <IconSpinner className="animate-spin" />} {t("saveActs")}
 								</Button>
 							)}
 						</>
@@ -628,7 +693,7 @@ function NewActForm({
 						{t("cancelNewAct")}
 					</Button>
 					<Button type="submit" size="sm" disabled={saving}>
-						{saving ? <LuLoader className="animate-spin" /> : <LuPlus />} {t("addNewAct")}
+						{saving ? <IconSpinner className="animate-spin" /> : <IconPlus />} {t("addNewAct")}
 					</Button>
 				</div>
 			</div>
@@ -666,7 +731,7 @@ function Movements({
 				<h3 className="text-sm font-medium">{t("payments")}</h3>
 				{canRefund && !refunding && (
 					<Button type="button" variant="ghost" size="sm" className="h-7" onClick={() => setRefunding(true)}>
-						<LuUndo2 className="rtl:-scale-x-100" /> {t("refund")}
+						<IconUndo className="rtl:-scale-x-100" /> {t("refund")}
 					</Button>
 				)}
 			</div>
@@ -693,7 +758,7 @@ function Movements({
 								{p.receiptNumber && !p.cancelledAt && (
 									<Button asChild variant="ghost" size="sm" className="h-7 font-mono text-xs">
 										<a href={`/receipts/${p.id}`} target="_blank" rel="noopener" title={t("print")}>
-											<LuPrinter /> {p.receiptNumber}
+											<IconPrinter /> {p.receiptNumber}
 										</a>
 									</Button>
 								)}
@@ -784,7 +849,7 @@ function ReasonForm({
 				{t("back")}
 			</Button>
 			<Button type="submit" variant="destructive" size="sm" className="h-8" disabled={pending}>
-				{pending && <LuLoader className="animate-spin" />} {action}
+				{pending && <IconSpinner className="animate-spin" />} {action}
 			</Button>
 		</form>
 	);
@@ -859,7 +924,7 @@ function RefundForm({
 					{t("back")}
 				</Button>
 				<Button type="submit" size="sm" disabled={pending}>
-					{pending && <LuLoader className="animate-spin" />} {t("refund")} {value ? mad(value) : ""}
+					{pending && <IconSpinner className="animate-spin" />} {t("refund")} {value ? mad(value) : ""}
 				</Button>
 			</div>
 		</form>

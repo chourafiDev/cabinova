@@ -1,20 +1,20 @@
 import { useLocale, useTranslations } from "next-intl";
-import { LuBuilding2, LuClock, LuLock, LuPlugZap, LuRefreshCw } from "react-icons/lu";
+import { IconBuilding, IconClock, IconLock, IconPlug, IconRefresh } from "@/components/icons";
 import { translateError } from "@/lib/api-errors";
 import type { Unavailable } from "@/lib/server-api";
 
-const ICONS: Record<string, typeof LuBuilding2> = {
-	TENANT_NOT_READY: LuClock,
-	TENANT_SUSPENDED: LuLock,
-	SERVICE_UNAVAILABLE: LuPlugZap,
-	TENANT_OUTDATED: LuRefreshCw,
+const ICONS: Record<string, typeof IconBuilding> = {
+	TENANT_NOT_READY: IconClock,
+	TENANT_SUSPENDED: IconLock,
+	SERVICE_UNAVAILABLE: IconPlug,
+	TENANT_OUTDATED: IconRefresh,
 };
 
 /** Full page when this address can't be used: unknown cabinet, not ready, suspended, API down. */
 export function CabinetUnavailable({ reason }: { reason: Unavailable }) {
 	const t = useTranslations("common");
 	const locale = useLocale();
-	const Icon = ICONS[reason.code] ?? LuBuilding2;
+	const Icon = ICONS[reason.code] ?? IconBuilding;
 	return (
 		<main className="flex min-h-screen items-center justify-center bg-background p-6">
 			<div className="flex max-w-sm flex-col items-center gap-3 text-center">

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { LuChevronLeft, LuChevronRight, LuPlus, LuUsers } from "react-icons/lu";
+import { IconChevronLeft, IconChevronRight, IconPlus, IconUsers } from "@/components/icons";
 import { NoShowBadge } from "@/components/no-show-badge";
 import { Suspense } from "react";
 import { getTranslations } from "next-intl/server";
@@ -65,7 +65,7 @@ export default async function PatientsPage({ searchParams }: PageProps<"/patient
 			<header className="flex flex-wrap items-center justify-between gap-3">
 				<div className="flex items-center gap-3">
 					<span className="bg-primary/10 text-primary flex size-9 items-center justify-center rounded-lg">
-						<LuUsers className="size-4" />
+						<IconUsers className="size-4" />
 					</span>
 					<div>
 						<h1 className="text-lg font-semibold leading-tight">{t("title")}</h1>
@@ -78,7 +78,7 @@ export default async function PatientsPage({ searchParams }: PageProps<"/patient
 				</div>
 				<Button asChild>
 					<Link href={href({ nouveau: "1" })} scroll={false}>
-						<LuPlus /> {t("new")}
+						<IconPlus /> {t("new")}
 					</Link>
 				</Button>
 			</header>
@@ -107,7 +107,7 @@ export default async function PatientsPage({ searchParams }: PageProps<"/patient
 			<div className="bg-card overflow-hidden rounded-xl border">
 				{data.length === 0 ? (
 					<div className="flex flex-col items-center gap-2 px-6 py-16 text-center">
-						<LuUsers className="text-muted-foreground size-6" />
+						<IconUsers className="text-muted-foreground size-6" />
 						<p className="font-medium">
 							{t(search ? "empty.search" : `empty.${status}`)}
 						</p>
@@ -117,7 +117,7 @@ export default async function PatientsPage({ searchParams }: PageProps<"/patient
 						{!search && status === "active" && (
 							<Button asChild size="sm" className="mt-2">
 								<Link href={href({ nouveau: "1" })} scroll={false}>
-									<LuPlus /> {t("new")}
+									<IconPlus /> {t("new")}
 								</Link>
 							</Button>
 						)}
@@ -178,12 +178,12 @@ export default async function PatientsPage({ searchParams }: PageProps<"/patient
 					</span>
 					<Button asChild variant="outline" size="sm" aria-disabled={page <= 1} className={cn(page <= 1 && "pointer-events-none opacity-50")}>
 						<Link href={href({ page: String(page - 1) })}>
-							<LuChevronLeft className="rtl:rotate-180" /> {common("pagination.previous")}
+							<IconChevronLeft className="rtl:rotate-180" /> {common("pagination.previous")}
 						</Link>
 					</Button>
 					<Button asChild variant="outline" size="sm" aria-disabled={page >= pageCount} className={cn(page >= pageCount && "pointer-events-none opacity-50")}>
 						<Link href={href({ page: String(page + 1) })}>
-							{common("pagination.next")} <LuChevronRight className="rtl:rotate-180" />
+							{common("pagination.next")} <IconChevronRight className="rtl:rotate-180" />
 						</Link>
 					</Button>
 				</nav>

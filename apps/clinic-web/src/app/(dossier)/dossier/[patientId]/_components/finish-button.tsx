@@ -4,8 +4,8 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
-import { LuCheck, LuLoader } from "react-icons/lu";
 import { toast } from "sonner";
+import { IconCheck, IconSpinner } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import { api } from "@/lib/api-client";
 import { type Appointment, APPOINTMENTS_KEY } from "@/lib/appointments";
@@ -53,7 +53,7 @@ export function FinishButton({
 
 	return (
 		<Button onClick={finish} disabled={busy}>
-			{busy ? <LuLoader className="animate-spin" /> : <LuCheck />}
+			{busy ? <IconSpinner className="animate-spin" /> : <IconCheck />}
 			{t("finish")}
 		</Button>
 	);

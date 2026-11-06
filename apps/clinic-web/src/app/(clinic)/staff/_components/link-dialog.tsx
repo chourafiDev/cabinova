@@ -2,8 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import { useState } from "react";
-import { FaWhatsapp } from "react-icons/fa6";
-import { LuCheck, LuCircleAlert, LuCopy, LuMailCheck } from "react-icons/lu";
+import { IconAlertCircle, IconCheck, IconCopy, IconMail, IconWhatsapp } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import {
 	Dialog,
@@ -68,7 +67,7 @@ function LinkContent({ member, link, onDone }: { member: Member; link: MemberLin
 						: "flex items-start gap-2 rounded-lg bg-amber-50 p-3 text-sm text-amber-900 dark:bg-amber-500/15 dark:text-amber-200"
 				}
 			>
-				{sent ? <LuMailCheck className="mt-0.5 size-4 shrink-0" /> : <LuCircleAlert className="mt-0.5 size-4 shrink-0" />}
+				{sent ? <IconMail className="mt-0.5 size-4 shrink-0" /> : <IconAlertCircle className="mt-0.5 size-4 shrink-0" />}
 				<span>
 					{sent
 						? t.rich("sent", {
@@ -85,7 +84,7 @@ function LinkContent({ member, link, onDone }: { member: Member; link: MemberLin
 				<div className="flex gap-2">
 					<Input type="url" value={link.url} readOnly aria-label={t("label")} className="font-mono text-xs" onFocus={(e) => e.target.select()} />
 					<Button type="button" variant="outline" onClick={copy} className="shrink-0">
-						{copied ? <LuCheck /> : <LuCopy />} {copied ? t("copied") : t("copy")}
+						{copied ? <IconCheck /> : <IconCopy />} {copied ? t("copied") : t("copy")}
 					</Button>
 				</div>
 				<p className="text-muted-foreground text-xs">
@@ -96,7 +95,7 @@ function LinkContent({ member, link, onDone }: { member: Member; link: MemberLin
 			<DialogFooter>
 				<Button asChild variant="outline">
 					<a href={`https://wa.me/?text=${encodeURIComponent(message)}`} target="_blank" rel="noopener noreferrer">
-						<FaWhatsapp /> {t("whatsapp")}
+						<IconWhatsapp /> {t("whatsapp")}
 					</a>
 				</Button>
 				<Button onClick={onDone}>{t("done")}</Button>

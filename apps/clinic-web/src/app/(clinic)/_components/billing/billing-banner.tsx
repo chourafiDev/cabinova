@@ -2,7 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import { useState } from "react";
-import { LuSparkles, LuTriangleAlert } from "react-icons/lu";
+import { IconSparkles, IconWarning } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import type { BillingNotice } from "@/lib/billing-notice";
 import { useFormat } from "@/lib/use-format";
@@ -69,7 +69,7 @@ function Message({ notice }: { notice: BillingNotice }) {
 export function BillingBanner({ notice }: { notice: BillingNotice }) {
 	const [open, setOpen] = useState(false);
 	const t = useTranslations("billing.banner");
-	const Icon = notice.tone === "info" ? LuSparkles : LuTriangleAlert;
+	const Icon = notice.tone === "info" ? IconSparkles : IconWarning;
 
 	return (
 		<div

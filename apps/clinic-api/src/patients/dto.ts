@@ -1,5 +1,6 @@
 import { Transform, Type } from 'class-transformer';
 import {
+  IsBoolean,
   IsEmail,
   IsIn,
   IsInt,
@@ -7,6 +8,7 @@ import {
   IsNumber,
   IsOptional,
   IsString,
+  IsUUID,
   Matches,
   Max,
   MaxLength,
@@ -136,6 +138,31 @@ export class PatientDto {
   @IsString()
   @MaxLength(2000)
   notes?: string | null;
+
+  /** Saved anyway when another file has the same name: a homonym, checked by the user. */
+  @IsOptional()
+  @IsBoolean()
+  allowHomonym?: boolean;
+}
+
+/** GET /patients/homonyms: the files a new name would duplicate. */
+export class HomonymsQuery {
+  @clean()
+  @IsString()
+  @MinLength(1)
+  @MaxLength(80)
+  firstName: string;
+
+  @clean()
+  @IsString()
+  @MinLength(1)
+  @MaxLength(80)
+  lastName: string;
+
+  /** The file being edited, not its own homonym. */
+  @IsOptional()
+  @IsUUID()
+  exceptId?: string;
 }
 
 export const SORTABLE = [

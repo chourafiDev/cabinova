@@ -3,8 +3,8 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
-import { LuBuilding2, LuCalendarCheck2, LuLoader, LuTriangleAlert } from "react-icons/lu";
 import { toast } from "sonner";
+import { IconBuilding, IconCalendarCheck, IconSpinner, IconWarning } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
@@ -49,7 +49,7 @@ export function ClosureSheet({
 	const t = useTranslations("absences");
 	return (
 		<Sheet open={open} onOpenChange={onOpenChange}>
-			<SheetContent className={`w-full gap-0 data-[side=right]:sm:max-w-lg ${SHEET_AT_END}`}>
+			<SheetContent className={`w-full gap-0 data-[side=right]:sm:max-w-2xl ${SHEET_AT_END}`}>
 				<SheetHeader className="border-b p-5">
 					<SheetTitle className="text-xl">{t("form.title")}</SheetTitle>
 					<SheetDescription>{t("form.description")}</SheetDescription>
@@ -134,7 +134,7 @@ function ClosureForm({
 						<SelectContent>
 							{user.role === "owner" && (
 								<SelectItem value={CABINET}>
-									<LuBuilding2 /> {t("wholeCabinet")}
+									<IconBuilding /> {t("wholeCabinet")}
 								</SelectItem>
 							)}
 							{whom.map((p) => (
@@ -223,12 +223,12 @@ function ClosureForm({
 				{validDates && conflicts.data && (
 					conflicts.data.length === 0 ? (
 						<p className="flex items-center gap-2 rounded-lg border bg-emerald-50 px-3 py-2 text-sm text-emerald-900">
-							<LuCalendarCheck2 className="size-4 shrink-0" /> {t("form.noConflicts")}
+							<IconCalendarCheck className="size-4 shrink-0" /> {t("form.noConflicts")}
 						</p>
 					) : (
 						<div className="grid gap-2 rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900">
 							<p className="flex items-start gap-2 font-medium">
-								<LuTriangleAlert className="mt-0.5 size-4 shrink-0" />
+								<IconWarning className="mt-0.5 size-4 shrink-0" />
 								{t("form.conflicts", { count: conflicts.data.length })}
 							</p>
 							<ul className="grid gap-1 ps-6 text-xs">
@@ -254,7 +254,7 @@ function ClosureForm({
 					{t("cancel")}
 				</Button>
 				<Button type="submit" disabled={saving}>
-					{saving && <LuLoader className="animate-spin" />}
+					{saving && <IconSpinner className="animate-spin" />}
 					{t("form.submit")}
 				</Button>
 			</SheetFooter>

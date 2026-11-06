@@ -4,7 +4,7 @@ import * as React from "react"
 import { cn } from "cn"
 import { focusRing } from "@/lib/focus-ring"
 import { Select as SelectPrimitive } from "radix-ui"
-import { LuCheck, LuChevronDown, LuChevronUp } from "react-icons/lu";
+import { IconCheck, IconChevronDown, IconChevronUp } from "@/components/icons";
 
 function Select({
   ...props
@@ -52,7 +52,7 @@ function SelectTrigger({
     >
       {children}
       <SelectPrimitive.Icon asChild>
-        <LuChevronDown className="pointer-events-none size-4 text-muted-foreground" />
+        <IconChevronDown className="pointer-events-none size-4 text-muted-foreground" />
       </SelectPrimitive.Icon>
     </SelectPrimitive.Trigger>
   )
@@ -120,7 +120,7 @@ function SelectItem({
     >
       <span className="pointer-events-none absolute end-2 flex size-4 items-center justify-center">
         <SelectPrimitive.ItemIndicator>
-          <LuCheck className="pointer-events-none" />
+          <IconCheck className="pointer-events-none" />
         </SelectPrimitive.ItemIndicator>
       </span>
       <SelectPrimitive.ItemText>{children}</SelectPrimitive.ItemText>
@@ -154,7 +154,7 @@ function SelectScrollUpButton({
       )}
       {...props}
     >
-      <LuChevronUp
+      <IconChevronUp
       />
     </SelectPrimitive.ScrollUpButton>
   )
@@ -173,7 +173,7 @@ function SelectScrollDownButton({
       )}
       {...props}
     >
-      <LuChevronDown
+      <IconChevronDown
       />
     </SelectPrimitive.ScrollDownButton>
   )

@@ -68,6 +68,16 @@ const envSchema = z
      * wildcards). Defaults to this API on localhost outside production.
      */
     GOOGLE_REDIRECT_URI: z.url().optional(),
+    /**
+     * Patients' documents: an S3-compatible bucket, Cloudflare R2 in
+     * production (https://<account id>.r2.cloudflarestorage.com, region
+     * "auto"). Without them, the Documents tab says it isn't set up.
+     */
+    S3_ENDPOINT: z.url().optional(),
+    S3_REGION: z.string().default('auto'),
+    S3_BUCKET: z.string().optional(),
+    S3_ACCESS_KEY_ID: z.string().optional(),
+    S3_SECRET_ACCESS_KEY: z.string().optional(),
     /** Tests and CI only, see admin-api/test/docker-compose.yml. */
     NEON_WS_PROXY: z.string().optional(),
   })
@@ -84,6 +94,22 @@ const envSchema = z
       message:
         'GOOGLE_CLIENT_ID needs GOOGLE_CLIENT_SECRET (and GOOGLE_REDIRECT_URI in production)',
       path: ['GOOGLE_CLIENT_ID'],
+    },
+  )
+  .refine(
+    (env) => {
+      const set = [
+        env.S3_ENDPOINT,
+        env.S3_BUCKET,
+        env.S3_ACCESS_KEY_ID,
+        env.S3_SECRET_ACCESS_KEY,
+      ].filter(Boolean).length;
+      return set === 0 || set === 4;
+    },
+    {
+      message:
+        'S3_ENDPOINT, S3_BUCKET, S3_ACCESS_KEY_ID and S3_SECRET_ACCESS_KEY go together',
+      path: ['S3_ENDPOINT'],
     },
   );
 

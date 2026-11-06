@@ -7,7 +7,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import type { ClinicUser } from '../auth/auth.types.js';
-import { assertOwner } from '../auth/roles.js';
+import { assertMedical, assertOwner } from '../auth/roles.js';
 import { addDays, today } from '../reports/period.js';
 import type { Space } from '../spaces/spaces.service.js';
 import type {
@@ -63,12 +63,13 @@ export class PaymentsService {
       practitioner: { id: string; name: string };
       charge_id: string | null;
       total: number | null;
+      discount: number | null;
     }>(
       `select a.id, a.starts_at, a.status,
               json_build_object('id', pa.id, 'firstName', pa.first_name,
                 'lastName', pa.last_name, 'fileNumber', pa.file_number) as patient,
               json_build_object('id', u.id, 'name', u.name) as practitioner,
-              c.id as charge_id, c.total
+              c.id as charge_id, c.total, c.discount
          from appointments a
          join patients pa on pa.id = a.patient_id
          join users u on u.id = a.practitioner_id
@@ -103,6 +104,7 @@ export class PaymentsService {
       .filter((p) => !p.cancelledAt)
       .reduce((s, p) => s + (p.kind === 'payment' ? p.amount : -p.amount), 0);
     const total = visit.total ?? 0;
+    const discount = visit.discount ?? 0;
     return {
       appointment: {
         id: visit.id,
@@ -114,6 +116,11 @@ export class PaymentsService {
       chargeId: visit.charge_id,
       items: items.rows,
       payments: payments.rows,
+      /** The acts' sum, before the remboursement. */
+      subtotal: total + discount,
+      /** Remboursement granted by the doctor. */
+      discount,
+      /** What the patient pays: subtotal − discount. */
       total,
       paid,
       /** Negative: the patient paid more than the acts (to refund). */
@@ -161,12 +168,24 @@ export class PaymentsService {
         [dto.items.flatMap((i) => (i.actId ? [i.actId] : []))],
       );
       const actIds = new Set(known.map((a) => a.id));
-      const total = dto.items.reduce((s, i) => s + i.unitPrice * i.quantity, 0);
+      const subtotal = dto.items.reduce(
+        (s, i) => s + i.unitPrice * i.quantity,
+        0,
+      );
+      const discount = await this.discountFor(
+        client,
+        user,
+        appointmentId,
+        subtotal,
+        dto.discount,
+      );
+      const total = subtotal - discount;
 
       const { rows: charge } = await client.query<{ id: string }>(
-        `insert into charges (space_id, patient_id, appointment_id, practitioner_id, total, created_by)
-         values ($1, $2, $3, $4, $5, $6)
-         on conflict (appointment_id) do update set total = excluded.total, updated_at = now()
+        `insert into charges (space_id, patient_id, appointment_id, practitioner_id, total, discount, created_by)
+         values ($1, $2, $3, $4, $5, $6, $7)
+         on conflict (appointment_id) do update
+           set total = excluded.total, discount = excluded.discount, updated_at = now()
          returning id`,
         [
           spaceId,
@@ -174,6 +193,7 @@ export class PaymentsService {
           appointmentId,
           visit.practitioner_id,
           total,
+          discount,
           user.id,
         ],
       );
@@ -233,6 +253,37 @@ export class PaymentsService {
       return payment[0].id;
     });
     return { ...(await this.account(db, spaceId, appointmentId)), paymentId };
+  }
+
+  /**
+   * The remboursement to keep on the visit: the doctor's new one, or the
+   * one it had (the desk re-saving the acts never changes it), never more
+   * than the acts.
+   */
+  private async discountFor(
+    client: PoolClient,
+    user: ClinicUser,
+    appointmentId: string,
+    subtotal: number,
+    requested: number | undefined,
+  ) {
+    const { rows } = await client.query<{ discount: number }>(
+      'select discount from charges where appointment_id = $1',
+      [appointmentId],
+    );
+    const current = rows[0]?.discount ?? 0;
+    if (requested === undefined || requested === current) {
+      return Math.min(current, subtotal);
+    }
+    assertMedical(user);
+    if (requested > subtotal) {
+      throw new BadRequestException({
+        code: 'DISCOUNT_TOO_HIGH',
+        params: { amount: mad(subtotal) },
+        message: `Le remboursement dépasse le montant des actes (${mad(subtotal)}).`,
+      });
+    }
+    return requested;
   }
 
   /** A mistake: by whoever recorded it, or the owner, until the day is closed. */
@@ -338,7 +389,7 @@ export class PaymentsService {
               json_build_object('firstName', pa.first_name, 'lastName', pa.last_name,
                 'fileNumber', pa.file_number, 'cin', pa.cin) as patient,
               json_build_object('name', u.name, 'startsAt', a.starts_at) as visit,
-              c.total
+              c.total, c.discount
          from payments p ${PAYMENT_JOINS}
          join spaces s on s.id = p.space_id
          join patients pa on pa.id = p.patient_id
@@ -371,11 +422,12 @@ export class PaymentsService {
       startsAt: Date;
       practitioner: string;
       total: number;
+      discount: number;
       paid: number;
       acts: string[];
     }>(
       `select c.appointment_id as "appointmentId", a.starts_at as "startsAt",
-              u.name as practitioner, c.total,
+              u.name as practitioner, c.total, c.discount,
               (select ${PAID} from payments where charge_id = c.id) as paid,
               array(select label from charge_items i where i.charge_id = c.id
                      order by position) as acts
@@ -386,7 +438,11 @@ export class PaymentsService {
         order by a.starts_at desc`,
       [patientId, spaceId],
     );
-    const visits = rows.map((r) => ({ ...r, balance: r.total - r.paid }));
+    const visits = rows.map((r) => ({
+      ...r,
+      subtotal: r.total + r.discount,
+      balance: r.total - r.paid,
+    }));
     return {
       visits,
       /** Still owed (overpaid visits don't offset another visit's debt). */

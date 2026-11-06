@@ -1,10 +1,10 @@
 import { fmt } from "@/calendar/locale";
 import { useMemo } from "react";
-import { LuCalendarX2 } from "react-icons/lu";
 import { parseISO, endOfDay, startOfDay, isSameMonth } from "date-fns";
 
 import { useCalendar } from "@/calendar/contexts/calendar-context";
 
+import { IconCalendarRemove } from "@/components/icons";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { AgendaDayGroup } from "@/calendar/components/agenda-view/agenda-day-group";
 
@@ -70,7 +70,7 @@ export function CalendarAgendaView({ singleDayEvents, multiDayEvents }: IProps) 
 
           {!hasAnyEvents && (
             <div className="flex flex-col items-center justify-center gap-2 py-20 text-muted-foreground">
-              <LuCalendarX2 className="size-10" />
+              <IconCalendarRemove className="size-10" />
               <p className="text-sm md:text-base">Aucun rendez-vous ce mois-ci</p>
             </div>
           )}

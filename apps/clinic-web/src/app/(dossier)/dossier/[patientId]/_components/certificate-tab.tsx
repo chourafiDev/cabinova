@@ -4,9 +4,17 @@ import { moroccoDay } from "@cabinova/morocco-time";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
-import { LuBan, LuSignature, LuHistory, LuLoader, LuPrinter, LuRotateCcw, LuSettings2 } from "react-icons/lu";
 import { toast } from "sonner";
 import { useCurrentUser } from "@/components/current-user";
+import {
+	IconBan,
+	IconHistory,
+	IconPrinter,
+	IconReset,
+	IconSettings,
+	IconSignature,
+	IconSpinner,
+} from "@/components/icons";
 import { RichTextEditor } from "@/components/rich-text-editor";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -98,7 +106,7 @@ export function CertificateTab({ patient, appointmentId }: { patient: PatientFil
 
 	return (
 		<div className="grid gap-4">
-			<Card icon={LuSignature} title={t("title")}>
+			<Card icon={IconSignature} title={t("title")}>
 				<div className="grid gap-4">
 					<Tabs value={kind} onValueChange={(v) => changeKind(v as CertificateKind)}>
 						<TabsList>
@@ -173,7 +181,7 @@ export function CertificateTab({ patient, appointmentId }: { patient: PatientFil
 								</ModelChip>
 							))}
 							<Button type="button" variant="ghost" size="sm" className="h-7 font-normal" onClick={() => setManaging(true)}>
-								<LuSettings2 /> {t("manageModels")}
+								<IconSettings /> {t("manageModels")}
 							</Button>
 						</div>
 						<RichTextEditor
@@ -190,7 +198,7 @@ export function CertificateTab({ patient, appointmentId }: { patient: PatientFil
 								onClick={() => setEdited(false)}
 								className="text-muted-foreground hover:text-foreground flex w-fit items-center gap-1 text-xs"
 							>
-								<LuRotateCcw className="size-3" /> {t("reapply")}
+								<IconReset className="size-3" /> {t("reapply")}
 							</button>
 						)}
 					</div>
@@ -198,7 +206,7 @@ export function CertificateTab({ patient, appointmentId }: { patient: PatientFil
 					<div className="flex flex-wrap items-center justify-between gap-3 border-t pt-4">
 						<p className="text-muted-foreground text-xs">{t("final")}</p>
 						<Button onClick={save} disabled={saving || patient.archivedAt !== null}>
-							{saving ? <LuLoader className="animate-spin" /> : <LuPrinter />} {t("saveAndPrint")}
+							{saving ? <IconSpinner className="animate-spin" /> : <IconPrinter />} {t("saveAndPrint")}
 						</Button>
 					</div>
 				</div>
@@ -236,7 +244,7 @@ function CertificateHistory({ patientId }: { patientId: string }) {
 
 	return (
 		<Card
-			icon={LuHistory}
+			icon={IconHistory}
 			title={t("history")}
 			aside={history.data && history.data.length > 0 && <span className="text-muted-foreground text-xs tabular-nums">{history.data.length}</span>}
 		>
@@ -301,16 +309,16 @@ function HistoryActions({ certificate }: { certificate: Certificate }) {
 		<span className="flex items-center gap-1">
 			<Button asChild variant="outline" size="sm" className="h-8">
 				<a href={`/certificats/${certificate.id}`} target="_blank" rel="noopener">
-					<LuPrinter /> {t("print")}
+					<IconPrinter /> {t("print")}
 				</a>
 			</Button>
 			{confirming ? (
 				<Button variant="destructive" size="sm" className="h-8" disabled={pending} onClick={cancel} onBlur={() => setConfirming(false)}>
-					{pending ? <LuLoader className="animate-spin" /> : <LuBan />} {t("confirmCancel")}
+					{pending ? <IconSpinner className="animate-spin" /> : <IconBan />} {t("confirmCancel")}
 				</Button>
 			) : (
 				<Button variant="ghost" size="sm" className="text-destructive hover:text-destructive h-8" onClick={() => setConfirming(true)}>
-					<LuBan /> {t("cancel")}
+					<IconBan /> {t("cancel")}
 				</Button>
 			)}
 		</span>

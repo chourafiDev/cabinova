@@ -2,7 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import { useState } from "react";
-import { LuChartColumn, LuTable2 } from "react-icons/lu";
+import { IconChart, IconTable } from "@/components/icons";
 import { cn } from "@/lib/utils";
 import { Panel } from "./panel";
 
@@ -14,7 +14,7 @@ export function ChartPanel({
 }: Omit<React.ComponentProps<typeof Panel>, "action" | "children"> & { chart: React.ReactNode; table: React.ReactNode }) {
 	const [view, setView] = useState<"chart" | "table">("chart");
 	const t = useTranslations("reports.view");
-	const button = (key: typeof view, label: string, Icon: typeof LuTable2) => (
+	const button = (key: typeof view, label: string, Icon: typeof IconTable) => (
 		<button
 			type="button"
 			aria-label={label}
@@ -34,8 +34,8 @@ export function ChartPanel({
 			{...panel}
 			action={
 				<div className="bg-muted flex shrink-0 rounded-lg p-0.5" role="group" aria-label={t("label")}>
-					{button("chart", t("chart"), LuChartColumn)}
-					{button("table", t("table"), LuTable2)}
+					{button("chart", t("chart"), IconChart)}
+					{button("table", t("table"), IconTable)}
 				</div>
 			}
 		>

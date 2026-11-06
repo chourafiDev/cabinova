@@ -4,7 +4,7 @@ import { differenceInMinutes } from "date-fns";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
-import { LuArmchair, LuCheck, LuFolderOpen, LuLogOut, LuStethoscope, LuUndo2, LuUserPlus } from "react-icons/lu";
+import { IconClock, IconFolderOpen, IconLogout, IconStethoscope, IconUndo, IconUserAdd } from "@/components/icons";
 import { NoShowBadge } from "@/components/no-show-badge";
 import { useCurrentUser } from "@/components/current-user";
 import { Button } from "@/components/ui/button";
@@ -42,12 +42,12 @@ export function WaitingRoom({ practitioners }: { practitioners: Practitioner[] }
 			<div className="flex flex-wrap items-center justify-between gap-3">
 				<p className="text-muted-foreground text-sm">{!isPending && t("count", { count: waiting.length })}</p>
 				<Button size="sm" onClick={() => setAdding(true)}>
-					<LuUserPlus /> {t("walkIn")}
+					<IconUserAdd /> {t("walkIn")}
 				</Button>
 			</div>
 
 			{inConsultation.length > 0 && (
-				<InConsultation visits={inConsultation} doctor={doctor} actions={actions} />
+				<InConsultation visits={inConsultation} />
 			)}
 
 			{isPending ? (
@@ -60,7 +60,7 @@ export function WaitingRoom({ practitioners }: { practitioners: Practitioner[] }
 				<p className="text-destructive text-sm">{t("loadError")}</p>
 			) : waiting.length === 0 ? (
 				<div className="bg-card flex flex-col items-center gap-2 rounded-xl border px-6 py-16 text-center">
-					<LuArmchair className="text-muted-foreground size-6" />
+					<IconClock className="text-muted-foreground size-6" />
 					<p className="font-medium">{t("empty")}</p>
 					<p className="text-muted-foreground max-w-sm text-sm">{t("emptyHint")}</p>
 				</div>
@@ -77,28 +77,25 @@ export function WaitingRoom({ practitioners }: { practitioners: Practitioner[] }
 
 type Actions = ReturnType<typeof useWaitingActions>;
 
-/** Who is with a doctor now: the desk knows the room is taken; the doctor finishes from here. */
-function InConsultation({ visits, doctor, actions }: { visits: Appointment[]; doctor: boolean; actions: Actions }) {
+/**
+ * Who is with a doctor now: the room is taken. Only the doctor ends the
+ * visit, from the patient's dossier ("Terminer la consultation").
+ */
+function InConsultation({ visits }: { visits: Appointment[] }) {
 	const t = useTranslations("agenda.waiting");
-	const panel = useTranslations("agenda.panel");
 	return (
 		<div className="grid gap-2">
 			{visits.map((a) => (
-				<div key={a.id} className="bg-accent/60 flex flex-wrap items-center gap-3 rounded-xl px-4 py-3">
-					<span className="bg-primary/10 text-primary flex size-8 shrink-0 items-center justify-center rounded-lg">
-						<LuStethoscope className="size-4" />
+				<div key={a.id} className="bg-primary flex flex-wrap items-center gap-3 rounded-xl px-4 py-3">
+					<span className="bg-white/10 text-white flex size-8 shrink-0 items-center justify-center rounded-lg">
+						<IconStethoscope className="size-4" />
 					</span>
-					<div className="min-w-0 flex-1">
-						<p className="text-primary text-xs">{t("inConsultation")}</p>
-						<p className="truncate text-sm font-semibold">
-							{fullName(a.patient)} <span className="text-muted-foreground font-normal">· {a.practitioner.name}</span>
+					<div className="min-w-0 flex-1 space-y-1">
+						<p className="text-white/80 bg-white/20 px-2 py-0.5 rounded-full inline-flex text-xs">{t("inConsultation")}</p>
+						<p className="text-white truncate text-sm font-semibold">
+							{fullName(a.patient)} <span className="text-white/50 font-normal">· {a.practitioner.name}</span>
 						</p>
 					</div>
-					{doctor && (
-						<Button size="sm" variant="outline" disabled={actions.busy === a.id} onClick={() => actions.finish(a)}>
-							<LuCheck /> {panel("finish")}
-						</Button>
-					)}
 				</div>
 			))}
 		</div>
@@ -193,18 +190,18 @@ function WaitingTable({ waiting, doctor, actions }: { waiting: Appointment[]; do
 															disabled={busy}
 															onClick={() => actions.left(a)}
 														>
-															<LuLogOut className="rtl:-scale-x-100" />
+															<IconLogout className="rtl:-scale-x-100" />
 														</Button>
 													</TooltipTrigger>
 													<TooltipContent>{t("left")}</TooltipContent>
 												</Tooltip>
 												<Button size="sm" disabled={busy} onClick={() => actions.openFile(a)}>
-													<LuFolderOpen /> {panel("openFile")}
+													<IconFolderOpen /> {panel("openFile")}
 												</Button>
 											</>
 										) : (
 											<Button size="sm" variant="outline" disabled={busy} onClick={() => actions.left(a)}>
-												<LuLogOut className="rtl:-scale-x-100" /> {t("left")}
+												<IconLogout className="rtl:-scale-x-100" /> {t("left")}
 											</Button>
 										)}
 									</div>
@@ -225,7 +222,7 @@ function LeftToday({ visits, actions }: { visits: Appointment[]; actions: Action
 	return (
 		<section className="grid gap-2" aria-label={t("leftTitle")}>
 			<h2 className="text-muted-foreground flex items-center gap-1.5 text-sm font-medium">
-				<LuLogOut className="size-3.5 rtl:-scale-x-100" /> {t("leftTitle")}
+				<IconLogout className="size-3.5 rtl:-scale-x-100" /> {t("leftTitle")}
 			</h2>
 			<ul className="bg-card divide-y rounded-xl border">
 				{visits.map((a) => (
@@ -240,7 +237,7 @@ function LeftToday({ visits, actions }: { visits: Appointment[]; actions: Action
 							</p>
 						</div>
 						<Button size="sm" variant="outline" disabled={actions.busy === a.id} onClick={() => actions.back(a)}>
-							<LuUndo2 className="rtl:-scale-x-100" /> {t("back")}
+							<IconUndo className="rtl:-scale-x-100" /> {t("back")}
 						</Button>
 					</li>
 				))}

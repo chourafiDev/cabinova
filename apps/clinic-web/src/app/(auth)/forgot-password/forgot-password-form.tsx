@@ -1,9 +1,9 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { LuLoader, LuMailCheck } from "react-icons/lu";
 import Link from "next/link";
 import { useState } from "react";
+import { IconMail, IconSpinner } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ApiError, api } from "@/lib/api-client";
@@ -33,7 +33,7 @@ export function ForgotPasswordForm() {
 	if (sent) {
 		return (
 			<div className="mt-10 grid gap-6 text-center">
-				<LuMailCheck className="text-primary mx-auto size-8" />
+				<IconMail className="text-primary mx-auto size-8" />
 				<p className="text-sm">
 					{t.rich("forgot.sent", { email: sent, strong: (chunks) => <strong>{chunks}</strong> })}
 				</p>
@@ -65,7 +65,7 @@ export function ForgotPasswordForm() {
 				</p>
 			)}
 			<Button type="submit" disabled={pending} className={authButtonClass}>
-				{pending && <LuLoader className="size-4 animate-spin" />}
+				{pending && <IconSpinner className="size-4 animate-spin" />}
 				{t("forgot.submit")}
 			</Button>
 			<Link href="/login" className="text-muted-foreground hover:text-foreground text-center text-sm">

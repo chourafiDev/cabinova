@@ -1,9 +1,9 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { LuLoader, LuSearch } from "react-icons/lu";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState, useTransition } from "react";
+import { IconSearch, IconSpinner } from "@/components/icons";
 import { Input } from "@/components/ui/input";
 
 /** Search box of the list: updates ?search= as you type (page back to 1). */
@@ -30,7 +30,7 @@ export function PatientsSearch() {
 
 	return (
 		<div className="relative w-full sm:w-80">
-			<LuSearch className="text-muted-foreground absolute start-2.5 top-1/2 size-4 -translate-y-1/2" />
+			<IconSearch className="text-muted-foreground absolute start-2.5 top-1/2 size-4 -translate-y-1/2" />
 			<Input
 				type="search"
 				value={value}
@@ -40,7 +40,7 @@ export function PatientsSearch() {
 				className="ps-8"
 			/>
 			{pending && (
-				<LuLoader className="text-muted-foreground absolute end-2.5 top-1/2 size-4 -translate-y-1/2 animate-spin" />
+				<IconSpinner className="text-muted-foreground absolute end-2.5 top-1/2 size-4 -translate-y-1/2 animate-spin" />
 			)}
 		</div>
 	);

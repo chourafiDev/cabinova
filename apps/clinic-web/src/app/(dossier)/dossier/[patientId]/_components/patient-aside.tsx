@@ -4,24 +4,20 @@ import { useQueryClient } from "@tanstack/react-query";
 import { intervalToDuration, parseISO } from "date-fns";
 import { useTranslations } from "next-intl";
 import { parseAsString, useQueryState } from "nuqs";
-import type { IconType } from "react-icons";
-import {
-	LuCake,
-	LuChevronRight,
-	LuContactRound,
-	LuHash,
-	LuHeartPulse,
-	LuHouse,
-	LuIdCard,
-	LuMail,
-	LuMapPin,
-	LuPhone,
-	LuShieldCheck,
-} from "react-icons/lu";
 import { MedicalProfile } from "@/app/(clinic)/patients/_components/medical-profile-card";
+import {
+	type AppIcon,
+	IconCall,
+	IconChevronRight,
+	IconContact,
+	IconHeartPulse,
+	IconHome,
+	IconIdCard,
+	IconMail,
+	IconShieldCheck,
+} from "@/components/icons";
 import { initials } from "@/lib/format";
 import { formatFileNumber, formatPhone, fullName, type PatientFile } from "@/lib/patients";
-import { useFormat } from "@/lib/use-format";
 import { cn } from "@/lib/utils";
 
 /** The antécédents and current treatments, editable by the doctor. */
@@ -29,7 +25,7 @@ export function MedicalCard({ patient }: { patient: PatientFile }) {
 	const t = useTranslations("dossier");
 	const queryClient = useQueryClient();
 	return (
-		<Card icon={LuHeartPulse} title={t("aside.medical")}>
+		<Card icon={IconHeartPulse} title={t("aside.medical")}>
 			<MedicalProfile
 				patientId={patient.id}
 				profile={patient.medicalProfile ?? null}
@@ -47,53 +43,40 @@ export function PatientAside({ patient }: { patient: PatientFile }) {
 	// The administrative file opens over the dossier (the patients page's sheet), never away from it.
 	const [, openFile] = useQueryState("patient", parseAsString.withOptions({ history: "push", scroll: false }));
 	const common = useTranslations("common");
-	const format = useFormat();
 	const age = exactAge(patient.birthDate);
 	const coverage = patient.coverage !== "none" || patient.insurer;
 
-	const details: { label: string; icon: IconType; value: React.ReactNode; wide?: boolean }[] = [
-		patient.birthDate && {
-			label: t("birthDate"),
-			icon: LuCake,
-			value: format.date(patient.birthDate, { day: "2-digit", month: "2-digit", year: "numeric" }),
-		},
+	const details: { label: string; icon: AppIcon; value: React.ReactNode; wide?: boolean }[] = [
 		coverage && {
 			label: t("coverage"),
-			icon: LuShieldCheck,
+			icon: IconShieldCheck,
 			value: [patient.coverage !== "none" && common(`coverage.${patient.coverage}`), patient.insurer]
 				.filter(Boolean)
 				.join(" · "),
 		},
 		patient.phone && {
 			label: t("phone"),
-			icon: LuPhone,
+			icon: IconCall,
 			value: (
 				<a href={`tel:${patient.phone}`} className="tabular-nums hover:underline">
 					{formatPhone(patient.phone)}
 				</a>
 			),
 		},
-		patient.cin && { label: t("cin"), icon: LuIdCard, value: <span className="font-mono">{patient.cin}</span> },
-		patient.city && { label: t("city"), icon: LuMapPin, value: patient.city },
-		patient.coverageNumber && {
-			label: t("coverageNumber"),
-			icon: LuHash,
-			value: <span className="font-mono">{patient.coverageNumber}</span>,
-		},
+		patient.cin && { label: t("cin"), icon: IconIdCard, value: <span className="font-mono">{patient.cin}</span> },
 		patient.email && {
 			label: t("email"),
-			icon: LuMail,
-			wide: true,
+			icon: IconMail,
 			value: (
 				<a href={`mailto:${patient.email}`} className="break-all hover:underline">
 					{patient.email}
 				</a>
 			),
 		},
-		patient.address && { label: t("address"), icon: LuHouse, wide: true, value: patient.address },
+		patient.address && { label: t("address"), icon: IconHome, wide: true, value: patient.address },
 		patient.emergencyContactName && {
 			label: t("emergency"),
-			icon: LuContactRound,
+			icon: IconContact,
 			wide: true,
 			value: (
 				<>
@@ -122,7 +105,7 @@ export function PatientAside({ patient }: { patient: PatientFile }) {
 						onClick={() => void openFile(patient.id)}
 						className="text-primary flex items-center gap-0.5 text-xs font-medium hover:underline"
 					>
-						{t("adminFile")} <LuChevronRight className="size-3.5 rtl:-scale-x-100" />
+						{t("adminFile")} <IconChevronRight className="size-3.5 rtl:-scale-x-100" />
 					</button>
 				}
 			/>
@@ -184,7 +167,7 @@ export function SmallCard({
 	className,
 	children,
 }: {
-	icon: IconType;
+	icon: AppIcon;
 	label: string;
 	/** The full name, when the label is short. */
 	title?: string;

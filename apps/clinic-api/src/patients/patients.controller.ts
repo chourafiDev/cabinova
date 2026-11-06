@@ -20,6 +20,7 @@ import type { Space } from '../spaces/spaces.service.js';
 import { Clinic } from '../tenancy/decorators.js';
 import type { ClinicContext } from '../tenancy/tenancy.service.js';
 import {
+  HomonymsQuery,
   ListPatientsQuery,
   MedicalProfileDto,
   PatientDto,
@@ -44,6 +45,16 @@ export class PatientsController {
     @Query() query: ListPatientsQuery,
   ) {
     return this.patients.list(db, space.id, query);
+  }
+
+  /** Before ':id': the files a name being typed would duplicate. */
+  @Get('homonyms')
+  homonyms(
+    @Clinic() { db }: ClinicContext,
+    @CurrentSpace() space: Space,
+    @Query() query: HomonymsQuery,
+  ) {
+    return this.patients.homonyms(db, space.id, query);
   }
 
   @Activity('patient.view', 'patient', { only: isMedical, hourly: true })

@@ -88,6 +88,7 @@ describe('clinic: reports', () => {
         .send({
           patientId,
           practitionerId,
+          reason: 'Consultation',
           startsAt: `${start}:00+01:00`,
           endsAt: `${start.slice(0, 13)}:30:00+01:00`,
         })
@@ -98,7 +99,7 @@ describe('clinic: reports', () => {
         .expect(200);
     };
     // August: Amina's first visit (so she is "returning" in September).
-    await visit(amina, ownerId, '2026-08-20T09:00', 'completed');
+    await visit(amina, ownerId, '2026-08-18T09:00', 'completed');
     // September.
     await visit(amina, ownerId, '2026-09-07T09:00', 'completed');
     await visit(omar, doctorId, '2026-09-08T10:00', 'completed');

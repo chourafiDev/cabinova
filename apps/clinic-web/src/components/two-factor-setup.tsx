@@ -1,10 +1,10 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { LuCheck, LuCopy, LuDownload, LuLoader } from 'react-icons/lu';
 import QRCode from 'qrcode';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
+import { IconCheck, IconCopy, IconDownload, IconSpinner } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import { Field, FieldError, FieldLabel } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
@@ -40,7 +40,7 @@ export function RecoveryCodes({
             toast.success(t('copied'));
           }}
         >
-          <LuCopy /> {t('copy')}
+          <IconCopy /> {t('copy')}
         </Button>
         <Button
           type="button"
@@ -60,10 +60,10 @@ export function RecoveryCodes({
             URL.revokeObjectURL(url);
           }}
         >
-          <LuDownload /> {t('download')}
+          <IconDownload /> {t('download')}
         </Button>
         <Button type="button" size="sm" className="ms-auto" onClick={onDone}>
-          <LuCheck /> {t('saved')}
+          <IconCheck /> {t('saved')}
         </Button>
       </div>
     </div>
@@ -142,7 +142,7 @@ export function TwoFactorSetup({
         {error}
       </p>
     ) : (
-      <LuLoader className="text-muted-foreground mx-auto size-5 animate-spin" />
+      <IconSpinner className="text-muted-foreground mx-auto size-5 animate-spin" />
     );
   }
 
@@ -189,7 +189,7 @@ export function TwoFactorSetup({
           </Field>
           <div className="flex gap-2">
             <Button type="submit" disabled={pending || code.length !== 6}>
-              {pending && <LuLoader className="animate-spin" />} {t('enable')}
+              {pending && <IconSpinner className="animate-spin" />} {t('enable')}
             </Button>
             {onCancel && (
               <Button type="button" variant="ghost" onClick={onCancel}>

@@ -2,7 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import { useState } from "react";
-import { LuVideo } from "react-icons/lu";
+import { IconVideo } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import { NewMeetingSheet } from "./new-meeting-sheet";
 
@@ -14,12 +14,12 @@ export function MeetingButton({ variant = "header" }: { variant?: "header" | "pa
 		<>
 			{variant === "header" ? (
 				<Button type="button" variant="outline" size="sm" className="bg-green/5 hover:bg-green/10 border border-green/40 text-green h-8 rounded-full !shadow-none" onClick={() => setOpen(true)} aria-label={t("newMeeting")}>
-					<LuVideo />
+					<IconVideo />
 					<span className="hidden lg:inline">{t("meeting")}</span>
 				</Button>
 			) : (
 				<Button type="button" onClick={() => setOpen(true)}>
-					<LuVideo /> {t("newMeeting")}
+					<IconVideo /> {t("newMeeting")}
 				</Button>
 			)}
 			<NewMeetingSheet open={open} onOpenChange={setOpen} />

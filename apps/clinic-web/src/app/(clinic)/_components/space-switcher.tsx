@@ -1,22 +1,22 @@
 "use client";
 
-import {
-	LuBuilding2,
-	LuCheck,
-	LuChevronsUpDown,
-	LuClock,
-	LuLoader,
-	LuMapPin,
-	LuPlus,
-	LuSettings,
-	LuTags,
-	LuUsers,
-} from "react-icons/lu";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
+import {
+	IconBuilding,
+	IconCheck,
+	IconChevronsUpDown,
+	IconClock,
+	IconLocation,
+	IconPlus,
+	IconSettings,
+	IconSpinner,
+	IconTag,
+	IconUsers,
+} from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import {
 	Dialog,
@@ -46,10 +46,10 @@ import { SubscriptionDialog } from "./billing/subscription-dialog";
 const initial = (name: string) => name.replace(/^(cabinet|espace)\s+/i, "").charAt(0).toUpperCase();
 
 const MANAGE = [
-	{ href: "/settings/cabinet", label: "cabinet", icon: LuBuilding2 },
-	{ href: "/settings/hours", label: "hours", icon: LuClock },
-	{ href: "/settings/tarifs", label: "tarifs", icon: LuTags },
-	{ href: "/settings/spaces", label: "spacesLink", icon: LuMapPin },
+	{ href: "/settings/cabinet", label: "cabinet", icon: IconBuilding },
+	{ href: "/settings/hours", label: "hours", icon: IconClock },
+	{ href: "/settings/tarifs", label: "tarifs", icon: IconTag },
+	{ href: "/settings/spaces", label: "spacesLink", icon: IconLocation },
 ];
 
 const STATUS = { trialing: "trialing", past_due: "pastDue" } as const;
@@ -116,11 +116,11 @@ export function SpaceSwitcher({
 							<span className="grid min-w-0 flex-1 leading-tight">
 								<span className="truncate font-semibold">{cabinet.name}</span>
 								<p className="text-muted-foreground flex items-center gap-1 truncate text-xs">
-									<LuMapPin className="!size-3 shrink-0" />
+									<IconLocation className="!size-3 shrink-0" />
 									<span className="truncate">{spaceLabel(current)}</span>
 								</p>
 							</span>
-							<LuChevronsUpDown className="text-muted-foreground ms-auto size-4" />
+							<IconChevronsUpDown className="text-muted-foreground ms-auto size-4" />
 						</SidebarMenuButton>
 					</DropdownMenuTrigger>
 					<DropdownMenuContent align="start" sideOffset={6} className="w-80 p-2">
@@ -154,13 +154,13 @@ export function SpaceSwitcher({
 						<div className={cn("grid gap-2 px-2 pt-1 pb-3", isOwner && "grid-cols-2")}>
 							<DropdownMenuItem asChild className="h-9 justify-center gap-2 rounded-lg border">
 								<Link href="/settings">
-									<LuSettings className="size-4" /> {t("settings")}
+									<IconSettings className="size-4" /> {t("settings")}
 								</Link>
 							</DropdownMenuItem>
 							{isOwner && (
 								<DropdownMenuItem asChild className="h-9 justify-center gap-2 rounded-lg border">
 									<Link href="/staff">
-										<LuUsers className="size-4" /> {t("team")}
+										<IconUsers className="size-4" /> {t("team")}
 									</Link>
 								</DropdownMenuItem>
 							)}
@@ -178,9 +178,9 @@ export function SpaceSwitcher({
 									{space.city && <span className="text-muted-foreground truncate text-xs">{space.city}</span>}
 								</span>
 								{pending === space.id ? (
-									<LuLoader className="size-4 animate-spin" />
+									<IconSpinner className="size-4 animate-spin" />
 								) : (
-									space.id === current.id && <LuCheck className="size-4" />
+									space.id === current.id && <IconCheck className="size-4" />
 								)}
 							</DropdownMenuItem>
 						))}
@@ -201,7 +201,7 @@ export function SpaceSwitcher({
 										onSelect={() => setCreating(true)}
 										className="h-9 justify-center gap-2 rounded-lg border"
 									>
-										<LuPlus className="size-4" /> {t("new")}
+										<IconPlus className="size-4" /> {t("new")}
 									</DropdownMenuItem>
 								</div>
 							</>
@@ -293,7 +293,7 @@ function NewSpaceDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (
 							{t("cancel")}
 						</Button>
 						<Button type="submit" disabled={saving}>
-							{saving && <LuLoader className="animate-spin" />} {t("create")}
+							{saving && <IconSpinner className="animate-spin" />} {t("create")}
 						</Button>
 					</DialogFooter>
 				</form>

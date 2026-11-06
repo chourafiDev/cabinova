@@ -49,6 +49,7 @@ describe('clinic: notifications', () => {
         .send({
           patientId,
           practitionerId: doctorId,
+          reason: 'Consultation',
           startsAt: `${MONDAY}T${time}:00+00:00`,
           endsAt: `${MONDAY}T${time.slice(0, 3)}30:00+00:00`,
         })
@@ -132,7 +133,8 @@ describe('clinic: notifications', () => {
       title: 'ALAOUI Omar est en salle d’attente',
       code: 'arrived',
       params: { patient: 'ALAOUI Omar' },
-      href: `/appointments?view=day&date=${MONDAY}`,
+      // Straight to the waiting room, where the patient now is.
+      href: '/appointments?tab=waiting',
     });
     expect(unread).toBe(1);
     expect((await inbox(secretary)).data).toHaveLength(0);

@@ -3,8 +3,8 @@
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
-import { LuLoader } from "react-icons/lu";
 import { toast } from "sonner";
+import { IconSpinner } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import { api } from "@/lib/api-client";
 import { DURATIONS } from "@/lib/appointments";
@@ -47,7 +47,7 @@ export function DefaultDurationCard({ initial }: { initial: number }) {
 				<>
 					<p className="text-muted-foreground text-xs">{t("hint")}</p>
 					<Button size="sm" disabled={value === saved || saving} onClick={save}>
-						{saving && <LuLoader className="animate-spin" />} {common("save")}
+						{saving && <IconSpinner className="animate-spin" />} {common("save")}
 					</Button>
 				</>
 			}

@@ -22,3 +22,13 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+  # Stands in for Cloudflare R2 (patients' documents): any credentials work.
+  s3:
+    image: adobe/s3mock:4.9.1
+    environment:
+      COM_ADOBE_TESTING_S3MOCK_STORE_INITIAL_BUCKETS: cabinova-test
+    ports: ['59090:9090']
+    healthcheck:
+      test: ['CMD', 'wget', '-q', '-O', '/dev/null', 'http://localhost:9090/cabinova-test']
+      interval: 2s
+      retries: 30

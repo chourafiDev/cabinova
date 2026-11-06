@@ -16,6 +16,7 @@
     "test": "vitest run --passWithNoTests"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "3.1156.0",
     "@cabinova/mail": "workspace:*",
     "@cabinova/morocco-time": "workspace:*",
     "@cabinova/request-timing": "workspace:*",

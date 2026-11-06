@@ -3,8 +3,8 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
-import { LuBookmark, LuBookmarkPlus, LuLoader, LuPlus, LuX } from "react-icons/lu";
 import { toast } from "sonner";
+import { IconBookmark, IconBookmarkAdd, IconClose, IconPlus, IconSpinner } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -67,7 +67,7 @@ export function PhrasesMenu({
 		<Popover open={open} onOpenChange={setOpen}>
 			<PopoverTrigger asChild>
 				<Button type="button" variant="ghost" size="sm" className="text-muted-foreground h-7 gap-1.5 px-2 text-xs">
-					<LuBookmark className="size-3.5" />
+					<IconBookmark className="size-3.5" />
 					{t("button")}
 					{mine.length > 0 && <span className="bg-muted rounded px-1 tabular-nums">{mine.length}</span>}
 				</Button>
@@ -95,7 +95,7 @@ export function PhrasesMenu({
 									className="text-muted-foreground hover:text-destructive mt-1 me-1 rounded p-1 opacity-0 group-hover:opacity-100 focus-visible:opacity-100"
 									onClick={() => void remove(p.id)}
 								>
-									<LuX className="size-3.5" />
+									<IconClose className="size-3.5" />
 								</button>
 							</div>
 						))
@@ -117,7 +117,7 @@ export function PhrasesMenu({
 							maxLength={2000}
 						/>
 						<Button type="submit" size="icon-sm" variant="outline" aria-label={t("add")} disabled={busy || !text.trim()}>
-							{busy ? <LuLoader className="animate-spin" /> : <LuPlus />}
+							{busy ? <IconSpinner className="animate-spin" /> : <IconPlus />}
 						</Button>
 					</form>
 					{value.trim() && (
@@ -129,7 +129,7 @@ export function PhrasesMenu({
 							disabled={busy}
 							onClick={() => void save(value)}
 						>
-							<LuBookmarkPlus /> {t("saveCurrent")}
+							<IconBookmarkAdd /> {t("saveCurrent")}
 						</Button>
 					)}
 				</div>

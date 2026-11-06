@@ -3,7 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { getTranslations } from "next-intl/server";
-import { LuChevronLeft, LuChevronRight, LuShieldAlert } from "react-icons/lu";
+import { IconChevronLeft, IconChevronRight, IconShieldAlert } from "@/components/icons";
 import { settingsTitle } from "@/i18n/titles";
 import { Button } from "@/components/ui/button";
 import {
@@ -41,7 +41,7 @@ function Entry({ entry }: { entry: ActivityEntry }) {
 			</time>
 			{failed ? (
 				<p className="min-w-0 text-amber-800">
-					<LuShieldAlert className="me-1 inline size-3.5" />
+					<IconShieldAlert className="me-1 inline size-3.5" />
 					{t.rich("failedLogin", {
 						target: entry.target ?? "",
 						strong: (chunks) => <span className="font-medium">{chunks}</span>,
@@ -124,10 +124,10 @@ export default async function ActivityPage({ searchParams }: PageProps<"/setting
 							<Button asChild={page > 1} size="icon" variant="outline" className="size-8" disabled={page <= 1} aria-label={t("previous")}>
 								{page > 1 ? (
 									<Link href={href(page - 1)} scroll={false}>
-										<LuChevronLeft className="rtl:rotate-180" />
+										<IconChevronLeft className="rtl:rotate-180" />
 									</Link>
 								) : (
-									<LuChevronLeft className="rtl:rotate-180" />
+									<IconChevronLeft className="rtl:rotate-180" />
 								)}
 							</Button>
 							<Button
@@ -140,10 +140,10 @@ export default async function ActivityPage({ searchParams }: PageProps<"/setting
 							>
 								{page < pageCount ? (
 									<Link href={href(page + 1)} scroll={false}>
-										<LuChevronRight className="rtl:rotate-180" />
+										<IconChevronRight className="rtl:rotate-180" />
 									</Link>
 								) : (
-									<LuChevronRight className="rtl:rotate-180" />
+									<IconChevronRight className="rtl:rotate-180" />
 								)}
 							</Button>
 						</span>

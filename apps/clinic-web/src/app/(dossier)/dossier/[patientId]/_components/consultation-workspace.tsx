@@ -4,13 +4,13 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 import { createContext, useCallback, useContext, useEffect, useImperativeHandle, useRef, useState } from "react";
 import {
-	LuActivity,
-	LuCalendarClock,
-	LuClipboardList,
-	LuMessageSquareText,
-	LuScanSearch,
-	LuStethoscope,
-} from "react-icons/lu";
+	IconActivity,
+	IconCalendarClock,
+	IconClipboard,
+	IconMessage,
+	IconScanSearch,
+	IconStethoscope,
+} from "@/components/icons";
 import { Textarea } from "@/components/ui/textarea";
 import { api } from "@/lib/api-client";
 import {
@@ -223,7 +223,7 @@ export function ConsultationSections({ sections }: { sections: SectionKey[] }) {
 
 	const parts: Record<SectionKey, React.ReactNode> = {
 		complaint: (
-			<Section key="complaint" icon={LuMessageSquareText} title={t("sections.complaint")}>
+			<Section key="complaint" icon={IconMessage} title={t("sections.complaint")}>
 				<div className="grid gap-3">
 					<Labeled label={t("fields.complaint")} htmlFor="consultation-complaint" aside={phrases("complaint")}>
 						{note(
@@ -241,7 +241,7 @@ export function ConsultationSections({ sections }: { sections: SectionKey[] }) {
 		vitals: (
 			<Section
 				key="vitals"
-				icon={LuActivity}
+				icon={IconActivity}
 				title={t("sections.vitals")}
 				aside={invalid.length > 0 && <span className="text-destructive text-xs">{t("vitals.checkRed")}</span>}
 			>
@@ -249,22 +249,22 @@ export function ConsultationSections({ sections }: { sections: SectionKey[] }) {
 			</Section>
 		),
 		examination: (
-			<Section key="examination" icon={LuScanSearch} title={t("sections.examination")} aside={phrases("examination")}>
+			<Section key="examination" icon={IconScanSearch} title={t("sections.examination")} aside={phrases("examination")}>
 				{note("examination", "min-h-32")}
 			</Section>
 		),
 		diagnosis: (
-			<Section key="diagnosis" icon={LuStethoscope} title={t("sections.diagnosis")} aside={phrases("diagnosis")}>
+			<Section key="diagnosis" icon={IconStethoscope} title={t("sections.diagnosis")} aside={phrases("diagnosis")}>
 				{note("diagnosis", "min-h-16")}
 			</Section>
 		),
 		plan: (
-			<Section key="plan" icon={LuClipboardList} title={t("sections.plan")} aside={phrases("plan")}>
+			<Section key="plan" icon={IconClipboard} title={t("sections.plan")} aside={phrases("plan")}>
 				{note("plan", "min-h-32")}
 			</Section>
 		),
 		nextVisit: (
-			<Section key="nextVisit" icon={LuCalendarClock} title={t("sections.nextVisit")}>
+			<Section key="nextVisit" icon={IconCalendarClock} title={t("sections.nextVisit")}>
 				<div className="grid gap-1.5">
 					{note("nextVisitNote", "min-h-12")}
 					<p className="text-muted-foreground text-xs">{t("nextVisitHint")}</p>

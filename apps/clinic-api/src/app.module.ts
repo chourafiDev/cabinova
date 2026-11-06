@@ -32,6 +32,9 @@ import {
   CertificatesController,
 } from './certificates/certificates.controller.js';
 import { CertificatesService } from './certificates/certificates.service.js';
+import { DocumentsController } from './documents/documents.controller.js';
+import { DocumentsService } from './documents/documents.service.js';
+import { StorageService } from './documents/storage.service.js';
 import { PrescriptionsController } from './prescriptions/prescriptions.controller.js';
 import { PrescriptionsService } from './prescriptions/prescriptions.service.js';
 import { CatalogModule } from './database/catalog.module.js';
@@ -94,6 +97,7 @@ import { TenancyService } from './tenancy/tenancy.service.js';
     PhrasesController,
     PrescriptionsController,
     CertificatesController,
+    DocumentsController,
     CertificateModelsController,
     DashboardController,
     SettingsController,
@@ -121,6 +125,8 @@ import { TenancyService } from './tenancy/tenancy.service.js';
     ConsultationsService,
     PrescriptionsService,
     CertificatesService,
+    DocumentsService,
+    StorageService,
     DashboardService,
     CabinetService,
     MailService,

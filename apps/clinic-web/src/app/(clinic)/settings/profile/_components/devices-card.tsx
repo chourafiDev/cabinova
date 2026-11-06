@@ -3,8 +3,8 @@
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
-import { LuLoader, LuLogOut, LuMonitor, LuSmartphone } from "react-icons/lu";
 import { toast } from "sonner";
+import { IconLogout, IconMobile, IconMonitor, IconSpinner } from "@/components/icons";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { api } from "@/lib/api-client";
@@ -41,7 +41,7 @@ export function DevicesCard({ sessions }: { sessions: DeviceSession[] }) {
 			action={
 				others > 0 && (
 					<Button variant="outline" size="sm" disabled={pending !== null} onClick={() => revoke("others")}>
-						{pending === "others" ? <LuLoader className="animate-spin" /> : <LuLogOut className="rtl:-scale-x-100" />} {t("signOutOthers")}
+						{pending === "others" ? <IconSpinner className="animate-spin" /> : <IconLogout className="rtl:-scale-x-100" />} {t("signOutOthers")}
 					</Button>
 				)
 			}
@@ -49,7 +49,7 @@ export function DevicesCard({ sessions }: { sessions: DeviceSession[] }) {
 			<ul className="divide-y rounded-lg border">
 				{sessions.map((s) => {
 					const device = describeDevice(s.userAgent, { unknown: common("unknownDevice"), browser: common("browser") });
-					const Icon = device.mobile ? LuSmartphone : LuMonitor;
+					const Icon = device.mobile ? IconMobile : IconMonitor;
 					return (
 						<li key={s.id} className="flex items-center gap-3 px-3 py-2.5">
 							<span className="bg-muted text-muted-foreground flex size-9 shrink-0 items-center justify-center rounded-lg">
@@ -77,7 +77,7 @@ export function DevicesCard({ sessions }: { sessions: DeviceSession[] }) {
 									disabled={pending !== null}
 									onClick={() => revoke(s.id)}
 								>
-									{pending === s.id ? <LuLoader className="animate-spin" /> : <LuLogOut className="rtl:-scale-x-100" />} {common("signOut")}
+									{pending === s.id ? <IconSpinner className="animate-spin" /> : <IconLogout className="rtl:-scale-x-100" />} {common("signOut")}
 								</Button>
 							)}
 						</li>

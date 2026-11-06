@@ -4,19 +4,18 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
-import { HiVideoCamera } from "react-icons/hi2";
-import {
-	LuCalendarX,
-	LuCheck,
-	LuClock,
-	LuCopy,
-	LuEllipsisVertical,
-	LuLink,
-	LuLoader,
-	LuUserPlus,
-	LuVideo,
-} from "react-icons/lu";
 import { toast } from "sonner";
+import {
+	IconCalendarRemove,
+	IconCheck,
+	IconClock,
+	IconCopy,
+	IconLink,
+	IconMoreVertical,
+	IconSpinner,
+	IconUserAdd,
+	IconVideo,
+} from "@/components/icons";
 import { MeetingButton } from "@/components/meetings/meeting-button";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -85,7 +84,7 @@ export function MeetingsView({
 			<header className="flex flex-wrap items-center justify-between gap-3">
 				<div className="flex items-center gap-3">
 					<span className="bg-primary/10 text-primary flex size-9 items-center justify-center rounded-lg">
-						<HiVideoCamera className="size-4" />
+						<IconVideo className="size-4" />
 					</span>
 					<div>
 						<h1 className="text-lg font-semibold leading-tight">
@@ -113,7 +112,7 @@ export function MeetingsView({
 				{data.upcoming.length === 0 ? (
 					<div className="bg-card flex flex-col items-center gap-2 rounded-xl border px-6 py-12 text-center">
 						<span className="bg-muted flex size-11 items-center justify-center rounded-full">
-							<LuVideo className="text-muted-foreground size-5" />
+							<IconVideo className="text-muted-foreground size-5" />
 						</span>
 						<p className="font-medium">{t("empty")}</p>
 						<p className="text-muted-foreground max-w-sm text-sm">
@@ -312,7 +311,7 @@ function MeetingCard({
 						<span className="flex h-[4.25rem] items-center justify-center">
 							<span className="relative flex size-9 items-center justify-center rounded-full bg-emerald-600 text-white">
 								<span className="absolute inline-flex size-full animate-ping rounded-full bg-emerald-500 opacity-40 motion-reduce:hidden" />
-								<LuVideo className="relative size-4" />
+								<IconVideo className="relative size-4" />
 							</span>
 						</span>
 					) : (
@@ -348,15 +347,15 @@ function MeetingCard({
 										className="text-muted-foreground -me-1.5 -mt-1 opacity-70 group-hover:opacity-100 focus-visible:opacity-100"
 										aria-label={t("actions")}
 									>
-										<LuEllipsisVertical />
+										<IconMoreVertical />
 									</Button>
 								</DropdownMenuTrigger>
 								<DropdownMenuContent align="end" className="w-auto min-w-52 whitespace-nowrap">
 									<DropdownMenuItem onSelect={onAdd}>
-										<LuUserPlus /> {t("addPeople")}
+										<IconUserAdd /> {t("addPeople")}
 									</DropdownMenuItem>
 									<DropdownMenuItem variant="destructive" onSelect={onCancel}>
-										<LuCalendarX /> {t("cancelMeeting")}
+										<IconCalendarRemove /> {t("cancelMeeting")}
 									</DropdownMenuItem>
 								</DropdownMenuContent>
 							</DropdownMenu>
@@ -365,7 +364,7 @@ function MeetingCard({
 					<h3 className="truncate text-base leading-snug font-semibold">{m.title}</h3>
 					<p className="text-muted-foreground flex flex-wrap items-center gap-x-2 gap-y-1 text-sm">
 						<span className="inline-flex items-center gap-1.5 tabular-nums">
-							<LuClock className="size-3.5" />
+							<IconClock className="size-3.5" />
 							{format.clock(m.startsAt)} – {format.clock(m.endsAt)}
 						</span>
 						<span className="bg-muted rounded-md px-1.5 py-0.5 text-xs">{card("minutes", { count: minutes })}</span>
@@ -382,7 +381,7 @@ function MeetingCard({
 						<p className="text-muted-foreground truncate text-xs">{t("organizedBy", { name: m.createdBy.name })}</p>
 					)}
 					<p className="text-muted-foreground/80 flex items-center gap-1 truncate font-mono text-[11px]" dir="ltr">
-						<LuLink className="size-3 shrink-0" />
+						<IconLink className="size-3 shrink-0" />
 						{m.meetUrl.replace(/^https?:\/\//, "")}
 					</p>
 				</div>
@@ -397,7 +396,7 @@ function MeetingCard({
 								className="!shadow-none"
 								aria-label={t("copyLink")}
 							>
-								{copied ? <LuCheck className="text-emerald-600" /> : <LuCopy />}
+								{copied ? <IconCheck className="text-emerald-600" /> : <IconCopy />}
 							</Button>
 						</TooltipTrigger>
 						<TooltipContent>{copied ? t("copied") : t("copyLink")}</TooltipContent>
@@ -408,7 +407,7 @@ function MeetingCard({
 						className={cn(live && "bg-emerald-600 text-white hover:bg-emerald-700", "!shadow-none h-8")}
 					>
 						<a href={m.meetUrl} target="_blank" rel="noopener noreferrer">
-							<LuVideo /> {t("join")}
+							<IconVideo /> {t("join")}
 						</a>
 					</Button>
 				</div>
@@ -544,7 +543,7 @@ function AddPeopleDialog({
 						disabled={saving || selected.size === 0}
 						onClick={save}
 					>
-						{saving ? <LuLoader className="animate-spin" /> : <LuUserPlus />}
+						{saving ? <IconSpinner className="animate-spin" /> : <IconUserAdd />}
 						{t("submit", { count: selected.size })}
 					</Button>
 				</DialogFooter>
@@ -600,7 +599,7 @@ function CancelDialog({
 						disabled={saving}
 						onClick={confirm}
 					>
-						{saving && <LuLoader className="animate-spin" />}
+						{saving && <IconSpinner className="animate-spin" />}
 						{t("submit")}
 					</Button>
 				</DialogFooter>

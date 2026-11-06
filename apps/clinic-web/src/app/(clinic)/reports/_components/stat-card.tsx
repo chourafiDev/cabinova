@@ -1,4 +1,4 @@
-import { LuInfo } from "react-icons/lu";
+import { IconInfo } from "@/components/icons";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Change } from "../../_components/kpi-card";
 
@@ -50,7 +50,7 @@ export function StatCard({
 		<div className="bg-card flex min-w-40 flex-1 flex-col gap-3 rounded-xl border p-4">
 			<Tooltip>
 				<TooltipTrigger className="text-muted-foreground flex w-fit items-center gap-1 text-start text-sm">
-					{label} <LuInfo className="size-3 opacity-60" />
+					{label} <IconInfo className="size-3 opacity-60" />
 				</TooltipTrigger>
 				<TooltipContent className="max-w-56">{hint}</TooltipContent>
 			</Tooltip>

@@ -1,10 +1,10 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { LuKeyRound, LuLoader, LuShieldCheck, LuShieldOff, LuSmartphone } from "react-icons/lu";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
+import { IconKey, IconMobile, IconShieldCheck, IconShieldOff, IconSpinner } from "@/components/icons";
 import { RecoveryCodes, TwoFactorSetup } from "@/components/two-factor-setup";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -75,7 +75,7 @@ function CodeDialog({
 							{common("cancel")}
 						</Button>
 						<Button type="submit" variant={destructive ? "destructive" : "default"} disabled={pending || code.trim().length < 6}>
-							{pending && <LuLoader className="animate-spin" />} {action}
+							{pending && <IconSpinner className="animate-spin" />} {action}
 						</Button>
 					</DialogFooter>
 				</form>
@@ -121,7 +121,7 @@ export function TwoFactorCard({ status }: { status: TwoFactorStatus }) {
 			) : status.enabled ? (
 				<div className="grid gap-4">
 					<div className="flex items-start gap-3 text-sm">
-						<LuShieldCheck className="mt-0.5 size-5 shrink-0 text-emerald-600" />
+						<IconShieldCheck className="mt-0.5 size-5 shrink-0 text-emerald-600" />
 						<p>
 							{t("protected")}
 							{status.enabledAt && ` ${t("enabledOn", { date: format.date(status.enabledAt) })}`}
@@ -129,7 +129,7 @@ export function TwoFactorCard({ status }: { status: TwoFactorStatus }) {
 						</p>
 					</div>
 					<div className="bg-muted/50 flex items-center gap-3 rounded-lg px-3 py-2 text-sm">
-						<LuKeyRound className="text-muted-foreground size-4" />
+						<IconKey className="text-muted-foreground size-4" />
 						<span className="flex-1">
 							{t("codesLeft", { count: status.recoveryCodesLeft })}
 						</span>
@@ -137,11 +137,11 @@ export function TwoFactorCard({ status }: { status: TwoFactorStatus }) {
 					</div>
 					<div className="flex flex-wrap gap-2">
 						<Button variant="outline" size="sm" onClick={() => setDialog("regenerate")}>
-							<LuKeyRound /> {t("newCodes")}
+							<IconKey /> {t("newCodes")}
 						</Button>
 						{!status.required && (
 							<Button variant="ghost" size="sm" className="text-destructive" onClick={() => setDialog("disable")}>
-								<LuShieldOff /> {t("disable")}
+								<IconShieldOff /> {t("disable")}
 							</Button>
 						)}
 					</div>
@@ -149,12 +149,12 @@ export function TwoFactorCard({ status }: { status: TwoFactorStatus }) {
 			) : (
 				<div className="grid gap-4">
 					<div className="flex items-start gap-3 text-sm">
-						<LuSmartphone className="text-muted-foreground mt-0.5 size-5 shrink-0" />
+						<IconMobile className="text-muted-foreground mt-0.5 size-5 shrink-0" />
 						<p>{t("recommended")}</p>
 					</div>
 					<div>
 						<Button onClick={() => setSetup(true)}>
-							<LuShieldCheck /> {t("enable")}
+							<IconShieldCheck /> {t("enable")}
 						</Button>
 					</div>
 				</div>

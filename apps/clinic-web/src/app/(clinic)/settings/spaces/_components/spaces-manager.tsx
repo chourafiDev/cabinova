@@ -4,20 +4,20 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
-import {
-	LuArchive,
-	LuArchiveRestore,
-	LuCalendarClock,
-	LuClock,
-	LuEllipsis,
-	LuLoader,
-	LuMapPin,
-	LuPencil,
-	LuPhone,
-	LuPlus,
-	LuUsers,
-} from "react-icons/lu";
 import { toast } from "sonner";
+import {
+	IconArchive,
+	IconCalendarClock,
+	IconCall,
+	IconClock,
+	IconEdit,
+	IconLocation,
+	IconMore,
+	IconPlus,
+	IconRestore,
+	IconSpinner,
+	IconUsers,
+} from "@/components/icons";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -57,7 +57,7 @@ export function SpacesManager({ spaces, currentId }: { spaces: ManagedSpace[]; c
 				description={t("description")}
 				action={
 					<Button size="sm" onClick={() => setEditing("new")}>
-						<LuPlus /> {t("newTitle")}
+						<IconPlus /> {t("newTitle")}
 					</Button>
 				}
 			>
@@ -137,7 +137,7 @@ function SpaceRow({
 					s.active ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground",
 				)}
 			>
-				<LuMapPin className="size-4" />
+				<IconLocation className="size-4" />
 			</span>
 			<div className="grid min-w-0 flex-1 gap-1">
 				<div className="flex flex-wrap items-center gap-2">
@@ -158,17 +158,17 @@ function SpaceRow({
 						{(s.address || s.city) && <span>{[s.address, s.city].filter(Boolean).join(", ")}</span>}
 						{s.phone && (
 							<span className="inline-flex items-center gap-1">
-								<LuPhone className="size-3" /> {formatPhone(s.phone)}
+								<IconCall className="size-3" /> {formatPhone(s.phone)}
 							</span>
 						)}
 					</p>
 				)}
 				<p className="text-muted-foreground flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs">
 					<span className="inline-flex items-center gap-1">
-						<LuUsers className="size-3" /> {t("patients", { count: s.patients })}
+						<IconUsers className="size-3" /> {t("patients", { count: s.patients })}
 					</span>
 					<span className="inline-flex items-center gap-1">
-						<LuCalendarClock className="size-3" /> {t("upcoming", { count: s.upcomingAppointments })}
+						<IconCalendarClock className="size-3" /> {t("upcoming", { count: s.upcomingAppointments })}
 					</span>
 				</p>
 			</div>
@@ -176,16 +176,16 @@ function SpaceRow({
 				<DropdownMenu>
 					<DropdownMenuTrigger asChild>
 						<Button variant="ghost" size="icon" className="size-8" aria-label={t("actionsFor", { name: s.name })}>
-							<LuEllipsis />
+							<IconMore />
 						</Button>
 					</DropdownMenuTrigger>
 					<DropdownMenuContent align="end" className="min-w-48">
 						<DropdownMenuItem onSelect={onEdit}>
-							<LuPencil /> {common("edit")}
+							<IconEdit /> {common("edit")}
 						</DropdownMenuItem>
 						<DropdownMenuItem asChild>
 							<Link href={`/settings/hours?espace=${s.id}`}>
-								<LuClock /> {t("hours")}
+								<IconClock /> {t("hours")}
 							</Link>
 						</DropdownMenuItem>
 						<DropdownMenuSeparator />
@@ -195,13 +195,13 @@ function SpaceRow({
 							onSelect={onClose}
 							title={canClose ? undefined : t("keepOne")}
 						>
-							<LuArchive /> {t("close")}
+							<IconArchive /> {t("close")}
 						</DropdownMenuItem>
 					</DropdownMenuContent>
 				</DropdownMenu>
 			) : (
 				<Button variant="outline" size="sm" disabled={reopening} onClick={reopen}>
-					{reopening ? <LuLoader className="animate-spin" /> : <LuArchiveRestore />} {t("reopen")}
+					{reopening ? <IconSpinner className="animate-spin" /> : <IconRestore />} {t("reopen")}
 				</Button>
 			)}
 		</li>
@@ -249,7 +249,7 @@ function CloseSpaceDialog({ space, onOpenChange }: { space: ManagedSpace | null;
 						{common("cancel")}
 					</Button>
 					<Button variant="destructive" disabled={pending} onClick={close}>
-						{pending && <LuLoader className="animate-spin" />} {t("close")}
+						{pending && <IconSpinner className="animate-spin" />} {t("close")}
 					</Button>
 				</DialogFooter>
 			</DialogContent>

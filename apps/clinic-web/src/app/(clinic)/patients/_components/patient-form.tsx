@@ -2,20 +2,38 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useTranslations } from "next-intl";
-import { LuChevronDown, LuContactRound, LuLoader, LuMapPin, LuPhone, LuPlus, LuShieldCheck, LuStickyNote } from "react-icons/lu";
+import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { Controller, type FieldErrors, useForm, useWatch } from "react-hook-form";
 import { toast } from "sonner";
+import {
+	IconCall,
+	IconChevronDown,
+	IconChevronRight,
+	IconContact,
+	IconLocation,
+	IconNote,
+	IconPlus,
+	IconShieldCheck,
+	IconSpinner,
+	IconUsers,
+} from "@/components/icons";
 import { useModifierLabel } from "@/components/keyboard-shortcuts";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Field, FieldError, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { useDebouncedValue } from "@/hooks/use-debounced-value";
 import { ApiError, api } from "@/lib/api-client";
 import {
 	ageOf,
 	COVERAGE_LABELS,
 	type Coverage,
+	formatFileNumber,
+	formatPhone,
+	type Homonym,
 	type Patient,
 	type PatientInput,
 	patientSchemaOf,
@@ -82,11 +100,11 @@ function OptionalSection({
 					{!open && <span className="text-muted-foreground truncate text-xs">{summary ?? t("optional")}</span>}
 				</span>
 				{open ? (
-					<LuChevronDown className="text-muted-foreground size-4 rotate-180 transition-transform" />
+					<IconChevronDown className="text-muted-foreground size-4 rotate-180 transition-transform" />
 				) : summary ? (
-					<LuChevronDown className="text-muted-foreground size-4 transition-transform" />
+					<IconChevronDown className="text-muted-foreground size-4 transition-transform" />
 				) : (
-					<LuPlus className="text-muted-foreground size-4" />
+					<IconPlus className="text-muted-foreground size-4" />
 				)}
 			</button>
 			{open && <div className="grid gap-4 px-4 pb-4">{children}</div>}
@@ -138,16 +156,58 @@ export function PatientForm({
 	const isOpen = (g: Group) => opened[g] || hasError(errors, g);
 	const toggle = (g: Group) => setOpened((o) => ({ ...o, [g]: !isOpen(g) }));
 
+	// Same name as another file: shown while typing, saved only once confirmed.
+	const names = useDebouncedValue({ firstName: values.firstName?.trim() ?? "", lastName: values.lastName?.trim() ?? "" }, 350);
+	const renamed = names.firstName !== defaultValues.firstName.trim() || names.lastName !== defaultValues.lastName.trim();
+	const homonymQuery = useQuery({
+		queryKey: ["patient-homonyms", names, patientId ?? null],
+		queryFn: () =>
+			api<Homonym[]>(
+				`/patients/homonyms?${new URLSearchParams({ ...names, ...(patientId && { exceptId: patientId }) })}`,
+			),
+		enabled: !!names.firstName && !!names.lastName && renamed,
+		staleTime: 30_000,
+	});
+	// The API's answer when saving beat the check (typed, then saved at once).
+	const [refused, setRefused] = useState<{ key: string; patients: Homonym[] } | null>(null);
+	const nameKey = `${values.firstName?.trim()}|${values.lastName?.trim()}`.toLowerCase();
+	const homonyms = (renamed && homonymQuery.data) || (refused?.key === nameKey ? refused.patients : []);
+	// Confirmed for these names only: another name asks again.
+	const [confirmedFor, setConfirmedFor] = useState<string | null>(null);
+	const confirmed = confirmedFor === nameKey;
+	const [mustConfirm, setMustConfirm] = useState(false);
+	const [opening, setOpening] = useState<string | null>(null);
+
+	const openExisting = async (id: string) => {
+		setOpening(id);
+		try {
+			onSaved(await api<Patient>(`/patients/${id}`), "file");
+		} catch (err) {
+			toast.error(err instanceof Error ? err.message : t("saveError"));
+			setOpening(null);
+		}
+	};
+
 	const submit = (next: "file" | "book") =>
 		form.handleSubmit(async (input) => {
+			if (homonyms.length && !confirmed) {
+				setMustConfirm(true);
+				document.getElementById("homonyms")?.scrollIntoView({ behavior: "smooth", block: "center" });
+				return;
+			}
 			try {
 				const patient = await api<Patient>(patientId ? `/patients/${patientId}` : "/patients", {
 					method: patientId ? "PUT" : "POST",
-					body: JSON.stringify(input),
+					body: JSON.stringify({ ...input, allowHomonym: confirmed }),
 				});
 				toast.success(patientId ? t("saved") : t("created", { number: patient.fileNumber }));
 				onSaved(patient, next);
 			} catch (err) {
+				if (err instanceof ApiError && err.code === "PATIENT_HOMONYM") {
+					setRefused({ key: nameKey, patients: err.details.patients as Homonym[] });
+					setMustConfirm(true);
+					return;
+				}
 				if (err instanceof ApiError && err.code === "CIN_TAKEN") {
 					form.setError("cin", { message: err.message });
 					return;
@@ -197,6 +257,21 @@ export function PatientForm({
 						{input("lastName", t("lastName"), { required: true, autoComplete: "off", autoFocus })}
 						{input("firstName", t("firstName"), { required: true, autoComplete: "off" })}
 					</div>
+					{homonyms.length > 0 && (
+						<HomonymCard
+							patients={homonyms}
+							editing={!!patientId}
+							picking={!!submitLabel}
+							opening={opening}
+							onUse={openExisting}
+							confirmed={confirmed}
+							onConfirm={(checked) => {
+								setConfirmedFor(checked ? nameKey : null);
+								if (checked) setMustConfirm(false);
+							}}
+							error={mustConfirm && !confirmed}
+						/>
+					)}
 					<div className="grid gap-4 sm:grid-cols-2">
 						<Controller
 							control={form.control}
@@ -247,7 +322,7 @@ export function PatientForm({
 						<Field data-invalid={!!errors.phone}>
 							<Label htmlFor="phone">{t("phone")}</Label>
 							<div dir="ltr" className="relative">
-								<LuPhone className="text-muted-foreground pointer-events-none absolute start-3 top-1/2 size-4 -translate-y-1/2" />
+								<IconCall className="text-muted-foreground pointer-events-none absolute start-3 top-1/2 size-4 -translate-y-1/2" />
 								<Input
 									id="phone"
 									type="tel"
@@ -268,7 +343,7 @@ export function PatientForm({
 					<p className="text-muted-foreground text-xs font-medium">{t("more")}</p>
 
 					<OptionalSection
-						icon={LuMapPin}
+						icon={IconLocation}
 						title={t("addressTitle")}
 						summary={[values.address, values.city, values.email].filter(Boolean).join(" · ") || undefined}
 						open={isOpen("address")}
@@ -282,7 +357,7 @@ export function PatientForm({
 					</OptionalSection>
 
 					<OptionalSection
-						icon={LuShieldCheck}
+						icon={IconShieldCheck}
 						title={t("coverageTitle")}
 						summary={coverageSummary}
 						open={isOpen("coverage")}
@@ -326,7 +401,7 @@ export function PatientForm({
 					</OptionalSection>
 
 					<OptionalSection
-						icon={LuContactRound}
+						icon={IconContact}
 						title={t("emergency")}
 						summary={[values.emergencyContactName, values.emergencyContactPhone].filter(Boolean).join(" · ") || undefined}
 						open={isOpen("emergency")}
@@ -339,7 +414,7 @@ export function PatientForm({
 					</OptionalSection>
 
 					<OptionalSection
-						icon={LuStickyNote}
+						icon={IconNote}
 						title={t("note")}
 						summary={values.notes || undefined}
 						open={isOpen("notes")}
@@ -369,12 +444,12 @@ export function PatientForm({
 				</Button>
 				{patientId ? (
 					<Button type="submit" disabled={isSubmitting || !isDirty}>
-						{isSubmitting && <LuLoader className="animate-spin" />}
+						{isSubmitting && <IconSpinner className="animate-spin" />}
 						{t("save")}
 					</Button>
 				) : submitLabel ? (
 					<Button type="submit" disabled={isSubmitting}>
-						{isSubmitting && <LuLoader className="animate-spin" />}
+						{isSubmitting && <IconSpinner className="animate-spin" />}
 						{submitLabel}
 					</Button>
 				) : (
@@ -383,12 +458,112 @@ export function PatientForm({
 							{t("createAndBook")}
 						</Button>
 						<Button type="submit" disabled={isSubmitting}>
-							{isSubmitting && <LuLoader className="animate-spin" />}
+							{isSubmitting && <IconSpinner className="animate-spin" />}
 							{t("create")}
 						</Button>
 					</>
 				)}
 			</div>
 		</form>
+	);
+}
+
+/**
+ * Files with the same name: open (or pick) the existing one, or say it is
+ * another person. Never a hard block: homonyms are common.
+ */
+function HomonymCard({
+	patients,
+	editing,
+	picking,
+	opening,
+	onUse,
+	confirmed,
+	onConfirm,
+	error,
+}: {
+	patients: Homonym[];
+	/** Renaming a file: nothing to open, only the confirmation. */
+	editing: boolean;
+	/** Another flow (the waiting room) takes the patient rather than opening their file. */
+	picking: boolean;
+	opening: string | null;
+	onUse: (id: string) => void;
+	confirmed: boolean;
+	onConfirm: (checked: boolean) => void;
+	error: boolean;
+}) {
+	const t = useTranslations("patients.form.homonym");
+	const common = useTranslations("common");
+	return (
+		<section
+			id="homonyms"
+			aria-live="polite"
+			className={cn(
+				"grid gap-3 rounded-xl border border-amber-200 bg-amber-50 p-3 text-amber-900",
+				error && "ring-destructive/40 ring-3",
+			)}
+		>
+			<div className="flex items-start gap-2.5">
+				<span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-amber-100 text-amber-700">
+					<IconUsers className="size-4" />
+				</span>
+				<div className="grid gap-0.5">
+					<p className="text-sm font-semibold">{t("title", { count: patients.length })}</p>
+					<p className="text-xs text-amber-800">{t("hint")}</p>
+				</div>
+			</div>
+			<ul className="grid gap-1.5">
+				{patients.map((p) => {
+					const age = ageOf(p.birthDate);
+					const archived = p.archivedAt !== null;
+					return (
+						<li key={p.id} className="bg-background text-foreground flex items-center gap-3 rounded-lg border px-3 py-2">
+							<div className="min-w-0 flex-1">
+								<p className="flex items-center gap-2 truncate text-sm font-medium">
+									<span className="truncate">
+										{p.lastName.toUpperCase()} {p.firstName}
+									</span>
+									{archived && <Badge variant="secondary">{t("archived")}</Badge>}
+								</p>
+								<p className="text-muted-foreground truncate text-xs tabular-nums">
+									{[
+										formatFileNumber(p.fileNumber),
+										common(`sex.${p.sex}`),
+										age !== null && common("age", { age }),
+										p.phone && formatPhone(p.phone),
+										p.cin,
+									]
+										.filter(Boolean)
+										.join(" · ")}
+								</p>
+							</div>
+							{!editing && !(picking && archived) && (
+								<Button
+									type="button"
+									size="sm"
+									variant="outline"
+									disabled={opening !== null}
+									onClick={() => onUse(p.id)}
+								>
+									{opening === p.id && <IconSpinner className="animate-spin" />}
+									{picking ? t("pick") : t("open")}
+									<IconChevronRight className="rtl:-scale-x-100" />
+								</Button>
+							)}
+						</li>
+					);
+				})}
+			</ul>
+			<label className="flex items-start gap-2 text-sm">
+				<Checkbox checked={confirmed} onCheckedChange={(v) => onConfirm(v === true)} className="mt-0.5 bg-background" />
+				<span>{editing ? t("confirmEdit") : t("confirm")}</span>
+			</label>
+			{error && (
+				<p role="alert" className="text-destructive text-xs font-medium">
+					{t("required")}
+				</p>
+			)}
+		</section>
 	);
 }

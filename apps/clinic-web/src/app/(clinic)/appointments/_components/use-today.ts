@@ -21,7 +21,7 @@ export function useToday() {
 
 const byArrival = (a: Appointment, b: Appointment) => (a.arrivedAt ?? "").localeCompare(b.arrivedAt ?? "");
 
-/** The waiting room today: who waits (arrival order), who is with a doctor, who left unseen. */
+/** The waiting room today: who waits (arrival order), who is with a doctor, who was seen, who left unseen. */
 export function useWaiting() {
 	const query = useToday();
 	const today = query.data ?? [];
@@ -29,6 +29,10 @@ export function useWaiting() {
 		...query,
 		waiting: today.filter((a) => a.status === "arrived").sort(byArrival),
 		inConsultation: today.filter((a) => a.status === "in_consultation").sort(byArrival),
+		// Seen today, the latest first: the desk checks them out.
+		seen: today
+			.filter((a) => a.status === "completed")
+			.sort((a, b) => (b.completedAt ?? "").localeCompare(a.completedAt ?? "")),
 		left: today
 			.filter((a) => a.status === "cancelled" && a.leftAt)
 			.sort((a, b) => (b.leftAt ?? "").localeCompare(a.leftAt ?? "")),

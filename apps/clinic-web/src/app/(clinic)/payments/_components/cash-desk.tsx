@@ -4,10 +4,17 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
-import { LuCalendarCheck, LuCircleCheck, LuLoader, LuLock, LuReceipt, LuTriangleAlert } from "react-icons/lu";
 import { toast } from "sonner";
 import { AppointmentStatusBadge } from "@/components/appointment-status-badge";
 import { useCurrentUser } from "@/components/current-user";
+import {
+	IconCalendarCheck,
+	IconCheckCircle,
+	IconLock,
+	IconReceipt,
+	IconSpinner,
+	IconWarning,
+} from "@/components/icons";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -89,11 +96,11 @@ export function CashDesk({ spaceName }: { spaceName: string | null }) {
 				</div>
 				{closed ? (
 					<Badge variant="outline" className="gap-1.5 font-normal">
-						<LuLock className="size-3" /> {t("closed")}
+						<IconLock className="size-3" /> {t("closed")}
 					</Badge>
 				) : (
 					<Button variant="outline" onClick={() => setClosing(true)}>
-						<LuLock /> {t("close")}
+						<IconLock /> {t("close")}
 					</Button>
 				)}
 			</div>
@@ -102,7 +109,7 @@ export function CashDesk({ spaceName }: { spaceName: string | null }) {
 				<h2 className="border-b px-4 py-3 text-sm font-semibold">{t("visits")}</h2>
 				{visits.length === 0 ? (
 					<div className="flex flex-col items-center gap-2 px-6 py-12 text-center">
-						<LuCalendarCheck className="text-muted-foreground size-6" />
+						<IconCalendarCheck className="text-muted-foreground size-6" />
 						<p className="font-medium">{t("noVisits")}</p>
 						<p className="text-muted-foreground text-sm">{t("noVisitsHint")}</p>
 					</div>
@@ -143,7 +150,7 @@ export function CashDesk({ spaceName }: { spaceName: string | null }) {
 											<Button size="sm" variant={owed && !closed ? "default" : "outline"} onClick={() => setCheckout(v.id)}>
 												{owed && !closed ? (
 													<>
-														<LuReceipt /> {t("collect")}
+														<IconReceipt /> {t("collect")}
 													</>
 												) : (
 													t("view")
@@ -190,7 +197,7 @@ export function CashDesk({ spaceName }: { spaceName: string | null }) {
 										<Button size="sm" variant={closed ? "outline" : "default"} onClick={() => setCheckout(v.id)}>
 											{closed ? t("view") : (
 												<>
-													<LuReceipt /> {t("collect")}
+													<IconReceipt /> {t("collect")}
 												</>
 											)}
 										</Button>
@@ -290,9 +297,9 @@ function CloseDialog({ open, onOpenChange, owner }: { open: boolean; onOpenChang
 								<dt>{t("difference")}</dt>
 								<dd className="flex items-center gap-1.5 tabular-nums">
 									{result.difference === 0 ? (
-										<LuCircleCheck className="size-4 text-emerald-600" />
+										<IconCheckCircle className="size-4 text-emerald-600" />
 									) : (
-										<LuTriangleAlert className="size-4 text-amber-600" />
+										<IconWarning className="size-4 text-amber-600" />
 									)}
 									{result.difference! > 0 ? "+" : ""}
 									{mad(result.difference!)}
@@ -342,7 +349,7 @@ function CloseDialog({ open, onOpenChange, owner }: { open: boolean; onOpenChang
 								{t("cancel")}
 							</Button>
 							<Button type="submit" disabled={pending}>
-								{pending ? <LuLoader className="animate-spin" /> : <LuLock />} {t("submit")}
+								{pending ? <IconSpinner className="animate-spin" /> : <IconLock />} {t("submit")}
 							</Button>
 						</DialogFooter>
 					</form>

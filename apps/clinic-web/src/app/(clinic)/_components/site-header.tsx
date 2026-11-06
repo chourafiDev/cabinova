@@ -1,6 +1,6 @@
 "use client";
 
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { MeetingButton } from "@/components/meetings/meeting-button";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -28,7 +28,7 @@ export function SiteHeader({
 	const pathname = usePathname();
 	const t = useTranslations("nav.items");
 	const common = useTranslations("common");
-	const title = t(findNavItem(pathname)?.key ?? "dashboard");
+	const title = t(findNavItem(pathname, useSearchParams())?.key ?? "dashboard");
 
 	return (
 		<header className="sticky top-0 z-10 flex h-14 shrink-0 items-center gap-2 border-b bg-background px-4 md:rounded-t-xl">

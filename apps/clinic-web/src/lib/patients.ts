@@ -34,6 +34,9 @@ export type PatientRow = {
 	noShows: number;
 };
 
+/** GET /patients/homonyms — a file with the same name (accents, case, order aside). */
+export type Homonym = Pick<PatientRow, "id" | "fileNumber" | "firstName" | "lastName" | "sex" | "birthDate" | "phone" | "cin" | "archivedAt">;
+
 export type Patient = PatientRow & {
 	email: string | null;
 	address: string | null;

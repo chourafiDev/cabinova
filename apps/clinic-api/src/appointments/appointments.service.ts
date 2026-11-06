@@ -34,6 +34,12 @@ const APPOINTMENT = `
   a.reason, a.notes, a.arrived_at as "arrivedAt", a.walk_in as "walkIn",
   (select ac.abbreviation from acts ac where lower(ac.name) = lower(a.reason)) as "reasonShort",
   a.left_at as "leftAt", a.consultation_started_at as "consultationStartedAt",
+  a.completed_at as "completedAt",
+  (select json_build_object('total', c.total, 'paid', (
+      select coalesce(sum(case when py.kind = 'payment' then py.amount else -py.amount end)
+               filter (where py.cancelled_at is null), 0)::int
+        from payments py where py.charge_id = c.id))
+     from charges c where c.appointment_id = a.id) as charge,
   json_build_object('id', p.id, 'firstName', p.first_name, 'lastName', p.last_name,
     'fileNumber', p.file_number, 'phone', p.phone, 'birthDate', to_char(p.birth_date, 'YYYY-MM-DD'),
     'sex', p.sex, 'noShows', ${noShowsOf('p.id')}) as patient,
@@ -292,11 +298,18 @@ export class AppointmentsService {
         `update appointments set status = $3, arrived_at = ${arrived}, left_at = null,
            consultation_started_at = case when $4
              then coalesce(consultation_started_at, now()) else consultation_started_at end,
+           completed_at = case when $5 then coalesce(completed_at, now()) end,
            updated_at = now()
           where id = $1 and space_id = $2`,
         // The timer starts when the doctor takes the patient (a separate
         // parameter: $3 is the status enum, it can't be compared as text too).
-        [id, spaceId, status, status === 'in_consultation'],
+        [
+          id,
+          spaceId,
+          status,
+          status === 'in_consultation',
+          status === 'completed',
+        ],
       );
       return this.find(tx, spaceId, id);
     });

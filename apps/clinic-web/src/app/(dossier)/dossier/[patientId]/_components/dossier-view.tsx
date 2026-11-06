@@ -5,23 +5,23 @@ import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { parseAsStringLiteral, useQueryState } from "nuqs";
 import { useRef, useState } from "react";
-import {
-	LuArrowLeft,
-	LuCalendarClock,
-	LuSignature,
-	LuFileText,
-	LuFlaskConical,
-	LuHistory,
-	LuMessageSquareText,
-	LuPill,
-	LuReceipt,
-	LuStethoscope,
-	LuTimer,
-	LuTriangleAlert,
-} from "react-icons/lu";
 import { PatientSheet } from "@/app/(clinic)/patients/_components/patient-sheet";
 import { CheckoutPanel } from "@/app/(clinic)/payments/_components/checkout-dialog";
 import { AppointmentStatusBadge } from "@/components/appointment-status-badge";
+import {
+	IconArrowLeft,
+	IconCalendarClock,
+	IconDocument,
+	IconHistory,
+	IconLab,
+	IconMessage,
+	IconPill,
+	IconReceipt,
+	IconSignature,
+	IconStethoscope,
+	IconTimer,
+	IconWarning,
+} from "@/components/icons";
 import { NoShowBadge } from "@/components/no-show-badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -138,13 +138,13 @@ export function DossierView({ patientId, visitId }: { patientId: string; visitId
 		);
 
 	const tabs: { value: Tab; icon: React.ComponentType; label: string; badge?: number }[] = [
-		{ value: "interrogatoire", icon: LuMessageSquareText, label: t("tabs.interrogatoire") },
-		{ value: "certificat", icon: LuSignature, label: t("tabs.certificat") },
-		{ value: "prix", icon: LuReceipt, label: t("tabs.prix") },
-		{ value: "ordonnance", icon: LuPill, label: t("tabs.prescription"), badge: lines },
-		{ value: "bilan", icon: LuFlaskConical, label: t("tabs.bilan") },
-		{ value: "compte-rendu", icon: LuFileText, label: t("tabs.compteRendu") },
-		{ value: "historique", icon: LuHistory, label: t("tabs.historique") },
+		{ value: "interrogatoire", icon: IconMessage, label: t("tabs.interrogatoire") },
+		{ value: "certificat", icon: IconSignature, label: t("tabs.certificat") },
+		{ value: "prix", icon: IconReceipt, label: t("tabs.prix") },
+		{ value: "ordonnance", icon: IconPill, label: t("tabs.prescription"), badge: lines },
+		{ value: "bilan", icon: IconLab, label: t("tabs.bilan") },
+		{ value: "compte-rendu", icon: IconDocument, label: t("tabs.compteRendu") },
+		{ value: "historique", icon: IconHistory, label: t("tabs.historique") },
 	];
 
 	const page = (
@@ -230,7 +230,7 @@ export function DossierView({ patientId, visitId }: { patientId: string; visitId
 				<div className="mx-auto flex max-w-[1700px] flex-wrap items-center gap-x-4 gap-y-3 px-4 py-3">
 					<Button asChild variant="ghost" size="sm" className="-ms-2">
 						<Link href="/appointments">
-							<LuArrowLeft className="rtl:-scale-x-100" /> {t("back")}
+							<IconArrowLeft className="rtl:-scale-x-100" /> {t("back")}
 						</Link>
 					</Button>
 					<span className="bg-border hidden h-8 w-px sm:block" aria-hidden />
@@ -299,7 +299,7 @@ export function DossierView({ patientId, visitId }: { patientId: string; visitId
 				{allergies && (
 					<div className="border-t border-red-200 bg-red-50 text-red-900">
 						<p className="mx-auto flex max-w-[1700px] items-start gap-2 px-4 py-2 text-sm">
-							<LuTriangleAlert className="mt-0.5 size-4 shrink-0" />
+							<IconWarning className="mt-0.5 size-4 shrink-0" />
 							<span>
 								<span className="font-semibold">{t("allergies")} </span>
 								{allergies}
@@ -347,13 +347,13 @@ function NoVisit() {
 	return (
 		<div className="bg-card flex flex-col items-center gap-2 rounded-xl border px-6 py-14 text-center">
 			<span className="bg-primary/10 text-primary flex size-10 items-center justify-center rounded-xl">
-				<LuStethoscope className="size-5" />
+				<IconStethoscope className="size-5" />
 			</span>
 			<p className="font-medium">{t("noVisit")}</p>
 			<p className="text-muted-foreground max-w-sm text-sm">{t("noVisitHint")}</p>
 			<Button asChild variant="outline" size="sm" className="mt-2">
 				<Link href="/appointments">
-					<LuCalendarClock /> {t("toWaitingRoom")}
+					<IconCalendarClock /> {t("toWaitingRoom")}
 				</Link>
 			</Button>
 		</div>
@@ -368,7 +368,7 @@ function VisitTimer({ since }: { since: string }) {
 	const minutes = Math.max(0, Math.floor((now - new Date(since).getTime()) / 60_000));
 	return (
 		<span className="bg-muted flex items-center gap-1 rounded-md px-1.5 py-0.5 text-xs tabular-nums" title={t("timerTitle")}>
-			<LuTimer className="size-3.5" /> {minutes < 1 ? t("justStarted") : fmt.duration(minutes)}
+			<IconTimer className="size-3.5" /> {minutes < 1 ? t("justStarted") : fmt.duration(minutes)}
 		</span>
 	);
 }

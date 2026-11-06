@@ -5,12 +5,17 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import type {
+  HomonymsQuery,
   ListPatientsQuery,
   MedicalProfileDto,
   PatientDto,
 } from './dto.js';
 import { noShowsOf } from './no-shows.js';
 import { patientSearch } from './search.js';
+
+/** A name as compared for homonyms: no accents, case or extra spaces. */
+const NAME = (sql: string) =>
+  `lower(unaccent(regexp_replace(btrim(${sql}), '\\s+', ' ', 'g')))`;
 
 /** Column list of a patient as the API returns it (camelCase). */
 const PATIENT = `
@@ -142,7 +147,35 @@ export class PatientsService {
     return { ...patient, medicalProfile: rows[0] ?? null };
   }
 
+  /**
+   * Files of this space with the same name, accents, case and spaces aside,
+   * first and last name swapped too (a common slip at the desk). Archived
+   * ones included: the patient may be back.
+   */
+  async homonyms(
+    db: Pool,
+    spaceId: string,
+    { firstName, lastName, exceptId }: HomonymsQuery,
+  ) {
+    const { rows } = await db.query(
+      `select p.id, p.file_number as "fileNumber", p.first_name as "firstName",
+              p.last_name as "lastName", p.sex,
+              to_char(p.birth_date, 'YYYY-MM-DD') as "birthDate", p.phone, p.cin,
+              p.archived_at as "archivedAt"
+         from patients p
+        where p.space_id = $1
+          and p.id <> coalesce($4::uuid, '00000000-0000-0000-0000-000000000000')
+          and ((${NAME('p.first_name')} = ${NAME('$2')} and ${NAME('p.last_name')} = ${NAME('$3')})
+            or (${NAME('p.first_name')} = ${NAME('$3')} and ${NAME('p.last_name')} = ${NAME('$2')}))
+        order by p.archived_at nulls first, p.file_number
+        limit 5`,
+      [spaceId, firstName, lastName, exceptId ?? null],
+    );
+    return rows;
+  }
+
   async create(db: Pool, spaceId: string, dto: PatientDto, userId: string) {
+    await this.refuseHomonym(db, spaceId, dto);
     const columns = [...FIELDS.map(([c]) => c), 'created_by', 'space_id'];
     const placeholders = columns.map((_, i) => `$${i + 1}`);
     try {
@@ -158,7 +191,14 @@ export class PatientsService {
   }
 
   async update(db: Pool, spaceId: string, id: string, dto: PatientDto) {
-    await this.find(db, spaceId, id);
+    const current = await this.find(db, spaceId, id);
+    // Only a new name is checked: an existing pair of homonyms stays editable.
+    if (
+      current.firstName !== dto.firstName ||
+      current.lastName !== dto.lastName
+    ) {
+      await this.refuseHomonym(db, spaceId, dto, id);
+    }
     const set = FIELDS.map(([c], i) => `${c} = $${i + 2}`).join(', ');
     try {
       await db.query(
@@ -213,6 +253,29 @@ export class PatientsService {
     );
     if (!rows[0]) throw this.notFound();
     return rows[0] as Record<string, unknown>;
+  }
+
+  /** Another file has this name: the user says whether it is the same person. */
+  private async refuseHomonym(
+    db: Pool,
+    spaceId: string,
+    dto: PatientDto,
+    exceptId?: string,
+  ) {
+    if (dto.allowHomonym) return;
+    const patients = await this.homonyms(db, spaceId, {
+      firstName: dto.firstName,
+      lastName: dto.lastName,
+      exceptId,
+    });
+    if (patients.length) {
+      throw new ConflictException({
+        code: 'PATIENT_HOMONYM',
+        message:
+          'Un patient porte déjà ce nom. Ouvrez sa fiche, ou confirmez qu’il s’agit d’une autre personne.',
+        patients,
+      });
+    }
   }
 
   /** The CIN belongs to another file: say which one. */

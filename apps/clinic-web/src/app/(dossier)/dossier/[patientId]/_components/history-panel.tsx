@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { LuChevronDown, LuHistory, LuPill, LuPrinter } from "react-icons/lu";
+import { IconChevronDown, IconHistory, IconPill, IconPrinter } from "@/components/icons";
 import { Skeleton } from "@/components/ui/skeleton";
 import { bmiOf, isAbnormal, type PastConsultation, type VitalField } from "@/lib/consultations";
 import type { PastPrescription } from "@/lib/prescriptions";
@@ -24,7 +24,7 @@ export function HistoryPanel({
 }) {
 	const t = useTranslations("dossier.history");
 	return (
-		<Card icon={LuHistory} title={t("title")} aside={consultations && consultations.length > 0 && (
+		<Card icon={IconHistory} title={t("title")} aside={consultations && consultations.length > 0 && (
 			<span className="text-muted-foreground text-xs tabular-nums">{consultations.length}</span>
 		)}>
 			{loading ? (
@@ -93,7 +93,7 @@ function Entry({
 							{c.diagnosis ?? t("history.noDiagnosis")}
 						</p>
 					</div>
-					<LuChevronDown className="text-muted-foreground mt-1 size-4 shrink-0 transition-transform group-open:rotate-180" />
+					<IconChevronDown className="text-muted-foreground mt-1 size-4 shrink-0 transition-transform group-open:rotate-180" />
 				</summary>
 				<div className="mt-2 grid gap-2 text-sm">
 					{vitals.length > 0 && (
@@ -124,7 +124,7 @@ function Entry({
 						<div>
 							<div className="flex items-center justify-between gap-2">
 								<p className="text-muted-foreground flex items-center gap-1 text-xs">
-									<LuPill className="size-3" /> {t("history.prescription")}
+									<IconPill className="size-3" /> {t("history.prescription")}
 								</p>
 								<a
 									href={`/ordonnances/${c.appointmentId}`}
@@ -132,7 +132,7 @@ function Entry({
 									rel="noopener"
 									className="text-primary flex items-center gap-1 text-xs hover:underline"
 								>
-									<LuPrinter className="size-3" /> {t("history.reprint")}
+									<IconPrinter className="size-3" /> {t("history.reprint")}
 								</a>
 							</div>
 							<ul className="grid gap-0.5">

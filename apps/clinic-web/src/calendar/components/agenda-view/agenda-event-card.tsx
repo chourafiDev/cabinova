@@ -5,7 +5,6 @@ import { fmt } from "@/calendar/locale";
 
 import { parseISO } from "date-fns";
 import { cva } from "class-variance-authority";
-import { LuClock, LuText, LuUser } from "react-icons/lu";
 
 import { useCalendar } from "@/calendar/contexts/calendar-context";
 
@@ -14,6 +13,7 @@ import { EventDetailsTrigger } from "@/calendar/components/dialogs/event-details
 import type { IEvent } from "@/calendar/interfaces";
 import type { VariantProps } from "class-variance-authority";
 import { Abbreviation } from "@/components/act-picker";
+import { IconClock, IconText, IconUser } from "@/components/icons";
 
 const agendaEventCardVariants = cva(
   "flex select-none items-center justify-between gap-3 rounded-md border p-3 text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
@@ -92,19 +92,19 @@ export function AgendaEventCard({ event, eventCurrentDay, eventTotalDays }: IPro
           </div>
 
           <div className="mt-1 flex items-center gap-1">
-            <LuUser className="size-3 shrink-0" />
+            <IconUser className="size-3 shrink-0" />
             <p className="text-xs text-foreground">{event.user.name}</p>
           </div>
 
           <div className="flex items-center gap-1">
-            <LuClock className="size-3 shrink-0" />
+            <IconClock className="size-3 shrink-0" />
             <p className="text-xs text-foreground">
               {fmt(startDate, "HH:mm")} - {fmt(endDate, "HH:mm")}
             </p>
           </div>
 
           <div className="flex items-center gap-1">
-            <LuText className="size-3 shrink-0" />
+            <IconText className="size-3 shrink-0" />
             <p className="text-xs text-foreground">{event.description}</p>
           </div>
         </div>

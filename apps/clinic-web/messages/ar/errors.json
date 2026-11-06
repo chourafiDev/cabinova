@@ -119,5 +119,14 @@
   "CERTIFICATE_DATES": "يجب أن تأتي نهاية المدة بعد بدايتها.",
   "CERTIFICATE_EMPTY": "الشهادة فارغة.",
   "CERTIFICATE_MODEL_NOT_FOUND": "النموذج غير موجود.",
-  "CERTIFICATE_MODEL_NAME_TAKEN": "يوجد نموذج يحمل هذا الاسم."
+  "CERTIFICATE_MODEL_NAME_TAKEN": "يوجد نموذج يحمل هذا الاسم.",
+  "DOCUMENT_MISSING": "اختر ملفًا.",
+  "DOCUMENT_TYPE": "تُقبل ملفات PDF والصور (JPEG، PNG، WebP) فقط.",
+  "DOCUMENT_TOO_LARGE": "يتجاوز الملف 10 ميغابايت.",
+  "DOCUMENT_NOT_FOUND": "الوثيقة غير موجودة.",
+  "DOCUMENT_NOT_YOURS": "لا يمكن حذف هذه الوثيقة إلا من طرف من أضافها أو الطبيب المسؤول.",
+  "STORAGE_NOT_CONFIGURED": "إرسال الوثائق غير متاح بعد.",
+  "STORAGE_UNAVAILABLE": "تخزين الوثائق لا يستجيب. أعد المحاولة بعد قليل.",
+  "PATIENT_HOMONYM": "يوجد مريض بنفس الاسم. افتح ملفه، أو أكّد أنه شخص آخر.",
+  "DISCOUNT_TOO_HIGH": "المبلغ المسترجع يتجاوز مبلغ الإجراءات ({amount})."
 }

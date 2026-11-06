@@ -3,8 +3,8 @@
 import { useTranslations } from "next-intl";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { LuCalendarCheck, LuCircleCheck, LuLoader, LuUnplug, LuVideo } from "react-icons/lu";
 import { toast } from "sonner";
+import { IconCalendarCheck, IconCheckCircle, IconSpinner, IconUnplug, IconVideo } from "@/components/icons";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -81,7 +81,7 @@ export function GoogleCard({
 						{t("google.title")}
 						{connected && (
 							<Badge variant="secondary" className="gap-1 font-normal">
-								<LuCircleCheck className="text-emerald-600 dark:text-emerald-400" />
+								<IconCheckCircle className="text-emerald-600 dark:text-emerald-400" />
 								{t("google.connected")}
 							</Badge>
 						)}
@@ -95,14 +95,14 @@ export function GoogleCard({
 						<>
 							<p className="text-muted-foreground text-sm">{t("google.privacy")}</p>
 							<Button type="button" variant="outline" size="sm" onClick={() => setConfirm(true)}>
-								<LuUnplug /> {t("google.disconnect")}
+								<IconUnplug /> {t("google.disconnect")}
 							</Button>
 						</>
 					) : (
 						<>
 							<p className="text-muted-foreground text-sm">{t("google.privacy")}</p>
 							<Button type="button" onClick={connect} disabled={pending === "connect"}>
-								{pending === "connect" ? <LuLoader className="animate-spin" /> : <GoogleMark />}
+								{pending === "connect" ? <IconSpinner className="animate-spin" /> : <GoogleMark />}
 								{t("google.connect")}
 							</Button>
 						</>
@@ -128,7 +128,7 @@ export function GoogleCard({
 				) : (
 					<ul className="grid gap-2.5 text-sm">
 						{(["meet", "calendar", "team"] as const).map((key) => {
-							const Icon = key === "meet" ? LuVideo : key === "calendar" ? LuCalendarCheck : LuCircleCheck;
+							const Icon = key === "meet" ? IconVideo : key === "calendar" ? IconCalendarCheck : IconCheckCircle;
 							return (
 								<li key={key} className="flex items-start gap-2.5">
 									<Icon className="text-primary mt-0.5 size-4 shrink-0" />
@@ -151,7 +151,7 @@ export function GoogleCard({
 							{t("cancel")}
 						</Button>
 						<Button type="button" variant="destructive" onClick={disconnect} disabled={pending === "disconnect"}>
-							{pending === "disconnect" && <LuLoader className="animate-spin" />}
+							{pending === "disconnect" && <IconSpinner className="animate-spin" />}
 							{t("google.disconnect")}
 						</Button>
 					</DialogFooter>

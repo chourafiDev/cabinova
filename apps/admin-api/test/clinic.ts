@@ -1,4 +1,5 @@
 import { Pool } from '@neondatabase/serverless';
+import { moroccoDay, moroccoHolidayOn } from '@cabinova/morocco-time';
 import type { INestApplication, Type } from '@nestjs/common';
 import type { NestExpressApplication } from '@nestjs/platform-express';
 import { Test } from '@nestjs/testing';
@@ -114,24 +115,17 @@ export async function addStaff(
   user: { name: string; email: string; role: string },
   password = 'mot-de-passe-equipe',
 ) {
-  const { body } = await adminAgent
-    .get(`/tenants/${tenantId}/database`)
-    .expect(200);
-  const url = new URL(process.env.TENANT_DB_ADMIN_URL!);
-  url.pathname = `/${body.database.databaseName}`;
-  const pool = new Pool({ connectionString: url.toString() });
-  try {
-    await pool.query(
+  const hash = await argon2.hash(password);
+  await withTenantDb(adminAgent, tenantId, (pool) =>
+    pool.query(
       `with u as (
          insert into users (name, email, role, password_hash)
          values ($1, $2, $3, $4) returning id)
        insert into space_members (space_id, user_id)
        select (select id from spaces order by created_at limit 1), id from u`,
-      [user.name, user.email, user.role, await argon2.hash(password)],
-    );
-  } finally {
-    await pool.end();
-  }
+      [user.name, user.email, user.role, hash],
+    ),
+  );
   const agent = request.agent(clinic.getHttpServer());
   await onCabinet(clinic, subdomain, agent)
     .post('/auth/login')
@@ -176,4 +170,75 @@ export async function openEveryDay(
       .send({ openingHours })
       .expect(200);
   }
+}
+
+/** The cabinet's own database, as its owner role, for what the API can't do. */
+async function withTenantDb<T>(
+  adminAgent: Agent,
+  tenantId: string,
+  run: (pool: Pool) => Promise<T>,
+) {
+  const { body } = await adminAgent
+    .get(`/tenants/${tenantId}/database`)
+    .expect(200);
+  const url = new URL(process.env.TENANT_DB_ADMIN_URL!);
+  url.pathname = `/${body.database.databaseName}`;
+  const pool = new Pool({ connectionString: url.toString() });
+  try {
+    return await run(pool);
+  } finally {
+    await pool.end();
+  }
+}
+
+/**
+ * A visit today (times in UTC, Morocco's offset), booked through the API in
+ * the agent's current space. On a public holiday the API rightly refuses it:
+ * then it is written straight into the cabinet's database, so the suites
+ * about "today" (cashier, dashboard) pass every day of the year.
+ */
+export async function bookToday(
+  clinic: INestApplication,
+  subdomain: string,
+  agent: Agent,
+  admin: { agent: Agent; tenantId: string },
+  visit: {
+    patientId: string;
+    practitionerId: string;
+    from: string;
+    to: string;
+    reason?: string;
+    allowOverlap?: boolean;
+  },
+) {
+  const day = moroccoDay();
+  const { from, to, reason = 'Consultation', ...rest } = visit;
+  const startsAt = `${day}T${from}:00+00:00`;
+  const endsAt = `${day}T${to}:00+00:00`;
+  const cab = onCabinet(clinic, subdomain, agent);
+  if (!moroccoHolidayOn(day)) {
+    const { body } = await cab
+      .post('/appointments')
+      .send({ ...rest, startsAt, endsAt, reason })
+      .expect(201);
+    return body as { id: string };
+  }
+  const { body: me } = await cab.get('/auth/me').expect(200);
+  return withTenantDb(admin.agent, admin.tenantId, async (pool) => {
+    const { rows } = await pool.query<{ id: string }>(
+      `insert into appointments
+         (space_id, patient_id, practitioner_id, starts_at, ends_at, reason, created_by)
+       values ($1, $2, $3, $4, $5, $6, $7) returning id`,
+      [
+        me.spaces.current.id,
+        visit.patientId,
+        visit.practitionerId,
+        startsAt,
+        endsAt,
+        reason,
+        me.user.id,
+      ],
+    );
+    return rows[0];
+  });
 }

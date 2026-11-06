@@ -6,17 +6,17 @@ import { arMA, fr } from "date-fns/locale";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { useState } from "react";
-import type { IconType } from "react-icons";
 import {
-	LuBell,
-	LuCalendarX,
-	LuCheckCheck,
-	LuDoorOpen,
-	LuReceipt,
-	LuUserPlus,
-	LuUserX,
-	LuVideo,
-} from "react-icons/lu";
+	type AppIcon,
+	IconBell,
+	IconCalendarRemove,
+	IconCheckDouble,
+	IconLogin,
+	IconReceipt,
+	IconUserAdd,
+	IconUserRemove,
+	IconVideo,
+} from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import {
 	Popover,
@@ -44,13 +44,13 @@ type Inbox = { data: Notification[]; unread: number };
 const KEY = ["notifications"];
 const POLL_MS = 60_000;
 
-const ICONS: Record<Notification["kind"], IconType> = {
-	arrived: LuDoorOpen,
-	no_show: LuUserX,
-	cancelled: LuCalendarX,
-	team: LuUserPlus,
-	billing: LuReceipt,
-	meeting: LuVideo,
+const ICONS: Record<Notification["kind"], AppIcon> = {
+	arrived: IconLogin,
+	no_show: IconUserRemove,
+	cancelled: IconCalendarRemove,
+	team: IconUserAdd,
+	billing: IconReceipt,
+	meeting: IconVideo,
 };
 
 /** The header's bell: what needs this person's attention, checked every minute. */
@@ -141,7 +141,7 @@ export function NotificationBell() {
 					className="relative !shadow-none"
 					aria-label={unread ? t("unread", { count: unread }) : t("title")}
 				>
-					<LuBell />
+					<IconBell />
 					{unread > 0 && (
 						<span className="bg-primary text-primary-foreground absolute -end-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[10px] font-semibold tabular-nums">
 							{unread > 9 ? "9+" : unread}
@@ -163,7 +163,7 @@ export function NotificationBell() {
 							disabled={readAll.isPending}
 							onClick={() => readAll.mutate()}
 						>
-							<LuCheckCheck /> {t("readAll")}
+							<IconCheckDouble /> {t("readAll")}
 						</Button>
 					)}
 				</header>

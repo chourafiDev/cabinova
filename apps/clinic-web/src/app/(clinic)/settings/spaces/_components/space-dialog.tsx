@@ -3,8 +3,8 @@
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
-import { LuLoader } from "react-icons/lu";
 import { toast } from "sonner";
+import { IconSpinner } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import {
 	Dialog,
@@ -129,7 +129,7 @@ function SpaceForm({ space, onDone }: { space: ManagedSpace | null; onDone: () =
 					{common("cancel")}
 				</Button>
 				<Button type="submit" disabled={saving}>
-					{saving && <LuLoader className="animate-spin" />} {space ? common("save") : t("create")}
+					{saving && <IconSpinner className="animate-spin" />} {space ? common("save") : t("create")}
 				</Button>
 			</DialogFooter>
 		</form>

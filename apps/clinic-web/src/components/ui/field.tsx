@@ -3,7 +3,7 @@
 import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "cn";
 import { useMemo } from "react";
-import { BsExclamationCircle } from "react-icons/bs";
+import { IconAlertCircle } from "@/components/icons";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 
@@ -219,7 +219,7 @@ function FieldError({
 			className={cn("flex items-center gap-1 -mt-1 text-sm font-normal text-destructive", className)}
 			{...props}
 		>
-			<BsExclamationCircle className="size-3" /> {content}
+			<IconAlertCircle className="size-3" /> {content}
 		</div>
 	);
 }

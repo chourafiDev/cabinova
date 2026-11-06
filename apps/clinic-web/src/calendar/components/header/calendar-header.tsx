@@ -1,6 +1,6 @@
 import { useTranslations } from "next-intl";
-import { LuCalendarRange, LuColumns2, LuGrid2X2, LuGrid3X3, LuList, LuPlus } from "react-icons/lu";
 
+import { type AppIcon, IconCalendarRange, IconColumns, IconGrid, IconGridLarge, IconList, IconPlus } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 
 import { useCalendar } from "@/calendar/contexts/calendar-context";
@@ -19,12 +19,12 @@ interface IProps {
   events: IEvent[];
 }
 
-const VIEWS: { view: TCalendarView; icon: React.ComponentType<{ strokeWidth?: number }> }[] = [
-  { view: "day", icon: LuList },
-  { view: "week", icon: LuColumns2 },
-  { view: "month", icon: LuGrid2X2 },
-  { view: "year", icon: LuGrid3X3 },
-  { view: "agenda", icon: LuCalendarRange },
+const VIEWS: { view: TCalendarView; icon: AppIcon }[] = [
+  { view: "day", icon: IconList },
+  { view: "week", icon: IconColumns },
+  { view: "month", icon: IconGrid },
+  { view: "year", icon: IconGridLarge },
+  { view: "agenda", icon: IconCalendarRange },
 ];
 
 export function CalendarHeader({ view, events }: IProps) {
@@ -69,7 +69,7 @@ export function CalendarHeader({ view, events }: IProps) {
 
         {canWrite && (
           <Button type="button" className="w-full sm:w-auto" onClick={() => openCreate()}>
-            <LuPlus />
+            <IconPlus />
             {t("newAppointment")}
           </Button>
         )}

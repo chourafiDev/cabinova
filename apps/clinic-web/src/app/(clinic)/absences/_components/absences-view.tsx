@@ -5,8 +5,17 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
-import { LuBuilding2, LuCalendarArrowUp, LuFlag, LuLoader, LuPlus, LuSun, LuTrash2, LuTriangleAlert } from "react-icons/lu";
 import { toast } from "sonner";
+import {
+	IconBuilding,
+	IconCalendarEdit,
+	IconFlag,
+	IconPlus,
+	IconSpinner,
+	IconSun,
+	IconTrash,
+	IconWarning,
+} from "@/components/icons";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -45,7 +54,7 @@ export function AbsencesView({ practitioners, user }: { practitioners: Practitio
 			<header className="flex flex-wrap items-center justify-between gap-3">
 				<div className="flex items-center gap-3">
 					<span className="bg-primary/10 text-primary flex size-9 items-center justify-center rounded-lg">
-						<LuSun className="size-4" />
+						<IconSun className="size-4" />
 					</span>
 					<div>
 						<h1 className="text-lg leading-tight font-semibold">{t("title")}</h1>
@@ -54,7 +63,7 @@ export function AbsencesView({ practitioners, user }: { practitioners: Practitio
 				</div>
 				{canAdd && (
 					<Button onClick={() => setAdding(true)}>
-						<LuPlus /> {t("add")}
+						<IconPlus /> {t("add")}
 					</Button>
 				)}
 			</header>
@@ -105,12 +114,12 @@ function ClosureList({ when, user, onAdd }: { when: "upcoming" | "past"; user: U
 	if (data.length === 0) {
 		return (
 			<div className="bg-card flex flex-col items-center gap-2 rounded-xl border px-6 py-14 text-center">
-				<LuSun className="text-muted-foreground size-6" />
+				<IconSun className="text-muted-foreground size-6" />
 				<p className="font-medium">{t(`empty.${when}`)}</p>
 				{when === "upcoming" && <p className="text-muted-foreground max-w-sm text-sm">{t("empty.hint")}</p>}
 				{onAdd && (
 					<Button size="sm" variant="outline" className="mt-2" onClick={onAdd}>
-						<LuPlus /> {t("add")}
+						<IconPlus /> {t("add")}
 					</Button>
 				)}
 			</div>
@@ -157,7 +166,7 @@ function ClosureRow({
 				</span>
 			) : (
 				<span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-red-50 text-red-700">
-					<LuBuilding2 className="size-4" />
+					<IconBuilding className="size-4" />
 				</span>
 			)}
 
@@ -181,13 +190,13 @@ function ClosureRow({
 				{!past && c.appointments > 0 && (
 					<Button asChild size="sm" variant="outline" className="border-amber-300 bg-amber-50 text-amber-900 hover:bg-amber-100">
 						<Link href={`/appointments?tab=agenda&view=week&date=${c.startsOn}`}>
-							<LuTriangleAlert /> {t("toMove", { count: c.appointments })}
+							<IconWarning /> {t("toMove", { count: c.appointments })}
 						</Link>
 					</Button>
 				)}
 				{canRemove && (
 					<Button size="icon-sm" variant="ghost" aria-label={t("remove")} onClick={onRemove}>
-						<LuTrash2 />
+						<IconTrash />
 					</Button>
 				)}
 			</div>
@@ -228,7 +237,7 @@ function RemoveDialog({ closure, onClose }: { closure: Closure | null; onClose: 
 						{t("cancel")}
 					</Button>
 					<Button variant="destructive" disabled={busy} onClick={remove}>
-						{busy && <LuLoader className="animate-spin" />}
+						{busy && <IconSpinner className="animate-spin" />}
 						{t("remove")}
 					</Button>
 				</DialogFooter>
@@ -259,7 +268,7 @@ function UpcomingHolidays() {
 	return (
 		<section className="bg-card grid gap-3 rounded-xl border p-4" aria-label={t("title")}>
 			<header className="flex items-center gap-2">
-				<LuFlag className="text-muted-foreground size-4" />
+				<IconFlag className="text-muted-foreground size-4" />
 				<h2 className="text-sm font-semibold">{t("title")}</h2>
 			</header>
 			<p className="text-muted-foreground text-xs">{t("hint")}</p>
@@ -277,7 +286,7 @@ function UpcomingHolidays() {
 				))}
 			</ul>
 			<p className="text-muted-foreground flex items-center gap-1.5 text-xs">
-				<LuCalendarArrowUp className="size-3.5" /> {t("closedInAgenda")}
+				<IconCalendarEdit className="size-3.5" /> {t("closedInAgenda")}
 			</p>
 		</section>
 	);

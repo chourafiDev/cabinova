@@ -3,8 +3,8 @@
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
-import { LuEye, LuEyeOff, LuLoader } from "react-icons/lu";
 import { toast } from "sonner";
+import { IconEye, IconEyeOff, IconSpinner } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import { Field, FieldDescription, FieldError, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
@@ -75,14 +75,14 @@ export function PasswordForm() {
 				description={t("description")}
 				action={
 					<Button type="button" variant="ghost" size="sm" onClick={() => setVisible((x) => !x)}>
-						{visible ? <LuEyeOff /> : <LuEye />} {visible ? t("hide") : t("show")}
+						{visible ? <IconEyeOff /> : <IconEye />} {visible ? t("hide") : t("show")}
 					</Button>
 				}
 				footer={
 					<>
 						<p className="text-muted-foreground text-xs">{t("hint")}</p>
 						<Button type="submit" size="sm" disabled={!complete || saving}>
-							{saving && <LuLoader className="animate-spin" />} {t("submit")}
+							{saving && <IconSpinner className="animate-spin" />} {t("submit")}
 						</Button>
 					</>
 				}

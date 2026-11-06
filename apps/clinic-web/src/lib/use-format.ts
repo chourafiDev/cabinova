@@ -4,6 +4,7 @@ import { useLocale } from "next-intl";
 import { useMemo } from "react";
 import { intlLocale } from "@/i18n/config";
 import { durationLabel } from "./appointments";
+import { formatSize } from "./documents";
 import { clock } from "./dashboard";
 import { formatDate } from "./format";
 import { mad } from "./payments";
@@ -15,6 +16,7 @@ export const formatterFor = (locale: string) => ({
 	mad: (centimes: number) => mad(centimes, locale),
 	clock: (iso: string) => clock(iso, locale),
 	number: (value: number) => value.toLocaleString(locale),
+	size: (bytes: number) => formatSize(bytes, locale),
 	bucketLabel: (date: string, bucket: Bucket) => bucketLabel(date, bucket, locale),
 	bucketTitle: (date: string, bucket: Bucket) => bucketTitle(date, bucket, locale),
 	period: (from: string, to: string) => periodLabel(from, to, locale),

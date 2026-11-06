@@ -1,7 +1,6 @@
 import { useTranslations } from "next-intl";
 import Link from "next/link";
-import type { IconType } from "react-icons";
-import { LuArrowDown, LuArrowUp, LuEllipsisVertical, LuInfo } from "react-icons/lu";
+import { type AppIcon, IconArrowDown, IconArrowUp, IconInfo, IconMoreVertical } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import {
 	DropdownMenu,
@@ -32,7 +31,7 @@ export function Change({ value, unit, invert }: { value: number | null; unit: "%
 				good ? "text-green" : bad ? "text-destructive" : "text-muted-foreground",
 			)}
 		>
-			{value > 0 ? <LuArrowUp className="size-3.5" /> : value < 0 ? <LuArrowDown className="size-3.5" /> : null}
+			{value > 0 ? <IconArrowUp className="size-3.5" /> : value < 0 ? <IconArrowDown className="size-3.5" /> : null}
 			{value > 0 ? "+" : ""}
 			{value} {unit === "pts" ? t("pts") : unit}
 		</span>
@@ -56,7 +55,7 @@ export function KpiCard({
 	hint,
 	actions = [],
 }: {
-	icon: IconType;
+	icon: AppIcon;
 	title: string;
 	value: React.ReactNode;
 	/** Colour of the value, e.g. "text-red-700" for a worrying figure. */
@@ -84,13 +83,13 @@ export function KpiCard({
 					<DropdownMenu>
 						<DropdownMenuTrigger asChild>
 							<Button type="button" variant="ghost" size="icon-sm" aria-label={`Options : ${title}`}>
-								<LuEllipsisVertical className="size-4" />
+								<IconMoreVertical className="size-4" />
 							</Button>
 						</DropdownMenuTrigger>
 						<DropdownMenuContent align="end" className="w-64">
 							{hint && (
 								<DropdownMenuLabel className="text-muted-foreground flex gap-2 text-xs font-normal">
-									<LuInfo className="mt-0.5 size-3.5 shrink-0" />
+									<IconInfo className="mt-0.5 size-3.5 shrink-0" />
 									{hint}
 								</DropdownMenuLabel>
 							)}

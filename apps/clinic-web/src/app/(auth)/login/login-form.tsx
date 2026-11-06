@@ -1,10 +1,10 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { LuLoader } from "react-icons/lu";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { IconSpinner } from "@/components/icons";
 import { PasswordInput } from "@/components/password-input";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -104,7 +104,7 @@ export function LoginForm({ next }: { next: string }) {
 					</p>
 				)}
 				<Button type="submit" disabled={pending || (useBackup ? code.trim().length < 6 : code.length !== 6)} className={authButtonClass}>
-					{pending && <LuLoader className="size-4 animate-spin" />}
+					{pending && <IconSpinner className="size-4 animate-spin" />}
 					{t("twoFactor.verify")}
 				</Button>
 				<button
@@ -162,7 +162,7 @@ export function LoginForm({ next }: { next: string }) {
 				</p>
 			)}
 			<Button type="submit" disabled={pending} className={authButtonClass}>
-				{pending && <LuLoader className="size-4 animate-spin" />}
+				{pending && <IconSpinner className="size-4 animate-spin" />}
 				{pending ? t("login.pending") : t("login.submit")}
 			</Button>
 			<p className="text-muted-foreground text-center text-sm">

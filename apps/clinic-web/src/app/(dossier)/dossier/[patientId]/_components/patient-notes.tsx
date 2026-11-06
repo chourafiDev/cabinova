@@ -3,8 +3,8 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
-import { LuBellRing, LuLoader, LuPencil, LuPin, LuPlus } from "react-icons/lu";
 import { toast } from "sonner";
+import { IconBellRing, IconBookmark, IconEdit, IconPlus, IconSpinner } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { api } from "@/lib/api-client";
@@ -20,7 +20,7 @@ export function VisitReminder({ last }: { last: PastConsultation | undefined }) 
 	if (!reminder) return null;
 	return (
 		<div className="flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-amber-900">
-			<LuBellRing className="mt-0.5 size-4 shrink-0" />
+			<IconBellRing className="mt-0.5 size-4 shrink-0" />
 			<div className="min-w-0 text-sm">
 				<p className="font-semibold">{t("reminder", { date: fmt.date(last.date) })}</p>
 				<p className="whitespace-pre-line">{reminder}</p>
@@ -73,7 +73,7 @@ export function PermanentNote({ patient }: { patient: PatientFile }) {
 			{editing ? (
 				<div className="bg-card grid gap-2 rounded-xl border p-3">
 					<label htmlFor="permanent-note" className="flex items-center gap-1.5 text-xs font-medium">
-						<LuPin className="size-3.5" /> {t("permanent")}
+						<IconBookmark className="size-3.5" /> {t("permanent")}
 					</label>
 					<Textarea
 						id="permanent-note"
@@ -96,19 +96,19 @@ export function PermanentNote({ patient }: { patient: PatientFile }) {
 							{t("cancel")}
 						</Button>
 						<Button size="sm" onClick={save} disabled={saving}>
-							{saving && <LuLoader className="animate-spin" />} {t("save")}
+							{saving && <IconSpinner className="animate-spin" />} {t("save")}
 						</Button>
 					</div>
 				</div>
 			) : permanent ? (
 				<div className="flex items-start gap-3 rounded-xl border border-sky-200 bg-sky-50 px-4 py-3 text-sky-800">
-					<LuPin className="mt-0.5 size-4 shrink-0" />
+					<IconBookmark className="mt-0.5 size-4 shrink-0" />
 					<div className="min-w-0 flex-1 text-sm">
 						<p className="font-semibold">{t("permanent")}</p>
 						<p className="whitespace-pre-line">{permanent}</p>
 					</div>
 					<Button size="icon-sm" variant="ghost" aria-label={t("edit")} onClick={() => setEditing(true)}>
-						<LuPencil />
+						<IconEdit />
 					</Button>
 				</div>
 			) : (
@@ -117,7 +117,7 @@ export function PermanentNote({ patient }: { patient: PatientFile }) {
 					onClick={() => setEditing(true)}
 					className="text-muted-foreground hover:text-foreground flex w-fit items-center gap-1.5 text-xs"
 				>
-					<LuPlus className="size-3.5" /> {t("add")}
+					<IconPlus className="size-3.5" /> {t("add")}
 				</button>
 			)}
 		</div>

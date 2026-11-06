@@ -175,7 +175,9 @@
       "closure_create": "a enregistré une absence",
       "closure_delete": "a supprimé une absence",
       "patient_vitals": "a enregistré les constantes de",
-      "patient_vitals_delete": "a supprimé une mesure des constantes de"
+      "patient_vitals_delete": "a supprimé une mesure des constantes de",
+      "document_upload": "a ajouté un document au dossier de",
+      "document_delete": "a supprimé un document du dossier de"
     }
   },
   "cabinet": {

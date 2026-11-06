@@ -1,10 +1,10 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { LuCheck, LuCopy, LuExternalLink, LuFileText, LuLoader, LuMail } from "react-icons/lu";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
+import { IconCheck, IconCopy, IconDocument, IconExternal, IconMail, IconSpinner } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { api } from "@/lib/api-client";
@@ -75,7 +75,7 @@ function CopyButton({ value, label }: { value: string; label: string }) {
 					.catch(() => toast.error(t("copyError")))
 			}
 		>
-			{copied ? <LuCheck /> : <LuCopy />}
+			{copied ? <IconCheck /> : <IconCopy />}
 		</Button>
 	);
 }
@@ -174,7 +174,7 @@ function OfferPicker({
 					</Button>
 				)}
 				<Button className="flex-1" onClick={submit} disabled={saving || !planKey}>
-					{saving && <LuLoader className="animate-spin" />} {t("requestQuote")}
+					{saving && <IconSpinner className="animate-spin" />} {t("requestQuote")}
 				</Button>
 			</div>
 		</div>
@@ -221,7 +221,7 @@ export function SubscriptionDialog({ open, onOpenChange }: { open: boolean; onOp
 
 				{!s && !error && (
 					<p className="text-muted-foreground flex items-center gap-2 py-6 text-sm">
-						<LuLoader className="size-4 animate-spin" /> {t("loading")}
+						<IconSpinner className="size-4 animate-spin" /> {t("loading")}
 					</p>
 				)}
 				{error && <p className="text-destructive py-4 text-sm">{error}</p>}
@@ -285,7 +285,7 @@ export function SubscriptionDialog({ open, onOpenChange }: { open: boolean; onOp
 								<div className="mt-3 flex flex-wrap gap-2">
 									<Button asChild size="sm" variant="outline">
 										<a href={`/devis/${quote.id}`} target="_blank" rel="noreferrer">
-											<LuExternalLink className="rtl:-scale-x-100" /> {t("seeQuote")}
+											<IconExternal className="rtl:-scale-x-100" /> {t("seeQuote")}
 										</a>
 									</Button>
 									<Button size="sm" variant="ghost" onClick={() => setChanging(true)}>
@@ -387,7 +387,7 @@ export function SubscriptionDialog({ open, onOpenChange }: { open: boolean; onOp
 												rel="noreferrer"
 												className="hover:bg-muted/60 flex items-center gap-2 px-3 py-2"
 											>
-												<LuFileText className="text-muted-foreground size-4" />
+												<IconDocument className="text-muted-foreground size-4" />
 												<span className="flex-1 font-mono text-xs">{i.number}</span>
 												<span className="text-muted-foreground text-xs">{format.date(i.issuedAt)}</span>
 												<span className="font-medium tabular-nums">{format.mad(i.amount)}</span>
@@ -401,7 +401,7 @@ export function SubscriptionDialog({ open, onOpenChange }: { open: boolean; onOp
 						{!s.canRequestQuote && (
 							<Button asChild variant="outline" className="w-full">
 								<a href="mailto:support@cabinova.ma?subject=Changer%20d%E2%80%99offre">
-									<LuMail /> {t("contact")}
+									<IconMail /> {t("contact")}
 								</a>
 							</Button>
 						)}

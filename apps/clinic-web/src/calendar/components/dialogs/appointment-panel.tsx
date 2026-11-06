@@ -4,26 +4,6 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { differenceInMinutes, parseISO } from "date-fns";
 import { useTranslations } from "next-intl";
 import { useEffect, useState, useSyncExternalStore } from "react";
-import {
-  LuArmchair,
-  LuCalendar,
-  LuChevronDown,
-  LuClock,
-  LuExternalLink,
-  LuFileText,
-  LuFolderOpen,
-  LuHistory,
-  LuLoader,
-  LuLogOut,
-  LuPencil,
-  LuPhone,
-  LuReceipt,
-  LuShieldCheck,
-  LuStethoscope,
-  LuText,
-  LuTriangleAlert,
-  LuX,
-} from "react-icons/lu";
 import Link from "next/link";
 import { toast } from "sonner";
 
@@ -34,6 +14,25 @@ import { useCalendar } from "@/calendar/contexts/calendar-context";
 import type { IEvent } from "@/calendar/interfaces";
 import { useFmt } from "@/calendar/locale";
 import { AppointmentStatusBadge } from "@/components/appointment-status-badge";
+import {
+  IconCalendar,
+  IconCall,
+  IconChevronDown,
+  IconClock,
+  IconClose,
+  IconDocument,
+  IconEdit,
+  IconExternal,
+  IconFolderOpen,
+  IconHistory,
+  IconLogout,
+  IconReceipt,
+  IconShieldCheck,
+  IconSpinner,
+  IconStethoscope,
+  IconText,
+  IconWarning,
+} from "@/components/icons";
 import { NoShowBadge } from "@/components/no-show-badge";
 import { useCurrentUser } from "@/components/current-user";
 import { Button } from "@/components/ui/button";
@@ -65,13 +64,16 @@ import {
 import { useFormat } from "@/lib/use-format";
 import { useWaitingActions } from "@/lib/use-waiting-actions";
 
-/** The usual next step: the desk checks patients in, the doctor calls them in and finishes. */
-const NEXT_STEP: Partial<Record<AppointmentStatus, { status: AppointmentStatus; label: "arrived" | "openFile" | "finish" }>> = {
+/**
+ * The usual next step: the desk checks patients in, the doctor calls them
+ * in, then goes back to the dossier, the one place a visit is finished.
+ */
+const NEXT_STEP: Partial<Record<AppointmentStatus, { status: AppointmentStatus; label: "arrived" | "openFile" }>> = {
   scheduled: { status: "arrived", label: "arrived" },
   confirmed: { status: "arrived", label: "arrived" },
   // The doctor takes the patient by opening their file.
   arrived: { status: "in_consultation", label: "openFile" },
-  in_consultation: { status: "completed", label: "finish" },
+  in_consultation: { status: "in_consultation", label: "openFile" },
 };
 /** The doctor's statuses: the front desk neither sets them nor changes them. */
 const DOCTOR_STATUSES: AppointmentStatus[] = ["in_consultation", "completed"];
@@ -202,7 +204,7 @@ function PanelContent({ event, onClose }: { event: IEvent; onClose: () => void }
             <p className="text-muted-foreground text-sm tabular-nums">{formatFileNumber(event.patient.fileNumber)}</p>
           </div>
           <Button size="icon-sm" variant="ghost" aria-label={t("common.close")} onClick={onClose}>
-            <LuX />
+            <IconClose />
           </Button>
         </div>
         <div className="flex items-center justify-between gap-2">
@@ -211,24 +213,24 @@ function PanelContent({ event, onClose }: { event: IEvent; onClose: () => void }
             href={patientHref(patientId)}
             className="text-muted-foreground hover:text-foreground flex items-center gap-1 text-xs"
           >
-            {panel("openFile")} <LuExternalLink className="size-3 rtl:-scale-x-100" />
+            {panel("openFile")} <IconExternal className="size-3 rtl:-scale-x-100" />
           </Link>
         </div>
       </header>
 
       <div className="grid flex-1 content-start gap-5 overflow-y-auto p-4 text-sm">
         <section className="grid gap-3" aria-label={panel("appointment")}>
-          <Row icon={LuCalendar}>
+          <Row icon={IconCalendar}>
             <span className="inline-block first-letter:uppercase">{fmt(start, "EEEE d MMMM yyyy")}</span>
           </Row>
-          <Row icon={LuClock}>
+          <Row icon={IconClock}>
             {fmt(start, "HH:mm")} – {fmt(end, "HH:mm")}
             <span className="text-muted-foreground"> · {panel("minutes", { count: differenceInMinutes(end, start) })}</span>
           </Row>
-          <Row icon={LuStethoscope}>{event.user.name}</Row>
-          {event.reason && <Row icon={LuText}>{event.reason}</Row>}
+          <Row icon={IconStethoscope}>{event.user.name}</Row>
+          {event.reason && <Row icon={IconText}>{event.reason}</Row>}
           {event.notes && (
-            <Row icon={LuFileText}>
+            <Row icon={IconDocument}>
               <span className="whitespace-pre-line">{event.notes}</span>
             </Row>
           )}
@@ -237,7 +239,7 @@ function PanelContent({ event, onClose }: { event: IEvent; onClose: () => void }
         <section className="grid gap-3 border-t pt-4" aria-label={panel("patient")}>
           {allergies && (
             <p className="flex items-start gap-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-red-900">
-              <LuTriangleAlert className="mt-0.5 size-4 shrink-0" />
+              <IconWarning className="mt-0.5 size-4 shrink-0" />
               <span className="min-w-0">
                 <span className="font-semibold">{panel("allergies")} </span>
                 {allergies}
@@ -252,15 +254,15 @@ function PanelContent({ event, onClose }: { event: IEvent; onClose: () => void }
             </p>
           )}
           {event.patient.phone && (
-            <Row icon={LuPhone}>
+            <Row icon={IconCall}>
               <a href={`tel:${event.patient.phone}`} className="tabular-nums hover:underline">
                 {formatPhone(event.patient.phone)}
               </a>
             </Row>
           )}
-          {patient && <Row icon={LuShieldCheck}>{t(`common.coverage.${patient.coverage}`)}</Row>}
+          {patient && <Row icon={IconShieldCheck}>{t(`common.coverage.${patient.coverage}`)}</Row>}
           {history && (
-            <Row icon={LuHistory}>
+            <Row icon={IconHistory}>
               {lastVisit ? panel("lastVisit", { date: format.date(lastVisit.startsAt) }) : panel("firstVisit")}
             </Row>
           )}
@@ -276,9 +278,9 @@ function PanelContent({ event, onClose }: { event: IEvent; onClose: () => void }
               onClick={() => (next.status === "in_consultation" ? waiting.openFile(event) : setStatus(next.status))}
             >
               {busy || waiting.busy === event.id ? (
-                <LuLoader className="size-4 animate-spin" />
+                <IconSpinner className="size-4 animate-spin" />
               ) : (
-                next.status === "in_consultation" && <LuFolderOpen className="size-4" />
+                next.status === "in_consultation" && <IconFolderOpen className="size-4" />
               )}
               {panel(next.label)}
             </Button>
@@ -286,7 +288,7 @@ function PanelContent({ event, onClose }: { event: IEvent; onClose: () => void }
           {!doctor && event.status === "arrived" && (
             <>
               <p className="text-muted-foreground flex items-center justify-center gap-1.5 text-xs">
-                <LuArmchair className="size-3.5" /> {panel("waitingDoctor")}
+                <IconClock className="size-3.5" /> {panel("waitingDoctor")}
               </p>
               <Button
                 type="button"
@@ -294,14 +296,14 @@ function PanelContent({ event, onClose }: { event: IEvent; onClose: () => void }
                 disabled={busy || waiting.busy === event.id}
                 onClick={() => waiting.left(event)}
               >
-                <LuLogOut className="size-4 rtl:-scale-x-100" />
+                <IconLogout className="size-4 rtl:-scale-x-100" />
                 {t("agenda.waiting.left")}
               </Button>
             </>
           )}
           {lockedForDesk && (
             <p className="text-muted-foreground flex items-center justify-center gap-1.5 text-xs">
-              <LuStethoscope className="size-3.5" /> {panel("doctorStep")}
+              <IconStethoscope className="size-3.5" /> {panel("doctorStep")}
             </p>
           )}
           <div className="flex gap-2">
@@ -309,7 +311,7 @@ function PanelContent({ event, onClose }: { event: IEvent; onClose: () => void }
               <DropdownMenuTrigger asChild>
                 <Button type="button" variant="outline" size="sm" className="flex-1" disabled={busy || lockedForDesk}>
                   {panel("status")}
-                  <LuChevronDown className="size-4" />
+                  <IconChevronDown className="size-4" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="start">
@@ -330,13 +332,13 @@ function PanelContent({ event, onClose }: { event: IEvent; onClose: () => void }
             </DropdownMenu>
             {event.status !== "cancelled" && (
               <Button type="button" variant="outline" size="sm" className="flex-1" disabled={busy} onClick={() => setCheckout(true)}>
-                <LuReceipt className="size-4" />
+                <IconReceipt className="size-4" />
                 {panel("collect")}
               </Button>
             )}
             {event.status !== "completed" && (
               <Button type="button" variant="outline" size="sm" className="flex-1" disabled={busy} onClick={() => openEdit(event)}>
-                <LuPencil className="size-4" />
+                <IconEdit className="size-4" />
                 {panel("edit")}
               </Button>
             )}

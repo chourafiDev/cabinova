@@ -56,6 +56,17 @@ jobs:
           ALLOW_ADDR_REGEX: '.*'
         ports:
           - 55433:80
+      # Stands in for Cloudflare R2 (patients' documents).
+      s3:
+        image: adobe/s3mock:4.9.1
+        env:
+          COM_ADOBE_TESTING_S3MOCK_STORE_INITIAL_BUCKETS: cabinova-test
+        ports:
+          - 59090:9090
+        options: >-
+          --health-cmd "wget -q -O /dev/null http://localhost:9090/cabinova-test"
+          --health-interval 2s
+          --health-retries 30
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4

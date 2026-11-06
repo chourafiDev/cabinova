@@ -5,16 +5,9 @@ import { addMinutes, format, roundToNearestMinutes } from "date-fns";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useMemo, useState } from "react";
-import {
-	LuCalendarClock,
-	LuCheck,
-	LuLoader,
-	LuSearch,
-	LuVideo,
-	LuZap,
-} from "react-icons/lu";
 import { toast } from "sonner";
 import { GoogleMark } from "@/app/(clinic)/settings/integrations/_components/google-card";
+import { IconCalendarClock, IconCheck, IconFlash, IconSearch, IconSpinner, IconVideo } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -202,7 +195,7 @@ function MeetingForm({ onDone }: { onDone: () => void }) {
 		<SheetHeader className="border-b p-5 pe-12">
 			<SheetTitle className="flex items-center gap-2">
 				<span className="bg-primary/10 text-primary flex size-8 items-center justify-center rounded-lg">
-					<LuVideo className="size-4" />
+					<IconVideo className="size-4" />
 				</span>
 				{t("title")}
 			</SheetTitle>
@@ -278,7 +271,7 @@ function MeetingForm({ onDone }: { onDone: () => void }) {
 													: "hover:bg-muted",
 											)}
 										>
-											{all && <LuCheck className="size-3" />}
+											{all && <IconCheck className="size-3" />}
 											{t(`groups.${g.key}`)} · {g.people.length}
 										</button>
 									);
@@ -286,7 +279,7 @@ function MeetingForm({ onDone }: { onDone: () => void }) {
 							</div>
 							{list.length >= SEARCH_FROM && (
 								<div className="relative">
-									<LuSearch className="text-muted-foreground absolute start-2.5 top-1/2 size-4 -translate-y-1/2" />
+									<IconSearch className="text-muted-foreground absolute start-2.5 top-1/2 size-4 -translate-y-1/2" />
 									<Input
 										type="search"
 										value={search}
@@ -354,7 +347,7 @@ function MeetingForm({ onDone }: { onDone: () => void }) {
 						className="grid gap-2 sm:grid-cols-2"
 					>
 						{(["now", "later"] as const).map((w) => {
-							const Icon = w === "now" ? LuZap : LuCalendarClock;
+							const Icon = w === "now" ? IconFlash : IconCalendarClock;
 							const on = when === w;
 							return (
 								<button
@@ -490,11 +483,11 @@ function MeetingForm({ onDone }: { onDone: () => void }) {
 					</Button>
 					<Button type="submit" disabled={saving || list.length === 0}>
 						{saving ? (
-							<LuLoader className="animate-spin" />
+							<IconSpinner className="animate-spin" />
 						) : when === "now" ? (
-							<LuVideo />
+							<IconVideo />
 						) : (
-							<LuCalendarClock />
+							<IconCalendarClock />
 						)}
 						{when === "now" ? t("startNow") : t("plan")}
 					</Button>
@@ -526,7 +519,7 @@ export function ConnectGoogleButton() {
 				}
 			}}
 		>
-			{pending ? <LuLoader className="animate-spin" /> : <GoogleMark />}
+			{pending ? <IconSpinner className="animate-spin" /> : <GoogleMark />}
 			{t("google.connect")}
 		</Button>
 	);

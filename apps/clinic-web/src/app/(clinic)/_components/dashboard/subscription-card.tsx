@@ -1,5 +1,5 @@
 import { useTranslations } from "next-intl";
-import { LuSparkles } from "react-icons/lu";
+import { IconSparkles } from "@/components/icons";
 import type { ClinicSession } from "@/lib/session";
 import { useFormat } from "@/lib/use-format";
 import { cn } from "@/lib/utils";
@@ -66,7 +66,7 @@ export function SubscriptionCard({
 		<ChartCard eyebrow={t("eyebrow")} title={s.plan ? t("offer", { plan: s.plan }) : t("noOffer")} className="h-full">
 			<div className="grid gap-4">
 				<p className="flex items-start gap-2 rounded-lg bg-muted px-3 py-2 text-xs">
-					<LuSparkles className="mt-0.5 size-3.5 shrink-0 text-primary" />
+					<IconSparkles className="mt-0.5 size-3.5 shrink-0 text-primary" />
 					<span>
 						<span className="font-medium">{s.status ? t(s.status) : t("noSubscription")}</span>
 						{s.status === "trialing" && s.trialEndsAt && (

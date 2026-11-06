@@ -1,10 +1,10 @@
 import { useFmt } from "@/calendar/locale";
 import { useEffect, useState } from "react";
-import { LuCalendar, LuClock, LuUser } from "react-icons/lu";
 import { parseISO, areIntervalsOverlapping } from "date-fns";
 
 import { useCalendar } from "@/calendar/contexts/calendar-context";
 
+import { IconCalendar, IconClock, IconUser } from "@/components/icons";
 import { Calendar } from "@/components/ui/calendar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
@@ -163,18 +163,18 @@ export function CalendarDayView({ singleDayEvents, multiDayEvents }: IProps) {
 
                       {user && (
                         <div className="flex items-center gap-1.5 text-muted-foreground">
-                          <LuUser className="size-3.5" />
+                          <IconUser className="size-3.5" />
                           <span className="text-sm">{user.name}</span>
                         </div>
                       )}
 
                       <div className="flex items-center gap-1.5 text-muted-foreground">
-                        <LuCalendar className="size-3.5" />
+                        <IconCalendar className="size-3.5" />
                         <span className="text-sm">{fmt(new Date(), "d MMM yyyy")}</span>
                       </div>
 
                       <div className="flex items-center gap-1.5 text-muted-foreground">
-                        <LuClock className="size-3.5" />
+                        <IconClock className="size-3.5" />
                         <span className="text-sm">
                           {fmt(parseISO(event.startDate), "HH:mm")} - {fmt(parseISO(event.endDate), "HH:mm")}
                         </span>

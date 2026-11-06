@@ -1,9 +1,9 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { LuFlag } from "react-icons/lu";
 import { useCalendar } from "@/calendar/contexts/calendar-context";
 import { holidayOf } from "@/calendar/helpers";
+import { IconFlag } from "@/components/icons";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { KIND_ICONS } from "@/lib/closures";
 import { cn } from "@/lib/utils";
@@ -24,7 +24,7 @@ export function HolidayLabel({ date, className }: { date: Date; className?: stri
 				className,
 			)}
 		>
-			<LuFlag className="size-3 shrink-0" />
+			<IconFlag className="size-3 shrink-0" />
 			<span className="truncate">{name}</span>
 		</span>
 	);

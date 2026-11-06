@@ -1,8 +1,8 @@
-import { moroccoDay } from '@cabinova/morocco-time';
 import type { INestApplication } from '@nestjs/common';
 import { type Agent, createApp, signInAdmin } from './app.js';
 import {
   addStaff,
+  bookToday,
   captureInvitations,
   createClinicApp,
   onCabinet,
@@ -13,8 +13,6 @@ import {
 
 const SUB = 'caisse-atlas';
 const EMAIL = 'caisse@e2e.test';
-/** Today in Morocco, at a given hour (UTC+0). */
-const todayAt = (time: string) => `${moroccoDay()}T${time}:00+00:00`;
 
 /**
  * Encaissements: price list, a visit checked out in two payments, receipt,
@@ -32,6 +30,7 @@ describe('clinic: payments', () => {
   let ecg: { id: string; name: string; price: number };
   let cardPaymentId: string;
   let chargeId: string;
+  let tenant: { agent: Agent; tenantId: string };
 
   const cab = (agent: Agent = secretary) => onCabinet(clinic, SUB, agent);
   const items = () => [
@@ -49,6 +48,7 @@ describe('clinic: payments', () => {
     const adminAgent = await signInAdmin(admin);
     const invitations = captureInvitations(admin);
     const tenantId = await provisionCabinet(adminAgent, SUB, EMAIL);
+    tenant = { agent: adminAgent, tenantId };
     clinic = await createClinicApp();
     owner = await signInDoctor(clinic, SUB, invitations.get(EMAIL)!);
     await openEveryDay(clinic, SUB, owner);
@@ -63,16 +63,18 @@ describe('clinic: payments', () => {
       .send({ firstName: 'Omar', lastName: 'Alaoui', sex: 'male' })
       .expect(201);
     patientId = patient.id;
-    const { body: appointment } = await cab(owner)
-      .post('/appointments')
-      .send({
+    const appointment = await bookToday(
+      clinic,
+      SUB,
+      owner,
+      { agent: adminAgent, tenantId },
+      {
         patientId,
         practitionerId: me.user.id,
-        startsAt: todayAt('10:00'),
-        endsAt: todayAt('10:30'),
-        reason: 'Consultation',
-      })
-      .expect(201);
+        from: '10:00',
+        to: '10:30',
+      },
+    );
     appointmentId = appointment.id;
   });
   afterAll(async () => {
@@ -171,7 +173,11 @@ describe('clinic: payments', () => {
   it('abbreviates acts; deletes one never charged, archives one that was', async () => {
     const { body: edited } = await cab(owner)
       .put(`/acts/${consultation.id}`)
-      .send({ name: consultation.name, abbreviation: ' CS ', price: consultation.price })
+      .send({
+        name: consultation.name,
+        abbreviation: ' CS ',
+        price: consultation.price,
+      })
       .expect(200);
     expect(edited.abbreviation).toBe('CS');
     // The agenda shows the act's abbreviation (the appointment keeps its name).
@@ -179,7 +185,9 @@ describe('clinic: payments', () => {
       .get('/appointments')
       .query({ patientId })
       .expect(200);
-    expect(list.find((a: { id: string }) => a.id === appointmentId)).toMatchObject({
+    expect(
+      list.find((a: { id: string }) => a.id === appointmentId),
+    ).toMatchObject({
       reason: 'Consultation',
       reasonShort: 'CS',
     });
@@ -197,7 +205,10 @@ describe('clinic: payments', () => {
     const { body: kept } = await cab(owner)
       .delete(`/acts/${ecg.id}`)
       .expect(200);
-    expect(kept).toMatchObject({ deleted: false, act: { id: ecg.id, active: false } });
+    expect(kept).toMatchObject({
+      deleted: false,
+      act: { id: ecg.id, active: false },
+    });
     await cab(owner).post(`/acts/${ecg.id}/restore`).expect(200);
     await cab(owner)
       .delete('/acts/00000000-0000-4000-8000-000000000000')
@@ -300,5 +311,105 @@ describe('clinic: payments', () => {
         0,
       ),
     ).toBe(20000);
+  });
+
+  it('lists the finished visit with its account, for Patients vus', async () => {
+    const { body: account } = await cab()
+      .get(`/appointments/${appointmentId}/account`)
+      .expect(200);
+    await cab(owner)
+      .post(`/appointments/${appointmentId}/status`)
+      .send({ status: 'arrived' })
+      .expect(200);
+    await cab(owner)
+      .post(`/appointments/${appointmentId}/status`)
+      .send({ status: 'completed' })
+      .expect(200);
+    const { body: list } = await cab()
+      .get('/appointments')
+      .query({ patientId })
+      .expect(200);
+    const visit = list.find((a: { id: string }) => a.id === appointmentId);
+    expect(visit.status).toBe('completed');
+    expect(Date.now() - new Date(visit.completedAt).getTime()).toBeLessThan(
+      60_000,
+    );
+    expect(visit.charge).toEqual({ total: account.total, paid: account.paid });
+
+    // Back to "in consultation" (a slip): no longer finished.
+    await cab(owner)
+      .post(`/appointments/${appointmentId}/status`)
+      .send({ status: 'in_consultation' })
+      .expect(200);
+    const { body: again } = await cab()
+      .get('/appointments')
+      .query({ patientId })
+      .expect(200);
+    expect(
+      again.find((a: { id: string }) => a.id === appointmentId).completedAt,
+    ).toBeNull();
+  });
+
+  it('takes the doctor’s remboursement off what the patient pays at the desk', async () => {
+    const { body: me } = await cab(owner).get('/auth/me').expect(200);
+    const { body: patient } = await cab(owner)
+      .post('/patients')
+      .send({ firstName: 'Salma', lastName: 'Tazi', sex: 'female' })
+      .expect(201);
+    const visit = await bookToday(clinic, SUB, owner, tenant, {
+      patientId: patient.id,
+      practitionerId: me.user.id,
+      from: '15:00',
+      to: '15:30',
+    });
+    const acts = consultation.price + ecg.price;
+
+    // The doctor saves the acts and a remboursement, no payment.
+    const { body: saved } = await cab(owner)
+      .post(`/appointments/${visit.id}/checkout`)
+      .send({ items: items(), discount: 10000 })
+      .expect(200);
+    expect(saved).toMatchObject({
+      subtotal: acts,
+      discount: 10000,
+      total: acts - 10000,
+      paid: 0,
+      balance: acts - 10000,
+      paymentId: null,
+    });
+
+    // The desk can't change it; re-saving the acts keeps it.
+    const { body: refused } = await cab()
+      .post(`/appointments/${visit.id}/checkout`)
+      .send({ items: items(), discount: 0 })
+      .expect(403);
+    expect(refused.code).toBe('MEDICAL_ONLY');
+    const { body: kept } = await cab()
+      .post(`/appointments/${visit.id}/checkout`)
+      .send({ items: items() })
+      .expect(200);
+    expect(kept.discount).toBe(10000);
+    const { body: tooHigh } = await cab(owner)
+      .post(`/appointments/${visit.id}/checkout`)
+      .send({ items: items(), discount: acts + 1 })
+      .expect(400);
+    expect(tooHigh.code).toBe('DISCOUNT_TOO_HIGH');
+
+    // The patient's file shows what the desk is to collect.
+    const { body: account } = await cab()
+      .get(`/patients/${patient.id}/account`)
+      .expect(200);
+    expect(account.visits[0]).toMatchObject({
+      subtotal: acts,
+      discount: 10000,
+      total: acts - 10000,
+      balance: acts - 10000,
+    });
+    // Fewer acts than the remboursement: it shrinks to the acts' price.
+    const { body: shrunk } = await cab()
+      .post(`/appointments/${visit.id}/checkout`)
+      .send({ items: [{ label: 'Certificat', unitPrice: 5000, quantity: 1 }] })
+      .expect(200);
+    expect(shrunk).toMatchObject({ subtotal: 5000, discount: 5000, total: 0 });
   });
 });

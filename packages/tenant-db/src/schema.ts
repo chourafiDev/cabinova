@@ -397,6 +397,8 @@ export const appointments = pgTable(
     consultationStartedAt: timestamp('consultation_started_at', {
       withTimezone: true,
     }),
+    /** When the doctor finished the visit ("Patients vus", latest first). */
+    completedAt: timestamp('completed_at', { withTimezone: true }),
     createdBy: uuid('created_by').references(() => users.id, {
       onDelete: 'set null',
     }),
@@ -621,6 +623,41 @@ export const certificateModels = pgTable(
   ],
 );
 
+/** What a patient's document is, to find it again in the list. */
+export const documentCategory = pgEnum('document_category', [
+  'lab',
+  'imaging',
+  'prescription',
+  'report',
+  'administrative',
+  'other',
+]);
+
+/**
+ * A file brought by the patient (analyses, radio, old ordonnance, mutuelle
+ * papers…), scanned or photographed at the reception. The file itself is in
+ * the platform's object storage under `storage_key`; this is what we know of it.
+ */
+export const patientDocuments = pgTable(
+  'patient_documents',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    patientId: uuid('patient_id')
+      .notNull()
+      .references(() => patients.id, { onDelete: 'restrict' }),
+    category: documentCategory('category').notNull().default('other'),
+    /** The file's name as uploaded, shown and given back on download. */
+    name: text('name').notNull(),
+    contentType: text('content_type').notNull(),
+    /** In bytes. */
+    size: integer('size').notNull(),
+    storageKey: text('storage_key').notNull().unique(),
+    uploadedBy: uuid('uploaded_by').references(() => users.id, { onDelete: 'set null' }),
+    ...timestamps,
+  },
+  (t) => [index('patient_documents_patient_idx').on(t.patientId)],
+);
+
 // ── Encaissements ─────────────────────────────────────────────────────────
 // Amounts are integers in centimes of MAD, like the platform's invoices.
 
@@ -665,7 +702,13 @@ export const charges = pgTable(
     practitionerId: uuid('practitioner_id')
       .notNull()
       .references(() => users.id, { onDelete: 'restrict' }),
+    /** What the patient owes: the acts, less the remboursement. */
     total: integer('total').notNull(),
+    /**
+     * Remboursement: a reduction the doctor grants on the acts (never
+     * received, so never revenue). The acts' sum is total + discount.
+     */
+    discount: integer('discount').notNull().default(0),
     createdBy: uuid('created_by').references(() => users.id, {
       onDelete: 'set null',
     }),
@@ -673,6 +716,7 @@ export const charges = pgTable(
   },
   (t) => [
     check('charges_total_positive', sql`${t.total} >= 0`),
+    check('charges_discount_positive', sql`${t.discount} >= 0`),
     index('charges_patient_idx').on(t.patientId),
     index('charges_space_idx').on(t.spaceId),
   ],

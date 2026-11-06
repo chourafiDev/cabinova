@@ -168,7 +168,16 @@
     "newActAbbreviation": "الاختصار",
     "newActHint": "تُحفظ في الإعدادات › التعريفات وتُضاف إلى الزيارة.",
     "cancelNewAct": "إلغاء",
-    "addNewAct": "إضافة"
+    "addNewAct": "إضافة",
+    "discount": "استرجاع",
+    "discountHint": "يُخصم مما يؤديه المريض في الاستقبال.",
+    "discountInvalid": "المبلغ المسترجع يتجاوز مبلغ الإجراءات ({amount}).",
+    "actsTotal": "الإجراءات",
+    "patientPays": "على المريض أداؤه",
+    "save": "حفظ",
+    "savedForDesk": "تم الحفظ: {amount} للاستخلاص في الاستقبال",
+    "deskWillCollect": "{amount} للاستخلاص في الاستقبال",
+    "priceTitle": "ثمن الفحص · {name}"
   },
   "movements": {
     "payments": "المدفوعات",

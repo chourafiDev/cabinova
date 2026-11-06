@@ -190,4 +190,70 @@ describe('clinic: patients', () => {
       .get('/patients')
       .expect(401);
   });
+
+  it('shows a same-name file and creates a homonym only once confirmed', async () => {
+    // Accents, case, spaces and the order of the names don't hide it.
+    const { body: first } = await atlas()
+      .post('/patients')
+      .send({ firstName: 'Youssef', lastName: 'El Idrissi', sex: 'male' })
+      .expect(201);
+    const { body: found } = await atlas()
+      .get('/patients/homonyms?firstName=youssef&lastName=EL%20%20IDRISSI%20')
+      .expect(200);
+    expect(found).toEqual([
+      expect.objectContaining({ id: first.id, lastName: 'El Idrissi' }),
+    ]);
+    const { body: swapped } = await atlas()
+      .get('/patients/homonyms?firstName=El%20Idrissi&lastName=Youssef')
+      .expect(200);
+    expect(swapped).toHaveLength(1);
+
+    const twin = { firstName: 'Youssef ', lastName: 'Él Idrissi', sex: 'male' };
+    const { body: refused } = await atlas()
+      .post('/patients')
+      .send(twin)
+      .expect(409);
+    expect(refused.code).toBe('PATIENT_HOMONYM');
+    expect(refused.patients).toEqual([
+      expect.objectContaining({ id: first.id }),
+    ]);
+
+    const { body: homonym } = await atlas()
+      .post('/patients')
+      .send({ ...twin, allowHomonym: true })
+      .expect(201);
+    expect(homonym.fileNumber).toBe(first.fileNumber + 1);
+
+    // Editing a file keeps its own name without asking; renaming onto another one asks.
+    await atlas()
+      .put(`/patients/${homonym.id}`)
+      .send({ ...twin, phone: '0611223344' })
+      .expect(200);
+    const { body: own } = await atlas()
+      .get(
+        `/patients/homonyms?firstName=Youssef&lastName=El%20Idrissi&exceptId=${homonym.id}`,
+      )
+      .expect(200);
+    expect(own.map((p: { id: string }) => p.id)).toEqual([first.id]);
+    const { body: renamed } = await atlas()
+      .put(`/patients/${fatimaId}`)
+      .send({
+        ...FATIMA,
+        firstName: 'Youssef',
+        lastName: 'El Idrissi',
+        sex: 'male',
+      })
+      .expect(409);
+    expect(renamed.patients).toHaveLength(2);
+
+    // Another cabinet's Youssef is no homonym.
+    const { body: elsewhere } = await onCabinet(
+      clinic,
+      'patients-voisin',
+      neighbour,
+    )
+      .get('/patients/homonyms?firstName=Youssef&lastName=El%20Idrissi')
+      .expect(200);
+    expect(elsewhere).toEqual([]);
+  });
 });

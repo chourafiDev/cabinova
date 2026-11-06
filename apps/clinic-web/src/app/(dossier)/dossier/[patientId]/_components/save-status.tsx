@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { LuCircleAlert, LuCloud, LuLoader } from "react-icons/lu";
+import { IconAlertCircle, IconCloud, IconSpinner } from "@/components/icons";
 import { useFormat } from "@/lib/use-format";
 import { cn } from "@/lib/utils";
 
@@ -26,15 +26,15 @@ export function SaveStatus({ state }: { state: SaveState }) {
 		>
 			{state.status === "saving" ? (
 				<>
-					<LuLoader className="size-3.5 animate-spin" /> {t("saving")}
+					<IconSpinner className="size-3.5 animate-spin" /> {t("saving")}
 				</>
 			) : state.status === "saved" ? (
 				<>
-					<LuCloud className="size-3.5" /> {t("saved", { time: format.clock(state.at) })}
+					<IconCloud className="size-3.5" /> {t("saved", { time: format.clock(state.at) })}
 				</>
 			) : (
 				<>
-					<LuCircleAlert className="size-3.5" /> {t("error")}
+					<IconAlertCircle className="size-3.5" /> {t("error")}
 				</>
 			)}
 		</span>

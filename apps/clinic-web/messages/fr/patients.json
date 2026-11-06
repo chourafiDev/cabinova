@@ -53,7 +53,8 @@
       "appointments": "Rendez-vous",
       "payments": "Paiements",
       "medical": "Antécédents",
-      "vitals": "Constantes"
+      "vitals": "Constantes",
+      "documents": "Documents"
     },
     "knownAllergies": "allergies connues",
     "archivedOn": "Dossier archivé le {date} : consultable, mais plus modifiable. Restaurez-le pour le modifier ou prendre rendez-vous.",
@@ -91,7 +92,8 @@
     "overpaid": "trop-perçu {amount}",
     "settled": "réglé",
     "collect": "Encaisser",
-    "view": "Voir"
+    "view": "Voir",
+    "discount": "remboursement {amount}"
   },
   "archive": {
     "restored": "Dossier restauré",
@@ -172,7 +174,17 @@
     "cancel": "Annuler",
     "save": "Enregistrer",
     "createAndBook": "Créer et prendre RDV",
-    "create": "Créer le dossier"
+    "create": "Créer le dossier",
+    "homonym": {
+      "title": "{count, plural, one {Un patient porte déjà ce nom} other {# patients portent déjà ce nom}}",
+      "hint": "Vérifiez qu’il ne s’agit pas de la même personne avant de créer un nouveau dossier.",
+      "open": "Ouvrir sa fiche",
+      "pick": "Choisir ce patient",
+      "archived": "Archivé",
+      "confirm": "C’est une autre personne (homonyme) : créer un nouveau dossier",
+      "confirmEdit": "C’est une autre personne (homonyme)",
+      "required": "Ouvrez sa fiche, ou confirmez qu’il s’agit d’une autre personne."
+    }
   },
   "errors": {
     "phone": "Téléphone invalide",
@@ -245,5 +257,40 @@
       "bmi": "IMC",
       "bloodGroup": "Groupe"
     }
+  },
+  "documents": {
+    "title": "Documents du patient",
+    "dropHere": "Déposez pour classer en « {category} »",
+    "accepted": "PDF, JPEG, PNG ou WebP · 10 Mo max par fichier",
+    "categories": {
+      "lab": "Analyses",
+      "imaging": "Imagerie",
+      "prescription": "Ordonnance",
+      "report": "Compte rendu",
+      "administrative": "Administratif",
+      "other": "Autre"
+    },
+    "all": "Tous",
+    "empty": "Aucun document pour le moment.",
+    "emptyHint": "Analyses, radios, anciennes ordonnances, papiers de la mutuelle… scannés ou photographiés à l’accueil.",
+    "uploading": "Envoi…",
+    "uploaded": "{count, plural, one {Document ajouté} other {# documents ajoutés}}",
+    "uploadError": "Envoi impossible.",
+    "wrongType": "{name} : seuls les PDF et les images sont acceptés.",
+    "tooLarge": "{name} dépasse 10 Mo.",
+    "by": "par {name}",
+    "open": "Ouvrir {name}",
+    "download": "Télécharger",
+    "delete": "Supprimer",
+    "confirmDelete": "Confirmer",
+    "deleted": "Document supprimé",
+    "deleteError": "Suppression impossible.",
+    "archived": "Dossier archivé : les documents restent consultables, mais on ne peut plus en ajouter.",
+    "classifyAs": "Classer comme",
+    "dropTitle": "Glissez vos fichiers ici",
+    "choose": "Choisir des fichiers",
+    "camera": "Prendre une photo",
+    "sending": "{count, plural, one {Envoi d’un fichier…} other {Envoi de # fichiers…}}",
+    "addTitle": "Ajoutez un document"
   }
 }

@@ -91,8 +91,24 @@ export default async function ReceiptPage({ params }: PageProps<"/receipts/[id]"
 							<td colSpan={3} className="py-2 text-end text-zinc-600">
 								Total des actes
 							</td>
-							<td className="py-2 text-end">{mad(r.total)}</td>
+							<td className="py-2 text-end">{mad(r.total + r.discount)}</td>
 						</tr>
+						{r.discount > 0 && (
+							<>
+								<tr>
+									<td colSpan={3} className="py-1 text-end text-zinc-600">
+										Remboursement
+									</td>
+									<td className="py-1 text-end">− {mad(r.discount)}</td>
+								</tr>
+								<tr>
+									<td colSpan={3} className="py-1 text-end text-zinc-600">
+										Net à payer
+									</td>
+									<td className="py-1 text-end">{mad(r.total)}</td>
+								</tr>
+							</>
+						)}
 						<tr>
 							<td colSpan={3} className="py-1 text-end font-semibold">
 								Montant reçu ({METHOD_LABELS[r.method].toLowerCase()})

@@ -1,6 +1,7 @@
 {
   "groups": {
     "cabinet": "العيادة",
+    "agenda": "المواعيد",
     "management": "التسيير",
     "administration": "الإدارة"
   },
@@ -13,7 +14,10 @@
     "payments": "المداخيل",
     "reports": "الإحصائيات",
     "staff": "الفريق",
-    "settings": "الإعدادات"
+    "settings": "الإعدادات",
+    "calendar": "التقويم",
+    "waiting": "قاعة الانتظار",
+    "seen": "المرضى الذين تمت معاينتهم"
   },
   "home": "{cabinet} — لوحة التحكم",
   "titles": {

@@ -1,9 +1,9 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { LuHeartPulse, LuLoader, LuLock, LuPencil, LuTriangleAlert } from "react-icons/lu";
 import { useState } from "react";
 import { toast } from "sonner";
+import { IconEdit, IconHeartPulse, IconLock, IconSpinner, IconWarning } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import {
 	Dialog,
@@ -81,18 +81,18 @@ export function MedicalProfile({
 		<div className="grid gap-4">
 			<div className="flex items-start justify-between gap-3">
 				<p className="text-muted-foreground flex items-center gap-1.5 text-xs">
-					<LuLock className="size-3.5" /> {t("privateLine")}
+					<IconLock className="size-3.5" /> {t("privateLine")}
 				</p>
 				{!readOnly && !empty && (
 					<Button size="sm" variant="outline" onClick={edit}>
-						<LuPencil /> {t("edit")}
+						<IconEdit /> {t("edit")}
 					</Button>
 				)}
 			</div>
 
 			{empty ? (
 				<div className="flex flex-col items-center gap-3 rounded-xl border border-dashed py-10 text-center">
-					<LuHeartPulse className="text-muted-foreground size-6" />
+					<IconHeartPulse className="text-muted-foreground size-6" />
 					<div>
 						<p className="text-sm font-medium">{t("empty")}</p>
 						<p className="text-muted-foreground text-sm">{t("emptyHint")}</p>
@@ -117,14 +117,14 @@ export function MedicalProfile({
 						{filled.map((f) => {
 							const alert = "alert" in f && f.alert;
 							return (
-								<div key={f.name} className={cn("grid gap-1 px-4 py-3", alert && "bg-red-50 text-red-900")}>
+								<div key={f.name} className={cn("grid gap-1 px-4 py-3 rounded-xl", alert && "bg-red-50 text-red-900")}>
 									<dt
 										className={cn(
 											"flex items-center gap-1.5 text-xs font-medium",
 											!alert && "text-muted-foreground",
 										)}
 									>
-										{alert && <LuTriangleAlert className="size-3.5" />}
+										{alert && <IconWarning className="size-3.5" />}
 										{t(`fields.${f.name}`)}
 									</dt>
 									<dd className="text-sm whitespace-pre-line">{profile?.[f.name]}</dd>
@@ -186,7 +186,7 @@ export function MedicalProfile({
 							{t("cancel")}
 						</Button>
 						<Button onClick={save} disabled={saving}>
-							{saving && <LuLoader className="animate-spin" />} {t("save")}
+							{saving && <IconSpinner className="animate-spin" />} {t("save")}
 						</Button>
 					</DialogFooter>
 				</DialogContent>

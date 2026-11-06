@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { LuBanknote, LuCalendarCheck, LuStethoscope, LuUserPlus } from "react-icons/lu";
+import { IconCalendarCheck, IconMoney, IconStethoscope, IconUserAdd } from "@/components/icons";
 import { pageTitle } from "@/i18n/titles";
 import type { DashboardData } from "@/lib/dashboard";
 import { getFormat } from "@/lib/get-format";
@@ -68,7 +68,7 @@ export default async function DashboardPage({ searchParams }: PageProps<"/">) {
 
 			<section data-tour="kpis" className="mb-3 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
 				<KpiCard
-					icon={LuCalendarCheck}
+					icon={IconCalendarCheck}
 					title={t("kpi.appointments")}
 					value={kpis.appointmentsToday}
 					period={t("kpi.upcoming", { count: kpis.upcomingToday })}
@@ -76,7 +76,7 @@ export default async function DashboardPage({ searchParams }: PageProps<"/">) {
 					actions={[{ label: t("kpi.openAgenda"), href: "/appointments?view=day" }]}
 				/>
 				<KpiCard
-					icon={LuStethoscope}
+					icon={IconStethoscope}
 					title={t("kpi.seen")}
 					value={kpis.seenToday}
 					change={kpis.seenChange}
@@ -85,7 +85,7 @@ export default async function DashboardPage({ searchParams }: PageProps<"/">) {
 					actions={[{ label: t("kpi.openAgenda"), href: "/appointments?view=day" }]}
 				/>
 				<KpiCard
-					icon={LuUserPlus}
+					icon={IconUserAdd}
 					title={t("kpi.newPatients")}
 					value={kpis.newPatientsMonth}
 					change={kpis.newPatientsChange}
@@ -95,7 +95,7 @@ export default async function DashboardPage({ searchParams }: PageProps<"/">) {
 				/>
 				{data.cashier.received !== null ? (
 					<KpiCard
-						icon={LuBanknote}
+						icon={IconMoney}
 						title={t("kpi.received")}
 						value={format.mad(data.cashier.received)}
 						change={data.cashier.receivedChange}
@@ -105,7 +105,7 @@ export default async function DashboardPage({ searchParams }: PageProps<"/">) {
 					/>
 				) : (
 					<KpiCard
-						icon={LuBanknote}
+						icon={IconMoney}
 						title={t("kpi.toCollect")}
 						value={data.cashier.toCollect}
 						period={t("kpi.toCollectPeriod", { count: data.cashier.toCollect })}

@@ -54,6 +54,10 @@ export type Appointment = {
 	leftAt: string | null;
 	/** When the doctor took the patient (the visit's timer). */
 	consultationStartedAt: string | null;
+	/** When the doctor finished the visit. */
+	completedAt: string | null;
+	/** The visit's account (centimes), once acts were charged. */
+	charge: { total: number; paid: number } | null;
 	patient: {
 		id: string;
 		firstName: string;

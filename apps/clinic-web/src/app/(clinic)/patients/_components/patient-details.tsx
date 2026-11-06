@@ -3,7 +3,22 @@
 import Link from "next/link";
 import { differenceInMinutes } from "date-fns";
 import { useTranslations } from "next-intl";
-import { LuArchive, LuArchiveRestore, LuCalendarClock, LuCalendarPlus, LuContactRound, LuEllipsis, LuIdCard, LuMail, LuMapPin, LuPencil, LuPhone, LuShieldCheck, LuStethoscope, LuStickyNote } from "react-icons/lu";
+import {
+	IconArchive,
+	IconCalendarAdd,
+	IconCalendarClock,
+	IconCall,
+	IconContact,
+	IconEdit,
+	IconIdCard,
+	IconLocation,
+	IconMail,
+	IconMore,
+	IconNote,
+	IconRestore,
+	IconShieldCheck,
+	IconStethoscope,
+} from "@/components/icons";
 import { NoShowBadge } from "@/components/no-show-badge";
 import { useState } from "react";
 import { AppointmentStatusBadge } from "@/components/appointment-status-badge";
@@ -23,6 +38,7 @@ import { ageOf, dossierHref, formatFileNumber, formatPhone, fullName, type Patie
 import { useFormat } from "@/lib/use-format";
 import { cn } from "@/lib/utils";
 import { ArchiveDialog } from "./archive-button";
+import { DocumentsTab } from "./documents-tab";
 import { PatientBalance, PatientPayments } from "./patient-payments";
 import { VitalsTab } from "./vitals-tab";
 
@@ -95,7 +111,7 @@ export function PatientHeader({
 							href={`tel:${patient.phone}`}
 							className="hover:bg-muted inline-flex h-8 items-center gap-1.5 rounded-full border px-3 text-sm tabular-nums transition-colors"
 						>
-							<LuPhone className="text-muted-foreground size-3.5" />
+							<IconCall className="text-muted-foreground size-3.5" />
 							{formatPhone(patient.phone)}
 						</a>
 					)}
@@ -104,7 +120,7 @@ export function PatientHeader({
 							href={`mailto:${patient.email}`}
 							className="hover:bg-muted inline-flex h-8 max-w-full items-center gap-1.5 rounded-full border px-3 text-sm transition-colors"
 						>
-							<LuMail className="text-muted-foreground size-3.5 shrink-0" />
+							<IconMail className="text-muted-foreground size-3.5 shrink-0" />
 							<span className="truncate">{patient.email}</span>
 						</a>
 					)}
@@ -114,36 +130,36 @@ export function PatientHeader({
 			<div className="flex items-center gap-2">
 				{archived ? (
 					<Button variant="outline" size="sm" onClick={onArchive}>
-						<LuArchiveRestore /> {t("restore")}
+						<IconRestore /> {t("restore")}
 					</Button>
 				) : (
 					<>
 						{!withinDossier && (
 							<Button asChild size="sm">
 								<Link href={`/appointments?book=${patient.id}`}>
-									<LuCalendarPlus /> {t("book")}
+									<IconCalendarAdd /> {t("book")}
 								</Link>
 							</Button>
 						)}
 						{medical && !withinDossier && (
 							<Button asChild variant="outline" size="sm">
 								<Link href={dossierHref(patient.id)}>
-									<LuStethoscope /> {t("dossier")}
+									<IconStethoscope /> {t("dossier")}
 								</Link>
 							</Button>
 						)}
 						<Button variant="outline" size="sm" onClick={onEdit}>
-							<LuPencil /> {t("edit")}
+							<IconEdit /> {t("edit")}
 						</Button>
 						<DropdownMenu>
 							<DropdownMenuTrigger asChild>
 								<Button variant="ghost" size="icon-sm" aria-label={t("moreActions")} className="ms-auto">
-									<LuEllipsis />
+									<IconMore />
 								</Button>
 							</DropdownMenuTrigger>
 							<DropdownMenuContent align="end" className="min-w-44">
 								<DropdownMenuItem onSelect={onArchive}>
-									<LuArchive /> {t("archive")}
+									<IconArchive /> {t("archive")}
 								</DropdownMenuItem>
 							</DropdownMenuContent>
 						</DropdownMenu>
@@ -290,7 +306,7 @@ export function PatientDetails({
 			/>
 
 			<Tabs defaultValue="overview" className="min-h-0 flex-1 gap-0">
-				<div className="border-b px-5 pb-3">
+				<div className="border-b px-5 py-2">
 					<TabsList className="w-full">
 						<TabsTrigger value="overview">
 							{t("tabs.overview")}
@@ -307,6 +323,7 @@ export function PatientDetails({
 							{t("tabs.payments")}
 						</TabsTrigger>
 						<TabsTrigger value="vitals">{t("tabs.vitals")}</TabsTrigger>
+						<TabsTrigger value="documents">{t("tabs.documents")}</TabsTrigger>
 					</TabsList>
 				</div>
 
@@ -322,7 +339,7 @@ export function PatientDetails({
 
 						<section className="rounded-xl border p-4">
 							<h3 className="text-muted-foreground mb-3 flex items-center gap-2 text-xs font-medium">
-								<LuCalendarClock className="size-3.5" />
+								<IconCalendarClock className="size-3.5" />
 								{t("nextAppointment")}
 							</h3>
 							{next ? (
@@ -358,7 +375,7 @@ export function PatientDetails({
 
 						<div className="grid gap-3 sm:grid-cols-2">
 							<InfoCard
-								icon={LuIdCard}
+								icon={IconIdCard}
 								title={t("identity")}
 								onComplete={complete}
 								rows={[
@@ -367,7 +384,7 @@ export function PatientDetails({
 								]}
 							/>
 							<InfoCard
-								icon={LuMapPin}
+								icon={IconLocation}
 								title={t("address")}
 								onComplete={complete}
 								rows={[
@@ -376,7 +393,7 @@ export function PatientDetails({
 								]}
 							/>
 							<InfoCard
-								icon={LuShieldCheck}
+								icon={IconShieldCheck}
 								title={t("coverage")}
 								onComplete={complete}
 								rows={[
@@ -386,7 +403,7 @@ export function PatientDetails({
 								]}
 							/>
 							<InfoCard
-								icon={LuContactRound}
+								icon={IconContact}
 								title={t("emergency")}
 								onComplete={complete}
 								rows={[
@@ -406,7 +423,7 @@ export function PatientDetails({
 						{patient.notes && (
 							<section className="rounded-xl border p-4">
 								<h3 className="text-muted-foreground mb-2 flex items-center gap-2 text-xs font-medium">
-									<LuStickyNote className="size-3.5" />
+									<IconNote className="size-3.5" />
 									{t("note")}
 								</h3>
 								<p className="text-sm whitespace-pre-line">{patient.notes}</p>
@@ -423,12 +440,12 @@ export function PatientDetails({
 				<TabsContent value="appointments" className="min-h-0 overflow-y-auto p-5">
 					{list.length === 0 ? (
 						<div className="flex flex-col items-center gap-3 py-12 text-center">
-							<LuCalendarClock className="text-muted-foreground size-6" />
+							<IconCalendarClock className="text-muted-foreground size-6" />
 							<p className="text-muted-foreground text-sm">{t("noAppointments")}</p>
 							{!archived && !withinDossier && (
 								<Button asChild size="sm" variant="outline">
 									<Link href={`/appointments?book=${patient.id}`}>
-										<LuCalendarPlus /> {t("book")}
+										<IconCalendarAdd /> {t("book")}
 									</Link>
 								</Button>
 							)}
@@ -465,6 +482,10 @@ export function PatientDetails({
 
 				<TabsContent value="vitals" className="min-h-0 overflow-y-auto p-5">
 					<VitalsTab patientId={patient.id} archived={archived} />
+				</TabsContent>
+
+				<TabsContent value="documents" className="min-h-0 overflow-y-auto p-5">
+					<DocumentsTab patientId={patient.id} archived={archived} />
 				</TabsContent>
 			</Tabs>
 		</>

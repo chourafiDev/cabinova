@@ -1,8 +1,8 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { LuEye, LuEyeOff } from "react-icons/lu";
 import { useState } from "react";
+import { IconEye, IconEyeOff } from "@/components/icons";
 import { Input } from "@/components/ui/input";
 import { focusRing } from "@/lib/focus-ring";
 import { cn } from "@/lib/utils";
@@ -23,7 +23,7 @@ export function PasswordInput({ className, ...props }: Omit<React.ComponentProps
 					"text-muted-foreground hover:text-foreground absolute inset-y-1 end-1 flex w-9 items-center justify-center rounded-md",
 				)}
 			>
-				{visible ? <LuEyeOff className="size-4" /> : <LuEye className="size-4" />}
+				{visible ? <IconEyeOff className="size-4" /> : <IconEye className="size-4" />}
 			</button>
 		</div>
 	);

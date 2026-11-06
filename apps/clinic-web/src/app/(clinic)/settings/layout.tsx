@@ -1,5 +1,5 @@
 import { getTranslations } from "next-intl/server";
-import { HiCog6Tooth } from "react-icons/hi2";
+import { IconSettings } from "@/components/icons";
 import { getClinicState } from "@/lib/session";
 import { SETTINGS_SECTIONS } from "@/lib/settings";
 import { SettingsNav } from "./_components/settings-nav";
@@ -15,7 +15,7 @@ export default async function SettingsLayout({ children }: { children: React.Rea
 		<div className="grid gap-4">
 			<header className="flex items-center gap-3">
 				<span className="bg-primary/10 text-primary flex size-9 items-center justify-center rounded-lg">
-					<HiCog6Tooth className="size-4" />
+					<IconSettings className="size-4" />
 				</span>
 				<div>
 					<h1 className="text-lg font-semibold leading-tight">{t("title")}</h1>

@@ -18,7 +18,8 @@ export class ApiError extends Error {
 export async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
   const res = await fetch(`/api${path}`, {
     ...init,
-    headers: { "Content-Type": "application/json", ...init.headers },
+    // A file upload (FormData) gets its multipart type, boundary included, from the browser.
+    headers: init.body instanceof FormData ? init.headers : { "Content-Type": "application/json", ...init.headers },
   });
   if (!res.ok) {
     const body = await res.json().catch(() => null);

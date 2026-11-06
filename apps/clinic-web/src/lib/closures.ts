@@ -1,5 +1,4 @@
-import type { IconType } from "react-icons";
-import { LuCircleDot, LuCoffee, LuGraduationCap, LuThermometer, LuTreePalm } from "react-icons/lu";
+import { type AppIcon, IconCoffee, IconEducation, IconStatus, IconThermometer, IconVacation } from "@/components/icons";
 
 // Types and helpers of the Closures API (clinic-api/src/closures): Congés et absences.
 
@@ -9,12 +8,12 @@ export const CLOSURES_KEY = ["closures"] as const;
 export const CLOSURE_KINDS = ["vacation", "day_off", "training", "sick", "other"] as const;
 export type ClosureKind = (typeof CLOSURE_KINDS)[number];
 
-export const KIND_ICONS: Record<ClosureKind, IconType> = {
-	vacation: LuTreePalm,
-	day_off: LuCoffee,
-	training: LuGraduationCap,
-	sick: LuThermometer,
-	other: LuCircleDot,
+export const KIND_ICONS: Record<ClosureKind, AppIcon> = {
+	vacation: IconVacation,
+	day_off: IconCoffee,
+	training: IconEducation,
+	sick: IconThermometer,
+	other: IconStatus,
 };
 
 /** Whole days, both included ("YYYY-MM-DD"). No practitioner: the whole cabinet is closed. */

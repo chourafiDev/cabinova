@@ -68,6 +68,11 @@ export type Account = {
 	chargeId: string | null;
 	items: (ChargeItem & { id: string })[];
 	payments: Movement[];
+	/** The acts' sum, before the remboursement. */
+	subtotal: number;
+	/** Remboursement the doctor granted: taken off what the patient pays. */
+	discount: number;
+	/** What the patient pays: subtotal − discount. */
 	total: number;
 	paid: number;
 	/** Negative: overpaid, to refund. */
@@ -145,6 +150,8 @@ export type PatientAccount = {
 		appointmentId: string;
 		startsAt: string;
 		practitioner: string;
+		subtotal: number;
+		discount: number;
 		total: number;
 		paid: number;
 		balance: number;
@@ -156,6 +163,8 @@ export type PatientAccount = {
 /** GET /payments/:id/receipt */
 export type Receipt = Movement & {
 	total: number;
+	/** Remboursement granted on the visit. */
+	discount: number;
 	space: { name: string; city: string | null; address: string | null; phone: string | null };
 	patient: { firstName: string; lastName: string; fileNumber: number; cin: string | null };
 	visit: { name: string; startsAt: string };

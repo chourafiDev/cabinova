@@ -2,17 +2,17 @@ import { moroccoDay } from "@cabinova/morocco-time";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
-import { HiBanknotes } from "react-icons/hi2";
 import {
-	LuChevronLeft,
-	LuChevronRight,
-	LuCircleCheck,
-	LuClock,
-	LuPrinter,
-	LuUndo2,
-	LuWallet,
-	LuTriangleAlert,
-} from "react-icons/lu";
+	IconCheckCircle,
+	IconChevronLeft,
+	IconChevronRight,
+	IconClock,
+	IconMoney,
+	IconPrinter,
+	IconUndo,
+	IconWallet,
+	IconWarning,
+} from "@/components/icons";
 import { pageTitle } from "@/i18n/titles";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -68,7 +68,7 @@ export default async function PaymentsPage({ searchParams }: PageProps<"/payment
 			<header className="flex flex-wrap items-center justify-between gap-3">
 				<div className="flex items-center gap-3">
 					<span className="bg-primary/10 text-primary flex size-9 items-center justify-center rounded-lg">
-						<HiBanknotes className="size-4" />
+						<IconMoney className="size-4" />
 					</span>
 					<div>
 						<h1 className="text-lg font-semibold leading-tight">{t("title")}</h1>
@@ -140,11 +140,11 @@ async function HistoryView({
 	return (
 		<>
 			<div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-				<KpiCard icon={LuWallet} title={t("history.received")} value={mad(h.totals.net)} period={label} hint={t("history.receivedHint")} />
-				<KpiCard icon={LuCircleCheck} title={t("history.payments")} value={h.totals.payments} period={label} hint={t("history.paymentsHint")} />
-				<KpiCard icon={LuUndo2} title={t("history.refunded")} value={mad(h.totals.refunded)} period={label} hint={t("history.refundedHint")} />
+				<KpiCard icon={IconWallet} title={t("history.received")} value={mad(h.totals.net)} period={label} hint={t("history.receivedHint")} />
+				<KpiCard icon={IconCheckCircle} title={t("history.payments")} value={h.totals.payments} period={label} hint={t("history.paymentsHint")} />
+				<KpiCard icon={IconUndo} title={t("history.refunded")} value={mad(h.totals.refunded)} period={label} hint={t("history.refundedHint")} />
 				<KpiCard
-					icon={LuClock}
+					icon={IconClock}
 					title={t("history.outstanding")}
 					value={mad(h.outstanding.amount)}
 					period={t("history.visits", { count: h.outstanding.visits })}
@@ -226,7 +226,7 @@ async function HistoryView({
 														title={t("history.printReceipt")}
 														className="text-muted-foreground hover:text-foreground flex items-center justify-end gap-1 font-mono text-[11px]"
 													>
-														<LuPrinter className="size-3" /> {p.receiptNumber}
+														<IconPrinter className="size-3" /> {p.receiptNumber}
 													</a>
 												)
 											)}
@@ -244,12 +244,12 @@ async function HistoryView({
 							<span className="flex gap-1">
 								<Button asChild variant="outline" size="icon" className="size-8" aria-disabled={h.page <= 1}>
 									<Link href={pageHref(Math.max(1, h.page - 1))} aria-label={t("history.previousPage")} scroll={false}>
-										<LuChevronLeft className="rtl:rotate-180" />
+										<IconChevronLeft className="rtl:rotate-180" />
 									</Link>
 								</Button>
 								<Button asChild variant="outline" size="icon" className="size-8" aria-disabled={h.page >= h.pageCount}>
 									<Link href={pageHref(Math.min(h.pageCount, h.page + 1))} aria-label={t("history.nextPage")} scroll={false}>
-										<LuChevronRight className="rtl:rotate-180" />
+										<IconChevronRight className="rtl:rotate-180" />
 									</Link>
 								</Button>
 							</span>
@@ -307,7 +307,7 @@ async function ClosesView({ preset, space }: { preset: HistoryPreset; space: str
 											c.difference === 0 ? "text-emerald-700 dark:text-emerald-300" : "text-amber-700 dark:text-amber-300",
 										)}
 									>
-										{c.difference === 0 ? <LuCircleCheck className="size-3.5" /> : <LuTriangleAlert className="size-3.5" />}
+										{c.difference === 0 ? <IconCheckCircle className="size-3.5" /> : <IconWarning className="size-3.5" />}
 										{c.difference === 0 ? t("exact") : `${c.difference > 0 ? "+" : ""}${mad(c.difference)}`}
 									</span>
 								</TableCell>

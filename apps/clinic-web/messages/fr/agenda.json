@@ -26,7 +26,6 @@
     "appointment": "Rendez-vous",
     "patient": "Patient",
     "arrived": "Patient arrivé",
-    "finish": "Terminer",
     "statusChanged": "Rendez-vous : {status}",
     "statusError": "Changement impossible",
     "openFile": "Ouvrir le dossier",
@@ -85,7 +84,8 @@
   "multiDay": "Jour {day}/{total}",
   "tabs": {
     "waiting": "Salle d’attente",
-    "agenda": "Agenda"
+    "agenda": "Agenda",
+    "seen": "Patients vus"
   },
   "waiting": {
     "order": "N°",
@@ -130,5 +130,47 @@
     "error": "Ajout impossible",
     "goneToday": "Ce patient est parti à {time} sans consultation.",
     "putBack": "Le remettre en salle d’attente"
+  },
+  "seen": {
+    "count": "{count, plural, =0 {Aucun patient vu aujourd’hui} one {# patient vu aujourd’hui} other {# patients vus aujourd’hui}}",
+    "empty": "Aucun patient vu pour le moment",
+    "emptyHint": "Quand le médecin termine une consultation, le patient apparaît ici pour être encaissé.",
+    "finishedAt": "Fin",
+    "patient": "Patient",
+    "practitioner": "Médecin",
+    "reason": "Acte",
+    "duration": "Durée",
+    "payment": "Règlement",
+    "paid": "Réglé",
+    "due": "Reste {amount}",
+    "notCharged": "Actes non saisis",
+    "account": "Détail",
+    "openFile": "Ouvrir le dossier",
+    "actions": "Actions",
+    "toCheckOut": "{count, plural, one {# à encaisser} other {# à encaisser}}",
+    "detail": {
+      "title": "Règlement",
+      "titleFor": "Règlement · {name}",
+      "loading": "Chargement…",
+      "toCollect": "À encaisser auprès du patient",
+      "settled": "Visite réglée",
+      "noActs": "Actes non saisis",
+      "noActsHint": "Le médecin n’a pas encore enregistré les actes de cette visite.",
+      "overpaid": "Trop-perçu : {amount} à rendre",
+      "acts": "Actes",
+      "actsTotal": "Actes",
+      "discount": "Remboursement",
+      "patientPays": "À payer par le patient",
+      "alreadyPaid": "Déjà payé",
+      "remaining": "Reste à encaisser",
+      "payments": "Paiements reçus",
+      "print": "Imprimer le reçu",
+      "close": "Fermer",
+      "method": "Mode de paiement",
+      "markPaid": "Payé · {amount}",
+      "paidToast": "{amount} encaissés · {name}",
+      "payError": "Enregistrement du paiement impossible",
+      "locked": "La caisse du jour est clôturée : plus aucun paiement aujourd’hui dans cet espace."
+    }
   }
 }

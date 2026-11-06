@@ -2,8 +2,8 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
-import { LuCheck, LuChevronsUpDown, LuLoader } from "react-icons/lu";
 import { useState } from "react";
+import { IconCheck, IconChevronsUpDown, IconSpinner } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import { NoShowBadge } from "@/components/no-show-badge";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
@@ -61,7 +61,7 @@ export function PatientPicker({
 						</span>
 						{value && <NoShowBadge count={value.noShows} />}
 					</span>
-					<LuChevronsUpDown className="size-4 shrink-0 opacity-50" />
+					<IconChevronsUpDown className="size-4 shrink-0 opacity-50" />
 				</Button>
 			</PopoverTrigger>
 			<PopoverContent className="w-(--radix-popover-trigger-width) p-0" align="start">
@@ -70,7 +70,7 @@ export function PatientPicker({
 					<CommandInput placeholder={t("search")} onValueChange={setSearchDebounced} />
 					<CommandList>
 						<CommandEmpty>
-							{isFetching ? <LuLoader className="mx-auto size-4 animate-spin" /> : t("empty")}
+							{isFetching ? <IconSpinner className="mx-auto size-4 animate-spin" /> : t("empty")}
 						</CommandEmpty>
 						<CommandGroup>
 							{data?.data.map((p) => (
@@ -98,7 +98,7 @@ export function PatientPicker({
 											{p.phone && ` · ${formatPhone(p.phone)}`}
 										</span>
 									</div>
-									<LuCheck className={cn("size-4", value?.id === p.id ? "opacity-100" : "opacity-0")} />
+									<IconCheck className={cn("size-4", value?.id === p.id ? "opacity-100" : "opacity-0")} />
 								</CommandItem>
 							))}
 						</CommandGroup>

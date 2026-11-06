@@ -3,8 +3,8 @@
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { LuLoader, LuLogOut, LuMonitor, LuSmartphone } from "react-icons/lu";
 import { toast } from "sonner";
+import { IconLogout, IconMobile, IconMonitor, IconSpinner } from "@/components/icons";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { api } from "@/lib/api-client";
@@ -70,14 +70,14 @@ export function TeamSessions({ sessions, ownId }: { sessions: TeamSession[]; own
 											)
 										}
 									>
-										{pending === member.id ? <LuLoader className="animate-spin" /> : <LuLogOut className="rtl:-scale-x-100" />} {t("signOutAll")}
+										{pending === member.id ? <IconSpinner className="animate-spin" /> : <IconLogout className="rtl:-scale-x-100" />} {t("signOutAll")}
 									</Button>
 								)}
 							</header>
 							<ul className="divide-y rounded-lg border">
 								{devices.map((s) => {
 									const device = describeDevice(s.userAgent, { unknown: common("unknownDevice"), browser: common("browser") });
-									const Icon = device.mobile ? LuSmartphone : LuMonitor;
+									const Icon = device.mobile ? IconMobile : IconMonitor;
 									return (
 										<li key={s.id} className="flex items-center gap-3 px-3 py-2.5">
 											<span className="bg-muted text-muted-foreground flex size-9 shrink-0 items-center justify-center rounded-lg">
@@ -108,7 +108,7 @@ export function TeamSessions({ sessions, ownId }: { sessions: TeamSession[]; own
 														run(s.id, () => api(`/team/sessions/${s.id}`, { method: "DELETE" }), common("deviceSignedOut"))
 													}
 												>
-													{pending === s.id ? <LuLoader className="animate-spin" /> : <LuLogOut className="rtl:-scale-x-100" />} {common("signOut")}
+													{pending === s.id ? <IconSpinner className="animate-spin" /> : <IconLogout className="rtl:-scale-x-100" />} {common("signOut")}
 												</Button>
 											)}
 										</li>

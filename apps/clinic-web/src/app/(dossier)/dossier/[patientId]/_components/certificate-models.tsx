@@ -3,8 +3,8 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
-import { LuLoader, LuPencil, LuPlus, LuTrash2 } from "react-icons/lu";
 import { toast } from "sonner";
+import { IconEdit, IconPlus, IconSpinner, IconTrash } from "@/components/icons";
 import { RichTextEditor } from "@/components/rich-text-editor";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -47,7 +47,7 @@ export function ModelsSheet({ open, onOpenChange }: { open: boolean; onOpenChang
 					) : (
 						<>
 							<Button className="w-fit" onClick={() => setEditing("new")}>
-								<LuPlus /> {t("new")}
+								<IconPlus /> {t("new")}
 							</Button>
 							{models.isPending ? (
 								<Skeleton className="h-24" />
@@ -92,11 +92,11 @@ function ModelRow({ model, onEdit }: { model: CertificateModel; onEdit: () => vo
 		<li className="flex items-center gap-2 px-3 py-2.5">
 			<span className="min-w-0 flex-1 truncate text-sm font-medium">{model.name}</span>
 			<Button variant="ghost" size="icon" className="size-8" aria-label={t("edit", { name: model.name })} onClick={onEdit}>
-				<LuPencil />
+				<IconEdit />
 			</Button>
 			{confirming ? (
 				<Button variant="destructive" size="sm" className="h-8" disabled={pending} onClick={remove} onBlur={() => setConfirming(false)}>
-					{pending ? <LuLoader className="animate-spin" /> : <LuTrash2 />} {t("confirmDelete")}
+					{pending ? <IconSpinner className="animate-spin" /> : <IconTrash />} {t("confirmDelete")}
 				</Button>
 			) : (
 				<Button
@@ -106,7 +106,7 @@ function ModelRow({ model, onEdit }: { model: CertificateModel; onEdit: () => vo
 					aria-label={t("delete", { name: model.name })}
 					onClick={() => setConfirming(true)}
 				>
-					<LuTrash2 />
+					<IconTrash />
 				</Button>
 			)}
 		</li>
@@ -170,7 +170,7 @@ function ModelForm({ model, onDone }: { model: CertificateModel | null; onDone: 
 					{t("cancel")}
 				</Button>
 				<Button type="submit" disabled={saving}>
-					{saving && <LuLoader className="animate-spin" />} {t("save")}
+					{saving && <IconSpinner className="animate-spin" />} {t("save")}
 				</Button>
 			</div>
 		</form>

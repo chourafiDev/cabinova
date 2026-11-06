@@ -1,11 +1,21 @@
 "use client";
 
-import { LuCompass, LuKeyboard, LuLifeBuoy, LuLogOut, LuMapPin, LuMonitor, LuMoon, LuSearch, LuSun } from "react-icons/lu";
 import { useTranslations } from "next-intl";
 import { useTheme } from "next-themes";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import type { IconType } from "react-icons";
+import {
+	type AppIcon,
+	IconCompass,
+	IconKeyboard,
+	IconLocation,
+	IconLogout,
+	IconMonitor,
+	IconMoon,
+	IconSearch,
+	IconSun,
+	IconSupport,
+} from "@/components/icons";
 import { Kbd, SHORTCUTS_HELP_EVENT, useModifierLabel } from "@/components/keyboard-shortcuts";
 import {
 	Command,
@@ -23,7 +33,7 @@ import { spaceLabel, switchSpace } from "@/lib/spaces";
 import { allNavItems, visibleNavItems } from "./nav";
 import { TOUR_REPLAY_HREF } from "./tour/product-tour";
 
-type Action = { id: string; label: string; icon: IconType; keywords?: string; run: () => void };
+type Action = { id: string; label: string; icon: AppIcon; keywords?: string; run: () => void };
 
 /** Accent- and case-insensitive: "parametres" finds "Paramètres". */
 const fold = (text: string) =>
@@ -85,7 +95,7 @@ export function CommandPalette({ spaces, role }: { spaces: ClinicSession["spaces
 		.map((s) => ({
 			id: `space-${s.id}`,
 			label: t("goToSpace", { space: spaceLabel(s) }),
-			icon: LuMapPin,
+			icon: IconLocation,
 			keywords: "changer espace site succursale",
 			run: () =>
 				pick(async () => {
@@ -96,13 +106,13 @@ export function CommandPalette({ spaces, role }: { spaces: ClinicSession["spaces
 		}));
 	const actions: Action[] = [
 		...spaceActions,
-		{ id: "tour", label: t("tour"), icon: LuCompass, keywords: "aide découvrir tutoriel", run: () => go(TOUR_REPLAY_HREF) },
-		{ id: "theme-light", label: t("themeLight"), icon: LuSun, keywords: "apparence mode jour", run: () => pick(() => setTheme("light")) },
-		{ id: "theme-dark", label: t("themeDark"), icon: LuMoon, keywords: "apparence mode nuit dark", run: () => pick(() => setTheme("dark")) },
-		{ id: "theme-system", label: t("themeSystem"), icon: LuMonitor, keywords: "apparence automatique", run: () => pick(() => setTheme("system")) },
-		{ id: "shortcuts", label: t("shortcuts"), icon: LuKeyboard, keywords: "aide touches clavier", run: () => pick(() => window.dispatchEvent(new Event(SHORTCUTS_HELP_EVENT))) },
-		{ id: "support", label: tc("support"), icon: LuLifeBuoy, keywords: "aide question problème", run: () => pick(() => (window.location.href = "mailto:support@cabinova.ma")) },
-		{ id: "sign-out", label: t("signOut"), icon: LuLogOut, keywords: "déconnexion quitter", run: () => pick(signOut) },
+		{ id: "tour", label: t("tour"), icon: IconCompass, keywords: "aide découvrir tutoriel", run: () => go(TOUR_REPLAY_HREF) },
+		{ id: "theme-light", label: t("themeLight"), icon: IconSun, keywords: "apparence mode jour", run: () => pick(() => setTheme("light")) },
+		{ id: "theme-dark", label: t("themeDark"), icon: IconMoon, keywords: "apparence mode nuit dark", run: () => pick(() => setTheme("dark")) },
+		{ id: "theme-system", label: t("themeSystem"), icon: IconMonitor, keywords: "apparence automatique", run: () => pick(() => setTheme("system")) },
+		{ id: "shortcuts", label: t("shortcuts"), icon: IconKeyboard, keywords: "aide touches clavier", run: () => pick(() => window.dispatchEvent(new Event(SHORTCUTS_HELP_EVENT))) },
+		{ id: "support", label: tc("support"), icon: IconSupport, keywords: "aide question problème", run: () => pick(() => (window.location.href = "mailto:support@cabinova.ma")) },
+		{ id: "sign-out", label: t("signOut"), icon: IconLogout, keywords: "déconnexion quitter", run: () => pick(signOut) },
 	];
 	const term = fold(input.trim());
 	const pages = visibleNavItems(allNavItems, role).filter((item) => !term || fold(tn(item.key)).includes(term));
@@ -116,7 +126,7 @@ export function CommandPalette({ spaces, role }: { spaces: ClinicSession["spaces
 				className="text-muted-foreground hover:bg-muted flex h-9 items-center gap-2 rounded-lg border bg-background px-2.5 text-sm transition-colors sm:w-56"
 				aria-label={t("open")}
 			>
-				<LuSearch className="size-4 shrink-0" />
+				<IconSearch className="size-4 shrink-0" />
 				<span className="hidden flex-1 text-start sm:inline">{t("trigger")}</span>
 				<kbd className="bg-muted pointer-events-none hidden h-5 items-center rounded px-1.5 font-mono text-[10px] font-medium sm:inline-flex">
 					{modifier} K

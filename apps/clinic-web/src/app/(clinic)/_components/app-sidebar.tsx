@@ -3,7 +3,7 @@
 import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
 import { LinkPending } from "@/components/link-pending";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import {
 	Sidebar,
 	SidebarContent,
@@ -34,7 +34,7 @@ export function AppSidebar({
 }) {
 	const isOwner = role === "owner";
 	const pathname = usePathname();
-	const active = findNavItem(pathname);
+	const active = findNavItem(pathname, useSearchParams());
 	const t = useTranslations("nav");
 
 	return (

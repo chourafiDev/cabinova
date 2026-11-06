@@ -4,7 +4,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { addMinutes, differenceInMinutes, format as formatDay, parseISO } from "date-fns";
 import { useTranslations } from "next-intl";
-import { LuClock, LuLoader, LuTriangleAlert } from "react-icons/lu";
 import { useState } from "react";
 import { Controller, useForm, useWatch } from "react-hook-form";
 import { toast } from "sonner";
@@ -14,6 +13,7 @@ import { useCalendar } from "@/calendar/contexts/calendar-context";
 import { holidayOf, isWithinWorkingHours } from "@/calendar/helpers";
 import { useFmt } from "@/calendar/locale";
 import type { IEvent } from "@/calendar/interfaces";
+import { IconClock, IconSpinner, IconWarning } from "@/components/icons";
 import { NoShowNote } from "@/components/no-show-badge";
 import { type PickedPatient, PatientPicker } from "@/components/patient-picker";
 import { Button } from "@/components/ui/button";
@@ -274,7 +274,7 @@ export function AppointmentFormDialog({
 
 						{outsideHours && (
 							<p role="alert" className="text-destructive -mt-2 flex items-start gap-1.5 text-xs">
-								<LuClock className="mt-px size-3.5 shrink-0" />
+								<IconClock className="mt-px size-3.5 shrink-0" />
 								<span>{closedReason(outsideHours)}</span>
 							</p>
 						)}
@@ -317,7 +317,7 @@ export function AppointmentFormDialog({
 					)}
 					{overlap && (
 						<div role="alert" className="flex items-start gap-2.5 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
-							<LuTriangleAlert className="mt-0.5 size-4 shrink-0" />
+							<IconWarning className="mt-0.5 size-4 shrink-0" />
 							<div className="grid gap-2">
 								<p>
 									{overlap} {t("bookQuestion")}
@@ -341,7 +341,7 @@ export function AppointmentFormDialog({
 							{t("cancel")}
 						</Button>
 						<Button type="submit" disabled={isSubmitting || !users.length || !!outsideHours}>
-							{isSubmitting && <LuLoader className="size-4 animate-spin" />}
+							{isSubmitting && <IconSpinner className="size-4 animate-spin" />}
 							{event ? t("save") : t("add")}
 						</Button>
 					</DialogFooter>

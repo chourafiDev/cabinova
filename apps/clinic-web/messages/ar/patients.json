@@ -53,7 +53,8 @@
       "appointments": "المواعيد",
       "payments": "المدفوعات",
       "medical": "السوابق",
-      "vitals": "المؤشرات"
+      "vitals": "المؤشرات",
+      "documents": "الوثائق"
     },
     "knownAllergies": "حساسية معروفة",
     "archivedOn": "أُرشف الملف بتاريخ {date}: يمكن الاطلاع عليه دون تعديله. استعده لتعديله أو تحديد موعد.",
@@ -91,7 +92,8 @@
     "overpaid": "مبلغ زائد {amount}",
     "settled": "مسدد",
     "collect": "تحصيل",
-    "view": "عرض"
+    "view": "عرض",
+    "discount": "استرجاع {amount}"
   },
   "archive": {
     "restored": "تمت استعادة الملف",
@@ -172,7 +174,17 @@
     "cancel": "إلغاء",
     "save": "حفظ",
     "createAndBook": "إنشاء وتحديد موعد",
-    "create": "إنشاء الملف"
+    "create": "إنشاء الملف",
+    "homonym": {
+      "title": "{count, plural, one {يوجد مريض بنفس الاسم} other {يوجد # مرضى بنفس الاسم}}",
+      "hint": "تأكد من أنه ليس الشخص نفسه قبل إنشاء ملف جديد.",
+      "open": "فتح ملفه",
+      "pick": "اختيار هذا المريض",
+      "archived": "مؤرشف",
+      "confirm": "إنه شخص آخر (تشابه أسماء): إنشاء ملف جديد",
+      "confirmEdit": "إنه شخص آخر (تشابه أسماء)",
+      "required": "افتح ملفه، أو أكّد أنه شخص آخر."
+    }
   },
   "errors": {
     "phone": "رقم الهاتف غير صالح",
@@ -245,5 +257,40 @@
       "bmi": "م.ك.ج",
       "bloodGroup": "الفصيلة"
     }
+  },
+  "documents": {
+    "title": "وثائق المريض",
+    "dropHere": "أفلت للتصنيف كـ «{category}»",
+    "accepted": "PDF أو JPEG أو PNG أو WebP · 10 ميغابايت كحد أقصى لكل ملف",
+    "categories": {
+      "lab": "تحاليل",
+      "imaging": "أشعة",
+      "prescription": "وصفة طبية",
+      "report": "تقرير طبي",
+      "administrative": "إداري",
+      "other": "أخرى"
+    },
+    "all": "الكل",
+    "empty": "لا توجد وثائق بعد.",
+    "emptyHint": "تحاليل، صور أشعة، وصفات قديمة، أوراق التأمين… ممسوحة أو مصوّرة في الاستقبال.",
+    "uploading": "جارٍ الإرسال…",
+    "uploaded": "{count, plural, one {تمت إضافة الوثيقة} other {تمت إضافة # وثائق}}",
+    "uploadError": "تعذّر الإرسال.",
+    "wrongType": "{name}: تُقبل ملفات PDF والصور فقط.",
+    "tooLarge": "{name} يتجاوز 10 ميغابايت.",
+    "by": "بواسطة {name}",
+    "open": "فتح {name}",
+    "download": "تنزيل",
+    "delete": "حذف",
+    "confirmDelete": "تأكيد",
+    "deleted": "تم حذف الوثيقة",
+    "deleteError": "تعذّر الحذف.",
+    "archived": "الملف مؤرشف: تبقى الوثائق قابلة للاطلاع، لكن لا يمكن إضافة المزيد.",
+    "classifyAs": "تصنيف كـ",
+    "dropTitle": "اسحب ملفاتك إلى هنا",
+    "choose": "اختيار ملفات",
+    "camera": "التقاط صورة",
+    "sending": "{count, plural, one {جارٍ إرسال ملف…} other {جارٍ إرسال # ملفات…}}",
+    "addTitle": "أضف وثيقة"
   }
 }

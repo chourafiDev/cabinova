@@ -1,9 +1,9 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { LuChevronDown, LuCompass, LuLogOut, LuUserRound } from "react-icons/lu";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { IconChevronDown, IconCompass, IconLogout, IconUser } from "@/components/icons";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
 	DropdownMenu,
@@ -45,7 +45,7 @@ export function UserMenu({ user }: { user: ClinicSession["user"] }) {
 						<span className="max-w-36 truncate text-sm font-medium">{user.name}</span>
 						<span className="text-muted-foreground max-w-36 truncate text-xs">{t(`roles.${user.role}`)}</span>
 					</span>
-					<LuChevronDown className="text-muted-foreground size-4" />
+					<IconChevronDown className="text-muted-foreground size-4" />
 				</button>
 			</DropdownMenuTrigger>
 			<DropdownMenuContent align="end" sideOffset={6} className="min-w-64 rounded-lg">
@@ -58,19 +58,19 @@ export function UserMenu({ user }: { user: ClinicSession["user"] }) {
 				<DropdownMenuSeparator />
 				<DropdownMenuItem asChild>
 					<Link href="/settings/profile">
-						<LuUserRound />
+						<IconUser />
 						{t("userMenu.profile")}
 					</Link>
 				</DropdownMenuItem>
 				<DropdownMenuItem asChild>
 					<Link href={TOUR_REPLAY_HREF}>
-						<LuCompass />
+						<IconCompass />
 						{t("userMenu.tour")}
 					</Link>
 				</DropdownMenuItem>
 				<DropdownMenuSeparator />
 				<DropdownMenuItem variant="destructive" onSelect={signOut}>
-					<LuLogOut className="rtl:-scale-x-100" />
+					<IconLogout className="rtl:-scale-x-100" />
 					{t("userMenu.signOut")}
 				</DropdownMenuItem>
 			</DropdownMenuContent>

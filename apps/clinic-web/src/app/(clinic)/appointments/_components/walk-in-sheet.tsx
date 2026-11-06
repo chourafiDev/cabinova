@@ -3,8 +3,8 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
-import { LuCalendarCheck, LuLoader, LuTriangleAlert, LuUndo2 } from "react-icons/lu";
 import { toast } from "sonner";
+import { IconCalendarCheck, IconSpinner, IconUndo, IconWarning } from "@/components/icons";
 import { type PickedPatient, PatientPicker } from "@/components/patient-picker";
 import { Button } from "@/components/ui/button";
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
@@ -186,13 +186,13 @@ function WalkInForm({ practitioners, onDone }: { practitioners: Practitioner[]; 
 
 						{present ? (
 							<p className="flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
-								<LuTriangleAlert className="mt-0.5 size-4 shrink-0" />
+								<IconWarning className="mt-0.5 size-4 shrink-0" />
 								{statusLabel(present.status)} · {t("alreadyHere")}
 							</p>
 						) : gone ? (
 							<div className="grid gap-2 rounded-lg border bg-accent/50 p-3 text-sm">
 								<p className="flex items-start gap-2">
-									<LuUndo2 className="text-primary mt-0.5 size-4 shrink-0 rtl:-scale-x-100" />
+									<IconUndo className="text-primary mt-0.5 size-4 shrink-0 rtl:-scale-x-100" />
 									{t("goneToday", { time: gone.leftAt ? fmt.clock(gone.leftAt) : "—" })}
 								</p>
 								<Button
@@ -211,7 +211,7 @@ function WalkInForm({ practitioners, onDone }: { practitioners: Practitioner[]; 
 						) : booked ? (
 							<div className="grid gap-2 rounded-lg border bg-accent/50 p-3 text-sm">
 								<p className="flex items-start gap-2">
-									<LuCalendarCheck className="text-primary mt-0.5 size-4 shrink-0" />
+									<IconCalendarCheck className="text-primary mt-0.5 size-4 shrink-0" />
 									{t("hasAppointment", { time: fmt.clock(booked.startsAt), doctor: booked.practitioner.name })}
 								</p>
 								<Button
@@ -283,7 +283,7 @@ function WalkInForm({ practitioners, onDone }: { practitioners: Practitioner[]; 
 							{form("cancel")}
 						</Button>
 						<Button type="submit" disabled={saving || !!present || !!gone}>
-							{saving && <LuLoader className="animate-spin" />}
+							{saving && <IconSpinner className="animate-spin" />}
 							{t("submit")}
 						</Button>
 					</div>

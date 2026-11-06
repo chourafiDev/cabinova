@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { LuSearch } from "react-icons/lu";
+import { IconSearch } from "@/components/icons";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ACTIVITY_CATEGORIES } from "@/lib/activity";
@@ -64,7 +64,7 @@ export function ActivityFilters({
 					go({ recherche: String(new FormData(e.currentTarget).get("q")).trim() || undefined });
 				}}
 			>
-				<LuSearch className="text-muted-foreground absolute start-2.5 top-1/2 size-4 -translate-y-1/2" />
+				<IconSearch className="text-muted-foreground absolute start-2.5 top-1/2 size-4 -translate-y-1/2" />
 				<Input key={search} name="q" defaultValue={search} placeholder={t("searchPlaceholder")} aria-label={t("search")} className="h-8 ps-8" />
 			</form>
 		</div>

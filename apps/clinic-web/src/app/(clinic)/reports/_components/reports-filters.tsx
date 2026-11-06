@@ -3,7 +3,7 @@
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 import type { DateRange } from "react-day-picker";
-import { LuCalendarRange, LuCheck } from "react-icons/lu";
+import { IconCalendarRange, IconCheck } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -93,7 +93,7 @@ export function ReportsFilters({
 			>
 				<PopoverTrigger asChild>
 					<Button variant={preset === null ? "secondary" : "outline"} size="sm" className="h-8">
-						<LuCalendarRange />
+						<IconCalendarRange />
 						{preset === null ? periodLabel(period.from, period.to) : t("custom")}
 					</Button>
 				</PopoverTrigger>
@@ -113,7 +113,7 @@ export function ReportsFilters({
 							{range?.from ? periodLabel(day(range.from), day(range.to ?? range.from)) : t("pickDates")}
 						</span>
 						<Button size="sm" disabled={!range?.from} onClick={applyRange}>
-							<LuCheck /> {t("apply")}
+							<IconCheck /> {t("apply")}
 						</Button>
 					</div>
 				</PopoverContent>

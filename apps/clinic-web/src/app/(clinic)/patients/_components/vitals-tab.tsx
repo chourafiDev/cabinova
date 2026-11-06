@@ -3,8 +3,8 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
-import { LuActivity, LuHeartPulse, LuLoader, LuRuler, LuThermometer } from "react-icons/lu";
 import { toast } from "sonner";
+import { IconActivity, IconHeartPulse, IconRuler, IconSpinner, IconThermometer } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -14,7 +14,7 @@ import { bmiOf, bmiCategory, toNumber } from "@/lib/consultations";
 import { BLOOD_GROUPS } from "@/lib/patients";
 import { ARMS, INTEGER_MEASURES, MEASURES, type Measure, SECTIONS, type VitalSigns, vitalsKey } from "@/lib/vitals";
 
-const ICONS = { general: LuRuler, endocrinology: LuActivity, cardio: LuHeartPulse, other: LuThermometer } as const;
+const ICONS = { general: IconRuler, endocrinology: IconActivity, cardio: IconHeartPulse, other: IconThermometer } as const;
 const NONE = "none";
 
 type Draft = Record<Measure, string> & { bloodGroup: string; note: string };
@@ -176,7 +176,7 @@ export function VitalsTab({ patientId, archived }: { patientId: string; archived
 					)}
 					<div className="flex justify-end">
 						<Button type="submit" disabled={save.isPending}>
-							{save.isPending && <LuLoader className="animate-spin" />} {t("save")}
+							{save.isPending && <IconSpinner className="animate-spin" />} {t("save")}
 						</Button>
 					</div>
 				</form>

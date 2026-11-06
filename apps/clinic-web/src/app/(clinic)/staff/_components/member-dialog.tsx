@@ -3,8 +3,8 @@
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
-import { LuLoader, LuLock } from "react-icons/lu";
 import { toast } from "sonner";
+import { IconLock, IconSpinner } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -162,7 +162,7 @@ function MemberForm({
 						{editing ? (
 							<div className="relative">
 								<Input id="member-email" value={member.email} readOnly disabled className="pe-8" />
-								<LuLock className="text-muted-foreground absolute end-2.5 top-1/2 size-3.5 -translate-y-1/2" />
+								<IconLock className="text-muted-foreground absolute end-2.5 top-1/2 size-3.5 -translate-y-1/2" />
 							</div>
 						) : (
 							<Input
@@ -268,7 +268,7 @@ function MemberForm({
 					{t("cancel")}
 				</Button>
 				<Button type="submit" disabled={saving}>
-					{saving && <LuLoader className="animate-spin" />} {editing ? t("save") : t("send")}
+					{saving && <IconSpinner className="animate-spin" />} {editing ? t("save") : t("send")}
 				</Button>
 			</DialogFooter>
 		</form>

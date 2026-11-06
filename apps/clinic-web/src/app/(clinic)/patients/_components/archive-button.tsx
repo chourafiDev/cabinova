@@ -1,9 +1,9 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { LuLoader } from "react-icons/lu";
 import { useState } from "react";
 import { toast } from "sonner";
+import { IconSpinner } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import {
 	Dialog,
@@ -62,7 +62,7 @@ export function ArchiveDialog({
 						{t("cancel")}
 					</Button>
 					<Button onClick={run} disabled={pending}>
-						{pending && <LuLoader className="animate-spin" />} {archived ? t("restore") : t("archive")}
+						{pending && <IconSpinner className="animate-spin" />} {archived ? t("restore") : t("archive")}
 					</Button>
 				</DialogFooter>
 			</DialogContent>

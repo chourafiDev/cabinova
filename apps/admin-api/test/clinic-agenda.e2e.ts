@@ -1,6 +1,7 @@
 import type { INestApplication } from '@nestjs/common';
 import { type Agent, createApp, signInAdmin } from './app.js';
 import {
+  bookToday,
   captureInvitations,
   createClinicApp,
   onCabinet,
@@ -21,6 +22,7 @@ describe('clinic: agenda', () => {
   let clinic: INestApplication;
   let doctor: Agent;
   let doctorId: string;
+  let tenant: { agent: Agent; tenantId: string };
   let patientId: string;
   let firstId: string;
   let principalId: string;
@@ -29,7 +31,12 @@ describe('clinic: agenda', () => {
   const book = (body: Record<string, unknown>) =>
     cab()
       .post('/appointments')
-      .send({ patientId, practitionerId: doctorId, ...body });
+      .send({
+        patientId,
+        practitionerId: doctorId,
+        reason: 'Consultation',
+        ...body,
+      });
   const day = async (includeCancelled = false) =>
     (
       await cab()
@@ -46,7 +53,14 @@ describe('clinic: agenda', () => {
     admin = await createApp();
     const adminAgent = await signInAdmin(admin);
     const invitations = captureInvitations(admin);
-    await provisionCabinet(adminAgent, 'agenda-atlas', 'agenda@e2e.test');
+    tenant = {
+      agent: adminAgent,
+      tenantId: await provisionCabinet(
+        adminAgent,
+        'agenda-atlas',
+        'agenda@e2e.test',
+      ),
+    };
     clinic = await createClinicApp();
     doctor = await signInDoctor(
       clinic,
@@ -181,6 +195,7 @@ describe('clinic: agenda', () => {
       .send({
         patientId: local.id,
         practitionerId: doctorId,
+        reason: 'Consultation',
         startsAt: at('14:15'),
         endsAt: at('14:45'),
       })
@@ -242,12 +257,14 @@ describe('clinic: agenda', () => {
     const { body: before } = await cab().get('/dashboard').expect(200);
     expect(before.scope).toBe('space');
     expect(before.week).toHaveLength(6);
-    // Today's date comes from the API (Moroccan time); noon is safely inside it.
-    const { body: today } = await book({
-      startsAt: `${before.date}T12:00:00+00:00`,
-      endsAt: `${before.date}T12:20:00+00:00`,
+    // Noon, Moroccan time, is safely inside today.
+    const today = await bookToday(clinic, 'agenda-atlas', doctor, tenant, {
+      patientId,
+      practitionerId: doctorId,
+      from: '12:00',
+      to: '12:20',
       allowOverlap: true,
-    }).expect(201);
+    });
 
     const { body: after } = await cab().get('/dashboard').expect(200);
     expect(after.kpis.appointmentsToday).toBe(

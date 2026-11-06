@@ -3,8 +3,8 @@
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
-import { LuCopy, LuLoader, LuPlus, LuX } from "react-icons/lu";
 import { toast } from "sonner";
+import { IconClose, IconCopy, IconPlus, IconSpinner } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -104,7 +104,7 @@ export function OpeningHoursEditor({ space, spaces }: { space: ManagedSpace; spa
 			footer={
 				<>
 					<Button type="button" variant="ghost" size="sm" className="-ms-2" onClick={copyMonday}>
-						<LuCopy /> {t("copyMonday")}
+						<IconCopy /> {t("copyMonday")}
 					</Button>
 					<div className="flex items-center gap-2">
 						{dirty && (
@@ -113,7 +113,7 @@ export function OpeningHoursEditor({ space, spaces }: { space: ManagedSpace; spa
 							</Button>
 						)}
 						<Button size="sm" disabled={!dirty || invalid || saving} onClick={save}>
-							{saving && <LuLoader className="animate-spin" />} {common("save")}
+							{saving && <IconSpinner className="animate-spin" />} {common("save")}
 						</Button>
 					</div>
 				</>
@@ -169,7 +169,7 @@ export function OpeningHoursEditor({ space, spaces }: { space: ManagedSpace; spa
 														aria-label={t("removePeriod", { day: label.toLowerCase(), index: i + 1 })}
 														onClick={() => setDay(key, periods.filter((_, j) => j !== i))}
 													>
-														<LuX />
+														<IconClose />
 													</Button>
 												)}
 											</div>
@@ -182,7 +182,7 @@ export function OpeningHoursEditor({ space, spaces }: { space: ManagedSpace; spa
 												className="text-muted-foreground h-8"
 												onClick={() => addPeriod(key)}
 											>
-												<LuPlus /> {t("addPeriod")}
+												<IconPlus /> {t("addPeriod")}
 											</Button>
 										)}
 									</div>

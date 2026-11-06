@@ -3,9 +3,19 @@
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
-import { LuArchive, LuArchiveRestore, LuCheck, LuLoader, LuPencil, LuPlus, LuSearch, LuTrash2, LuX } from "react-icons/lu";
 import { toast } from "sonner";
 import { Abbreviation } from "@/components/act-picker";
+import {
+	IconArchive,
+	IconCheck,
+	IconClose,
+	IconEdit,
+	IconPlus,
+	IconRestore,
+	IconSearch,
+	IconSpinner,
+	IconTrash,
+} from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -35,7 +45,7 @@ export function ActsManager({ acts }: { acts: Act[] }) {
 				action={
 					editing !== "new" && (
 						<Button size="sm" onClick={() => setEditing("new")}>
-							<LuPlus /> {t("new")}
+							<IconPlus /> {t("new")}
 						</Button>
 					)
 				}
@@ -43,7 +53,7 @@ export function ActsManager({ acts }: { acts: Act[] }) {
 				<div className="grid gap-3">
 					{active.length > 0 && (
 						<div className="relative w-full sm:w-80">
-							<LuSearch className="text-muted-foreground absolute start-2.5 top-1/2 size-4 -translate-y-1/2" />
+							<IconSearch className="text-muted-foreground absolute start-2.5 top-1/2 size-4 -translate-y-1/2" />
 							<Input
 								type="search"
 								value={search}
@@ -147,7 +157,7 @@ function ActRow({ act, onEdit }: { act: Act; onEdit?: () => void }) {
 				<span className="flex justify-end gap-1">
 					{onEdit && (
 						<Button variant="ghost" size="icon" className="size-8" aria-label={t("editLabel", { name: act.name })} onClick={onEdit}>
-							<LuPencil />
+							<IconEdit />
 						</Button>
 					)}
 					<Button
@@ -159,11 +169,11 @@ function ActRow({ act, onEdit }: { act: Act; onEdit?: () => void }) {
 						title={act.active ? t("archive") : t("restore")}
 						onClick={toggle}
 					>
-						{pending === "toggle" ? <LuLoader className="animate-spin" /> : act.active ? <LuArchive /> : <LuArchiveRestore />}
+						{pending === "toggle" ? <IconSpinner className="animate-spin" /> : act.active ? <IconArchive /> : <IconRestore />}
 					</Button>
 					{confirming ? (
 						<Button variant="destructive" size="sm" className="h-8" disabled={!!pending} onClick={remove} onBlur={() => setConfirming(false)}>
-							{pending === "delete" ? <LuLoader className="animate-spin" /> : <LuTrash2 />} {t("confirmDelete")}
+							{pending === "delete" ? <IconSpinner className="animate-spin" /> : <IconTrash />} {t("confirmDelete")}
 						</Button>
 					) : (
 						<Button
@@ -175,7 +185,7 @@ function ActRow({ act, onEdit }: { act: Act; onEdit?: () => void }) {
 							title={t("delete")}
 							onClick={() => setConfirming(true)}
 						>
-							<LuTrash2 />
+							<IconTrash />
 						</Button>
 					)}
 				</span>
@@ -266,10 +276,10 @@ function ActForm({ act, onDone }: { act?: Act; onDone: () => void }) {
 			<TableCell className="w-28 align-top">
 				<span className="flex justify-end gap-1">
 					<Button type="button" variant="ghost" size="icon" className="size-8" aria-label={common("cancel")} onClick={onDone}>
-						<LuX />
+						<IconClose />
 					</Button>
 					<Button type="button" size="icon" className="size-8" disabled={saving} aria-label={common("save")} onClick={() => void save()}>
-						{saving ? <LuLoader className="animate-spin" /> : <LuCheck />}
+						{saving ? <IconSpinner className="animate-spin" /> : <IconCheck />}
 					</Button>
 				</span>
 			</TableCell>

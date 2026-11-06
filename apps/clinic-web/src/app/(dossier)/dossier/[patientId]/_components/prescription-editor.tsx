@@ -4,8 +4,8 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useId, useImperativeHandle, useRef, useState } from "react";
-import { LuHistory, LuPill, LuPlus, LuPrinter, LuTrash2 } from "react-icons/lu";
 import { toast } from "sonner";
+import { IconHistory, IconPill, IconPlus, IconPrinter, IconTrash } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -172,17 +172,17 @@ export function PrescriptionEditor({
 		<section className="bg-card rounded-xl border">
 			<header className="flex flex-wrap items-center gap-2 px-4 pt-4 pb-3">
 				<span className="bg-primary/10 text-primary flex size-7 items-center justify-center rounded-lg">
-					<LuPill className="size-4" />
+					<IconPill className="size-4" />
 				</span>
 				<h2 className="text-sm font-semibold">{t("title")}</h2>
 				<div className="ms-auto flex flex-wrap items-center gap-2">
 					{previous && (
 						<Button type="button" variant="outline" size="sm" onClick={renew}>
-							<LuHistory /> {t("renew", { date: fmt.date(previous.date, { day: "numeric", month: "short" }) })}
+							<IconHistory /> {t("renew", { date: fmt.date(previous.date, { day: "numeric", month: "short" }) })}
 						</Button>
 					)}
 					<Button type="button" size="sm" onClick={() => void print()} disabled={filled === 0}>
-						<LuPrinter /> {t("print")}
+						<IconPrinter /> {t("print")}
 					</Button>
 				</div>
 			</header>
@@ -218,7 +218,7 @@ export function PrescriptionEditor({
 									aria-label={t("remove")}
 									onClick={() => removeLine(item.key)}
 								>
-									<LuTrash2 />
+									<IconTrash />
 								</Button>
 							</div>
 							<div className="grid gap-2 ps-8 pe-11 sm:grid-cols-[minmax(0,1fr)_10rem]">
@@ -254,7 +254,7 @@ export function PrescriptionEditor({
 					onClick={addLine}
 					disabled={draft.items.length >= 30}
 				>
-					<LuPlus /> {t("add")}
+					<IconPlus /> {t("add")}
 				</Button>
 
 				<div className="grid gap-1.5">

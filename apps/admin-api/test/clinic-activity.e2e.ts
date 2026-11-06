@@ -104,6 +104,7 @@ describe('clinic: activity log', () => {
           practitionerId: ownerId,
           startsAt: `${MONDAY}T10:00:00+00:00`,
           endsAt: `${MONDAY}T10:30:00+00:00`,
+          reason: 'Consultation',
         })
         .expect(201)
     ).body.id;
@@ -125,6 +126,7 @@ describe('clinic: activity log', () => {
       .send({
         patientId,
         practitionerId: ownerId,
+        reason: 'Consultation',
         startsAt: `${MONDAY}T22:00:00+00:00`,
         endsAt: `${MONDAY}T22:30:00+00:00`,
       })

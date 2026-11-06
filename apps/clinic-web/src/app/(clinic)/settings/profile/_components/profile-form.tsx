@@ -3,8 +3,8 @@
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
-import { LuLoader, LuLock } from "react-icons/lu";
 import { toast } from "sonner";
+import { IconLock, IconSpinner } from "@/components/icons";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -54,7 +54,7 @@ export function ProfileForm({ name, email, roleLabel }: { name: string; email: s
 					<>
 						<p className="text-muted-foreground text-xs">{t("visible")}</p>
 						<Button type="submit" size="sm" disabled={!dirty || saving}>
-							{saving && <LuLoader className="animate-spin" />} {common("save")}
+							{saving && <IconSpinner className="animate-spin" />} {common("save")}
 						</Button>
 					</>
 				}
@@ -89,7 +89,7 @@ export function ProfileForm({ name, email, roleLabel }: { name: string; email: s
 							<FieldLabel htmlFor="profile-email">{t("email")}</FieldLabel>
 							<div className="relative">
 								<Input id="profile-email" value={email} readOnly disabled className="pe-9" />
-								<LuLock className="text-muted-foreground absolute end-3 top-1/2 size-3.5 -translate-y-1/2" />
+								<IconLock className="text-muted-foreground absolute end-3 top-1/2 size-3.5 -translate-y-1/2" />
 							</div>
 							<FieldDescription>{t("emailHint")}</FieldDescription>
 						</Field>
