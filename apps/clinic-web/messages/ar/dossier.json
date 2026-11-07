@@ -234,6 +234,14 @@
       "delete": "حذف {name}",
       "confirmDelete": "حذف؟",
       "deleted": "تم حذف « {name} »"
+    },
+    "finder": {
+      "label": "البحث عن شهادة",
+      "placeholder": "أي شهادة؟ مثال: رياضة، عدم العدوى، زواج، رخصة السياقة…",
+      "mine": "نموذجي",
+      "day": "يوم واحد",
+      "period": "مدة",
+      "custom": "تحرير « {name} » (نص للإكمال)"
     }
   },
   "backToPatients": "قائمة المرضى",

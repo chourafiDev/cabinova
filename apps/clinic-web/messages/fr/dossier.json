@@ -234,6 +234,14 @@
       "delete": "Supprimer {name}",
       "confirmDelete": "Supprimer ?",
       "deleted": "« {name} » supprimé"
+    },
+    "finder": {
+      "label": "Rechercher un certificat",
+      "placeholder": "Quel certificat ? Ex. sport, non-contagion, mariage, permis…",
+      "mine": "Mon modèle",
+      "day": "Un jour",
+      "period": "Période",
+      "custom": "Rédiger « {name} » (texte à compléter)"
     }
   },
   "backToPatients": "Liste des patients",

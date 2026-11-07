@@ -10,8 +10,10 @@ import { DatePicker } from "@/components/date-picker";
 import {
 	IconBan,
 	IconHistory,
+	IconPlus,
 	IconPrinter,
 	IconReset,
+	IconSearch,
 	IconSettings,
 	IconSignature,
 	IconSpinner,
@@ -20,9 +22,11 @@ import { RichTextEditor } from "@/components/rich-text-editor";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Popover, PopoverAnchor, PopoverContent } from "@/components/ui/popover";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { api } from "@/lib/api-client";
+import { blankCertificate, CATALOG, fold, matches } from "@/lib/certificate-catalog";
 import {
 	BUILT_IN,
 	type Certificate,
@@ -40,7 +44,7 @@ import { cn } from "@/lib/utils";
 import { ModelsSheet } from "./certificate-models";
 import { Card } from "./patient-aside";
 
-/** The model the text came from: one of Cabinova's or the doctor's own. */
+/** The model the text came from: one of Cabinova's, the doctor's own, or the library's. */
 type Template = { key: string; body: string };
 
 /**
@@ -62,6 +66,8 @@ export function CertificateTab({ patient, appointmentId }: { patient: PatientFil
 	const [text, setText] = useState("");
 	const [saving, setSaving] = useState(false);
 	const [managing, setManaging] = useState(false);
+	// The last certificate found by name, offered like a model.
+	const [picked, setPicked] = useState<{ key: string; name: string; body: string } | null>(null);
 
 	const models = useQuery({ queryKey: MODELS_KEY, queryFn: () => api<CertificateModel[]>("/certificate-models") });
 	const body = edited ? text : fillBlanks(template.body, { patient, doctor: user.name, kind, startsOn, endsOn });
@@ -141,7 +147,7 @@ export function CertificateTab({ patient, appointmentId }: { patient: PatientFil
 									className="h-9 tabular-nums"
 								/>
 							</label>
-							<label className="grid w-44 gap-1 text-sm">
+							<label className="grid w-44 gap-1 text-sm mr-3">
 								<span className="text-muted-foreground text-xs">{t("from")}</span>
 								<DatePicker
 									value={startsOn}
@@ -159,9 +165,23 @@ export function CertificateTab({ patient, appointmentId }: { patient: PatientFil
 						</div>
 					)}
 
+					<CertificateFinder
+						models={models.data ?? []}
+						kind={kind}
+						onPick={(p) => {
+							setPicked({ key: p.key, name: p.name, body: p.body });
+							use({ key: p.key, body: p.body }, p.kind);
+						}}
+					/>
+
 					<div className="grid gap-2">
 						<div className="flex flex-wrap items-center gap-1.5">
 							<span className="text-muted-foreground me-1 text-xs">{t("models")}</span>
+							{picked && !BUILT_IN.some((m) => m.key === picked.key) && !models.data?.some((m) => m.id === picked.key) && (
+								<ModelChip active={template.key === picked.key} onClick={() => use({ key: picked.key, body: picked.body })}>
+									{picked.name}
+								</ModelChip>
+							)}
 							{BUILT_IN.map((m) => (
 								<ModelChip key={m.key} active={template.key === m.key} onClick={() => use({ key: m.key, body: m.body }, m.kind)}>
 									{t(`builtIn.${m.key}`)}
@@ -207,6 +227,137 @@ export function CertificateTab({ patient, appointmentId }: { patient: PatientFil
 			<CertificateHistory patientId={patient.id} />
 			<ModelsSheet open={managing} onOpenChange={setManaging} />
 		</div>
+	);
+}
+
+/**
+ * "Quel certificat ?": the doctor types a few letters of its name and picks
+ * one of Cabinova's library or of their own models; a name the library
+ * doesn't know gives a text to complete.
+ */
+function CertificateFinder({
+	models,
+	kind,
+	onPick,
+}: {
+	models: CertificateModel[];
+	/** The form's current kind, for a name the library doesn't have. */
+	kind: CertificateKind;
+	onPick: (picked: { key: string; name: string; body: string; kind?: CertificateKind }) => void;
+}) {
+	const t = useTranslations("dossier.certificate.finder");
+	const [query, setQuery] = useState("");
+	const [open, setOpen] = useState(false);
+	const [active, setActive] = useState(0);
+
+	const name = query.trim();
+	const options = [
+		...models
+			.filter((m) => matches(name, m.name))
+			.map((m) => ({ key: m.id, name: m.name, body: m.body, kind: undefined as CertificateKind | undefined, mine: true })),
+		...CATALOG.filter((c) => matches(name, `${c.name} ${c.keywords}`)).map((c) => ({ ...c, mine: false })),
+	];
+	// A certificate the library doesn't have: its name, with blanks to complete.
+	const custom = name.length >= 3 && !options.some((o) => fold(o.name) === fold(name));
+	const count = options.length + (custom ? 1 : 0);
+
+	const pick = (index: number) => {
+		const option = options[index];
+		if (option) onPick({ key: option.key, name: option.name, body: option.body, kind: option.kind });
+		else if (custom) onPick({ key: `custom:${name}`, name, body: blankCertificate(name, kind) });
+		else return;
+		setQuery("");
+		setOpen(false);
+	};
+
+	const onKeyDown = (e: React.KeyboardEvent) => {
+		if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+			e.preventDefault();
+			setOpen(true);
+			setActive((i) => (count ? (i + (e.key === "ArrowDown" ? 1 : count - 1)) % count : 0));
+		} else if (e.key === "Enter") {
+			e.preventDefault();
+			pick(active);
+		} else if (e.key === "Escape") setOpen(false);
+	};
+
+	return (
+		<Popover open={open && count > 0} onOpenChange={setOpen}>
+			<PopoverAnchor asChild>
+				<div className="relative">
+					<IconSearch className="text-muted-foreground pointer-events-none absolute start-3 top-1/2 size-4 -translate-y-1/2" />
+					<Input
+						role="combobox"
+						aria-expanded={open && count > 0}
+						aria-controls="certificate-finder"
+						aria-label={t("label")}
+						value={query}
+						onChange={(e) => {
+							setQuery(e.target.value);
+							setActive(0);
+							setOpen(true);
+						}}
+						onFocus={() => setOpen(true)}
+						onKeyDown={onKeyDown}
+						placeholder={t("placeholder")}
+						maxLength={120}
+						className="h-9 ps-9"
+					/>
+				</div>
+			</PopoverAnchor>
+			<PopoverContent
+				align="start"
+				className="w-(--radix-popover-trigger-width) p-1"
+				onOpenAutoFocus={(e) => e.preventDefault()}
+				onInteractOutside={(e) => {
+					// A click back in the field keeps the list open.
+					if (e.target instanceof Element && e.target.closest("[role=combobox]")) e.preventDefault();
+				}}
+			>
+				<ul id="certificate-finder" role="listbox" className="max-h-72 overflow-y-auto">
+					{options.map((o, i) => (
+						<FinderOption key={o.key} active={i === active} onHover={() => setActive(i)} onPick={() => pick(i)}>
+							<span className="min-w-0 flex-1 truncate">{o.name}</span>
+							<span className="text-muted-foreground shrink-0 text-xs">
+								{o.mine ? t("mine") : o.kind === "period" ? t("period") : t("day")}
+							</span>
+						</FinderOption>
+					))}
+					{custom && (
+						<FinderOption active={active === options.length} onHover={() => setActive(options.length)} onPick={() => pick(options.length)}>
+							<IconPlus className="text-muted-foreground size-4 shrink-0" />
+							<span className="min-w-0 flex-1 truncate">{t("custom", { name })}</span>
+						</FinderOption>
+					)}
+				</ul>
+			</PopoverContent>
+		</Popover>
+	);
+}
+
+function FinderOption({
+	active,
+	onHover,
+	onPick,
+	children,
+}: {
+	active: boolean;
+	onHover: () => void;
+	onPick: () => void;
+	children: React.ReactNode;
+}) {
+	return (
+		<li
+			role="option"
+			aria-selected={active}
+			onMouseEnter={onHover}
+			// Before the field's blur closes the list.
+			onMouseDown={(e) => e.preventDefault()}
+			onClick={onPick}
+			className={cn("flex cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 text-sm", active && "bg-accent")}
+		>
+			{children}
+		</li>
 	);
 }
 
