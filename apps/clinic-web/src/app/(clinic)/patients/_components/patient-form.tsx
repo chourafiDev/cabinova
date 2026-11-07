@@ -6,6 +6,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { Controller, type FieldErrors, useForm, useWatch } from "react-hook-form";
 import { toast } from "sonner";
+import { DatePicker } from "@/components/date-picker";
 import {
 	IconCall,
 	IconChevronDown,
@@ -308,12 +309,20 @@ export function PatientForm({
 									<span className="bg-muted text-muted-foreground rounded-full px-2 text-xs tabular-nums">{common("age", { age })}</span>
 								)}
 							</div>
-							<Input
-								id="birthDate"
-								type="date"
-								max={today()}
-								aria-invalid={!!errors.birthDate}
-								{...form.register("birthDate")}
+							<Controller
+								control={form.control}
+								name="birthDate"
+								render={({ field }) => (
+									<DatePicker
+										id="birthDate"
+										value={field.value ?? ""}
+										onChange={field.onChange}
+										max={today()}
+										years
+										clearable
+										invalid={!!errors.birthDate}
+									/>
+								)}
 							/>
 							<FieldError errors={[errors.birthDate]} />
 						</Field>

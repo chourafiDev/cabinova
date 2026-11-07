@@ -1,4 +1,4 @@
-import { LuArrowRight } from "react-icons/lu";
+import { IconArrowRight } from "@/components/icons";
 import { Button as MovingBorderButton } from "@/components/ui/moving-border";
 import { CONTACT_EMAIL, demoHref, TRIAL_DAYS } from "@/lib/site";
 
@@ -28,7 +28,7 @@ export function Cta() {
 								borderClassName="bg-[radial-gradient(#e9dff0_40%,transparent_60%)]"
 								className="text-brand gap-2 border-0 bg-white text-sm font-medium"
 							>
-								Demander une démo <LuArrowRight className="size-4" />
+								Demander une démo <IconArrowRight className="size-4" />
 							</MovingBorderButton>
 							<a href={`mailto:${CONTACT_EMAIL}`} className="text-sm font-medium text-white/80 underline-offset-4 hover:text-white hover:underline">
 								ou écrivez-nous à {CONTACT_EMAIL}

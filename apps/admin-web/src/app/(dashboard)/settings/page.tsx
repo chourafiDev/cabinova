@@ -1,7 +1,6 @@
-import { LuArrowRight, LuLandmark } from "react-icons/lu";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { HiCog6Tooth } from "react-icons/hi2";
+import { IconArrowRight, IconBank, IconSettings } from "@/components/icons";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { type BillingSettings, formatRib } from "@/lib/billing";
@@ -45,7 +44,7 @@ export default async function SettingsPage({
 		<>
 			<div className="mb-4 flex items-center gap-2 border-b border-dashed border-foreground/20 pb-4">
 				<span className="flex size-8 items-center justify-center rounded-md bg-primary/10 text-primary">
-					<HiCog6Tooth className="size-4" />
+					<IconSettings className="size-4" />
 				</span>
 				<div className="grid leading-tight">
 					<h1 className="font-semibold">Configuration</h1>
@@ -94,7 +93,7 @@ export default async function SettingsPage({
 								{billing ? (
 									<>
 										<div className="flex flex-wrap items-center gap-2">
-											<LuLandmark className="size-4 text-muted-foreground" />
+											<IconBank className="size-4 text-muted-foreground" />
 											<span className="font-medium">Virement bancaire</span>
 											<Badge
 												variant="outline"
@@ -124,7 +123,7 @@ export default async function SettingsPage({
 										)}
 										<Button asChild size="sm" className="w-fit">
 											<Link href="/billing/settings">
-												Modifier dans Facturation <LuArrowRight />
+												Modifier dans Facturation <IconArrowRight />
 											</Link>
 										</Button>
 									</>

@@ -1,11 +1,12 @@
 "use client";
 
 import { format } from "date-fns";
-import { LuEllipsis, LuPrinter, LuX } from "react-icons/lu";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
+import { DatePicker } from "@/components/date-picker";
+import { IconClose, IconMore, IconPrinter } from "@/components/icons";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -118,13 +119,13 @@ export function QuotesTable({
 											<DropdownMenu>
 												<DropdownMenuTrigger asChild>
 													<Button size="icon-sm" variant="ghost" aria-label={`Actions ${q.number}`}>
-														<LuEllipsis />
+														<IconMore />
 													</Button>
 												</DropdownMenuTrigger>
 												<DropdownMenuContent align="end" className="w-48">
 													<DropdownMenuItem asChild>
 														<a href={`/quotes/${q.id}`} target="_blank" rel="noreferrer">
-															<LuPrinter /> Voir / imprimer
+															<IconPrinter /> Voir / imprimer
 														</a>
 													</DropdownMenuItem>
 													{pending && canWrite && (
@@ -135,7 +136,7 @@ export function QuotesTable({
 																setVoiding(q);
 															}}
 														>
-															<LuX /> Annuler le devis
+															<IconClose /> Annuler le devis
 														</DropdownMenuItem>
 													)}
 												</DropdownMenuContent>
@@ -254,12 +255,11 @@ function ConfirmDialog({ quote, onClose }: { quote: Quote; onClose: () => void }
 						</Field>
 						<Field>
 							<FieldLabel htmlFor="quote-date">Reçu le</FieldLabel>
-							<Input
+							<DatePicker
 								id="quote-date"
-								type="date"
 								value={receivedAt}
 								max={format(new Date(), "yyyy-MM-dd")}
-								onChange={(e) => setReceivedAt(e.target.value)}
+								onChange={setReceivedAt}
 							/>
 						</Field>
 					</div>

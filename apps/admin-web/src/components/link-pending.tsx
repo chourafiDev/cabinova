@@ -1,7 +1,7 @@
 "use client";
 
 import { useLinkStatus } from "next/link";
-import { LuLoaderCircle } from "react-icons/lu";
+import { IconSpinnerCircle } from "@/components/icons";
 
 /**
  * A small spinner inside a <Link> while its page is still on the way (slow
@@ -16,7 +16,7 @@ export function LinkPending() {
 			className="ms-auto flex size-4 shrink-0 items-center justify-center transition-opacity group-data-[collapsible=icon]:hidden"
 			style={{ opacity: pending ? 1 : 0 }}
 		>
-			<LuLoaderCircle className="size-3.5 animate-spin motion-reduce:animate-none" />
+			<IconSpinnerCircle className="size-3.5 animate-spin motion-reduce:animate-none" />
 		</span>
 	);
 }

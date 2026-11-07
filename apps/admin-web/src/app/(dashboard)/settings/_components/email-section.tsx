@@ -1,8 +1,8 @@
 "use client";
 
-import { LuCircleCheck, LuLoader, LuSend, LuTriangleAlert } from "react-icons/lu";
 import { useState } from "react";
 import { toast } from "sonner";
+import { IconCheckCircle, IconSend, IconSpinner, IconWarning } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
@@ -65,7 +65,7 @@ export function EmailSection({
 						: "flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900"
 				}
 			>
-				{delivery.provider ? <LuCircleCheck className="mt-0.5 size-4 shrink-0" /> : <LuTriangleAlert className="mt-0.5 size-4 shrink-0" />}
+				{delivery.provider ? <IconCheckCircle className="mt-0.5 size-4 shrink-0" /> : <IconWarning className="mt-0.5 size-4 shrink-0" />}
 				<span>
 					{delivery.provider
 						? "Envoi actif via Resend."
@@ -138,7 +138,7 @@ export function EmailSection({
 			{!readOnly && (
 				<div className="flex flex-wrap items-center gap-3">
 					<Button type="button" variant="outline" size="sm" disabled={testing || s.dirty} onClick={test}>
-						{testing ? <LuLoader className="animate-spin" /> : <LuSend />} M’envoyer un e-mail de test
+						{testing ? <IconSpinner className="animate-spin" /> : <IconSend />} M’envoyer un e-mail de test
 					</Button>
 					{s.dirty && <span className="text-xs text-muted-foreground">Enregistrez d’abord vos modifications.</span>}
 				</div>

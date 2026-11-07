@@ -1,6 +1,6 @@
 "use client";
 
-import { LuLoader } from "react-icons/lu";
+import { IconSpinner } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -44,7 +44,7 @@ export function UnsavedChangesBar({
 					Ignorer
 				</Button>
 				<Button type="submit" form={formId} size="sm" disabled={isSubmitting}>
-					{isSubmitting && <LuLoader className="size-4 animate-spin" />}
+					{isSubmitting && <IconSpinner className="size-4 animate-spin" />}
 					Enregistrer
 				</Button>
 			</div>

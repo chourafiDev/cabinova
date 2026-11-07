@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { LuCornerDownLeft, LuFileText, LuHash, LuLoader, LuSearch } from "react-icons/lu";
+import { IconDocument, IconEnter, IconHash, IconSearch, IconSpinner } from "@/components/icons";
 import type { SearchEntry } from "@/lib/docs";
 import { cn } from "@/lib/utils";
 
@@ -75,7 +75,7 @@ function SearchDialog({ onClose }: { onClose: () => void }) {
 		<div className="fixed inset-0 z-50 flex items-start justify-center bg-black/50 p-4 pt-[12vh] backdrop-blur-sm" onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
 			<div role="dialog" aria-modal="true" aria-label="Rechercher dans la documentation" className="bg-card w-full max-w-xl overflow-hidden rounded-2xl border shadow-2xl">
 				<div className="flex items-center gap-3 border-b px-4">
-					<LuSearch className="text-muted-foreground size-5 shrink-0" />
+					<IconSearch className="text-muted-foreground size-5 shrink-0" />
 					<input
 						autoFocus
 						type="search"
@@ -98,7 +98,7 @@ function SearchDialog({ onClose }: { onClose: () => void }) {
 						aria-label="Rechercher"
 						className="h-14 min-w-0 flex-1 bg-transparent outline-none [&::-webkit-search-cancel-button]:hidden"
 					/>
-					{!index && !failed && <LuLoader className="text-muted-foreground size-4 animate-spin" />}
+					{!index && !failed && <IconSpinner className="text-muted-foreground size-4 animate-spin" />}
 					<kbd className="text-muted-foreground bg-muted hidden rounded border px-1.5 py-0.5 text-xs sm:block">Échap</kbd>
 				</div>
 				{failed ? (
@@ -110,7 +110,7 @@ function SearchDialog({ onClose }: { onClose: () => void }) {
 				) : (
 					<ul ref={list} role="listbox" aria-label="Résultats" className="max-h-[50vh] overflow-y-auto p-2">
 						{results.map((result, i) => {
-							const Icon = result.heading ? LuHash : LuFileText;
+							const Icon = result.heading ? IconHash : IconDocument;
 							return (
 								<li key={result.key} role="option" aria-selected={i === selected}>
 									<button
@@ -125,7 +125,7 @@ function SearchDialog({ onClose }: { onClose: () => void }) {
 											<span className="block font-medium">{result.title}</span>
 											<span className="text-muted-foreground mt-0.5 line-clamp-2 block text-sm">{result.snippet}</span>
 										</span>
-										{i === selected && <LuCornerDownLeft className="text-muted-foreground mt-1 hidden size-4 shrink-0 sm:block" />}
+										{i === selected && <IconEnter className="text-muted-foreground mt-1 hidden size-4 shrink-0 sm:block" />}
 									</button>
 								</li>
 							);
@@ -174,7 +174,7 @@ export function DocsSearchButton({ large }: { large?: boolean }) {
 				large ? "h-12 px-4 text-base" : "h-9 justify-center px-2.5 sm:justify-start",
 			)}
 		>
-			<LuSearch className="size-4 shrink-0" />
+			<IconSearch className="size-4 shrink-0" />
 			<span className={cn(!large && "hidden sm:inline")}>Rechercher…</span>
 			<kbd className={cn("bg-background ms-auto rounded border px-1.5 py-0.5 text-[0.6875rem]", !large && "hidden sm:block")}>⌘K</kbd>
 		</button>

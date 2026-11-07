@@ -1,0 +1,1 @@
+ALTER TABLE "clinic_settings" ADD COLUMN "open_holidays" text[] DEFAULT '{}'::text[] NOT NULL;

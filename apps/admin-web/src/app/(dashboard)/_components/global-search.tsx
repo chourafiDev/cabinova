@@ -4,10 +4,25 @@ import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { useTheme } from "next-themes";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import {
+	type AppIcon,
+	IconBuilding,
+	IconDocument,
+	IconKeyboard,
+	IconLogout,
+	IconMonitor,
+	IconMoon,
+	IconPlus,
+	IconReceiptDiscount,
+	IconSearch,
+	IconSettings,
+	IconShieldCheck,
+	IconSpinner,
+	IconSun,
+	IconSupport,
+	IconUser,
+} from "@/components/icons";
 import { Kbd, SHORTCUTS_HELP_EVENT, useModifierLabel } from "@/components/keyboard-shortcuts";
-import type { IconType } from "react-icons";
-import { HiBuildingOffice2, HiLifebuoy, HiReceiptPercent, HiUser } from "react-icons/hi2";
-import { LuFileText, LuKeyboard, LuLoader, LuLogOut, LuMonitor, LuMoon, LuPlus, LuSearch, LuSettings2, LuShieldCheck, LuSun } from "react-icons/lu";
 import {
 	Command,
 	CommandDialog,
@@ -37,7 +52,7 @@ type SearchResults = {
 	promoCodes?: { id: string; code: string; discountPercent: number; active: boolean }[];
 };
 
-type Result = { key: string; href: string; icon: IconType; title: string; subtitle?: string | null; meta?: string };
+type Result = { key: string; href: string; icon: AppIcon; title: string; subtitle?: string | null; meta?: string };
 
 const MIN_LENGTH = 2;
 
@@ -56,7 +71,7 @@ function toGroups(data: SearchResults | undefined): { heading: string; items: Re
 			items: (data.tenants ?? []).map((t) => ({
 				key: `tenant-${t.id}`,
 				href: `/tenants/${t.id}`,
-				icon: HiBuildingOffice2,
+				icon: IconBuilding,
 				title: t.name,
 				subtitle: [t.subdomain && `${t.subdomain}.cabinova.ma`, t.city].filter(Boolean).join(" · "),
 				meta: TENANT_STATUS_LABELS[t.status],
@@ -67,7 +82,7 @@ function toGroups(data: SearchResults | undefined): { heading: string; items: Re
 			items: (data.invoices ?? []).map((i) => ({
 				key: `invoice-${i.id}`,
 				href: `/billing?${new URLSearchParams({ status: "all", search: i.number })}`,
-				icon: LuFileText,
+				icon: IconDocument,
 				title: i.number,
 				subtitle: `${i.tenantName} · ${formatPrice(i.amount)}`,
 				meta: INVOICE_STATUS_LABELS[i.status],
@@ -78,7 +93,7 @@ function toGroups(data: SearchResults | undefined): { heading: string; items: Re
 			items: (data.tickets ?? []).map((t) => ({
 				key: `ticket-${t.id}`,
 				href: `/support/${t.id}`,
-				icon: HiLifebuoy,
+				icon: IconSupport,
 				title: t.subject,
 				subtitle: [t.number, t.tenantName].filter(Boolean).join(" · "),
 				meta: TICKET_STATUS_LABELS[t.status],
@@ -89,7 +104,7 @@ function toGroups(data: SearchResults | undefined): { heading: string; items: Re
 			items: (data.users ?? []).map((u) => ({
 				key: `user-${u.id}`,
 				href: `/users/${u.id}`,
-				icon: HiUser,
+				icon: IconUser,
 				title: u.name,
 				subtitle: u.email,
 				meta: u.active ? undefined : "Désactivé",
@@ -100,7 +115,7 @@ function toGroups(data: SearchResults | undefined): { heading: string; items: Re
 			items: (data.promoCodes ?? []).map((p) => ({
 				key: `promo-${p.id}`,
 				href: "/plans/promo-codes",
-				icon: HiReceiptPercent,
+				icon: IconReceiptDiscount,
 				title: p.code,
 				subtitle: `−${p.discountPercent} %`,
 				meta: p.active ? undefined : "Inactif",
@@ -113,7 +128,7 @@ function toGroups(data: SearchResults | undefined): { heading: string; items: Re
 type Action = {
 	id: string;
 	label: string;
-	icon: IconType;
+	icon: AppIcon;
 	keywords?: string;
 	permission?: Permission;
 	run: () => void;
@@ -169,18 +184,18 @@ export function GlobalSearch() {
 	});
 
 	const actions: Action[] = [
-		{ id: "new-tenant", label: "Nouveau cabinet", icon: LuPlus, keywords: "créer ajouter clinique", permission: "tenants:write", run: () => go("/tenants/new") },
-		{ id: "new-ticket", label: "Nouveau ticket", icon: LuPlus, keywords: "support assistance créer", permission: "support:write", run: () => go("/support?nouveau=1") },
-		{ id: "new-plan", label: "Nouvelle offre", icon: LuPlus, keywords: "plan abonnement créer", permission: "subscriptions:write", run: () => go("/plans/new") },
-		{ id: "new-promo", label: "Nouveau code promo", icon: LuPlus, keywords: "remise réduction créer", permission: "subscriptions:write", run: () => go("/plans/promo-codes?nouveau=1") },
-		{ id: "invite-user", label: "Inviter un utilisateur", icon: LuPlus, keywords: "équipe agent ajouter", permission: "users:write", run: () => go("/users?nouveau=1") },
-		{ id: "billing-settings", label: "Paramètres de facturation", icon: LuSettings2, keywords: "rib banque virement", permission: "billing:read", run: () => go("/billing/settings") },
-		{ id: "theme-light", label: "Thème clair", icon: LuSun, keywords: "apparence mode jour", run: () => pick(() => setTheme("light")) },
-		{ id: "theme-dark", label: "Thème sombre", icon: LuMoon, keywords: "apparence mode nuit dark", run: () => pick(() => setTheme("dark")) },
-		{ id: "theme-system", label: "Thème du système", icon: LuMonitor, keywords: "apparence automatique", run: () => pick(() => setTheme("system")) },
-		{ id: "shortcuts", label: "Raccourcis clavier", icon: LuKeyboard, keywords: "aide touches clavier", run: () => pick(() => window.dispatchEvent(new Event(SHORTCUTS_HELP_EVENT))) },
-		{ id: "account-security", label: "Sécurité du compte", icon: LuShieldCheck, keywords: "2fa mot de passe double authentification", run: () => go("/account/security") },
-		{ id: "sign-out", label: "Se déconnecter", icon: LuLogOut, keywords: "déconnexion quitter", run: () => pick(signOut) },
+		{ id: "new-tenant", label: "Nouveau cabinet", icon: IconPlus, keywords: "créer ajouter clinique", permission: "tenants:write", run: () => go("/tenants/new") },
+		{ id: "new-ticket", label: "Nouveau ticket", icon: IconPlus, keywords: "support assistance créer", permission: "support:write", run: () => go("/support?nouveau=1") },
+		{ id: "new-plan", label: "Nouvelle offre", icon: IconPlus, keywords: "plan abonnement créer", permission: "subscriptions:write", run: () => go("/plans/new") },
+		{ id: "new-promo", label: "Nouveau code promo", icon: IconPlus, keywords: "remise réduction créer", permission: "subscriptions:write", run: () => go("/plans/promo-codes?nouveau=1") },
+		{ id: "invite-user", label: "Inviter un utilisateur", icon: IconPlus, keywords: "équipe agent ajouter", permission: "users:write", run: () => go("/users?nouveau=1") },
+		{ id: "billing-settings", label: "Paramètres de facturation", icon: IconSettings, keywords: "rib banque virement", permission: "billing:read", run: () => go("/billing/settings") },
+		{ id: "theme-light", label: "Thème clair", icon: IconSun, keywords: "apparence mode jour", run: () => pick(() => setTheme("light")) },
+		{ id: "theme-dark", label: "Thème sombre", icon: IconMoon, keywords: "apparence mode nuit dark", run: () => pick(() => setTheme("dark")) },
+		{ id: "theme-system", label: "Thème du système", icon: IconMonitor, keywords: "apparence automatique", run: () => pick(() => setTheme("system")) },
+		{ id: "shortcuts", label: "Raccourcis clavier", icon: IconKeyboard, keywords: "aide touches clavier", run: () => pick(() => window.dispatchEvent(new Event(SHORTCUTS_HELP_EVENT))) },
+		{ id: "account-security", label: "Sécurité du compte", icon: IconShieldCheck, keywords: "2fa mot de passe double authentification", run: () => go("/account/security") },
+		{ id: "sign-out", label: "Se déconnecter", icon: IconLogout, keywords: "déconnexion quitter", run: () => pick(signOut) },
 	];
 	const visibleActions = actions.filter(
 		(a) =>
@@ -226,7 +241,7 @@ export function GlobalSearch() {
 				className="text-muted-foreground hover:bg-muted flex h-9 items-center gap-2 rounded-lg border bg-background px-2.5 text-sm transition-colors sm:w-64"
 				aria-label="Rechercher"
 			>
-				<LuSearch className="size-4 shrink-0" />
+				<IconSearch className="size-4 shrink-0" />
 				<span className="hidden flex-1 text-start sm:inline">Rechercher…</span>
 				<kbd className="bg-muted pointer-events-none hidden h-5 items-center rounded px-1.5 font-mono text-[10px] font-medium sm:inline-flex">
 					{modifier} K
@@ -249,7 +264,7 @@ export function GlobalSearch() {
 							placeholder="Rechercher ou lancer une action…"
 						/>
 						{pending && (
-							<LuLoader className="text-muted-foreground absolute end-3 top-1/2 size-4 -translate-y-1/2 animate-spin" />
+							<IconSpinner className="text-muted-foreground absolute end-3 top-1/2 size-4 -translate-y-1/2 animate-spin" />
 						)}
 					</div>
 					<CommandList className="max-h-[min(60vh,420px)]">

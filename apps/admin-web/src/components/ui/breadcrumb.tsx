@@ -1,7 +1,7 @@
 import * as React from "react"
 import { cn } from "cn"
 import { Slot } from "radix-ui"
-import { LuChevronRight, LuEllipsis } from "react-icons/lu";
+import { IconChevronRight, IconMore } from "@/components/icons"
 
 function Breadcrumb({ className, ...props }: React.ComponentProps<"nav">) {
   return (
@@ -82,7 +82,7 @@ function BreadcrumbSeparator({
       {...props}
     >
       {children ?? (
-        <LuChevronRight className="rtl:rotate-180" />
+        <IconChevronRight className="rtl:rotate-180" />
       )}
     </li>
   )
@@ -103,7 +103,7 @@ function BreadcrumbEllipsis({
       )}
       {...props}
     >
-      <LuEllipsis
+      <IconMore
       />
       <span className="sr-only">More</span>
     </span>

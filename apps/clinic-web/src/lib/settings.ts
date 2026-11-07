@@ -39,7 +39,8 @@ export type ManagedSpace = Space & {
 	members: number;
 };
 
-export type AgendaSettings = { defaultAppointmentMinutes: number };
+/** Paramètres › Horaires & agenda: the booking default, and the public holidays the cabinet works (keys). */
+export type AgendaSettings = { defaultAppointmentMinutes: number; openHolidays: string[] };
 
 /** Same as migration 0006: Mon–Fri 08–18, Sat 08–13. */
 export const DEFAULT_OPENING_HOURS: OpeningHours = {

@@ -113,7 +113,7 @@ export function KpiCard({
 					{value}
 					{suffix && <span className="text-muted-foreground text-sm font-normal">{suffix}</span>}
 				</p>
-				<div className="mt-3 flex items-center justify-between gap-2 text-xs">
+				<div className="mt-3 flex items-center justify-between gap-2 text-[11px]">
 					{change === undefined ? <span /> : <Change value={change} unit={changeUnit} invert={invert} />}
 					<span className="text-muted-foreground truncate">{period}</span>
 				</div>

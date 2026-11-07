@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { LuArrowRight, LuLogIn, LuMenu, LuX } from "react-icons/lu";
+import { IconArrowRight, IconClose, IconLogin, IconMenu } from "@/components/icons";
 import { clinicUrl, demoHref, NAV, TENANT_BASE_DOMAIN } from "@/lib/site";
 import { cn } from "@/lib/utils";
 import { Logo } from "./logo";
@@ -45,13 +45,13 @@ export function Navbar() {
 						onClick={() => setLogin(true)}
 						className="hover:bg-muted hidden h-9 items-center gap-1.5 rounded-full px-3 text-sm font-medium transition-colors sm:flex"
 					>
-						<LuLogIn className="size-4" /> Se connecter
+						<IconLogin className="size-4" /> Se connecter
 					</button>
 					<a
 						href={demoHref}
 						className="btn-raised bg-primary text-primary-foreground hidden h-9 items-center gap-1.5 rounded-full px-4 text-sm font-medium shadow-sm transition hover:opacity-90 sm:flex"
 					>
-						Demander une démo <LuArrowRight className="size-4" />
+						Demander une démo <IconArrowRight className="size-4" />
 					</a>
 					<button
 						type="button"
@@ -60,7 +60,7 @@ export function Navbar() {
 						aria-expanded={menu}
 						onClick={() => setMenu((m) => !m)}
 					>
-						{menu ? <LuX className="size-5" /> : <LuMenu className="size-5" />}
+						{menu ? <IconClose className="size-5" /> : <IconMenu className="size-5" />}
 					</button>
 				</div>
 			</nav>
@@ -84,10 +84,10 @@ export function Navbar() {
 							}}
 							className="flex h-10 items-center justify-center gap-1.5 rounded-full border text-sm font-medium"
 						>
-							<LuLogIn className="size-4" /> Se connecter
+							<IconLogin className="size-4" /> Se connecter
 						</button>
 						<a href={demoHref} className="btn-raised bg-primary text-primary-foreground flex h-10 items-center justify-center gap-1.5 rounded-full text-sm font-medium">
-							Demander une démo <LuArrowRight className="size-4" />
+							Demander une démo <IconArrowRight className="size-4" />
 						</a>
 					</div>
 				</div>
@@ -141,7 +141,7 @@ function LoginDialog({ onClose }: { onClose: () => void }) {
 						<p className="text-muted-foreground mt-1 text-sm">Chaque cabinet a sa propre adresse Cabinova.</p>
 					</div>
 					<button type="button" onClick={onClose} className="hover:bg-muted rounded-full p-1.5" aria-label="Fermer">
-						<LuX className="size-4" />
+						<IconClose className="size-4" />
 					</button>
 				</div>
 				<form onSubmit={go} className="grid gap-3">
@@ -172,7 +172,7 @@ function LoginDialog({ onClose }: { onClose: () => void }) {
 					</div>
 					{error && <p className="text-sm text-red-600 dark:text-red-400">{error}</p>}
 					<button type="submit" className="btn-raised bg-primary text-primary-foreground mt-1 flex h-11 items-center justify-center gap-1.5 rounded-xl font-medium">
-						Continuer <LuArrowRight className="size-4" />
+						Continuer <IconArrowRight className="size-4" />
 					</button>
 				</form>
 			</div>

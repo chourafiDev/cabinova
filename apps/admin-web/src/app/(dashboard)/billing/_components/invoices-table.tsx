@@ -1,10 +1,10 @@
 "use client";
 
-import { LuEllipsis, LuPrinter, LuReceiptText, LuX } from "react-icons/lu";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
+import { IconClose, IconMore, IconPrinter, IconReceiptText } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import {
 	Dialog,
@@ -145,7 +145,7 @@ export function InvoicesTable({
 														variant="ghost"
 														aria-label={`Actions ${inv.number}`}
 													>
-														<LuEllipsis />
+														<IconMore />
 													</Button>
 												</DropdownMenuTrigger>
 												<DropdownMenuContent align="end" className="w-48">
@@ -155,12 +155,12 @@ export function InvoicesTable({
 															target="_blank"
 															rel="noreferrer"
 														>
-															<LuPrinter /> Voir / imprimer
+															<IconPrinter /> Voir / imprimer
 														</a>
 													</DropdownMenuItem>
 													{inv.status === "paid" && canWrite && (
 														<DropdownMenuItem onSelect={() => setCrediting(inv)}>
-															<LuReceiptText /> Émettre un avoir
+															<IconReceiptText /> Émettre un avoir
 														</DropdownMenuItem>
 													)}
 													{open && canWrite && (
@@ -171,7 +171,7 @@ export function InvoicesTable({
 																setVoiding(inv);
 															}}
 														>
-															<LuX /> Annuler la facture
+															<IconClose /> Annuler la facture
 														</DropdownMenuItem>
 													)}
 												</DropdownMenuContent>

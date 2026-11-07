@@ -2,11 +2,12 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { format } from "date-fns";
-import { LuChevronDown } from "react-icons/lu";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
+import { DatePicker } from "@/components/date-picker";
+import { IconChevronDown } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -19,7 +20,6 @@ import {
 } from "@/components/ui/dialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { ApiError, api } from "@/lib/api-client";
@@ -41,7 +41,7 @@ export function StatusActions({ tenantId, transitions }: { tenantId: string; tra
 			<DropdownMenu>
 				<DropdownMenuTrigger asChild>
 					<Button variant="outline" size="sm">
-						Statut<LuChevronDown />
+						Statut<IconChevronDown />
 					</Button>
 				</DropdownMenuTrigger>
 				<DropdownMenuContent align="end" className="w-46">
@@ -154,7 +154,13 @@ function StatusChangeForm({
 
 					<Field data-invalid={!!errors.effectiveOn}>
 						<FieldLabel htmlFor="effectiveOn">Date d’effet</FieldLabel>
-						<Input id="effectiveOn" type="date" min={today()} {...form.register("effectiveOn")} />
+						<Controller
+							control={form.control}
+							name="effectiveOn"
+							render={({ field }) => (
+								<DatePicker id="effectiveOn" value={field.value ?? ""} onChange={field.onChange} min={today()} />
+							)}
+						/>
 						<FieldDescription>Aujourd’hui : appliqué immédiatement. Plus tard : programmé.</FieldDescription>
 					</Field>
 

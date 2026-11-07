@@ -1,11 +1,11 @@
 "use client"
 
+import { IconClose } from "@/components/icons"
 import * as React from "react"
 import { cn } from "cn"
 import { Dialog as DialogPrimitive } from "radix-ui"
 
 import { Button } from "@/components/ui/button"
-import { LuX } from "react-icons/lu";
 
 function Dialog({
   ...props
@@ -74,7 +74,7 @@ function DialogContent({
               className="text-muted-foreground absolute top-4 end-4"
               size="icon-sm"
             >
-              <LuX
+              <IconClose
               />
               <span className="sr-only">Fermer</span>
             </Button>

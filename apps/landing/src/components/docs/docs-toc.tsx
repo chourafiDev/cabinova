@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { LuChevronDown } from "react-icons/lu";
+import { IconChevronDown } from "@/components/icons";
 import { cn } from "@/lib/utils";
 
 type Heading = { level: number; text: string; id: string };
@@ -55,7 +55,7 @@ export function DocsToc({ headings, variant }: { headings: Heading[]; variant: "
 		<details className="group bg-muted/50 mt-6 rounded-xl border px-4 py-3 xl:hidden">
 			<summary className="flex cursor-pointer list-none items-center justify-between text-sm font-medium [&::-webkit-details-marker]:hidden">
 				Sur cette page
-				<LuChevronDown className="text-muted-foreground size-4 transition-transform group-open:rotate-180" />
+				<IconChevronDown className="text-muted-foreground size-4 transition-transform group-open:rotate-180" />
 			</summary>
 			<div className="mt-3">
 				<Links headings={headings} />

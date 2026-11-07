@@ -1,5 +1,6 @@
 "use client"
 
+import { IconChevronLeft, IconChevronRight } from "@/components/icons"
 import * as React from "react"
 import { cn } from "cn"
 import useEmblaCarousel, {
@@ -7,7 +8,6 @@ import useEmblaCarousel, {
 } from "embla-carousel-react"
 
 import { Button } from "@/components/ui/button"
-import { LuChevronLeft, LuChevronRight } from "react-icons/lu";
 
 type CarouselApi = UseEmblaCarouselType[1]
 type UseCarouselParameters = Parameters<typeof useEmblaCarousel>
@@ -198,7 +198,7 @@ function CarouselPrevious({
       onClick={scrollPrev}
       {...props}
     >
-      <LuChevronLeft className="rtl:rotate-180" />
+      <IconChevronLeft className="rtl:rotate-180" />
       <span className="sr-only">Précédent</span>
     </Button>
   )
@@ -228,7 +228,7 @@ function CarouselNext({
       onClick={scrollNext}
       {...props}
     >
-      <LuChevronRight className="rtl:rotate-180" />
+      <IconChevronRight className="rtl:rotate-180" />
       <span className="sr-only">Suivant</span>
     </Button>
   )

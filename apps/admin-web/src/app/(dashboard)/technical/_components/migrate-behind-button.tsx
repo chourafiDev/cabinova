@@ -1,9 +1,9 @@
 "use client";
 
-import { LuLoader } from "react-icons/lu";
 import { useRouter } from "next/navigation";
 import { useTransition } from "react";
 import { toast } from "sonner";
+import { IconSpinner } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import { api } from "@/lib/api-client";
 import { plural } from "@/lib/plural";
@@ -32,7 +32,7 @@ export function MigrateBehindButton({ behind }: { behind: number }) {
 
 	return (
 		<Button onClick={run} disabled={pending || behind === 0} className="md:w-auto w-full">
-			{pending && <LuLoader className="animate-spin" />}
+			{pending && <IconSpinner className="animate-spin" />}
 			Migrer les bases en retard{behind ? ` (${behind})` : ""}
 		</Button>
 	);

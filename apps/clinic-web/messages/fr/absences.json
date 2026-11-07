@@ -32,9 +32,10 @@
   },
   "holidays": {
     "title": "Jours fériés à venir",
-    "hint": "Fermés pour tout le monde : rien à enregistrer.",
+    "hint": "Le cabinet est fermé ces jours-là, sauf ceux où vous travaillez : rien à enregistrer.",
     "estimated": "Date estimée (± 1 jour)",
-    "closedInAgenda": "Déjà fermés dans l’agenda."
+    "closedInAgenda": "Déjà fermés dans l’agenda.",
+    "manage": "Gérer"
   },
   "form": {
     "title": "Nouvelle absence",

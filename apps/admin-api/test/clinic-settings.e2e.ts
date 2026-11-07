@@ -131,7 +131,7 @@ describe('clinic: settings', () => {
       .expect(403);
     // Everyone reads the agenda settings (booking form).
     const { body } = await cab(secretary).get('/settings/agenda').expect(200);
-    expect(body).toEqual({ defaultAppointmentMinutes: 30 });
+    expect(body).toEqual({ defaultAppointmentMinutes: 30, openHolidays: [] });
   });
 
   it('edits the identity in the catalog, audited as the cabinet’s change', async () => {
@@ -218,6 +218,51 @@ describe('clinic: settings', () => {
       .expect(200);
     const { body } = await cab(secretary).get('/settings/agenda').expect(200);
     expect(body.defaultAppointmentMinutes).toBe(20);
+  });
+
+  it('closes the public holidays, but the ones the cabinet works', async () => {
+    // New Year's Day 2027: a Friday, within the default hours.
+    const { body: me } = await cab().get('/auth/me').expect(200);
+    const { body: patient } = await cab()
+      .post('/patients')
+      .send({ firstName: 'Nadia', lastName: 'Fériée', sex: 'female' })
+      .expect(201);
+    const visit = {
+      patientId: patient.id,
+      practitionerId: me.user.id,
+      startsAt: '2027-01-01T10:00:00+00:00',
+      endsAt: '2027-01-01T10:30:00+00:00',
+      reason: 'Consultation',
+    };
+    const { body: refused } = await cab()
+      .post('/appointments')
+      .send(visit)
+      .expect(400);
+    expect(refused.code).toBe('HOLIDAY');
+
+    await cab(secretary)
+      .put('/settings/holidays')
+      .send({ openHolidays: ['newYear'] })
+      .expect(403);
+    for (const openHolidays of [['noel'], ['newYear', 'newYear'], 'newYear']) {
+      await cab().put('/settings/holidays').send({ openHolidays }).expect(400);
+    }
+    await cab()
+      .put('/settings/holidays')
+      .send({ openHolidays: ['newYear', 'eidAlFitr'] })
+      .expect(200);
+    const { body } = await cab(secretary).get('/settings/agenda').expect(200);
+    expect(body.openHolidays).toEqual(['newYear', 'eidAlFitr']);
+
+    // Worked: the agenda takes the booking.
+    await cab().post('/appointments').send(visit).expect(201);
+    // Every holiday closed again.
+    await cab().put('/settings/holidays').send({ openHolidays: [] }).expect(200);
+    const { body: again } = await cab()
+      .post('/appointments')
+      .send({ ...visit, startsAt: '2027-01-01T11:00:00+00:00', endsAt: '2027-01-01T11:30:00+00:00' })
+      .expect(400);
+    expect(again.code).toBe('HOLIDAY');
   });
 
   it('edits a space and its opening hours', async () => {

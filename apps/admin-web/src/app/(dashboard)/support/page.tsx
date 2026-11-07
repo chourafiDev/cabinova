@@ -1,7 +1,6 @@
-import { LuChevronLeft, LuChevronRight, LuPlus } from "react-icons/lu";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { HiLifebuoy } from "react-icons/hi2";
+import { IconChevronLeft, IconChevronRight, IconPlus, IconSupport } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import { can } from "@/lib/permissions";
 import { apiGet } from "@/lib/server-api";
@@ -69,14 +68,14 @@ export default async function SupportPage({
 	return (
 		<ListTransitionProvider>
 			<ListHeader
-				icon={<HiLifebuoy />}
+				icon={<IconSupport />}
 				total={tickets.total}
 				label={{ singular: "Ticket", plural: "Tickets" }}
 				action={
 					canWrite && (
 						<NewTicketDialog cabinets={cabinets} agents={agents} meId={session.user.id}>
 							<Button>
-								<LuPlus /> Nouveau ticket
+								<IconPlus /> Nouveau ticket
 							</Button>
 						</NewTicketDialog>
 					)
@@ -146,7 +145,7 @@ export default async function SupportPage({
 						</span>
 						<Button asChild size="icon-sm" variant="outline" aria-label="Page précédente" className={cn(page <= 1 && "pointer-events-none opacity-50")}>
 							<Link href={href({ page: page - 1 })} scroll={false}>
-								<LuChevronLeft />
+								<IconChevronLeft />
 							</Link>
 						</Button>
 						<Button
@@ -157,7 +156,7 @@ export default async function SupportPage({
 							className={cn(page >= tickets.pageCount && "pointer-events-none opacity-50")}
 						>
 							<Link href={href({ page: page + 1 })} scroll={false}>
-								<LuChevronRight />
+								<IconChevronRight />
 							</Link>
 						</Button>
 					</div>

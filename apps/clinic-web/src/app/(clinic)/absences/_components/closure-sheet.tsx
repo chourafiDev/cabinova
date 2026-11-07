@@ -4,10 +4,10 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { toast } from "sonner";
+import { DatePicker } from "@/components/date-picker";
 import { IconBuilding, IconCalendarCheck, IconSpinner, IconWarning } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
 	Sheet,
@@ -176,27 +176,25 @@ function ClosureForm({
 				<div className="grid grid-cols-2 gap-3">
 					<Field data-invalid={!!error}>
 						<FieldLabel htmlFor="closure-from">{t("form.from")}</FieldLabel>
-						<Input
+						<DatePicker
 							id="closure-from"
-							type="date"
 							value={from}
-							onChange={(e) => {
-								setFrom(e.target.value);
+							onChange={(day) => {
+								setFrom(day);
 								setError(null);
 								// A single day by default: the end follows the start until moved.
-								if (!to || to < e.target.value) setTo(e.target.value);
+								if (!to || to < day) setTo(day);
 							}}
 						/>
 					</Field>
 					<Field data-invalid={!!error}>
 						<FieldLabel htmlFor="closure-to">{t("form.to")}</FieldLabel>
-						<Input
+						<DatePicker
 							id="closure-to"
-							type="date"
 							min={from}
 							value={to}
-							onChange={(e) => {
-								setTo(e.target.value);
+							onChange={(day) => {
+								setTo(day);
 								setError(null);
 							}}
 						/>

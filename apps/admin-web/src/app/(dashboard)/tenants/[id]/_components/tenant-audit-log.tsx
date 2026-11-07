@@ -1,5 +1,5 @@
-import { LuArrowRight } from "react-icons/lu";
 import Link from "next/link";
+import { IconArrowRight } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import { formatDate } from "@/lib/format";
 import { BILLING_PERIOD_LABELS, type BillingPeriod, formatStorage } from "@/lib/plans";
@@ -72,7 +72,7 @@ function describe(entry: TenantAuditEntry): { title: string; details?: React.Rea
 							<li key={field} className="flex flex-wrap items-center gap-1.5">
 								<span className="text-muted-foreground">{FIELD_LABELS[field] ?? field} :</span>
 								<span className="line-through decoration-muted-foreground/60">{show(field, from)}</span>
-								<LuArrowRight className="size-3 text-muted-foreground" />
+								<IconArrowRight className="size-3 text-muted-foreground" />
 								<span>{show(field, to)}</span>
 							</li>
 						))}

@@ -9,6 +9,7 @@ import {
 import { cn } from "cn";
 import * as React from "react";
 
+import { IconClose } from "@/components/icons";
 import type { DataTableFeatures } from "@/lib/data-table-features";
 
 import { DataTableDateFilter } from "@/components/data-table/data-table-date-filter";
@@ -17,7 +18,6 @@ import { DataTableSliderFilter } from "@/components/data-table/data-table-slider
 import { DataTableViewOptions } from "@/components/data-table/data-table-view-options";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { LuX } from "react-icons/lu";
 
 interface DataTableToolbarProps<
   TData extends RowData,
@@ -66,7 +66,7 @@ export function DataTableToolbar<TData extends RowData>({
                 variant="outline"
                 onClick={onReset}
               >
-                <LuX
+                <IconClose
                 />
                 Réinitialiser
               </Button>

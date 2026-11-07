@@ -1,8 +1,8 @@
 "use client";
 
-import { LuDownload, LuShieldAlert, LuX } from "react-icons/lu";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useTransition } from "react";
+import { IconClose, IconDownload, IconShieldAlert } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -81,7 +81,7 @@ export function JournalFilters({ summary, exportHref }: { summary: SecuritySumma
 					aria-pressed={sensitive}
 					onClick={() => set("sensitive", sensitive ? null : "true")}
 				>
-					<LuShieldAlert /> Sensibles uniquement
+					<IconShieldAlert /> Sensibles uniquement
 				</Button>
 				<form
 					className="w-full sm:w-56"
@@ -94,12 +94,12 @@ export function JournalFilters({ summary, exportHref }: { summary: SecuritySumma
 				</form>
 				{active && (
 					<Button type="button" size="sm" variant="ghost" onClick={() => startTransition(() => router.replace(pathname, { scroll: false }))}>
-						<LuX /> Réinitialiser
+						<IconClose /> Réinitialiser
 					</Button>
 				)}
 				<Button asChild size="sm" variant="outline" className="ms-auto">
 					<a href={exportHref} download>
-						<LuDownload /> Exporter (Excel)
+						<IconDownload /> Exporter (Excel)
 					</a>
 				</Button>
 			</div>

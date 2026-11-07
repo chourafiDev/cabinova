@@ -488,9 +488,15 @@ export class AppointmentsService {
     endsAt: Date,
     practitionerId: string,
   ) {
-    // Public holidays close every cabinet, whatever its opening hours.
+    // Public holidays close the cabinet, whatever its opening hours, unless
+    // it works that one (Paramètres › Horaires & agenda).
     const holiday = moroccoHolidayOn(moroccoDay(startsAt));
-    if (holiday) {
+    const { rows: settings } = holiday
+      ? await tx.query<{ open: string[] }>(
+          'select open_holidays as open from clinic_settings where id = 1',
+        )
+      : { rows: [] };
+    if (holiday && !settings[0]?.open.includes(holiday.key)) {
       throw new BadRequestException({
         code: 'HOLIDAY',
         params: { holiday: holiday.key },

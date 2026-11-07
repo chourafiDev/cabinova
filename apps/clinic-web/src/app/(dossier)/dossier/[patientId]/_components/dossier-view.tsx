@@ -34,13 +34,16 @@ import type { PastPrescription, Prescription } from "@/lib/prescriptions";
 import { useFormat } from "@/lib/use-format";
 import { useNow } from "@/lib/use-now";
 import { toPoint, type VitalSigns, vitalsKey } from "@/lib/vitals";
+import { BackToWaitingRoom } from "./back-to-waiting-room";
 import { CertificateTab } from "./certificate-tab";
 import { ConsultationDraft, ConsultationSections, type WorkspaceHandle } from "./consultation-workspace";
 import { FinishButton } from "./finish-button";
 import { HistoryPanel } from "./history-panel";
 import { MedicalCard, PatientAside } from "./patient-aside";
 import { PermanentNote, VisitReminder } from "./patient-notes";
+import { PaymentHistory } from "./payment-history";
 import { PrescriptionEditor } from "./prescription-editor";
+import { PrescriptionHistory } from "./prescription-history";
 import { SaveStatus, type SaveState } from "./save-status";
 import { Planned } from "./planned";
 import type { Point } from "./trends-card";
@@ -113,12 +116,26 @@ export function DossierView({ patientId, visitId }: { patientId: string; visitId
 		.filter((e) => e !== null)
 		.sort((a, b) => b.vitals.measuredAt.localeCompare(a.vitals.measuredAt));
 
+	/** Saves what is still being typed (notes, ordonnance): false when it can't be. */
+	const flush = async () => {
+		const [notes, rx] = await Promise.all([
+			workspace.current?.flush() ?? true,
+			prescriptionEditor.current?.flush() ?? true,
+		]);
+		return notes && rx;
+	};
+
+	// Back where the doctor came from: the waiting room for a visit, else the patient list.
+	const back = visitId
+		? { href: "/appointments", label: t("back") }
+		: { href: "/patients", label: t("backToPatients") };
+
 	if (patient.isError) {
 		return (
 			<div className="flex min-h-svh flex-col items-center justify-center gap-3 p-6 text-center">
 				<p className="font-medium">{t("notFound")}</p>
 				<Button asChild variant="outline">
-					<Link href="/appointments">{t("back")}</Link>
+					<Link href={back.href}>{back.label}</Link>
 				</Button>
 			</div>
 		);
@@ -185,28 +202,36 @@ export function DossierView({ patientId, visitId }: { patientId: string; visitId
 						{p && <CertificateTab patient={p} appointmentId={visitId && visit.data ? visit.data.appointment.id : null} />}
 					</TabsContent>
 					<TabsContent value="prix">
-						{/* The acts and the payment, right here: no dialog over the consultation. */}
-						{withVisit(
-							appointment && (
-								<div className="bg-card rounded-xl border p-5">
-									<CheckoutPanel appointmentId={appointment.id} />
-								</div>
-							),
+						{/* The acts and the payment, right here: no dialog over the consultation. Outside a visit, what was paid. */}
+						{visitId ? (
+							withVisit(
+								appointment && (
+									<div className="bg-card rounded-xl border p-5">
+										<CheckoutPanel appointmentId={appointment.id} />
+									</div>
+								),
+							)
+						) : (
+							<PaymentHistory patientId={patientId} />
 						)}
 					</TabsContent>
-					{/* Kept mounted: switching tabs never loses the medications being typed. */}
+					{/* Kept mounted: switching tabs never loses the medications being typed. Outside a visit, the past ones. */}
 					<TabsContent value="ordonnance" forceMount className="data-[state=inactive]:hidden">
-						{withVisit(
-							visit.data && (
-								<PrescriptionEditor
-									ref={prescriptionEditor}
-									key={visit.data.appointment.id}
-									appointmentId={visit.data.appointment.id}
-									prescription={prescription.data ?? null}
-									previous={pastPrescriptions?.[0]}
-									onSaveState={setSaveState}
-								/>
-							),
+						{visitId ? (
+							withVisit(
+								visit.data && (
+									<PrescriptionEditor
+										ref={prescriptionEditor}
+										key={visit.data.appointment.id}
+										appointmentId={visit.data.appointment.id}
+										prescription={prescription.data ?? null}
+										previous={pastPrescriptions?.[0]}
+										onSaveState={setSaveState}
+									/>
+								),
+							)
+						) : (
+							<PrescriptionHistory prescriptions={prescriptions.data} />
 						)}
 					</TabsContent>
 					<TabsContent value="bilan">
@@ -228,11 +253,15 @@ export function DossierView({ patientId, visitId }: { patientId: string; visitId
 		<div className="flex min-h-svh flex-col xl:h-svh xl:overflow-hidden">
 			<header className="bg-background/95 supports-[backdrop-filter]:bg-background/80 sticky top-0 z-20 shrink-0 border-b backdrop-blur">
 				<div className="mx-auto flex max-w-[1700px] flex-wrap items-center gap-x-4 gap-y-3 px-4 py-3">
-					<Button asChild variant="ghost" size="sm" className="-ms-2">
-						<Link href="/appointments">
-							<IconArrowLeft className="rtl:-scale-x-100" /> {t("back")}
-						</Link>
-					</Button>
+					{visitId ? (
+						<BackToWaitingRoom appointment={appointment} beforeLeave={flush} />
+					) : (
+						<Button asChild variant="ghost" size="sm" className="-ms-2">
+							<Link href={back.href}>
+								<IconArrowLeft className="rtl:-scale-x-100" /> {back.label}
+							</Link>
+						</Button>
+					)}
 					<span className="bg-border hidden h-8 w-px sm:block" aria-hidden />
 
 					{p ? (
@@ -282,16 +311,7 @@ export function DossierView({ patientId, visitId }: { patientId: string; visitId
 						)}
 						{appointment && <SaveStatus state={saveState} />}
 						{appointment && (
-							<FinishButton
-								appointment={appointment}
-								beforeFinish={async () => {
-									const [notes, rx] = await Promise.all([
-										workspace.current?.flush() ?? true,
-										prescriptionEditor.current?.flush() ?? true,
-									]);
-									return notes && rx;
-								}}
-							/>
+							<FinishButton appointment={appointment} beforeFinish={flush} />
 						)}
 					</div>
 				</div>
@@ -367,7 +387,7 @@ function VisitTimer({ since }: { since: string }) {
 	const now = useNow();
 	const minutes = Math.max(0, Math.floor((now - new Date(since).getTime()) / 60_000));
 	return (
-		<span className="bg-muted flex items-center gap-1 rounded-md px-1.5 py-0.5 text-xs tabular-nums" title={t("timerTitle")}>
+		<span className="bg-sky-500 text-white flex items-center gap-1 rounded-md px-1.5 py-0.5 text-xs tabular-nums" title={t("timerTitle")}>
 			<IconTimer className="size-3.5" /> {minutes < 1 ? t("justStarted") : fmt.duration(minutes)}
 		</span>
 	);

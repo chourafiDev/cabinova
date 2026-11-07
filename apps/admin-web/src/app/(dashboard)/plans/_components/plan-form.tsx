@@ -1,12 +1,22 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { LuCheck, LuGauge, LuHash, LuLayers, LuLoader, LuPlus, LuSettings2, LuTag, LuWallet } from "react-icons/lu";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Controller, type FieldPath, useForm, useWatch } from "react-hook-form";
 import { toast } from "sonner";
+import {
+	IconCheck,
+	IconGauge,
+	IconHash,
+	IconLayers,
+	IconPlus,
+	IconSettings,
+	IconSpinner,
+	IconTag,
+	IconWallet,
+} from "@/components/icons";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Field, FieldDescription, FieldError, FieldLabel } from "@/components/ui/field";
@@ -163,7 +173,7 @@ export function PlanForm(
 					</div>
 				)}
 
-				<FormSection step={1} icon={LuTag} title="Identité" description="Ce que voient les administrateurs en choisissant une offre.">
+				<FormSection step={1} icon={IconTag} title="Identité" description="Ce que voient les administrateurs en choisissant une offre.">
 					<div className="grid gap-4 sm:grid-cols-2">
 						{text("name", "Nom", {
 							autoFocus: !editing,
@@ -201,7 +211,7 @@ export function PlanForm(
 
 				<FormSection
 					step={2}
-					icon={LuWallet}
+					icon={IconWallet}
 					title="Tarifs et essai"
 					description="Montants hors taxe en dirhams ; l’essai précède la première facture."
 				>
@@ -223,7 +233,7 @@ export function PlanForm(
 
 				<FormSection
 					step={3}
-					icon={LuGauge}
+					icon={IconGauge}
 					title="Limites"
 					description="Copiées dans les quotas du cabinet à sa création. Vide = illimité."
 				>
@@ -237,7 +247,7 @@ export function PlanForm(
 
 				<FormSection
 					step={4}
-					icon={LuLayers}
+					icon={IconLayers}
 					title="Fonctionnalités"
 					description="Le niveau de chaque fonctionnalité du catalogue dans cette offre."
 				>
@@ -324,7 +334,7 @@ export function PlanForm(
 						<ul className={cn("grid gap-1 text-xs", included.length > 0 && "border-t pt-2")}>
 							{included.map((f) => {
 									const level = levelOf(f.key);
-									const Icon = level === "addon" ? LuPlus : level === "custom" ? LuSettings2 : level === "limited" ? LuHash : LuCheck;
+									const Icon = level === "addon" ? IconPlus : level === "custom" ? IconSettings : level === "limited" ? IconHash : IconCheck;
 									return (
 										<li key={f.key} className="flex items-center gap-1.5">
 											<Icon className={cn("size-3.5 shrink-0", level === "addon" ? "text-sky-600" : "text-emerald-600")} />
@@ -365,7 +375,7 @@ export function PlanForm(
 				)}
 
 				<Button type="submit" className="w-full" disabled={isSubmitting || (editing && !isDirty)}>
-					{isSubmitting && <LuLoader className="animate-spin" />}
+					{isSubmitting && <IconSpinner className="animate-spin" />}
 					{editing ? (isDirty ? "Enregistrer les modifications" : "Aucune modification") : "Créer l’offre"}
 				</Button>
 				<Button asChild variant="ghost" className="w-full">

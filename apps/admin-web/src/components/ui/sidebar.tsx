@@ -1,5 +1,6 @@
 "use client"
 
+import { IconSidebar } from "@/components/icons"
 import * as React from "react"
 import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "cn"
@@ -22,7 +23,6 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
-import { LuPanelLeft } from "react-icons/lu";
 import { focusRing } from "@/lib/focus-ring"
 
 const SIDEBAR_COOKIE_NAME = "sidebar_state"
@@ -271,7 +271,7 @@ function SidebarTrigger({
       }}
       {...props}
     >
-      <LuPanelLeft className="rtl:rotate-180" />
+      <IconSidebar className="rtl:rotate-180" />
       <span className="sr-only">Afficher ou masquer le menu</span>
     </Button>
   )

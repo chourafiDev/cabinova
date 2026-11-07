@@ -1,7 +1,6 @@
-import { LuChevronRight, LuCodeXml, LuPower } from "react-icons/lu";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { HiPuzzlePiece } from "react-icons/hi2";
+import { IconChevronRight, IconCode, IconModules, IconPower } from "@/components/icons";
 import { Badge } from "@/components/ui/badge";
 import type { FeatureRow } from "@/lib/features";
 import { can } from "@/lib/permissions";
@@ -33,7 +32,7 @@ export default async function FeaturesPage() {
 	return (
 		<ListTransitionProvider>
 			<ListHeader
-				icon={<HiPuzzlePiece />}
+				icon={<IconModules />}
 				total={features.length}
 				label={{ singular: "Fonctionnalité", plural: "Fonctionnalités" }}
 			/>
@@ -50,7 +49,7 @@ export default async function FeaturesPage() {
 						.filter((f) => !f.implemented)
 						.map((f) => (
 							<p key={f.key} className="flex items-center gap-2">
-								<LuCodeXml className="size-4 shrink-0" />
+								<IconCode className="size-4 shrink-0" />
 								<span>
 									<Link href={`/features/${f.key}`} className="font-medium hover:underline">
 										{f.name}
@@ -66,7 +65,7 @@ export default async function FeaturesPage() {
 				<div className="mb-3 grid gap-1 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-900">
 					{disabled.map((f) => (
 						<p key={f.key} className="flex items-center gap-2">
-							<LuPower className="size-4 shrink-0" />
+							<IconPower className="size-4 shrink-0" />
 							<span>
 								<Link href={`/features/${f.key}`} className="font-medium hover:underline">
 									{f.name}
@@ -128,7 +127,7 @@ export default async function FeaturesPage() {
 													<span className="block h-full rounded-full bg-primary" style={{ width: `${share}%` }} />
 												</span>
 											</div>
-											<LuChevronRight className="hidden size-4 text-muted-foreground md:block" />
+											<IconChevronRight className="hidden size-4 text-muted-foreground md:block" />
 										</Link>
 									</li>
 								);

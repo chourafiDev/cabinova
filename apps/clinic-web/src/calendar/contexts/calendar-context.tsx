@@ -1,7 +1,9 @@
 "use client";
 
+import type { MoroccoHoliday } from "@cabinova/morocco-time";
 import { createContext, useContext, useMemo, useState } from "react";
 
+import { holidayOf } from "@/calendar/helpers";
 import type { IEvent, IUser } from "@/calendar/interfaces";
 import type { TBadgeVariant, TCalendarView, TSchedule, TVisibleHours, TWorkingHours } from "@/calendar/types";
 import { type Closure, covers, dayKey } from "@/lib/closures";
@@ -30,6 +32,8 @@ interface ICalendarContext {
   schedule: TSchedule;
   /** The same for one doctor (the booking form). */
   scheduleFor: (practitionerId: string) => TSchedule;
+  /** The public holiday closing this day, unless the cabinet works it. */
+  holidayOn: (day: Date) => MoroccoHoliday | undefined;
   /** Why a day is closed for this doctor (or the whole cabinet), if it is. */
   closureOn: (day: Date, practitionerId: string | null) => Closure | undefined;
   /** Every closure on a day (labels in the views). */
@@ -84,6 +88,7 @@ export function CalendarProvider({
   canWrite,
   openingHours,
   defaultDuration,
+  openHolidays = [],
   closures = [],
 }: {
   children: React.ReactNode;
@@ -98,6 +103,8 @@ export function CalendarProvider({
   canWrite: boolean;
   openingHours: OpeningHours;
   defaultDuration: number;
+  /** The public holidays the cabinet works (keys): the agenda stays open on them. */
+  openHolidays?: readonly string[];
   /** Congés et absences over the visible range. */
   closures?: Closure[];
 }) {
@@ -110,8 +117,13 @@ export function CalendarProvider({
     const today = closuresOn(day);
     return today.find((c) => c.practitionerId === null) ?? (practitionerId ? today.find((c) => c.practitionerId === practitionerId) : undefined);
   };
+  const holidayOn = (day: Date) => {
+    const holiday = holidayOf(day);
+    return holiday && !openHolidays.includes(holiday.key) ? holiday : undefined;
+  };
   const scheduleFor = (practitionerId: string | null): TSchedule => ({
     hours: workingHours,
+    holiday: holidayOn,
     closed: (day) => !!closureOn(day, practitionerId),
   });
   // A doctor's absence closes the grid when the agenda shows that doctor (or there is only one).
@@ -134,6 +146,7 @@ export function CalendarProvider({
         workingHours,
         schedule: scheduleFor(shown),
         scheduleFor,
+        holidayOn,
         closureOn,
         closuresOn,
         defaultDuration,

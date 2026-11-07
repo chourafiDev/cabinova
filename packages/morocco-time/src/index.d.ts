@@ -33,3 +33,6 @@ export function moroccoHolidays(year: number): MoroccoHoliday[];
 
 /** The public holiday on this day ("YYYY-MM-DD"), if any. */
 export function moroccoHolidayOn(day: string): MoroccoHoliday | undefined;
+
+/** Every holiday key: the national ones (calendar order), then the religious. */
+export const MOROCCO_HOLIDAY_KEYS: readonly MoroccoHoliday['key'][];

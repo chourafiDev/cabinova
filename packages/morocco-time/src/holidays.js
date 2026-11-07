@@ -45,6 +45,12 @@ const iso = (ms) => new Date(ms).toISOString().slice(0, 10);
 
 const cache = new Map();
 
+/** Every holiday key: the national ones (calendar order), then the religious. */
+export const MOROCCO_HOLIDAY_KEYS = [
+  ...FIXED.map(([, key]) => key),
+  ...new Set(RELIGIOUS.map(([, , key]) => key)),
+];
+
 export function moroccoHolidays(year) {
   const cached = cache.get(year);
   if (cached) return cached;

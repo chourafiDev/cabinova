@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
+import { DatePicker } from "@/components/date-picker";
 import { Button } from "@/components/ui/button";
 import {
 	Dialog,
@@ -121,11 +122,11 @@ export function OverrideDialog({
 					<div className="grid gap-4 sm:grid-cols-2">
 						<Field>
 							<FieldLabel htmlFor="ov-start">Accès à partir du</FieldLabel>
-							<Input id="ov-start" type="date" value={startsAt} onChange={(e) => setStartsAt(e.target.value)} />
+							<DatePicker id="ov-start" value={startsAt} onChange={setStartsAt} clearable />
 						</Field>
 						<Field>
 							<FieldLabel htmlFor="ov-end">Jusqu’au (exclu)</FieldLabel>
-							<Input id="ov-end" type="date" value={endsAt} min={startsAt || undefined} onChange={(e) => setEndsAt(e.target.value)} />
+							<DatePicker id="ov-end" value={endsAt} min={startsAt || undefined} onChange={setEndsAt} clearable />
 						</Field>
 					</div>
 					<FieldDescription className="-mt-2">Dates vides : immédiatement et sans fin.</FieldDescription>

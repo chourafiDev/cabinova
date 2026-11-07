@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { HiBuildingOffice2 } from "react-icons/hi2";
+import { IconBuilding } from "@/components/icons";
 import { getDataTableQuery } from "@/lib/parsers";
 import { can } from "@/lib/permissions";
 import { apiGet } from "@/lib/server-api";
@@ -39,7 +39,7 @@ export default async function TenantsPage({ searchParams }: PageProps<"/tenants"
 	return (
 		<ListTransitionProvider>
 			<ListHeader
-				icon={<HiBuildingOffice2 />}
+				icon={<IconBuilding />}
 				total={total}
 				label={{ singular: "Cabinet", plural: "Cabinets" }}
 				create={

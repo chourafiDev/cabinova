@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
+import { DatePicker } from "@/components/date-picker";
 import { Button } from "@/components/ui/button";
 import {
 	Dialog,
@@ -100,7 +101,7 @@ export function RecordPaymentDialog({
 						</Field>
 						<Field>
 							<FieldLabel htmlFor="pay-date">Reçu le</FieldLabel>
-							<Input id="pay-date" type="date" value={receivedAt} max={format(new Date(), "yyyy-MM-dd")} onChange={(e) => setReceivedAt(e.target.value)} />
+							<DatePicker id="pay-date" value={receivedAt} max={format(new Date(), "yyyy-MM-dd")} onChange={setReceivedAt} />
 						</Field>
 					</div>
 					<Field>

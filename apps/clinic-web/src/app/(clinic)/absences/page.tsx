@@ -3,6 +3,7 @@ import { pageTitle } from "@/i18n/titles";
 import type { Practitioner } from "@/lib/appointments";
 import { apiGet } from "@/lib/server-api";
 import { getClinicState } from "@/lib/session";
+import type { AgendaSettings } from "@/lib/settings";
 import { AbsencesView } from "./_components/absences-view";
 
 export const generateMetadata = () => pageTitle("absences");
@@ -11,7 +12,10 @@ export const generateMetadata = () => pageTitle("absences");
 export default async function AbsencesPage() {
 	const state = await getClinicState();
 	if (state.status !== "signed-in") redirect("/login");
-	const practitioners = await apiGet<Practitioner[]>("/appointments/practitioners");
+	const [practitioners, agenda] = await Promise.all([
+		apiGet<Practitioner[]>("/appointments/practitioners"),
+		apiGet<AgendaSettings>("/settings/agenda"),
+	]);
 	const { id, role } = state.session.user;
-	return <AbsencesView practitioners={practitioners} user={{ id, role }} />;
+	return <AbsencesView practitioners={practitioners} user={{ id, role }} openHolidays={agenda.openHolidays} />;
 }

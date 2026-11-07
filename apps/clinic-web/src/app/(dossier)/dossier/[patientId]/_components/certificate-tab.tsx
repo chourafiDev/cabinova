@@ -6,6 +6,7 @@ import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { toast } from "sonner";
 import { useCurrentUser } from "@/components/current-user";
+import { DatePicker } from "@/components/date-picker";
 import {
 	IconBan,
 	IconHistory,
@@ -122,7 +123,7 @@ export function CertificateTab({ patient, appointmentId }: { patient: PatientFil
 					{kind === "day" ? (
 						<label className="grid w-48 gap-1 text-sm">
 							<span className="text-muted-foreground text-xs">{t("date")}</span>
-							<Input type="date" value={startsOn} onChange={(e) => setStartsOn(e.target.value)} className="h-9" />
+							<DatePicker value={startsOn} onChange={setStartsOn} />
 						</label>
 					) : (
 						<div className="flex flex-wrap items-end gap-3">
@@ -142,27 +143,18 @@ export function CertificateTab({ patient, appointmentId }: { patient: PatientFil
 							</label>
 							<label className="grid w-44 gap-1 text-sm">
 								<span className="text-muted-foreground text-xs">{t("from")}</span>
-								<Input
-									type="date"
+								<DatePicker
 									value={startsOn}
-									onChange={(e) => {
+									onChange={(day) => {
 										// The length is kept: moving the start moves the end.
-										if (e.target.value && days) setEndsOn(periodEnd(e.target.value, days));
-										setStartsOn(e.target.value);
+										if (day && days) setEndsOn(periodEnd(day, days));
+										setStartsOn(day);
 									}}
-									className="h-9"
 								/>
 							</label>
 							<label className="grid w-44 gap-1 text-sm">
 								<span className="text-muted-foreground text-xs">{t("to")}</span>
-								<Input
-									type="date"
-									value={endsOn}
-									min={startsOn}
-									onChange={(e) => setEndsOn(e.target.value)}
-									aria-invalid={!days}
-									className="h-9"
-								/>
+								<DatePicker value={endsOn} min={startsOn} onChange={setEndsOn} invalid={!days} />
 							</label>
 						</div>
 					)}

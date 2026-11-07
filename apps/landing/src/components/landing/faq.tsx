@@ -1,4 +1,4 @@
-import { LuPlus } from "react-icons/lu";
+import { IconPlus } from "@/components/icons";
 import { CONTACT_EMAIL, FAQ } from "@/lib/site";
 import { SectionHeading } from "./section-heading";
 
@@ -27,7 +27,7 @@ export function Faq() {
 							<summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-medium">
 								{item.q}
 								<span className="bg-muted flex size-7 shrink-0 items-center justify-center rounded-full transition-transform group-open:rotate-45">
-									<LuPlus className="size-4" />
+									<IconPlus className="size-4" />
 								</span>
 							</summary>
 							<p className="text-muted-foreground mt-3 text-sm leading-relaxed">{item.a}</p>

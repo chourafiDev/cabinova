@@ -1,9 +1,9 @@
 "use client";
 
-import { LuFileText, LuRefreshCw, LuTicketPercent, LuX } from "react-icons/lu";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
+import { IconClose, IconCoupon, IconDocument, IconRefresh } from "@/components/icons";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -136,7 +136,7 @@ export function TenantSubscription({
 									disabled={pending}
 									onClick={() => run(() => api(`/tenants/${tenantId}/billing/quotes`, { method: "POST" }), "Devis envoyé")}
 								>
-									<LuFileText /> Envoyer un devis
+									<IconDocument /> Envoyer un devis
 								</Button>
 							)}
 							{canBill && !billing.quoteable && (
@@ -148,12 +148,12 @@ export function TenantSubscription({
 										run(() => api(`/tenants/${tenantId}/billing/invoices`, { method: "POST" }), "Facture émise et envoyée")
 									}
 								>
-									<LuFileText /> Émettre la facture
+									<IconDocument /> Émettre la facture
 								</Button>
 							)}
 							{canManage && (
 								<Button size="sm" variant="outline" onClick={() => setDialog("change")}>
-									<LuRefreshCw /> Changer d’offre
+									<IconRefresh /> Changer d’offre
 								</Button>
 							)}
 						</div>
@@ -168,7 +168,7 @@ export function TenantSubscription({
 								promo ? (
 									<span className="flex flex-wrap items-center gap-2">
 										<Badge variant="outline" className="border-transparent bg-violet-50 font-mono text-violet-700">
-											<LuTicketPercent /> {promo.code}
+											<IconCoupon /> {promo.code}
 										</Badge>
 										<span className="text-xs text-muted-foreground">
 											−{promo.discountPercent} %
@@ -187,7 +187,7 @@ export function TenantSubscription({
 												disabled={pending}
 												onClick={() => run(() => api(`/tenants/${tenantId}/promo-code`, { method: "DELETE" }), "Code promo retiré")}
 											>
-												<LuX />
+												<IconClose />
 											</Button>
 										)}
 									</span>

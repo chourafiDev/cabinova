@@ -1,0 +1,101 @@
+"use client";
+
+import { format } from "date-fns";
+import { useState } from "react";
+import { IconCalendar } from "@/components/icons";
+import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { formatDate } from "@/lib/format";
+import { cn } from "@/lib/utils";
+
+/** "YYYY-MM-DD" → a Date at noon (no time zone shifts the day). */
+const toDate = (day: string) => new Date(`${day}T12:00:00`);
+
+/**
+ * A day, picked on the app's calendar (shadcn) rather than the browser's.
+ * Same value as `<input type="date">`: "YYYY-MM-DD", or "" when empty.
+ * `clearable` offers to empty an optional date.
+ */
+export function DatePicker({
+	id,
+	value,
+	onChange,
+	min,
+	max,
+	clearable = false,
+	invalid,
+	disabled,
+	placeholder = "Choisir une date",
+	className,
+}: {
+	id?: string;
+	value: string;
+	onChange: (value: string) => void;
+	min?: string;
+	max?: string;
+	clearable?: boolean;
+	invalid?: boolean;
+	disabled?: boolean;
+	placeholder?: string;
+	className?: string;
+}) {
+	const [open, setOpen] = useState(false);
+	const selected = value ? toDate(value) : undefined;
+	const first = min ? toDate(min) : undefined;
+	const last = max ? toDate(max) : undefined;
+
+	return (
+		<Popover open={open} onOpenChange={setOpen}>
+			<PopoverTrigger asChild>
+				<Button
+					id={id}
+					type="button"
+					variant="outline"
+					disabled={disabled}
+					aria-invalid={invalid}
+					className={cn(
+						"bg-background h-9 w-full justify-start px-3 font-normal",
+						!value && "text-muted-foreground",
+						className,
+					)}
+				>
+					<IconCalendar className="text-muted-foreground" />
+					<span className="truncate first-letter:uppercase">
+						{selected ? formatDate(selected, { weekday: "short" }) : placeholder}
+					</span>
+				</Button>
+			</PopoverTrigger>
+			<PopoverContent align="start" className="w-auto p-0">
+				<Calendar
+					mode="single"
+					selected={selected}
+					defaultMonth={selected ?? last ?? first}
+					onSelect={(day) => {
+						// Clicking the chosen day again empties it only where a date is optional.
+						if (day) onChange(format(day, "yyyy-MM-dd"));
+						else if (clearable) onChange("");
+						setOpen(false);
+					}}
+					disabled={[...(first ? [{ before: first }] : []), ...(last ? [{ after: last }] : [])]}
+				/>
+				{clearable && value && !disabled && (
+					<div className="border-t p-2">
+						<Button
+							type="button"
+							variant="ghost"
+							size="sm"
+							className="text-muted-foreground w-full"
+							onClick={() => {
+								onChange("");
+								setOpen(false);
+							}}
+						>
+							Effacer la date
+						</Button>
+					</div>
+				)}
+			</PopoverContent>
+		</Popover>
+	);
+}

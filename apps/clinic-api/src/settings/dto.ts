@@ -1,5 +1,9 @@
+import { MOROCCO_HOLIDAY_KEYS } from '@cabinova/morocco-time';
 import { Transform } from 'class-transformer';
 import {
+  ArrayMaxSize,
+  ArrayUnique,
+  IsArray,
   IsBoolean,
   IsEmail,
   IsIn,
@@ -44,6 +48,15 @@ export class UpdateAgendaSettingsDto {
   @IsInt()
   @IsIn(APPOINTMENT_DURATIONS)
   defaultAppointmentMinutes: number;
+}
+
+/** The public holidays the cabinet works (keys); every other one closes it. */
+export class UpdateHolidaysDto {
+  @IsArray()
+  @ArrayMaxSize(MOROCCO_HOLIDAY_KEYS.length)
+  @ArrayUnique()
+  @IsIn(MOROCCO_HOLIDAY_KEYS, { each: true })
+  openHolidays: string[];
 }
 
 /**

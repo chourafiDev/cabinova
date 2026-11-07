@@ -1,12 +1,12 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { LuCheck, LuChevronsUpDown, LuLoader } from "react-icons/lu";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Controller, useForm, useWatch } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
+import { IconCheck, IconChevronsUpDown, IconSpinner } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
@@ -194,7 +194,7 @@ export function NewTicketDialog({
 													{field.value === PLATFORM
 														? "Toute la plateforme"
 														: (cabinet?.name ?? <span className="text-muted-foreground">Choisir un cabinet…</span>)}
-													<LuChevronsUpDown className="opacity-50" />
+													<IconChevronsUpDown className="opacity-50" />
 												</Button>
 											</PopoverTrigger>
 											<PopoverContent className="w-(--radix-popover-trigger-width) p-0" align="start">
@@ -211,7 +211,7 @@ export function NewTicketDialog({
 																		setPickerOpen(false);
 																	}}
 																>
-																	<LuCheck className={cn(field.value === PLATFORM ? "opacity-100" : "opacity-0")} />
+																	<IconCheck className={cn(field.value === PLATFORM ? "opacity-100" : "opacity-0")} />
 																	Toute la plateforme
 																</CommandItem>
 															)}
@@ -224,7 +224,7 @@ export function NewTicketDialog({
 																		setPickerOpen(false);
 																	}}
 																>
-																	<LuCheck className={cn(field.value === c.id ? "opacity-100" : "opacity-0")} />
+																	<IconCheck className={cn(field.value === c.id ? "opacity-100" : "opacity-0")} />
 																	<span className="grid leading-tight">
 																		<span>{c.name}</span>
 																		<span className="text-xs text-muted-foreground">
@@ -387,7 +387,7 @@ export function NewTicketDialog({
 							Annuler
 						</Button>
 						<Button type="submit" disabled={isSubmitting}>
-							{isSubmitting && <LuLoader className="animate-spin" />} Créer le ticket
+							{isSubmitting && <IconSpinner className="animate-spin" />} Créer le ticket
 						</Button>
 					</DialogFooter>
 				</form>

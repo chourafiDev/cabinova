@@ -1,15 +1,16 @@
 import type { Metadata } from "next";
-import { HiOutlineClock, HiOutlineExclamationTriangle } from "react-icons/hi2";
 import {
-	LuBanknote,
-	LuBuilding2,
-	LuCircleCheck,
-	LuFileText,
-	LuHourglass,
-	LuReceipt,
-	LuTrendingUp,
-	LuUserPlus,
-} from "react-icons/lu";
+	IconBuilding,
+	IconCheckCircle,
+	IconClock,
+	IconDocument,
+	IconHourglass,
+	IconMoney,
+	IconReceipt,
+	IconTrend,
+	IconUserAdd,
+	IconWarning,
+} from "@/components/icons";
 import { type DashboardOverview, dashboardQuery } from "@/lib/dashboard";
 import { can } from "@/lib/permissions";
 import { formatPrice } from "@/lib/plans";
@@ -60,7 +61,7 @@ export default async function DashboardPage({ searchParams }: PageProps<"/">) {
 			<DashboardFilters options={data.filters} exportHref={`/api/dashboard/export.csv?${query}`}>
 				<section className="mb-3 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
 					<KpiCard
-						icon={LuBuilding2}
+						icon={IconBuilding}
 						title="Cabinets"
 						value={tenants.total}
 						period="Sélection"
@@ -68,7 +69,7 @@ export default async function DashboardPage({ searchParams }: PageProps<"/">) {
 						actions={[{ label: "Voir les cabinets", href: "/tenants" }]}
 					/>
 					<KpiCard
-						icon={LuCircleCheck}
+						icon={IconCheckCircle}
 						title="Actifs"
 						value={s.active ?? 0}
 						period="Maintenant"
@@ -76,7 +77,7 @@ export default async function DashboardPage({ searchParams }: PageProps<"/">) {
 						actions={[{ label: "Voir les cabinets actifs", href: "/tenants?status=active" }]}
 					/>
 					<KpiCard
-						icon={HiOutlineClock}
+						icon={IconClock}
 						title="En attente"
 						value={pending}
 						period="Maintenant"
@@ -84,7 +85,7 @@ export default async function DashboardPage({ searchParams }: PageProps<"/">) {
 						actions={[{ label: "Voir", href: "/tenants?status=pending,provisioning" }]}
 					/>
 					<KpiCard
-						icon={HiOutlineExclamationTriangle}
+						icon={IconWarning}
 						title="Suspendus / en fermeture"
 						value={blocked}
 						valueClassName={blocked ? "text-destructive" : undefined}
@@ -96,7 +97,7 @@ export default async function DashboardPage({ searchParams }: PageProps<"/">) {
 
 				<section className="mb-3 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
 					<KpiCard
-						icon={LuUserPlus}
+						icon={IconUserAdd}
 						title="Nouveaux cabinets"
 						value={tenants.newLast30Days}
 						change={tenants.newChange}
@@ -104,21 +105,21 @@ export default async function DashboardPage({ searchParams }: PageProps<"/">) {
 						hint="Cabinets créés ces 30 derniers jours, comparés aux 30 jours précédents."
 					/>
 					<KpiCard
-						icon={LuHourglass}
+						icon={IconHourglass}
 						title="En essai"
 						value={subscriptions.trialing}
 						period={`${subscriptions.trialsEndingIn7Days} fin(s) d’essai sous 7 j`}
 						hint="Abonnements en période d’essai gratuite."
 					/>
 					<KpiCard
-						icon={LuTrendingUp}
+						icon={IconTrend}
 						title="Revenu mensuel contractuel"
 						value={formatPrice(subscriptions.mrr)}
 						period={`${subscriptions.active + subscriptions.pastDue} abonnement(s) payant(s)`}
 						hint="Somme mensuelle des abonnements payants (annuel ÷ 12). Montant prévu par contrat, pas un encaissement."
 					/>
 					<KpiCard
-						icon={LuHourglass}
+						icon={IconHourglass}
 						title="Potentiel des essais"
 						value={formatPrice(subscriptions.trialMrr)}
 						period="Par mois, si convertis"
@@ -128,21 +129,21 @@ export default async function DashboardPage({ searchParams }: PageProps<"/">) {
 
 				<section className="mb-3 grid grid-cols-1 gap-3 sm:grid-cols-3">
 					<KpiCard
-						icon={LuFileText}
+						icon={IconDocument}
 						title="Facturé"
 						value={formatPrice(billing.billedThisMonth)}
 						period="Ce mois-ci"
 						hint="Montant des factures émises ce mois-ci, payées ou non."
 					/>
 					<KpiCard
-						icon={LuBanknote}
+						icon={IconMoney}
 						title="Encaissé"
 						value={formatPrice(billing.collectedThisMonth)}
 						period="Ce mois-ci"
 						hint="Paiements réellement reçus ce mois-ci."
 					/>
 					<KpiCard
-						icon={LuReceipt}
+						icon={IconReceipt}
 						title="Impayés"
 						value={formatPrice(billing.unpaid)}
 						valueClassName={billing.unpaid ? "text-destructive" : undefined}

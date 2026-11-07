@@ -354,5 +354,17 @@
       "disconnectTitle": "Déconnecter Google ?",
       "disconnectHint": "Vous ne pourrez plus créer de réunions. Celles déjà prévues restent dans les agendas Google et leurs liens continuent de fonctionner."
     }
+  },
+  "holidays": {
+    "title": "Jours fériés",
+    "description": "Cochés : le cabinet est fermé ce jour-là. L’agenda le bloque et refuse les rendez-vous, dans tous les espaces. Décochez ceux où vous consultez.",
+    "national": "Fêtes nationales",
+    "religious": "Fêtes religieuses",
+    "estimated": "date estimée",
+    "checkAll": "Tout cocher",
+    "uncheckAll": "Tout décocher",
+    "count": "{closed, plural, =0 {Aucun jour férié fermé} one {# jour férié fermé} other {# jours fériés fermés}} sur {total}",
+    "hint": "Les rendez-vous déjà pris ces jours-là ne sont pas annulés.",
+    "saved": "Jours fériés enregistrés"
   }
 }

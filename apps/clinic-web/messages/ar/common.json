@@ -197,7 +197,8 @@
       "mawlid": "عيد المولد النبوي",
       "eidAlFitr": "عيد الفطر",
       "eidAlAdha": "عيد الأضحى"
-    }
+    },
+    "worked": "العيادة مفتوحة"
   },
   "actPicker": {
     "placeholder": "اختر عملًا",
@@ -218,5 +219,9 @@
     "orderedList": "قائمة مرقمة",
     "undo": "تراجع",
     "redo": "إعادة"
+  },
+  "datePicker": {
+    "placeholder": "اختر تاريخًا",
+    "clear": "مسح التاريخ"
   }
 }

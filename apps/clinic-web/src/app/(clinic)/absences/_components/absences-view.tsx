@@ -43,7 +43,16 @@ type User = { id: string; role: string };
  * and the public holidays coming. Recording days here closes them in the
  * agenda (for the whole cabinet, or for that doctor).
  */
-export function AbsencesView({ practitioners, user }: { practitioners: Practitioner[]; user: User }) {
+export function AbsencesView({
+	practitioners,
+	user,
+	openHolidays,
+}: {
+	practitioners: Practitioner[];
+	user: User;
+	/** The public holidays the cabinet works (keys). */
+	openHolidays: string[];
+}) {
 	const t = useTranslations("absences");
 	const [adding, setAdding] = useState(false);
 	const [tab, setTab] = useState<"upcoming" | "past">("upcoming");
@@ -86,7 +95,7 @@ export function AbsencesView({ practitioners, user }: { practitioners: Practitio
 					</TabsContent>
 				</Tabs>
 
-				<UpcomingHolidays />
+				<UpcomingHolidays openHolidays={openHolidays} owner={user.role === "owner"} />
 			</div>
 
 			<ClosureSheet open={adding} onOpenChange={setAdding} practitioners={practitioners} user={user} />
@@ -246,8 +255,8 @@ function RemoveDialog({ closure, onClose }: { closure: Closure | null; onClose: 
 	);
 }
 
-/** The next public holidays: closed for everyone, nothing to record. */
-function UpcomingHolidays() {
+/** The next public holidays: closed for everyone (nothing to record), but the ones the cabinet works. */
+function UpcomingHolidays({ openHolidays, owner }: { openHolidays: string[]; owner: boolean }) {
 	const t = useTranslations("absences.holidays");
 	const names = useTranslations("common.holidays");
 	const fmt = useFormat();
@@ -276,7 +285,12 @@ function UpcomingHolidays() {
 				{upcoming.map((h) => (
 					<li key={h.from} className="flex items-start justify-between gap-3 text-sm">
 						<span className="min-w-0">
-							<span className="font-medium">{names(`names.${h.key}`)}</span>
+							<span className={cn("font-medium", openHolidays.includes(h.key) && "text-muted-foreground")}>
+								{names(`names.${h.key}`)}
+							</span>
+							{openHolidays.includes(h.key) && (
+								<span className="text-muted-foreground block text-xs">{names("worked")}</span>
+							)}
 							{h.estimated && <span className="text-muted-foreground block text-xs">{t("estimated")}</span>}
 						</span>
 						<span className="text-muted-foreground shrink-0 text-end text-xs first-letter:uppercase">
@@ -287,6 +301,11 @@ function UpcomingHolidays() {
 			</ul>
 			<p className="text-muted-foreground flex items-center gap-1.5 text-xs">
 				<IconCalendarEdit className="size-3.5" /> {t("closedInAgenda")}
+				{owner && (
+					<Link href="/settings/hours#holidays" className="text-foreground ms-auto font-medium hover:underline">
+						{t("manage")}
+					</Link>
+				)}
 			</p>
 		</section>
 	);

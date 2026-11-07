@@ -139,7 +139,7 @@ export function MedicalProfile({
 			)}
 
 			<Dialog open={open} onOpenChange={setOpen}>
-				<DialogContent className="sm:max-w-lg">
+				<DialogContent className="sm:max-w-3xl">
 					<DialogHeader>
 						<DialogTitle>{t("title")}</DialogTitle>
 						<DialogDescription>{t("privateDescription")}</DialogDescription>

@@ -1,35 +1,42 @@
-import type { IconType } from "react-icons";
-import { LuDatabase, LuEyeOff, LuHistory, LuKeyRound, LuLayers, LuMonitorSmartphone } from "react-icons/lu";
+import {
+	type AppIcon,
+	IconDevices,
+	IconEyeOff,
+	IconHistory,
+	IconKey,
+	IconLayers,
+	IconServer,
+} from "@/components/icons";
 import { BackgroundBeams } from "@/components/ui/background-beams";
 
-const POINTS: { icon: IconType; title: string; description: string }[] = [
+const POINTS: { icon: AppIcon; title: string; description: string }[] = [
 	{
-		icon: LuDatabase,
+		icon: IconServer,
 		title: "Une base de données par cabinet",
 		description: "Vos patients ne partagent jamais une table avec ceux d’un autre cabinet.",
 	},
 	{
-		icon: LuKeyRound,
+		icon: IconKey,
 		title: "Accès chiffrés",
 		description: "Les identifiants de votre base sont chiffrés (AES-256), les mots de passe jamais stockés en clair.",
 	},
 	{
-		icon: LuEyeOff,
+		icon: IconEyeOff,
 		title: "Le secret médical respecté",
 		description: "Les antécédents ne sont visibles que par les médecins ; les chiffres, que par le responsable.",
 	},
 	{
-		icon: LuLayers,
+		icon: IconLayers,
 		title: "Sites cloisonnés",
 		description: "Chaque espace ne voit que ses propres patients, rendez-vous et encaissements.",
 	},
 	{
-		icon: LuMonitorSmartphone,
+		icon: IconDevices,
 		title: "Appareils sous contrôle",
 		description: "Voyez où vous êtes connecté et déconnectez un appareil perdu à distance.",
 	},
 	{
-		icon: LuHistory,
+		icon: IconHistory,
 		title: "Rien ne s’efface",
 		description: "Paiements annulés avec un motif, dossiers archivés plutôt que supprimés.",
 	},

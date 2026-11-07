@@ -1,9 +1,17 @@
 "use client";
 
-import { LuCircleCheck, LuCircleDashed, LuCircleMinus, LuCircleX, LuCopy, LuExternalLink, LuLoader } from "react-icons/lu";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, useTransition } from "react";
 import { toast } from "sonner";
+import {
+	IconCheckCircle,
+	IconCopy,
+	IconError,
+	IconExternal,
+	IconMinusCircle,
+	IconPending,
+	IconSpinner,
+} from "@/components/icons";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -115,7 +123,7 @@ export function TenantTechnical({
 										act(`/tenants/${tenantId}/provision`, { sendInvitation }, () => "Provisionnement lancé")
 									}
 								>
-									{pending && <LuLoader className="animate-spin" />} Provisionner
+									{pending && <IconSpinner className="animate-spin" />} Provisionner
 								</Button>
 							</div>
 						</div>
@@ -285,11 +293,11 @@ export function TenantTechnical({
 									.catch(() => toast.error("Copie impossible : sélectionnez le lien."))
 							}
 						>
-							<LuCopy /> Copier
+							<IconCopy /> Copier
 						</Button>
 						<Button asChild>
 							<a href={devInvite?.url} target="_blank" rel="noreferrer">
-								<LuExternalLink /> Ouvrir
+								<IconExternal /> Ouvrir
 							</a>
 						</Button>
 					</DialogFooter>
@@ -326,13 +334,13 @@ function RunTimeline({ run }: { run: ProvisioningRun }) {
 					const isCurrent = run.state === "running" && !step && index === run.steps.length;
 					const Icon = !step
 						? isCurrent
-							? LuLoader
-							: LuCircleDashed
+							? IconSpinner
+							: IconPending
 						: step.status === "done"
-							? LuCircleCheck
+							? IconCheckCircle
 							: step.status === "skipped"
-								? LuCircleMinus
-								: LuCircleX;
+								? IconMinusCircle
+								: IconError;
 					return (
 						<li key={key} className="flex gap-2">
 							<Icon

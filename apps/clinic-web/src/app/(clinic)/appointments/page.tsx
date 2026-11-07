@@ -35,6 +35,7 @@ export default async function AppointmentsPage() {
 						canWrite
 						openingHours={space?.openingHours ?? DEFAULT_OPENING_HOURS}
 						defaultDuration={agenda.defaultAppointmentMinutes}
+						openHolidays={agenda.openHolidays}
 					/>
 				</>
 			}

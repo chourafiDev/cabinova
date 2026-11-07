@@ -1,10 +1,11 @@
 "use client";
 
 import { format } from "date-fns";
-import { LuLoader } from "react-icons/lu";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { DatePicker } from "@/components/date-picker";
+import { IconSpinner } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import {
 	Dialog,
@@ -95,7 +96,7 @@ export function CreditNoteDialog({
 					</DialogDescription>
 				</DialogHeader>
 				{creditable === null ? (
-					<LuLoader className="mx-auto my-6 size-5 animate-spin text-muted-foreground" />
+					<IconSpinner className="mx-auto my-6 size-5 animate-spin text-muted-foreground" />
 				) : creditable === 0 ? (
 					<p className="rounded-md bg-muted px-3 py-2 text-sm text-muted-foreground">
 						Rien à créditer : le montant payé a déjà fait l’objet d’avoirs (ou a été réglé par un avoir).
@@ -146,7 +147,7 @@ export function CreditNoteDialog({
 							<div className="grid gap-4 sm:grid-cols-2">
 								<Field>
 									<FieldLabel htmlFor="cn-date">Virement envoyé le</FieldLabel>
-									<Input id="cn-date" type="date" value={refundedAt} onChange={(e) => setRefundedAt(e.target.value)} />
+									<DatePicker id="cn-date" value={refundedAt} onChange={setRefundedAt} />
 								</Field>
 								<Field>
 									<FieldLabel htmlFor="cn-ref">Référence</FieldLabel>
@@ -162,7 +163,7 @@ export function CreditNoteDialog({
 						Annuler
 					</Button>
 					<Button onClick={save} disabled={saving || !creditable}>
-						{saving && <LuLoader className="animate-spin" />} Émettre l’avoir
+						{saving && <IconSpinner className="animate-spin" />} Émettre l’avoir
 					</Button>
 				</DialogFooter>
 			</DialogContent>

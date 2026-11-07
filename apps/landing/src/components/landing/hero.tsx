@@ -1,4 +1,11 @@
-import { LuArrowRight, LuBanknote, LuCalendarCheck, LuCirclePlay, LuSparkles, LuUserX } from "react-icons/lu";
+import {
+	IconArrowRight,
+	IconCalendarCheck,
+	IconMoney,
+	IconPlay,
+	IconSparkles,
+	IconUserRemove,
+} from "@/components/icons";
 import { FlipWords } from "@/components/ui/flip-words";
 import { Spotlight } from "@/components/ui/spotlight-new";
 import { demoHref, TRIAL_DAYS } from "@/lib/site";
@@ -36,7 +43,7 @@ export function Hero() {
 
 			<div className="mx-auto max-w-6xl px-4 text-center sm:px-6">
 				<p className="bg-card/70 text-muted-foreground mx-auto mb-6 flex w-fit items-center gap-2 rounded-full border px-3 py-1 text-xs font-medium shadow-sm backdrop-blur sm:text-sm">
-					<LuSparkles className="text-primary size-3.5" />
+					<IconSparkles className="text-primary size-3.5" />
 					Conçu pour les cabinets médicaux au Maroc
 				</p>
 				<h1 className="mx-auto max-w-4xl text-4xl leading-[1.1] font-semibold tracking-tight text-balance sm:text-6xl">
@@ -53,10 +60,10 @@ export function Hero() {
 						href={demoHref}
 						className="btn-raised bg-primary text-primary-foreground flex h-12 items-center gap-2 rounded-full px-6 font-medium transition hover:-translate-y-0.5 hover:opacity-95"
 					>
-						Essayer {TRIAL_DAYS} jours gratuitement <LuArrowRight className="size-4" />
+						Essayer {TRIAL_DAYS} jours gratuitement <IconArrowRight className="size-4" />
 					</a>
 					<a href="#fonctionnalites" className="bg-card hover:bg-muted flex h-12 items-center gap-2 rounded-full border px-6 font-medium transition">
-						<LuCirclePlay className="size-4" /> Découvrir l’application
+						<IconPlay className="size-4" /> Découvrir l’application
 					</a>
 				</div>
 				<p className="text-muted-foreground mt-4 text-xs">Sans engagement · Paiement par virement · Support en français</p>
@@ -75,8 +82,8 @@ function HeroPreview() {
 			<div className="from-brand/15 absolute -inset-x-8 -inset-y-6 -z-10 rounded-[2.5rem] bg-gradient-to-b to-transparent blur-2xl" />
 			<div className="bg-card/80 grid gap-3 rounded-3xl border p-3 text-start shadow-2xl shadow-black/5 backdrop-blur sm:grid-cols-4 sm:p-4">
 				<div className="grid gap-3">
-					<Tile icon={LuCalendarCheck} label="Rendez-vous aujourd’hui" value="18" badge="+3" />
-					<Tile icon={LuBanknote} label="Encaissé ce mois" value="48 750 MAD" className="hidden sm:block" />
+					<Tile icon={IconCalendarCheck} label="Rendez-vous aujourd’hui" value="18" badge="+3" />
+					<Tile icon={IconMoney} label="Encaissé ce mois" value="48 750 MAD" className="hidden sm:block" />
 				</div>
 
 				<div className="bg-card rounded-2xl border p-4 sm:col-span-2">
@@ -121,7 +128,7 @@ function HeroPreview() {
 							))}
 						</ul>
 					</div>
-					<Tile icon={LuUserX} label="Taux d’absence" value="4,1 %" badge="−2 pts" className="hidden sm:block" />
+					<Tile icon={IconUserRemove} label="Taux d’absence" value="4,1 %" badge="−2 pts" className="hidden sm:block" />
 				</div>
 			</div>
 		</div>

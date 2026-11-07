@@ -18,6 +18,11 @@
   --color-brand: var(--brand);
   --color-brand-soft: var(--brand-soft);
   --color-ink: var(--ink);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-warning-strong: var(--warning-strong);
+  --color-info: var(--info);
+  --color-highlight: var(--highlight);
   --font-sans: var(--font-sans);
   --font-mono: var(--font-geist-mono);
   --radius-lg: 0.75rem;
@@ -35,11 +40,14 @@
 
 /*
  * Cabinova's palette, the same as the clinic and Super Admin apps:
- *   Brand Plum #613F75 · Ink #111111 · White · Grey #EFEFED
+ *   Brand Plum #613F75 · Ink #1F2041 · White · Grey #EFEFED
+ *   Status: Success #126543 · Warning #FFC857 (text #976213) · Info #19647E
+ *   Highlight #119DA4 (charts, icons; never small text)
+ * The Tailwind status shades (emerald, amber, sky) are mapped onto these.
  */
 :root {
   --brand: #613f75;
-  --ink: #111111;
+  --ink: #1F2041;
   --brand-soft: color-mix(in oklab, var(--brand) 10%, white);
   --background: #ffffff;
   --foreground: var(--ink);
@@ -50,6 +58,42 @@
   --primary: var(--brand);
   --primary-foreground: #ffffff;
   --accent: color-mix(in oklab, var(--brand) 7%, white);
+  --success: #126543;
+  --warning: #FFC857;
+  --warning-strong: #976213;
+  --info: #19647E;
+  --highlight: #119DA4;
+
+  /* Status shades on the palette: pale tints for badges, dark ones for text.
+     Mid shades (500–600: solid fills) are fixed in both modes. */
+  --color-emerald-50: color-mix(in oklab, var(--success) 8%, white);
+  --color-emerald-100: color-mix(in oklab, var(--success) 15%, white);
+  --color-emerald-200: color-mix(in oklab, var(--success) 28%, white);
+  --color-emerald-300: color-mix(in oklab, var(--success) 50%, white);
+  --color-emerald-400: color-mix(in oklab, var(--success) 75%, white);
+  --color-emerald-500: #1A7A52;
+  --color-emerald-600: #126543;
+  --color-emerald-700: var(--success);
+  --color-emerald-800: #0E5236;
+  --color-emerald-900: #0B4029;
+  --color-amber-50: color-mix(in oklab, var(--warning) 18%, white);
+  --color-amber-100: color-mix(in oklab, var(--warning) 35%, white);
+  --color-amber-200: color-mix(in oklab, var(--warning) 60%, white);
+  --color-amber-300: var(--warning);
+  --color-amber-400: var(--warning);
+  --color-amber-500: #F2B33D;
+  --color-amber-600: #976213;
+  --color-amber-700: var(--warning-strong);
+  --color-amber-800: #7A4F0F;
+  --color-amber-900: #5E3C0B;
+  --color-sky-50: color-mix(in oklab, var(--info) 8%, white);
+  --color-sky-100: color-mix(in oklab, var(--info) 15%, white);
+  --color-sky-200: color-mix(in oklab, var(--info) 28%, white);
+  --color-sky-300: color-mix(in oklab, var(--info) 55%, white);
+  --color-sky-500: #1F7A99;
+  --color-sky-600: #19647E;
+  --color-sky-700: var(--info);
+  --color-sky-800: #144F64;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -65,6 +109,18 @@
     --primary: color-mix(in oklab, var(--brand) 55%, white);
     --primary-foreground: #0e0e10;
     --accent: color-mix(in oklab, var(--brand) 22%, #17171a);
+    /* Lighter status colours, readable on the dark cards. */
+    --success: #8BC6A6;
+    --warning: #FFC857;
+    --warning-strong: #FFC857;
+    --info: #7FB8CC;
+    /* The light shades the dark: variants use for text. */
+    --color-emerald-200: #B9DCC9;
+    --color-emerald-300: var(--success);
+    --color-emerald-400: var(--success);
+    --color-amber-200: #FFE2A6;
+    --color-sky-200: #A9D0DE;
+    --color-sky-300: var(--info);
   }
 }
 

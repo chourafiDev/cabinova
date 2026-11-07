@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
  * optional footer (hint on the left, the action on the right).
  */
 export function SettingsCard({
+	id,
 	title,
 	description,
 	action,
@@ -12,6 +13,8 @@ export function SettingsCard({
 	className,
 	children,
 }: {
+	/** Anchor for links to this block (e.g. "#holidays"). */
+	id?: string;
 	title: React.ReactNode;
 	description?: React.ReactNode;
 	/** Beside the title (e.g. "Nouvel espace"). */
@@ -21,7 +24,7 @@ export function SettingsCard({
 	children?: React.ReactNode;
 }) {
 	return (
-		<section className={cn("bg-card overflow-hidden rounded-xl border", className)}>
+		<section id={id} className={cn("bg-card scroll-mt-20 overflow-hidden rounded-xl border", className)}>
 			<div className="flex flex-wrap items-start justify-between gap-3 p-5 pb-0">
 				<div className="grid gap-1">
 					<h2 className="font-semibold leading-tight">{title}</h2>

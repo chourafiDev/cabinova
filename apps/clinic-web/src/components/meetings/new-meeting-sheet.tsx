@@ -7,6 +7,7 @@ import { useTranslations } from "next-intl";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { GoogleMark } from "@/app/(clinic)/settings/integrations/_components/google-card";
+import { DatePicker } from "@/components/date-picker";
 import { IconCalendarClock, IconCheck, IconFlash, IconSearch, IconSpinner, IconVideo } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -388,13 +389,12 @@ function MeetingForm({ onDone }: { onDone: () => void }) {
 						<div className="grid grid-cols-2 gap-3">
 							<Field>
 								<FieldLabel htmlFor="meeting-date">{t("date")}</FieldLabel>
-								<Input
+								<DatePicker
 									id="meeting-date"
-									type="date"
 									value={date}
 									min={format(new Date(), "yyyy-MM-dd")}
-									onChange={(e) => {
-										setDate(e.target.value);
+									onChange={(day) => {
+										setDate(day);
 										clear("when");
 									}}
 								/>

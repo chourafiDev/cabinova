@@ -1,18 +1,18 @@
-import type { IconType } from "react-icons";
 import {
-	LuCalendarDays,
-	LuChartColumn,
-	LuClipboardList,
-	LuMapPin,
-	LuReceipt,
-	LuUsers,
-} from "react-icons/lu";
+	type AppIcon,
+	IconCalendar,
+	IconChart,
+	IconClipboard,
+	IconLocation,
+	IconReceipt,
+	IconUsers,
+} from "@/components/icons";
 import { GlowingEffect } from "@/components/ui/glowing-effect";
 import { cn } from "@/lib/utils";
 import { SectionHeading } from "./section-heading";
 
 type Feature = {
-	icon: IconType;
+	icon: AppIcon;
 	title: string;
 	description: string;
 	points: string[];
@@ -22,7 +22,7 @@ type Feature = {
 
 const FEATURES: Feature[] = [
 	{
-		icon: LuCalendarDays,
+		icon: IconCalendar,
 		title: "Agenda et salle d’attente",
 		description:
 			"Prenez les rendez-vous en quelques clics, suivez l’arrivée des patients et faites-les entrer dans l’ordre.",
@@ -31,21 +31,21 @@ const FEATURES: Feature[] = [
 		visual: <AgendaVisual />,
 	},
 	{
-		icon: LuClipboardList,
+		icon: IconClipboard,
 		title: "Dossiers patients",
 		description: "Identité, couverture (CNSS, CNOPS, AMO…) et historique des visites, retrouvés par nom, téléphone ou CIN.",
 		points: ["Antécédents réservés aux médecins", "Allergies mises en avant"],
 		className: "",
 	},
 	{
-		icon: LuReceipt,
+		icon: IconReceipt,
 		title: "Encaissements et reçus",
 		description: "Tarifs du cabinet, paiements partiels, reçus numérotés avec le montant en lettres, clôture de caisse le soir.",
 		points: ["Espèces, carte, chèque, virement", "Remboursements tracés"],
 		className: "",
 	},
 	{
-		icon: LuChartColumn,
+		icon: IconChart,
 		title: "Statistiques",
 		description:
 			"Consultations, nouveaux patients, absences, affluence par heure et chiffre d’affaires : votre activité en un coup d’œil.",
@@ -54,14 +54,14 @@ const FEATURES: Feature[] = [
 		visual: <StatsVisual />,
 	},
 	{
-		icon: LuUsers,
+		icon: IconUsers,
 		title: "Équipe et rôles",
 		description: "Invitez médecins et secrétaires par e-mail ; chacun voit ce dont il a besoin, rien de plus.",
 		points: ["Invitation par lien sécurisé", "Accès coupé en un clic"],
 		className: "",
 	},
 	{
-		icon: LuMapPin,
+		icon: IconLocation,
 		title: "Plusieurs sites",
 		description: "Un cabinet à Casablanca, un autre à Rabat : chaque espace garde ses patients, son agenda et son équipe.",
 		points: ["Données isolées par espace", "Vue d’ensemble pour le responsable"],
@@ -179,7 +179,7 @@ function SitesVisual() {
 					className={cn("bg-card flex items-center gap-3 rounded-xl border px-3 py-2.5 text-xs shadow-sm", s.current && "ring-primary/40 ring-2")}
 				>
 					<span className="bg-accent text-primary flex size-8 items-center justify-center rounded-lg">
-						<LuMapPin className="size-4" />
+						<IconLocation className="size-4" />
 					</span>
 					<span className="min-w-0 flex-1">
 						<span className="block truncate font-medium">{s.name}</span>

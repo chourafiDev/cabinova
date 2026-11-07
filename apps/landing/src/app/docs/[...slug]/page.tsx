@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { LuArrowLeft, LuArrowRight, LuChevronRight } from "react-icons/lu";
 import { DocsMarkdown } from "@/components/docs/docs-markdown";
 import { DocsToc } from "@/components/docs/docs-toc";
+import { IconArrowLeft, IconArrowRight, IconChevronRight } from "@/components/icons";
 import { headingsOf, readDoc } from "@/lib/docs";
 import { ALL_DOCS } from "@/lib/docs-nav";
 
@@ -35,7 +35,7 @@ export default async function DocPage({ params }: PageProps<"/docs/[...slug]">) 
 						<Link href="/docs" className="hover:text-foreground">
 							Documentation
 						</Link>
-						<LuChevronRight className="size-3.5" />
+						<IconChevronRight className="size-3.5" />
 						<span>{page.section}</span>
 					</nav>
 					<h1 className="mt-3 text-3xl font-semibold tracking-tight text-balance">{page.title}</h1>
@@ -48,7 +48,7 @@ export default async function DocPage({ params }: PageProps<"/docs/[...slug]">) 
 						{previous && (
 							<Link href={`/docs/${previous.slug}`} className="hover:border-primary/50 rounded-xl border p-4 transition-colors">
 								<span className="text-muted-foreground flex items-center gap-1 text-xs">
-									<LuArrowLeft className="size-3.5" /> Précédent
+									<IconArrowLeft className="size-3.5" /> Précédent
 								</span>
 								<span className="mt-1 block font-medium">{previous.title}</span>
 							</Link>
@@ -56,7 +56,7 @@ export default async function DocPage({ params }: PageProps<"/docs/[...slug]">) 
 						{next && (
 							<Link href={`/docs/${next.slug}`} className="hover:border-primary/50 rounded-xl border p-4 text-end transition-colors sm:col-start-2">
 								<span className="text-muted-foreground flex items-center justify-end gap-1 text-xs">
-									Suivant <LuArrowRight className="size-3.5" />
+									Suivant <IconArrowRight className="size-3.5" />
 								</span>
 								<span className="mt-1 block font-medium">{next.title}</span>
 							</Link>

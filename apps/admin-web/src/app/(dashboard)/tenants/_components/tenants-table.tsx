@@ -1,12 +1,12 @@
 "use client";
 
 import type { ColumnDef } from "@tanstack/react-table";
-import { LuCircleDot, LuCreditCard, LuSearch } from "react-icons/lu";
 import Link from "next/link";
 import { useMemo } from "react";
 import { DataTable } from "@/components/data-table/data-table";
 import { DataTableColumnHeader } from "@/components/data-table/data-table-column-header";
 import { DataTableToolbar } from "@/components/data-table/data-table-toolbar";
+import { IconCard, IconSearch, IconStatus } from "@/components/icons";
 import { useDataTable } from "@/hooks/use-data-table";
 import type { DataTableFeatures } from "@/lib/data-table-features";
 import { formatDate } from "@/lib/format";
@@ -41,7 +41,7 @@ export function TenantsTable({
 						<span className="text-muted-foreground text-xs">{row.original.responsibleName}</span>
 					</Link>
 				),
-				meta: { label: "Cabinet", placeholder: "Nom, responsable ou e-mail…", variant: "text", icon: LuSearch },
+				meta: { label: "Cabinet", placeholder: "Nom, responsable ou e-mail…", variant: "text", icon: IconSearch },
 				enableColumnFilter: true,
 				enableHiding: false,
 			},
@@ -75,7 +75,7 @@ export function TenantsTable({
 					label: "Statut",
 					variant: "multiSelect",
 					options: STATUS_OPTIONS,
-					icon: LuCircleDot,
+					icon: IconStatus,
 				},
 				enableColumnFilter: true,
 				enableSorting: false,
@@ -85,7 +85,7 @@ export function TenantsTable({
 				accessorFn: (row) => row.plan?.key,
 				header: "Offre",
 				cell: ({ row }) => row.original.plan?.name ?? <span className="text-muted-foreground">—</span>,
-				meta: { label: "Offre", variant: "multiSelect", options: planOptions, icon: LuCreditCard },
+				meta: { label: "Offre", variant: "multiSelect", options: planOptions, icon: IconCard },
 				enableColumnFilter: planOptions.length > 0,
 				enableSorting: false,
 			},

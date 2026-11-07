@@ -1,18 +1,29 @@
 import Link from "next/link";
-import { LuArrowRight, LuBanknote, LuBuilding2, LuCalendarDays, LuChartColumn, LuCreditCard, LuLifeBuoy, LuRocket, LuShieldCheck, LuUsers } from "react-icons/lu";
 import { DocsSearchButton } from "@/components/docs/docs-search";
+import {
+	IconArrowRight,
+	IconBuilding,
+	IconCalendar,
+	IconCard,
+	IconChart,
+	IconMoney,
+	IconRocket,
+	IconShieldCheck,
+	IconSupport,
+	IconUsers,
+} from "@/components/icons";
 import { DOCS } from "@/lib/docs-nav";
 
 const ICONS = {
-	Démarrer: LuRocket,
-	Agenda: LuCalendarDays,
-	Patients: LuUsers,
-	Encaissements: LuBanknote,
-	Pilotage: LuChartColumn,
-	"Votre cabinet": LuBuilding2,
-	Sécurité: LuShieldCheck,
-	Abonnement: LuCreditCard,
-	Aide: LuLifeBuoy,
+	Démarrer: IconRocket,
+	Agenda: IconCalendar,
+	Patients: IconUsers,
+	Encaissements: IconMoney,
+	Pilotage: IconChart,
+	"Votre cabinet": IconBuilding,
+	Sécurité: IconShieldCheck,
+	Abonnement: IconCard,
+	Aide: IconSupport,
 } as const;
 
 const SUMMARIES: Record<string, string> = {
@@ -53,7 +64,7 @@ export default function DocsHome() {
 							<li key={slug}>
 								<Link href={`/docs/${slug}`} className="group hover:text-primary flex items-center gap-2 py-1 font-medium">
 									{page.title}
-									<LuArrowRight className="text-muted-foreground size-4 transition-transform group-hover:translate-x-0.5" />
+									<IconArrowRight className="text-muted-foreground size-4 transition-transform group-hover:translate-x-0.5" />
 								</Link>
 							</li>
 						);

@@ -1,5 +1,5 @@
-import { LuPlus } from "react-icons/lu";
 import Link from "next/link";
+import { IconPlus } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import type { CabinetOption, SupportAgent, TicketPage } from "@/lib/support";
 import { FormCard } from "../../../_components/shared/form-card";
@@ -36,7 +36,7 @@ export function TenantSupportTab({
 					{canWrite && (
 						<NewTicketDialog cabinets={[]} agents={agents} meId={meId} fixedCabinet={cabinet}>
 							<Button size="sm">
-								<LuPlus /> Nouveau ticket
+								<IconPlus /> Nouveau ticket
 							</Button>
 						</NewTicketDialog>
 					)}

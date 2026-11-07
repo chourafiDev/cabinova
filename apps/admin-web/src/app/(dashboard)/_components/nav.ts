@@ -1,23 +1,22 @@
-import type { IconType } from "react-icons";
-// Heroicons v2, solid style (react-icons "Hi*"; outline versions are "HiOutline*").
 import {
-  HiBanknotes,
-  HiBuildingOffice2,
-  HiCog6Tooth,
-  HiCreditCard,
-  HiLifebuoy,
-  HiPuzzlePiece,
-  HiServerStack,
-  HiShieldCheck,
-  HiSquares2X2,
-  HiUserGroup,
-} from "react-icons/hi2";
+  type AppIcon,
+  IconBuilding,
+  IconCard,
+  IconDashboard,
+  IconModules,
+  IconMoney,
+  IconPeople,
+  IconServer,
+  IconSettings,
+  IconShieldCheck,
+  IconSupport,
+} from "@/components/icons";
 import type { Permission } from "@/lib/permissions";
 
 export type NavItem = {
   title: string;
   href: string;
-  icon: IconType;
+  icon: AppIcon;
   /** Hidden from users that lack this permission. */
   permission?: Permission;
   /** "G" then this letter jumps here (keyboard shortcuts). */
@@ -30,30 +29,30 @@ export type NavItem = {
 export const navGroups: { label: string; items: NavItem[] }[] = [
   {
     label: "Vue d’ensemble",
-    items: [{ title: "Tableau de bord", href: "/", icon: HiSquares2X2, shortcut: "d", permission: "dashboard:read" }],
+    items: [{ title: "Tableau de bord", href: "/", icon: IconDashboard, shortcut: "d", permission: "dashboard:read" }],
   },
   {
     label: "Cabinets",
     items: [
-      { title: "Cabinets", href: "/tenants", icon: HiBuildingOffice2, shortcut: "c", permission: "tenants:read" },
-      { title: "Support", href: "/support", icon: HiLifebuoy, shortcut: "s", permission: "support:read" },
+      { title: "Cabinets", href: "/tenants", icon: IconBuilding, shortcut: "c", permission: "tenants:read" },
+      { title: "Support", href: "/support", icon: IconSupport, shortcut: "s", permission: "support:read" },
     ],
   },
   {
     label: "Offres et facturation",
     items: [
-      { title: "Offres", href: "/plans", icon: HiCreditCard, shortcut: "o", permission: "subscriptions:read" },
-      { title: "Fonctionnalités", href: "/features", icon: HiPuzzlePiece, permission: "subscriptions:read" },
-      { title: "Facturation", href: "/billing", icon: HiBanknotes, shortcut: "f", permission: "billing:read" },
+      { title: "Offres", href: "/plans", icon: IconCard, shortcut: "o", permission: "subscriptions:read" },
+      { title: "Fonctionnalités", href: "/features", icon: IconModules, permission: "subscriptions:read" },
+      { title: "Facturation", href: "/billing", icon: IconMoney, shortcut: "f", permission: "billing:read" },
     ],
   },
   {
     label: "Administration",
     items: [
-      { title: "Technique", href: "/technical", icon: HiServerStack, shortcut: "t", permission: "technical:read" },
-      { title: "Utilisateurs", href: "/users", icon: HiUserGroup, shortcut: "u", permission: "users:read" },
-      { title: "Sécurité", href: "/security", icon: HiShieldCheck, permission: "security:read" },
-      { title: "Configuration", href: "/settings", icon: HiCog6Tooth, permission: "settings:read" },
+      { title: "Technique", href: "/technical", icon: IconServer, shortcut: "t", permission: "technical:read" },
+      { title: "Utilisateurs", href: "/users", icon: IconPeople, shortcut: "u", permission: "users:read" },
+      { title: "Sécurité", href: "/security", icon: IconShieldCheck, permission: "security:read" },
+      { title: "Configuration", href: "/settings", icon: IconSettings, permission: "settings:read" },
     ],
   },
 ];

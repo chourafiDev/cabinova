@@ -18,6 +18,11 @@
   --text-xxs--line-height: 1rem;
   /* Dashboard extras */
   --color-green: var(--success);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-warning-strong: var(--warning-strong);
+  --color-info: var(--info);
+  --color-highlight: var(--highlight);
   --color-gray: var(--gray);
   --shadow-dark: 0 20px 25px -5px rgb(0 0 0 / 0.5);
   --color-background: var(--background);
@@ -68,16 +73,22 @@
 
 /* Cabinova palette
  *   Brand Plum #613F75  → primary, ring, active states, welcome banner, help card
- *   Ink        #111111  → text, sidebar
+ *   Ink        #1F2041  → text, sidebar (a navy black that suits the plum)
  *   White      #ffffff  → background
  *   Grey       #EFEFED  → sidebar, muted states
- * Everything else is a neutral tint derived from these.
+ * Status (coolors.co/1f2041-4b3f72-ffc857-119da4-19647e, on trial):
+ *   Success    #126543  → paid, saved, done
+ *   Warning    #FFC857  → to collect, attention (a fill: #976213 when it is text)
+ *   Info       #19647E  → absences, hints
+ *   Highlight  #119DA4  → charts, icons (never small text: too light)
+ * The components' Tailwind status shades (emerald, amber, sky) are mapped
+ * onto these below, so every badge follows the palette.
  */
 /* .paper: invoices, printable reports and e-mail previews stay light in dark mode. */
 :root,
 .dark .paper {
   --brand: #613F75;
-  --ink: #111111;
+  --ink: #1F2041;
   --grey: #EFEFED;
   /* Brand text on brand surfaces (welcome banner) */
   --brand-light: color-mix(in oklab, var(--brand) 35%, white);
@@ -97,14 +108,18 @@
   --accent: color-mix(in oklab, var(--brand) 8%, white);
   --accent-foreground: var(--ink);
   --destructive: #b42318;
-  --success: #22c55e;
+  --success: #126543;
+  --warning: #FFC857;
+  --warning-strong: #976213;
+  --info: #19647E;
+  --highlight: #119DA4;
   --gray: color-mix(in oklab, white 18%, var(--ink));
   --border: color-mix(in oklab, var(--ink) 10%, white);
   --input: color-mix(in oklab, var(--ink) 14%, white);
   --ring: var(--brand);
   --chart-1: var(--brand);
   --chart-2: var(--ink);
-  --chart-3: color-mix(in oklab, var(--brand) 60%, white);
+  --chart-3: var(--highlight);
   --chart-4: color-mix(in oklab, var(--ink) 45%, white);
   --chart-5: color-mix(in oklab, var(--brand) 30%, white);
   --radius: 0.625rem;
@@ -119,6 +134,39 @@
   --sidebar-accent-foreground: var(--ink);
   --sidebar-border: color-mix(in oklab, white 10%, var(--brand));
   --sidebar-ring: var(--brand);
+
+  /* Status shades on the palette: pale tints for badges, dark ones for text.
+     Mid shades (500–600: solid fills under white text) are fixed in both modes. */
+  --color-emerald-50: color-mix(in oklab, var(--success) 8%, white);
+  --color-emerald-100: color-mix(in oklab, var(--success) 15%, white);
+  --color-emerald-200: color-mix(in oklab, var(--success) 28%, white);
+  --color-emerald-300: color-mix(in oklab, var(--success) 50%, white);
+  --color-emerald-400: color-mix(in oklab, var(--success) 75%, white);
+  --color-emerald-500: #1A7A52;
+  --color-emerald-600: #126543;
+  --color-emerald-700: var(--success);
+  --color-emerald-800: #0E5236;
+  --color-emerald-900: #0B4029;
+  --color-emerald-950: #072A1B;
+  --color-amber-50: color-mix(in oklab, var(--warning) 18%, white);
+  --color-amber-100: color-mix(in oklab, var(--warning) 35%, white);
+  --color-amber-200: color-mix(in oklab, var(--warning) 60%, white);
+  --color-amber-300: var(--warning);
+  --color-amber-400: var(--warning);
+  --color-amber-500: #F2B33D;
+  --color-amber-600: #976213;
+  --color-amber-700: var(--warning-strong);
+  --color-amber-800: #7A4F0F;
+  --color-amber-900: #5E3C0B;
+  --color-sky-50: color-mix(in oklab, var(--info) 8%, white);
+  --color-sky-100: color-mix(in oklab, var(--info) 15%, white);
+  --color-sky-200: color-mix(in oklab, var(--info) 28%, white);
+  --color-sky-300: color-mix(in oklab, var(--info) 55%, white);
+  --color-sky-500: #1F7A99;
+  --color-sky-600: #19647E;
+  --color-sky-700: var(--info);
+  --color-sky-800: #144F64;
+  --color-sky-950: #0B2C38;
 }
 
 /* Dark palette: same brand, ink surfaces. The plum is lifted so it keeps
@@ -140,14 +188,18 @@
     --accent: color-mix(in oklab, var(--brand) 28%, #18181b);
     --accent-foreground: #ececee;
     --destructive: #f87171;
-    --success: #4ade80;
+    --success: #8BC6A6;
+    --warning: #FFC857;
+    --warning-strong: #FFC857;
+    --info: #7FB8CC;
+    --highlight: #119DA4;
     --gray: #a1a1aa;
     --border: #2b2b31;
     --input: #36363d;
     --ring: color-mix(in oklab, var(--brand) 55%, white);
     --chart-1: color-mix(in oklab, var(--brand) 55%, white);
     --chart-2: #ececee;
-    --chart-3: color-mix(in oklab, var(--brand) 75%, white);
+    --chart-3: var(--highlight);
     --chart-4: #71717a;
     --chart-5: color-mix(in oklab, var(--brand) 35%, white);
 
@@ -165,31 +217,35 @@
     /* Status colours written as Tailwind shades (bg-emerald-50 text-emerald-700…):
        pale tints become translucent tints, dark text shades become light
        ones. Mid shades (400–600, used for solid fills) are unchanged. */
-    --color-emerald-50: rgb(16 185 129 / 0.12);
-    --color-emerald-100: rgb(16 185 129 / 0.18);
-    --color-emerald-200: rgb(16 185 129 / 0.3);
-    --color-emerald-700: #6ee7b7;
-    --color-emerald-800: #6ee7b7;
-    --color-emerald-900: #a7f3d0;
+    --color-emerald-50: color-mix(in oklab, var(--success) 12%, transparent);
+    --color-emerald-100: color-mix(in oklab, var(--success) 18%, transparent);
+    --color-emerald-200: color-mix(in oklab, var(--success) 30%, transparent);
+    --color-emerald-300: var(--success);
+    --color-emerald-400: var(--success);
+    --color-emerald-700: var(--success);
+    --color-emerald-800: var(--success);
+    --color-emerald-900: #B9DCC9;
     --color-red-50: rgb(239 68 68 / 0.12);
     --color-red-100: rgb(239 68 68 / 0.18);
     --color-red-200: rgb(239 68 68 / 0.32);
     --color-red-700: #fca5a5;
     --color-red-800: #fca5a5;
     --color-red-900: #fecaca;
-    --color-amber-50: rgb(245 158 11 / 0.12);
-    --color-amber-100: rgb(245 158 11 / 0.18);
-    --color-amber-200: rgb(245 158 11 / 0.3);
-    --color-amber-700: #fcd34d;
-    --color-amber-800: #fcd34d;
-    --color-amber-900: #fde68a;
+    --color-amber-50: color-mix(in oklab, var(--warning) 12%, transparent);
+    --color-amber-100: color-mix(in oklab, var(--warning) 18%, transparent);
+    --color-amber-200: color-mix(in oklab, var(--warning) 30%, transparent);
+    --color-amber-700: var(--warning);
+    --color-amber-800: var(--warning);
+    --color-amber-900: #FFE2A6;
     --color-orange-50: rgb(249 115 22 / 0.12);
     --color-orange-700: #fdba74;
-    --color-sky-50: rgb(14 165 233 / 0.12);
-    --color-sky-100: rgb(14 165 233 / 0.18);
-    --color-sky-700: #7dd3fc;
-    --color-sky-800: #7dd3fc;
-    --color-sky-950: #e0f2fe;
+    --color-sky-50: color-mix(in oklab, var(--info) 12%, transparent);
+    --color-sky-100: color-mix(in oklab, var(--info) 18%, transparent);
+    --color-sky-200: #A9D0DE;
+    --color-sky-300: var(--info);
+    --color-sky-700: var(--info);
+    --color-sky-800: var(--info);
+    --color-sky-950: #D5E9F0;
     --color-violet-50: rgb(139 92 246 / 0.14);
     --color-violet-700: #c4b5fd;
     --color-zinc-50: rgb(255 255 255 / 0.03);
@@ -203,31 +259,14 @@
   /* Paper surfaces keep Tailwind's original shades. */
   .dark .paper {
     color-scheme: light;
-    --color-emerald-50: oklch(97.9% 0.021 166.113);
-    --color-emerald-100: oklch(95% 0.052 163.051);
-    --color-emerald-200: oklch(90.5% 0.093 164.15);
-    --color-emerald-700: oklch(50.8% 0.118 165.612);
-    --color-emerald-800: oklch(43.2% 0.095 166.913);
-    --color-emerald-900: oklch(37.8% 0.077 168.94);
     --color-red-50: oklch(97.1% 0.013 17.38);
     --color-red-100: oklch(93.6% 0.032 17.717);
     --color-red-200: oklch(88.5% 0.062 18.334);
     --color-red-700: oklch(50.5% 0.213 27.518);
     --color-red-800: oklch(44.4% 0.177 26.899);
     --color-red-900: oklch(39.6% 0.141 25.723);
-    --color-amber-50: oklch(98.7% 0.022 95.277);
-    --color-amber-100: oklch(96.2% 0.059 95.617);
-    --color-amber-200: oklch(92.4% 0.12 95.746);
-    --color-amber-700: oklch(55.5% 0.163 48.998);
-    --color-amber-800: oklch(47.3% 0.137 46.201);
-    --color-amber-900: oklch(41.4% 0.112 45.904);
     --color-orange-50: oklch(98% 0.016 73.684);
     --color-orange-700: oklch(55.3% 0.195 38.402);
-    --color-sky-50: oklch(97.7% 0.013 236.62);
-    --color-sky-100: oklch(95.1% 0.026 236.824);
-    --color-sky-700: oklch(50% 0.134 242.749);
-    --color-sky-800: oklch(44.3% 0.11 240.79);
-    --color-sky-950: oklch(29.3% 0.066 243.157);
     --color-violet-50: oklch(96.9% 0.016 293.756);
     --color-violet-700: oklch(49.1% 0.27 292.581);
     --color-zinc-50: oklch(98.5% 0 none);

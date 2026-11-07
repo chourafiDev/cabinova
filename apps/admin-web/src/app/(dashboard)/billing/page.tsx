@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { HiBanknotes } from "react-icons/hi2";
-import { LuBanknote, LuClock, LuLandmark, LuSettings, LuTriangleAlert } from "react-icons/lu";
+import { IconBank, IconClock, IconMoney, IconSettings, IconWarning } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import type { BillingSettings, InvoicesPage, Quote } from "@/lib/billing";
@@ -55,13 +54,13 @@ export default async function BillingPage({ searchParams }: PageProps<"/billing"
 	return (
 		<ListTransitionProvider>
 			<ListHeader
-				icon={<HiBanknotes />}
+				icon={<IconMoney />}
 				total={quotesTab ? quotes.data.length : page.data.length}
 				label={quotesTab ? { singular: "Devis", plural: "Devis" } : { singular: "Facture", plural: "Factures" }}
 				action={
 					<Button asChild variant="outline">
 						<Link href="/billing/settings">
-							<LuSettings /> Coordonnées bancaires
+							<IconSettings /> Coordonnées bancaires
 						</Link>
 					</Button>
 				}
@@ -69,7 +68,7 @@ export default async function BillingPage({ searchParams }: PageProps<"/billing"
 
 			{!settings.configured && (
 				<div className="mb-3 flex flex-wrap items-center gap-3 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900">
-					<LuLandmark className="size-4 shrink-0" />
+					<IconBank className="size-4 shrink-0" />
 					<span className="min-w-0 flex-1">
 						Votre RIB n’est pas encore renseigné : les factures sont émises sans coordonnées bancaires.
 					</span>
@@ -83,14 +82,14 @@ export default async function BillingPage({ searchParams }: PageProps<"/billing"
 
 			<section className="mb-3 grid grid-cols-1 gap-3 sm:grid-cols-3">
 				<KpiCard
-					icon={LuClock}
+					icon={IconClock}
 					title="À encaisser"
 					value={formatPrice(page.totals.open)}
 					period="Factures émises, pas encore échues"
 					hint="Montant des factures en attente de virement, dans le délai de paiement."
 				/>
 				<KpiCard
-					icon={LuTriangleAlert}
+					icon={IconWarning}
 					title="En retard"
 					value={formatPrice(page.totals.overdue)}
 					valueClassName={page.totals.overdue ? "text-destructive" : undefined}
@@ -98,7 +97,7 @@ export default async function BillingPage({ searchParams }: PageProps<"/billing"
 					hint="Factures dont la date d’échéance est passée sans virement reçu. Un rappel est envoyé automatiquement."
 				/>
 				<KpiCard
-					icon={LuBanknote}
+					icon={IconMoney}
 					title="Encaissé"
 					value={formatPrice(page.totals.collectedThisMonth)}
 					period="Ce mois-ci"

@@ -10,9 +10,10 @@ import { toast } from "sonner";
 import { z } from "zod";
 
 import { useCalendar } from "@/calendar/contexts/calendar-context";
-import { holidayOf, isWithinWorkingHours } from "@/calendar/helpers";
+import { isWithinWorkingHours } from "@/calendar/helpers";
 import { useFmt } from "@/calendar/locale";
 import type { IEvent } from "@/calendar/interfaces";
+import { DatePicker } from "@/components/date-picker";
 import { IconClock, IconSpinner, IconWarning } from "@/components/icons";
 import { NoShowNote } from "@/components/no-show-badge";
 import { type PickedPatient, PatientPicker } from "@/components/patient-picker";
@@ -78,7 +79,8 @@ export function AppointmentFormDialog({
 	open: boolean;
 	onOpenChange: (open: boolean) => void;
 }) {
-	const { users, selectedDate, selectedUserId, defaultDuration, scheduleFor, closureOn, openingHours } = useCalendar();
+	const { users, selectedDate, selectedUserId, defaultDuration, scheduleFor, holidayOn, closureOn, openingHours } =
+		useCalendar();
 	const queryClient = useQueryClient();
 	const t = useTranslations("agenda.form");
 	const tc = useTranslations("common");
@@ -139,7 +141,7 @@ export function AppointmentFormDialog({
 
 	/** Why the slot can't be booked: a public holiday, a closure, an absence, or the hours. */
 	const closedReason = (day: Date) => {
-		const holiday = holidayOf(day);
+		const holiday = holidayOn(day);
 		if (holiday) return t("holiday", { holiday: tc(`holidays.names.${holiday.key}`) });
 		const closure = closureOn(day, practitionerId);
 		if (closure) {
@@ -241,7 +243,13 @@ export function AppointmentFormDialog({
 						<div className="grid gap-4 sm:grid-cols-3">
 							<Field data-invalid={!!errors.date}>
 								<FieldLabel htmlFor="appointment-date">{t("date")}</FieldLabel>
-								<Input id="appointment-date" type="date" aria-invalid={!!errors.date} {...form.register("date")} />
+								<Controller
+									control={form.control}
+									name="date"
+									render={({ field }) => (
+										<DatePicker id="appointment-date" value={field.value} onChange={field.onChange} invalid={!!errors.date} />
+									)}
+								/>
 								<FieldError errors={[errors.date]} />
 							</Field>
 							<Field data-invalid={!!errors.time}>

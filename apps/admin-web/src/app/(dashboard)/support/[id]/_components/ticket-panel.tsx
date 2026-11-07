@@ -1,9 +1,9 @@
 "use client";
 
-import { LuCheck, LuLoader, LuPencil, LuUserPlus } from "react-icons/lu";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
+import { IconCheck, IconEdit, IconSpinner, IconUserAdd } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -72,7 +72,7 @@ export function TicketPanel({
 	return (
 		<FormCard
 			title="Traitement"
-			action={pending && <LuLoader className="size-4 animate-spin text-muted-foreground" />}
+			action={pending && <IconSpinner className="size-4 animate-spin text-muted-foreground" />}
 		>
 			<div className="grid gap-2.5">
 				{row(
@@ -160,12 +160,12 @@ export function TicketPanel({
 					<div className="flex flex-wrap gap-2 pt-1">
 						{ticket.assignee?.id !== meId && agents.some((a) => a.id === meId) && !done && (
 							<Button size="sm" variant="outline" disabled={pending} onClick={() => patch({ assigneeId: meId }, "Ticket pris en charge")}>
-								<LuUserPlus /> Me l’assigner
+								<IconUserAdd /> Me l’assigner
 							</Button>
 						)}
 						{!done ? (
 							<Button size="sm" variant="outline" disabled={pending} onClick={() => patch({ status: "resolved" }, "Ticket résolu")}>
-								<LuCheck /> Marquer résolu
+								<IconCheck /> Marquer résolu
 							</Button>
 						) : (
 							<Button size="sm" variant="outline" disabled={pending} onClick={() => patch({ status: "open" }, "Ticket rouvert")}>
@@ -181,7 +181,7 @@ export function TicketPanel({
 							<span className="text-xs text-muted-foreground">Contact du ticket</span>
 							{canWrite && !editingContact && (
 								<Button size="icon-sm" variant="ghost" aria-label="Modifier le contact" onClick={() => setEditingContact(true)}>
-									<LuPencil />
+									<IconEdit />
 								</Button>
 							)}
 						</div>

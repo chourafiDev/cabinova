@@ -1,9 +1,10 @@
 "use client";
 
-import { LuLoader, LuPlus } from "react-icons/lu";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
+import { DatePicker } from "@/components/date-picker";
+import { IconPlus, IconSpinner } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -67,7 +68,7 @@ export function NewPromoCodeDialog({ plans }: { plans: { key: string; name: stri
 		<Dialog open={open} onOpenChange={setOpen}>
 			<DialogTrigger asChild>
 				<Button>
-					<LuPlus /> Nouveau code
+					<IconPlus /> Nouveau code
 				</Button>
 			</DialogTrigger>
 			<DialogContent className="sm:max-w-lg">
@@ -130,7 +131,7 @@ export function NewPromoCodeDialog({ plans }: { plans: { key: string; name: stri
 						</Field>
 						<Field>
 							<FieldLabel htmlFor="pc-until">Valable jusqu’au</FieldLabel>
-							<Input id="pc-until" type="date" value={v.validUntil} onChange={(e) => set({ validUntil: e.target.value })} />
+							<DatePicker id="pc-until" value={v.validUntil} onChange={(day) => set({ validUntil: day })} clearable />
 						</Field>
 					</div>
 					<Field>
@@ -164,7 +165,7 @@ export function NewPromoCodeDialog({ plans }: { plans: { key: string; name: stri
 						Annuler
 					</Button>
 					<Button onClick={save} disabled={saving || v.code.length < 3 || !(pct >= 1 && pct <= 100)}>
-						{saving && <LuLoader className="animate-spin" />} Créer le code
+						{saving && <IconSpinner className="animate-spin" />} Créer le code
 					</Button>
 				</DialogFooter>
 			</DialogContent>

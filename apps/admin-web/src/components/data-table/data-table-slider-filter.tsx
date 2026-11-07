@@ -4,6 +4,7 @@ import { type Column, type RowData, Subscribe } from "@tanstack/react-table";
 import { cn } from "cn";
 import * as React from "react";
 
+import { IconAddCircle, IconError } from "@/components/icons";
 import type { DataTableFeatures } from "@/lib/data-table-features";
 
 import { Button } from "@/components/ui/button";
@@ -16,7 +17,6 @@ import {
 } from "@/components/ui/popover";
 import { Separator } from "@/components/ui/separator";
 import { Slider } from "@/components/ui/slider";
-import { LuCirclePlus, LuCircleX } from "react-icons/lu";
 import { focusRing } from "@/lib/focus-ring"
 
 interface Range {
@@ -179,11 +179,11 @@ function DataTableSliderFilterContent<TData extends RowData>({
               className={cn(focusRing, "rounded-sm opacity-70 transition-opacity hover:opacity-100")}
               onClick={onReset}
             >
-              <LuCircleX
+              <IconError
               />
             </div>
           ) : (
-            <LuCirclePlus
+            <IconAddCircle
             />
           )}
           <span>{title}</span>

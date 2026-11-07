@@ -1,7 +1,7 @@
 "use client";
 
-import { LuX } from "react-icons/lu";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { IconClose } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -72,7 +72,7 @@ export function InboxFilters() {
 						startTransition(() => router.replace(view ? `${pathname}?view=${view}` : pathname, { scroll: false }));
 					}}
 				>
-					<LuX /> Réinitialiser
+					<IconClose /> Réinitialiser
 				</Button>
 			)}
 		</div>

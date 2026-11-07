@@ -244,6 +244,16 @@ describe('clinic: payments', () => {
       .get(`/patients/${patientId}/account`)
       .expect(200);
     expect(account.balance).toBe(35000);
+    // The dossier lists what was taken and given back (not the cancelled
+    // payment), each with its reçu.
+    expect(account.visits[0].payments).toEqual([
+      expect.objectContaining({
+        kind: 'payment',
+        amount: 30000,
+        receiptNumber: expect.any(String),
+      }),
+      expect.objectContaining({ kind: 'refund', amount: 10000 }),
+    ]);
 
     const { body: history } = await cab(owner).get('/payments').expect(200);
     expect(history.totals).toMatchObject({

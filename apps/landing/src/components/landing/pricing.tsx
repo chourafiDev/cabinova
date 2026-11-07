@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { LuArrowRight, LuCheck } from "react-icons/lu";
+import { IconArrowRight, IconCheck } from "@/components/icons";
 import { demoHref, PLANS, TRIAL_DAYS } from "@/lib/site";
 import { cn } from "@/lib/utils";
 import { SectionHeading } from "./section-heading";
@@ -84,14 +84,14 @@ export function Pricing() {
 										: "bg-card hover:bg-muted border",
 								)}
 							>
-								Commencer l’essai <LuArrowRight className="size-4" />
+								Commencer l’essai <IconArrowRight className="size-4" />
 							</a>
 							<ul className="mt-7 grid gap-3 text-sm">
 								{plan.highlights.map((h) => (
 									<li key={h} className={cn("flex items-start gap-2.5", h.endsWith(":") && "text-muted-foreground font-medium")}>
 										{!h.endsWith(":") && (
 											<span className="bg-accent text-primary mt-0.5 flex size-4 shrink-0 items-center justify-center rounded-full">
-												<LuCheck className="size-3" />
+												<IconCheck className="size-3" />
 											</span>
 										)}
 										{h}

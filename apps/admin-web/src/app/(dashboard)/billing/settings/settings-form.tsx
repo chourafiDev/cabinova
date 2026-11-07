@@ -1,11 +1,21 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { LuBan, LuBellRing, LuCalendarClock, LuCheck, LuCircleAlert, LuLandmark, LuLoader, LuMail, LuReceiptText } from "react-icons/lu";
 import { useRouter } from "next/navigation";
 import { type FieldPath, useForm, useWatch } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
+import {
+	IconAlertCircle,
+	IconBan,
+	IconBank,
+	IconBellRing,
+	IconCalendarClock,
+	IconCheck,
+	IconMail,
+	IconReceiptText,
+	IconSpinner,
+} from "@/components/icons";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Field, FieldDescription, FieldError, FieldLabel } from "@/components/ui/field";
@@ -123,7 +133,7 @@ export function BillingSettingsForm({ settings, readOnly }: { settings: BillingS
 			<div className="grid gap-4">
 				<FormSection
 					step={1}
-					icon={LuLandmark}
+					icon={IconBank}
 					title="Compte bancaire"
 					description="Le compte sur lequel les cabinets vous paient par virement."
 				>
@@ -140,7 +150,7 @@ export function BillingSettingsForm({ settings, readOnly }: { settings: BillingS
 									ribComplete ? "text-emerald-700" : "text-muted-foreground",
 								)}
 							>
-								{ribComplete && <LuCheck className="size-3.5" />}
+								{ribComplete && <IconCheck className="size-3.5" />}
 								{ribDigits.length} / 24 chiffres
 							</span>
 						</div>
@@ -179,7 +189,7 @@ export function BillingSettingsForm({ settings, readOnly }: { settings: BillingS
 
 				<FormSection
 					step={2}
-					icon={LuReceiptText}
+					icon={IconReceiptText}
 					title="Émetteur des factures"
 					description="Votre identité légale, en tête de chaque facture."
 				>
@@ -197,7 +207,7 @@ export function BillingSettingsForm({ settings, readOnly }: { settings: BillingS
 
 				<FormSection
 					step={3}
-					icon={LuCalendarClock}
+					icon={IconCalendarClock}
 					title="Délais de paiement"
 					description="Quand les factures partent, quand elles passent en retard, et ce qui se passe sans paiement."
 				>
@@ -224,15 +234,15 @@ export function BillingSettingsForm({ settings, readOnly }: { settings: BillingS
 					<ol className="grid gap-2 rounded-lg bg-muted/50 p-3 text-xs">
 						{[
 							...(reminder
-								? [{ icon: LuBellRing, title: `Essai J−${reminder}`, text: "Rappel : l’essai se termine bientôt" }]
+								? [{ icon: IconBellRing, title: `Essai J−${reminder}`, text: "Rappel : l’essai se termine bientôt" }]
 								: []),
-							{ icon: LuMail, title: `J−${before}`, text: "Facture envoyée avec votre RIB" },
-							{ icon: LuCalendarClock, title: "J", text: "Début de la nouvelle période" },
-							{ icon: LuCircleAlert, title: `J+${grace}`, text: "Sans virement : « En retard » et rappel" },
+							{ icon: IconMail, title: `J−${before}`, text: "Facture envoyée avec votre RIB" },
+							{ icon: IconCalendarClock, title: "J", text: "Début de la nouvelle période" },
+							{ icon: IconAlertCircle, title: `J+${grace}`, text: "Sans virement : « En retard » et rappel" },
 							...(suspendAfter
 								? [
 										{
-											icon: LuBan,
+											icon: IconBan,
 											title: `J+${grace + suspendAfter}`,
 											text: `Accès suspendu (prévenu à J+${grace + Math.max(0, suspendAfter - 3)}), rétabli au paiement`,
 										},
@@ -306,7 +316,7 @@ export function BillingSettingsForm({ settings, readOnly }: { settings: BillingS
 				</div>
 				{!readOnly && (
 					<Button type="submit" disabled={!isDirty || isSubmitting} className="w-full">
-						{isSubmitting && <LuLoader className="animate-spin" />}
+						{isSubmitting && <IconSpinner className="animate-spin" />}
 						{isDirty ? "Enregistrer les modifications" : "Aucune modification"}
 					</Button>
 				)}

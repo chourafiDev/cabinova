@@ -1,6 +1,6 @@
-import { LuArrowLeft } from "react-icons/lu";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { IconArrowLeft } from "@/components/icons";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import type { PromoCode } from "@/lib/billing";
@@ -41,7 +41,7 @@ export default async function PromoCodesPage() {
 			<div className="mb-4 flex flex-wrap items-center gap-3 border-b border-dashed border-foreground/20 pb-4">
 				<Button asChild size="icon-sm" variant="ghost" aria-label="Retour aux offres">
 					<Link href="/plans">
-						<LuArrowLeft />
+						<IconArrowLeft />
 					</Link>
 				</Button>
 				<div className="grid leading-tight">

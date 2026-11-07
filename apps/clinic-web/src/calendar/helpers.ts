@@ -119,12 +119,12 @@ export function getEventBlockStyle(event: IEvent, day: Date, groupIndex: number,
 }
 
 /** The hour row is (at least partly) within opening hours. */
-/** The Moroccan public holiday on this day: the cabinet is closed, whatever its hours. */
+/** The Moroccan public holiday on this day, whether the cabinet works it or not. */
 export const holidayOf = (day: Date) => moroccoHolidayOn(format(day, "yyyy-MM-dd"));
 
-/** The day's opening periods: none on a public holiday or a closed day. */
+/** The day's opening periods: none on a holiday the cabinet doesn't work, or a closed day. */
 const periodsOf = (day: Date, schedule: TSchedule) =>
-  holidayOf(day) || schedule.closed(day) ? [] : (schedule.hours[day.getDay()] ?? []);
+  schedule.holiday(day) || schedule.closed(day) ? [] : (schedule.hours[day.getDay()] ?? []);
 
 export function isWorkingHour(day: Date, hour: number, schedule: TSchedule) {
   return periodsOf(day, schedule).some((p) => p.from < (hour + 1) * 60 && p.to > hour * 60);

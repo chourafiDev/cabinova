@@ -1,7 +1,6 @@
-import { LuPencil, LuPlus, LuTicketPercent } from "react-icons/lu";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { HiCreditCard } from "react-icons/hi2";
+import { IconCard, IconCoupon, IconEdit, IconPlus } from "@/components/icons";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { can } from "@/lib/permissions";
@@ -43,20 +42,20 @@ export default async function PlansPage() {
 	return (
 		<ListTransitionProvider>
 			<ListHeader
-				icon={<HiCreditCard />}
+				icon={<IconCard />}
 				total={plans.length}
 				label={{ singular: "Offre", plural: "Offres" }}
 				action={
 					<div className="flex w-full gap-2 md:w-auto">
 						<Button asChild variant="outline">
 							<Link href="/plans/promo-codes">
-								<LuTicketPercent /> Codes promo
+								<IconCoupon /> Codes promo
 							</Link>
 						</Button>
 						{canWrite && (
 							<Button asChild>
 								<Link href="/plans/new">
-									<LuPlus /> Nouvelle offre
+									<IconPlus /> Nouvelle offre
 								</Link>
 							</Button>
 						)}
@@ -89,7 +88,7 @@ export default async function PlansPage() {
 											{canWrite && (
 												<Button asChild variant="ghost" size="icon-xs" aria-label={`Modifier ${plan.name}`}>
 													<Link href={`/plans/${plan.id}`}>
-														<LuPencil />
+														<IconEdit />
 													</Link>
 												</Button>
 											)}

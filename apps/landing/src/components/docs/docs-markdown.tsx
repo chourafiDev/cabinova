@@ -1,15 +1,15 @@
 import Link from "next/link";
 import { Children, isValidElement, type ReactElement, type ReactNode } from "react";
-import { LuCircleAlert, LuInfo, LuLightbulb } from "react-icons/lu";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import { IconAlertCircle, IconIdea, IconInfo } from "@/components/icons";
 import { slugify } from "@/lib/docs-nav";
 import { cn } from "@/lib/utils";
 
 const CALLOUTS = {
-	NOTE: { label: "À savoir", icon: LuInfo, tone: "border-primary/30 bg-accent", iconTone: "text-primary" },
-	TIP: { label: "Conseil", icon: LuLightbulb, tone: "border-emerald-500/30 bg-emerald-500/8", iconTone: "text-emerald-600 dark:text-emerald-400" },
-	WARNING: { label: "Attention", icon: LuCircleAlert, tone: "border-amber-500/40 bg-amber-500/10", iconTone: "text-amber-600 dark:text-amber-400" },
+	NOTE: { label: "À savoir", icon: IconInfo, tone: "border-primary/30 bg-accent", iconTone: "text-primary" },
+	TIP: { label: "Conseil", icon: IconIdea, tone: "border-emerald-500/30 bg-emerald-500/8", iconTone: "text-emerald-600 dark:text-emerald-400" },
+	WARNING: { label: "Attention", icon: IconAlertCircle, tone: "border-amber-500/40 bg-amber-500/10", iconTone: "text-amber-600 dark:text-amber-400" },
 } as const;
 const MARK = /^\[!(NOTE|TIP|WARNING)\]\s*/;
 

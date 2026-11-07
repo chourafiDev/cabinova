@@ -1,8 +1,8 @@
 "use client";
 
-import { LuX } from "react-icons/lu";
 import { useState } from "react";
 import { toast } from "sonner";
+import { IconClose } from "@/components/icons";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import type { PlatformSettings } from "@/lib/settings";
@@ -105,7 +105,7 @@ export function NotificationsSection({ initial, readOnly }: { initial: Notificat
 											onClick={() => setTeam({ recipients: team.recipients.filter((x) => x !== r) })}
 											className="rounded-full p-0.5 text-muted-foreground hover:bg-muted hover:text-foreground"
 										>
-											<LuX className="size-3.5" />
+											<IconClose className="size-3.5" />
 										</button>
 									)}
 								</li>

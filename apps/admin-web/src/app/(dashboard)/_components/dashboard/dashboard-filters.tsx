@@ -1,8 +1,8 @@
 "use client";
 
-import { LuDownload, LuFileText, LuX } from "react-icons/lu";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useTransition } from "react";
+import { IconClose, IconDocument, IconDownload } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { type DashboardOverview, PERIODS } from "@/lib/dashboard";
@@ -94,18 +94,18 @@ export function DashboardFilters({
 						size="sm"
 						onClick={() => startTransition(() => router.replace(pathname, { scroll: false }))}
 					>
-						<LuX /> Réinitialiser
+						<IconClose /> Réinitialiser
 					</Button>
 				)}
 				<div className="ms-auto flex gap-2">
 					<Button asChild variant="outline" size="sm">
 						<a href={exportHref} download>
-							<LuDownload /> Excel
+							<IconDownload /> Excel
 						</a>
 					</Button>
 					<Button asChild variant="outline" size="sm">
 						<a href={`/reports/dashboard${params.size ? `?${params}` : ""}`} target="_blank" rel="noreferrer">
-							<LuFileText /> PDF
+							<IconDocument /> PDF
 						</a>
 					</Button>
 				</div>

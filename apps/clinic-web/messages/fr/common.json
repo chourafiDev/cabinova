@@ -197,7 +197,8 @@
       "mawlid": "Aïd Al Mawlid",
       "eidAlFitr": "Aïd Al Fitr",
       "eidAlAdha": "Aïd Al Adha"
-    }
+    },
+    "worked": "Cabinet ouvert"
   },
   "actPicker": {
     "placeholder": "Choisir un acte",
@@ -218,5 +219,9 @@
     "orderedList": "Liste numérotée",
     "undo": "Annuler",
     "redo": "Rétablir"
+  },
+  "datePicker": {
+    "placeholder": "Choisir une date",
+    "clear": "Effacer la date"
   }
 }

@@ -1,9 +1,9 @@
 "use client";
 
-import { LuChevronDown } from "react-icons/lu";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
+import { IconChevronDown } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import {
 	Dialog,
@@ -55,7 +55,7 @@ export function UserActions({
 			<DropdownMenu>
 				<DropdownMenuTrigger asChild>
 					<Button variant="outline" size="sm" disabled={pending}>
-						Actions <LuChevronDown />
+						Actions <IconChevronDown />
 					</Button>
 				</DropdownMenuTrigger>
 				<DropdownMenuContent align="end" className="w-72">

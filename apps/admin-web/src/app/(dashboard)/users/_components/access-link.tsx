@@ -1,7 +1,7 @@
 "use client";
 
-import { LuCheck, LuCopy } from "react-icons/lu";
 import { useState } from "react";
+import { IconCheck, IconCopy } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -27,7 +27,7 @@ export function AccessLink({ url, isReset }: { url: string; isReset: boolean }) 
 						setCopied(true);
 					}}
 				>
-					{copied ? <LuCheck /> : <LuCopy />} {copied ? "Copié" : "Copier"}
+					{copied ? <IconCheck /> : <IconCopy />} {copied ? "Copié" : "Copier"}
 				</Button>
 			</div>
 		</div>

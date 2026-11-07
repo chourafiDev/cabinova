@@ -10,11 +10,9 @@ import {
 	IconCall,
 	IconChevronRight,
 	IconContact,
-	IconHeartPulse,
-	IconHome,
-	IconIdCard,
+	IconHeartPulse, IconIdCard,
 	IconMail,
-	IconShieldCheck,
+	IconShieldCheck
 } from "@/components/icons";
 import { initials } from "@/lib/format";
 import { formatFileNumber, formatPhone, fullName, type PatientFile } from "@/lib/patients";
@@ -73,7 +71,6 @@ export function PatientAside({ patient }: { patient: PatientFile }) {
 				</a>
 			),
 		},
-		patient.address && { label: t("address"), icon: IconHome, wide: true, value: patient.address },
 		patient.emergencyContactName && {
 			label: t("emergency"),
 			icon: IconContact,
@@ -82,7 +79,7 @@ export function PatientAside({ patient }: { patient: PatientFile }) {
 				<>
 					{patient.emergencyContactName}
 					{patient.emergencyContactPhone && (
-						<a href={`tel:${patient.emergencyContactPhone}`} className="text-muted-foreground tabular-nums hover:underline">
+						<a href={`tel:${patient.emergencyContactPhone}`} className="tabular-nums text-white/70 hover:underline">
 							{" · "}
 							{formatPhone(patient.emergencyContactPhone)}
 						</a>
@@ -96,7 +93,7 @@ export function PatientAside({ patient }: { patient: PatientFile }) {
 	const lastHalf = halves.length % 2 === 1 ? halves.at(-1) : undefined;
 
 	return (
-		<section className="grid grid-cols-1 gap-3" aria-label={t("contact")}>
+		<section className="grid grid-cols-1 gap-2" aria-label={t("contact")}>
 			<SectionHeading
 				title={t("contact")}
 				action={
@@ -109,20 +106,20 @@ export function PatientAside({ patient }: { patient: PatientFile }) {
 					</button>
 				}
 			/>
-			<div className="bg-card flex items-center gap-3 rounded-xl border p-3">
-				<span className="bg-primary/12 text-primary flex size-11 shrink-0 items-center justify-center rounded-xl text-base font-semibold">
+			<div className="bg-brand flex items-center gap-3 rounded-xl border p-3">
+				<span className="bg-white/12 text-white flex size-11 shrink-0 items-center justify-center rounded-xl text-base font-semibold">
 					{initials(`${patient.firstName} ${patient.lastName}`)}
 				</span>
 				<div className="min-w-0">
-					<Eyebrow>
+					<Eyebrow className="text-white">
 						{common(`sex.${patient.sex}`)} · {formatFileNumber(patient.fileNumber)}
 					</Eyebrow>
-					<p className="truncate font-semibold">
-						<span className="text-muted-foreground font-normal">{t(`civility.${patient.sex}`)} </span>
+					<p className="truncate text-white font-semibold">
+						<span className="text-white/60 font-normal">{t(`civility.${patient.sex}`)} </span>
 						{fullName(patient)}
 					</p>
 					{age && (
-						<p className="text-primary text-sm tabular-nums">
+						<p className="text-white/60 text-sm tabular-nums">
 							{t("exactAge", { years: age.years, months: age.months, days: age.days })}
 						</p>
 					)}
@@ -131,7 +128,7 @@ export function PatientAside({ patient }: { patient: PatientFile }) {
 			{details.length > 0 && (
 				<dl className="grid grid-cols-2 gap-2">
 					{details.map((d) => (
-						<SmallCard key={d.label} icon={d.icon} label={d.label} wide={d.wide || d === lastHalf}>
+						<SmallCard key={d.label} icon={d.icon} label={d.label} wide={d.wide || d === lastHalf} onBrand>
 							<dd className="text-sm font-medium break-words">{d.value}</dd>
 						</SmallCard>
 					))}
@@ -164,6 +161,7 @@ export function SmallCard({
 	label,
 	wide,
 	title,
+	onBrand,
 	className,
 	children,
 }: {
@@ -172,16 +170,30 @@ export function SmallCard({
 	/** The full name, when the label is short. */
 	title?: string;
 	wide?: boolean;
+	/** On the plum, like the patient's card above it: white text and icon. */
+	onBrand?: boolean;
 	className?: string;
 	children: React.ReactNode;
 }) {
 	return (
-		<div className={cn("bg-card grid min-w-0 content-start gap-2 rounded-xl border p-3", wide && "col-span-2", className)}>
+		<div
+			className={cn(
+				"grid min-w-0 content-start gap-2 rounded-xl border p-3",
+				onBrand ? "bg-brand border-transparent text-white" : "bg-card",
+				wide && "col-span-2",
+				className,
+			)}
+		>
 			<dt className="flex min-w-0 items-center gap-2">
-				<span className="bg-muted text-muted-foreground flex size-7 shrink-0 items-center justify-center rounded-full">
+				<span
+					className={cn(
+						"flex size-7 shrink-0 items-center justify-center rounded-full",
+						onBrand ? "bg-white/15 text-white" : "bg-muted text-muted-foreground",
+					)}
+				>
 					<Icon className="size-3.5" />
 				</span>
-				<Eyebrow className="truncate">
+				<Eyebrow className={cn("truncate", onBrand && "text-white/70")}>
 					<span title={title ?? label}>{label}</span>
 				</Eyebrow>
 			</dt>

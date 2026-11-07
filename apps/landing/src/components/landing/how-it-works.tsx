@@ -1,25 +1,25 @@
-import { LuCalendarCheck, LuMailOpen, LuSettings2, LuStethoscope } from "react-icons/lu";
+import { IconCalendarCheck, IconMail, IconSettings, IconStethoscope } from "@/components/icons";
 import { TRIAL_DAYS } from "@/lib/site";
 import { SectionHeading } from "./section-heading";
 
 const STEPS = [
 	{
-		icon: LuMailOpen,
+		icon: IconMail,
 		title: "Votre cabinet est créé",
 		description: "Vous recevez l’adresse de votre cabinet (votre-cabinet.cabinova.ma) et un lien pour choisir votre mot de passe.",
 	},
 	{
-		icon: LuSettings2,
+		icon: IconSettings,
 		title: "Vous le paramétrez",
 		description: "Horaires d’ouverture, durée des rendez-vous, tarifs des actes, sites : tout se règle depuis les Paramètres.",
 	},
 	{
-		icon: LuCalendarCheck,
+		icon: IconCalendarCheck,
 		title: "Votre équipe vous rejoint",
 		description: "Invitez votre secrétaire et vos confrères par e-mail ou WhatsApp ; chacun choisit son mot de passe.",
 	},
 	{
-		icon: LuStethoscope,
+		icon: IconStethoscope,
 		title: "Vous recevez vos patients",
 		description: "Agenda, salle d’attente, dossiers et encaissements sont prêts. Vos statistiques se remplissent d’elles-mêmes.",
 	},

@@ -156,6 +156,15 @@ export type PatientAccount = {
 		paid: number;
 		balance: number;
 		acts: string[];
+		/** Taken (and given back), oldest first, each with its reçu; cancelled ones left out. */
+		payments: {
+			id: string;
+			kind: "payment" | "refund";
+			method: PaymentMethod;
+			amount: number;
+			receivedAt: string;
+			receiptNumber: string | null;
+		}[];
 	}[];
 	balance: number;
 };

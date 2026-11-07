@@ -34,11 +34,14 @@ export function Agenda({
 	canWrite,
 	openingHours,
 	defaultDuration,
+	openHolidays,
 }: {
 	practitioners: Practitioner[];
 	canWrite: boolean;
 	openingHours: OpeningHours;
 	defaultDuration: number;
+	/** The public holidays the cabinet works (keys). */
+	openHolidays: string[];
 }) {
 	const [{ view, date, practitioner, book }, setParams] = useQueryStates(searchParams, { history: "replace" });
 	const selectedDate = useMemo(() => date ?? new Date(), [date]);
@@ -81,6 +84,7 @@ export function Agenda({
 			canWrite={canWrite}
 			openingHours={openingHours}
 			defaultDuration={defaultDuration}
+			openHolidays={openHolidays}
 			closures={closures}
 		>
 			<AppointmentDialogsProvider>

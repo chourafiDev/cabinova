@@ -4,6 +4,7 @@ import { type RowData, Subscribe, type Table } from "@tanstack/react-table";
 import { cn } from "cn";
 import * as React from "react";
 
+import { IconSettings } from "@/components/icons";
 import type { DataTableFeatures } from "@/lib/data-table-features";
 
 import { Button } from "@/components/ui/button";
@@ -18,7 +19,6 @@ import {
   FacetedList,
   FacetedTrigger,
 } from "@/components/ui/faceted";
-import { LuSettings2 } from "react-icons/lu";
 
 interface DataTableViewOptionsProps<
   TData extends RowData,
@@ -61,7 +61,7 @@ export function DataTableViewOptions<TData extends RowData>({
               className="ms-auto hidden lg:flex"
               disabled={disabled}
             >
-              <LuSettings2 className="text-muted-foreground" />
+              <IconSettings className="text-muted-foreground" />
               Colonnes
             </Button>
           </FacetedTrigger>

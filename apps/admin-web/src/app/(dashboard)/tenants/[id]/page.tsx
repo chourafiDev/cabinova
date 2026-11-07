@@ -1,6 +1,23 @@
-import { LuArrowLeft, LuBuilding2, LuCalendarDays, LuCreditCard, LuDatabase, LuExternalLink, LuFileText, LuGauge, LuGlobe, LuLayers, LuMail, LuMapPin, LuPencil, LuPhone, LuStethoscope, LuUserRound } from "react-icons/lu";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import {
+	IconArrowLeft,
+	IconBuilding,
+	IconCalendar,
+	IconCall,
+	IconCard,
+	IconDocument,
+	IconEdit,
+	IconExternal,
+	IconGauge,
+	IconGlobe,
+	IconLayers,
+	IconLocation,
+	IconMail,
+	IconServer,
+	IconStethoscope,
+	IconUser,
+} from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import { formatDate } from "@/lib/format";
 import { can } from "@/lib/permissions";
@@ -127,11 +144,11 @@ export default async function TenantPage({ params, searchParams }: PageProps<"/t
 			<div className="mb-4 flex flex-wrap items-center gap-3 border-b border-dashed border-foreground/20 pb-4">
 				<Button asChild variant="outline" size="icon-sm" aria-label="Retour aux cabinets">
 					<Link href="/tenants">
-						<LuArrowLeft className="size-4" />
+						<IconArrowLeft className="size-4" />
 					</Link>
 				</Button>
 				<span className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-sm font-semibold text-primary">
-					{initials || <LuBuilding2 className="size-5" />}
+					{initials || <IconBuilding className="size-5" />}
 				</span>
 				<div className="grid min-w-0 gap-0.5 leading-tight">
 					<h1 className="flex flex-wrap items-center gap-2 text-lg font-semibold">
@@ -146,18 +163,18 @@ export default async function TenantPage({ params, searchParams }: PageProps<"/t
 								rel="noreferrer"
 								className="inline-flex items-center gap-1 font-mono hover:text-foreground hover:underline"
 							>
-								<LuGlobe className="size-3" />
+								<IconGlobe className="size-3" />
 								{url}
 							</a>
 						)}
 						{tenant.city && (
 							<span className="inline-flex items-center gap-1">
-								<LuMapPin className="size-3" />
+								<IconLocation className="size-3" />
 								{tenant.city}
 							</span>
 						)}
 						<span className="inline-flex items-center gap-1">
-							<LuCalendarDays className="size-3" />
+							<IconCalendar className="size-3" />
 							Créé le {formatDate(tenant.createdAt, { month: "short" })}
 						</span>
 					</span>
@@ -168,7 +185,7 @@ export default async function TenantPage({ params, searchParams }: PageProps<"/t
 						{tenant.editable && (
 							<Button asChild size="sm">
 								<Link href={`/tenants/${tenant.id}/edit`}>
-									<LuPencil /> Modifier
+									<IconEdit /> Modifier
 								</Link>
 							</Button>
 						)}
@@ -178,7 +195,7 @@ export default async function TenantPage({ params, searchParams }: PageProps<"/t
 
 			<section className="mb-4 grid grid-cols-2 gap-3 md:grid-cols-3 2xl:grid-cols-5" aria-label="En un coup d’œil">
 				{tile(
-					LuCreditCard,
+					IconCard,
 					"Offre",
 					sub ? sub.plan.name : "Aucune",
 					sub ? (sub.billingPeriod === "annual" ? "Facturation annuelle" : "Facturation mensuelle") : "À associer",
@@ -186,7 +203,7 @@ export default async function TenantPage({ params, searchParams }: PageProps<"/t
 					sub ? undefined : "warn",
 				)}
 				{tile(
-					LuCalendarDays,
+					IconCalendar,
 					"Abonnement",
 					sub ? SUBSCRIPTION_STATUS_LABELS[sub.status] : "—",
 					sub?.currentPeriodEnd
@@ -196,7 +213,7 @@ export default async function TenantPage({ params, searchParams }: PageProps<"/t
 					sub?.status === "past_due" ? "warn" : sub?.status === "active" ? "good" : undefined,
 				)}
 				{tile(
-					LuFileText,
+					IconDocument,
 					"Factures",
 					overdue.length
 						? formatPrice(overdue.reduce((a, i) => a + i.amount, 0))
@@ -216,7 +233,7 @@ export default async function TenantPage({ params, searchParams }: PageProps<"/t
 					overdue.length ? "bad" : openInvoices.length ? "warn" : undefined,
 				)}
 				{tile(
-					LuDatabase,
+					IconServer,
 					"Base de données",
 					!database ? "—" : !db ? "Non créée" : db.healthy === false ? "Injoignable" : db.healthy ? "Joignable" : "Créée",
 					!database
@@ -232,7 +249,7 @@ export default async function TenantPage({ params, searchParams }: PageProps<"/t
 					!database ? undefined : !db ? "warn" : db.healthy === false ? "bad" : db.healthy ? "good" : undefined,
 				)}
 				{tile(
-					LuLayers,
+					IconLayers,
 					"Fonctionnalités",
 					`${activeFeatures} / ${features.features.length}`,
 					features.features.some((f) => f.override) ? "Avec exceptions" : "Selon l’offre",
@@ -296,24 +313,24 @@ export default async function TenantPage({ params, searchParams }: PageProps<"/t
 						<div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
 							<FormCard title="Identité">
 								<div className="divide-y">
-									{line(LuBuilding2, "Nom du cabinet", tenant.name)}
-									{line(LuFileText, "Raison sociale", tenant.legalName)}
-									{line(LuStethoscope, "Spécialité", tenant.specialty)}
-									{line(LuGauge, "Identifiant technique", <code className="text-xs">{tenant.slug}</code>)}
+									{line(IconBuilding, "Nom du cabinet", tenant.name)}
+									{line(IconDocument, "Raison sociale", tenant.legalName)}
+									{line(IconStethoscope, "Spécialité", tenant.specialty)}
+									{line(IconGauge, "Identifiant technique", <code className="text-xs">{tenant.slug}</code>)}
 								</div>
 							</FormCard>
 							<FormCard title="Contact">
 								<div className="divide-y">
-									{line(LuUserRound, "Médecin responsable", tenant.responsibleName)}
+									{line(IconUser, "Médecin responsable", tenant.responsibleName)}
 									{line(
-										LuMail,
+										IconMail,
 										"E-mail",
 										<a href={`mailto:${tenant.email}`} className="hover:underline">
 											{tenant.email}
 										</a>,
 									)}
 									{line(
-										LuPhone,
+										IconCall,
 										"Téléphone",
 										tenant.phone && (
 											<a href={`tel:${tenant.phone.replace(/\s+/g, "")}`} className="hover:underline">
@@ -321,7 +338,7 @@ export default async function TenantPage({ params, searchParams }: PageProps<"/t
 											</a>
 										),
 									)}
-									{line(LuMapPin, "Adresse", [tenant.address, tenant.city].filter(Boolean).join(", ") || null)}
+									{line(IconLocation, "Adresse", [tenant.address, tenant.city].filter(Boolean).join(", ") || null)}
 								</div>
 							</FormCard>
 						</div>
@@ -336,7 +353,7 @@ export default async function TenantPage({ params, searchParams }: PageProps<"/t
 										className="flex items-center justify-between gap-3 rounded-lg border bg-muted/40 px-3 py-2.5 font-mono text-sm hover:bg-muted"
 									>
 										<span className="truncate">{url}</span>
-										<LuExternalLink className="size-4 shrink-0 text-muted-foreground" />
+										<IconExternal className="size-4 shrink-0 text-muted-foreground" />
 									</a>
 								) : (
 									<p className="text-sm text-muted-foreground">Aucun sous-domaine.</p>

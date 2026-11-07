@@ -1,8 +1,8 @@
 "use client";
 
-import { LuArrowLeft, LuLoader, LuShieldCheck } from "react-icons/lu";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { IconArrowLeft, IconShieldCheck, IconSpinner } from "@/components/icons";
 import { PasswordInput } from "@/components/password-input";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -85,7 +85,7 @@ export function LoginForm({ next }: { next: string }) {
 		return (
 			<form onSubmit={onVerify} className="mt-10 grid gap-6">
 				<div className="flex items-start gap-3 rounded-xl border bg-muted/40 p-4 text-sm">
-					<LuShieldCheck className="mt-0.5 size-5 shrink-0 text-primary" />
+					<IconShieldCheck className="mt-0.5 size-5 shrink-0 text-primary" />
 					<p>
 						{useBackup
 							? "Saisissez l’un de vos codes de secours. Chaque code ne fonctionne qu’une fois."
@@ -114,7 +114,7 @@ export function LoginForm({ next }: { next: string }) {
 					</p>
 				)}
 				<Button type="submit" disabled={pending || (!useBackup && code.length !== 6)} className={authButtonClass}>
-					{pending && <LuLoader className="size-4 animate-spin" />}
+					{pending && <IconSpinner className="size-4 animate-spin" />}
 					{pending ? "Vérification…" : "Valider"}
 				</Button>
 				<div className="flex items-center justify-between text-sm">
@@ -127,7 +127,7 @@ export function LoginForm({ next }: { next: string }) {
 							setError(null);
 						}}
 					>
-						<LuArrowLeft className="size-3.5" /> Retour
+						<IconArrowLeft className="size-3.5" /> Retour
 					</button>
 					<button
 						type="button"
@@ -182,7 +182,7 @@ export function LoginForm({ next }: { next: string }) {
 				</p>
 			)}
 			<Button type="submit" disabled={pending} className={authButtonClass}>
-				{pending && <LuLoader className="size-4 animate-spin" />}
+				{pending && <IconSpinner className="size-4 animate-spin" />}
 				{pending ? "Connexion…" : "Se connecter"}
 			</Button>
 			<p className="text-muted-foreground text-center text-sm">

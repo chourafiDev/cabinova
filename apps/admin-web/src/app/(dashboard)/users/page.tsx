@@ -1,7 +1,6 @@
-import { LuShieldCheck } from "react-icons/lu";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { HiUserGroup } from "react-icons/hi2";
+import { IconPeople, IconShieldCheck } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { formatDate } from "@/lib/format";
@@ -49,14 +48,14 @@ export default async function UsersPage({ searchParams }: PageProps<"/users">) {
 	return (
 		<ListTransitionProvider>
 			<ListHeader
-				icon={<HiUserGroup />}
+				icon={<IconPeople />}
 				total={users.length}
 				label={{ singular: "Utilisateur", plural: "Utilisateurs" }}
 				action={
 					<div className="flex w-full gap-2 md:w-auto">
 						<Button asChild variant="outline">
 							<Link href="/users/roles">
-								<LuShieldCheck /> Rôles et permissions
+								<IconShieldCheck /> Rôles et permissions
 							</Link>
 						</Button>
 						{canWrite && (

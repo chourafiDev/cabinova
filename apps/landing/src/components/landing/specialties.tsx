@@ -1,4 +1,4 @@
-import { LuStethoscope } from "react-icons/lu";
+import { IconStethoscope } from "@/components/icons";
 import { SPECIALTIES } from "@/lib/site";
 
 /** A slow band of specialties, under the hero. */
@@ -16,7 +16,7 @@ export function Specialties() {
 							aria-hidden={i >= SPECIALTIES.length}
 							className="bg-card text-muted-foreground flex items-center gap-2 rounded-full border px-4 py-2 text-sm whitespace-nowrap"
 						>
-							<LuStethoscope className="text-primary size-3.5" /> {s}
+							<IconStethoscope className="text-primary size-3.5" /> {s}
 						</li>
 					))}
 				</ul>

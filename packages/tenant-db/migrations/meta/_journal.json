@@ -197,6 +197,13 @@
       "when": 1793984389417,
       "tag": "0027_charge_discount",
       "breakpoints": true
+    },
+    {
+      "idx": 28,
+      "version": "7",
+      "when": 1793998786995,
+      "tag": "0028_open_holidays",
+      "breakpoints": true
     }
   ]
 }

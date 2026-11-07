@@ -1,7 +1,13 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { HiShieldCheck } from "react-icons/hi2";
-import { LuChevronLeft, LuChevronRight, LuKeyRound, LuShieldAlert, LuUserX } from "react-icons/lu";
+import {
+	IconChevronLeft,
+	IconChevronRight,
+	IconKey,
+	IconShieldAlert,
+	IconShieldCheck,
+	IconUserRemove,
+} from "@/components/icons";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { formatDate } from "@/lib/format";
@@ -83,7 +89,7 @@ export default async function SecurityPage({ searchParams }: { searchParams: Pro
 		<>
 			<div className="mb-4 flex items-center gap-2 border-b border-dashed border-foreground/20 pb-4">
 				<span className="flex size-8 items-center justify-center rounded-md bg-primary/10 text-primary">
-					<HiShieldCheck className="size-4" />
+					<IconShieldCheck className="size-4" />
 				</span>
 				<div className="grid leading-tight">
 					<h1 className="font-semibold">Sécurité et conformité</h1>
@@ -93,7 +99,7 @@ export default async function SecurityPage({ searchParams }: { searchParams: Pro
 
 			<section className="mb-3 grid grid-cols-1 gap-3 md:grid-cols-3">
 				<KpiCard
-					icon={LuUserX}
+					icon={IconUserRemove}
 					title="Échecs de connexion"
 					value={summary.failedLogins24h + summary.failedTwoFactor24h}
 					valueClassName={summary.failedLogins24h + summary.failedTwoFactor24h >= 10 ? "text-destructive" : undefined}
@@ -101,7 +107,7 @@ export default async function SecurityPage({ searchParams }: { searchParams: Pro
 					hint="Mots de passe et codes de double authentification incorrects, toutes adresses confondues."
 				/>
 				<KpiCard
-					icon={LuKeyRound}
+					icon={IconKey}
 					title="Comptes en 2FA"
 					value={`${summary.usersWithTwoFactor} / ${summary.activeUsers}`}
 					valueClassName={coverageOk ? "text-emerald-700" : "text-amber-700"}
@@ -109,7 +115,7 @@ export default async function SecurityPage({ searchParams }: { searchParams: Pro
 					hint="Comptes actifs ayant activé la double authentification."
 				/>
 				<KpiCard
-					icon={LuShieldAlert}
+					icon={IconShieldAlert}
 					title="Actions sensibles"
 					value={summary.sensitiveEvents7d}
 					period="7 derniers jours"
@@ -168,7 +174,7 @@ export default async function SecurityPage({ searchParams }: { searchParams: Pro
 										</td>
 										<td className="px-3 py-2 align-top">
 											<span className="flex flex-wrap items-center gap-1.5">
-												{e.sensitive && <LuShieldAlert className="size-3.5 text-amber-600" aria-label="Sensible" />}
+												{e.sensitive && <IconShieldAlert className="size-3.5 text-amber-600" aria-label="Sensible" />}
 												<span className="font-medium">{ACTION_LABELS[e.action] ?? e.action}</span>
 												{e.category && (
 													<Badge variant="outline" className="border-transparent bg-muted text-[10px] font-normal">
@@ -207,22 +213,22 @@ export default async function SecurityPage({ searchParams }: { searchParams: Pro
 						<Button asChild={page > 1} size="icon-sm" variant="outline" disabled={page <= 1} aria-label="Page précédente">
 							{page > 1 ? (
 								<Link href={pageHref(page - 1)} scroll={false}>
-									<LuChevronLeft />
+									<IconChevronLeft />
 								</Link>
 							) : (
 								<span>
-									<LuChevronLeft />
+									<IconChevronLeft />
 								</span>
 							)}
 						</Button>
 						<Button asChild={page < journal.pageCount} size="icon-sm" variant="outline" disabled={page >= journal.pageCount} aria-label="Page suivante">
 							{page < journal.pageCount ? (
 								<Link href={pageHref(page + 1)} scroll={false}>
-									<LuChevronRight />
+									<IconChevronRight />
 								</Link>
 							) : (
 								<span>
-									<LuChevronRight />
+									<IconChevronRight />
 								</span>
 							)}
 						</Button>

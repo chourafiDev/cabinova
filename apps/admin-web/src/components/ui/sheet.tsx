@@ -1,11 +1,11 @@
 "use client"
 
+import { IconClose } from "@/components/icons"
 import * as React from "react"
 import { cn } from "cn"
 import { Dialog as SheetPrimitive } from "radix-ui"
 
 import { Button } from "@/components/ui/button"
-import { LuX } from "react-icons/lu";
 
 function Sheet({ ...props }: React.ComponentProps<typeof SheetPrimitive.Root>) {
   return <SheetPrimitive.Root data-slot="sheet" {...props} />
@@ -75,7 +75,7 @@ function SheetContent({
               className="text-muted-foreground absolute top-4 end-4"
               size="icon-sm"
             >
-              <LuX
+              <IconClose
               />
               <span className="sr-only">Fermer</span>
             </Button>

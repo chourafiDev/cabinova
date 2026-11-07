@@ -235,5 +235,27 @@
       "confirmDelete": "Supprimer ?",
       "deleted": "« {name} » supprimé"
     }
+  },
+  "backToPatients": "Liste des patients",
+  "payments": {
+    "title": "Historique des paiements",
+    "empty": "Aucun paiement",
+    "emptyHint": "Les actes enregistrés et les paiements reçus par l’accueil apparaîtront ici, avec leurs reçus.",
+    "receipt": "Reçu",
+    "nothingPaid": "Rien encaissé pour cette visite.",
+    "loadError": "Impossible de charger les paiements."
+  },
+  "prescriptions": {
+    "title": "Historique des ordonnances",
+    "empty": "Aucune ordonnance",
+    "emptyHint": "Les ordonnances rédigées pendant les consultations apparaîtront ici, prêtes à être réimprimées.",
+    "reprint": "Réimprimer"
+  },
+  "leave": {
+    "title": "Retourner à la salle d’attente ?",
+    "unfinished": "La consultation de {patient} n’est pas terminée : elle reste « En consultation » et vous pourrez la reprendre depuis la salle d’attente. Vos notes et l’ordonnance sont enregistrées.",
+    "saved": "Vos notes et l’ordonnance sont enregistrées.",
+    "stay": "Rester dans le dossier",
+    "confirm": "Aller à la salle d’attente"
   }
 }

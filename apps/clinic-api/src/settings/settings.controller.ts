@@ -26,6 +26,7 @@ import {
   UpdateLanguageDto,
   UpdateAgendaSettingsDto,
   UpdateCabinetDto,
+  UpdateHolidaysDto,
   UpdateProfileDto,
 } from './dto.js';
 
@@ -153,14 +154,38 @@ export class SettingsController {
     return this.cabinet.update(tenant.id, db, user, dto, req.ip);
   }
 
-  /** Read by everyone: the booking form pre-selects this duration. */
+  /**
+   * Read by everyone: the booking form pre-selects this duration, and the
+   * agenda stays open on the holidays the cabinet works.
+   */
   @Get('agenda')
   async agenda(@Clinic() { db }: ClinicContext) {
-    const { rows } = await db.query<{ defaultAppointmentMinutes: number }>(
-      `select default_appointment_minutes as "defaultAppointmentMinutes"
+    const { rows } = await db.query<{
+      defaultAppointmentMinutes: number;
+      openHolidays: string[];
+    }>(
+      `select default_appointment_minutes as "defaultAppointmentMinutes",
+              open_holidays as "openHolidays"
          from clinic_settings where id = 1`,
     );
-    return rows[0] ?? { defaultAppointmentMinutes: 30 };
+    return rows[0] ?? { defaultAppointmentMinutes: 30, openHolidays: [] };
+  }
+
+  /** Jours fériés: the ones the cabinet works (the rest close the agenda). */
+  @Activity('settings.agenda')
+  @Put('holidays')
+  async updateHolidays(
+    @Clinic() { db }: ClinicContext,
+    @CurrentUser() user: ClinicUser,
+    @Body() dto: UpdateHolidaysDto,
+  ) {
+    assertOwner(user);
+    await db.query(
+      `update clinic_settings set open_holidays = $1, updated_at = now()
+        where id = 1`,
+      [dto.openHolidays],
+    );
+    return { openHolidays: dto.openHolidays };
   }
 
   @Activity('settings.agenda')

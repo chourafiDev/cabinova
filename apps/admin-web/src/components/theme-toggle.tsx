@@ -1,7 +1,7 @@
 "use client";
 
-import { LuMonitor, LuMoon, LuSun } from "react-icons/lu";
 import { useTheme } from "next-themes";
+import { IconMonitor, IconMoon, IconSun } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import {
 	DropdownMenu,
@@ -13,9 +13,9 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 const THEMES = [
-	{ value: "light", label: "Clair", icon: LuSun },
-	{ value: "dark", label: "Sombre", icon: LuMoon },
-	{ value: "system", label: "Système", icon: LuMonitor },
+	{ value: "light", label: "Clair", icon: IconSun },
+	{ value: "dark", label: "Sombre", icon: IconMoon },
+	{ value: "system", label: "Système", icon: IconMonitor },
 ] as const;
 
 /** Header button: light, dark or follow the system. */
@@ -27,8 +27,8 @@ export function ThemeToggle() {
 			<DropdownMenuTrigger asChild>
 				<Button variant="outline" size="icon" aria-label="Thème de l’interface">
 					{/* Both icons rendered, CSS picks one: no flash before the theme is known. */}
-					<LuSun className="dark:hidden" />
-					<LuMoon className="hidden dark:block" />
+					<IconSun className="dark:hidden" />
+					<IconMoon className="hidden dark:block" />
 				</Button>
 			</DropdownMenuTrigger>
 			<DropdownMenuContent align="end" className="w-44">

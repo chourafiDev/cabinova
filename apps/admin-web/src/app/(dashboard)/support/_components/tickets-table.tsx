@@ -1,5 +1,5 @@
-import { LuMessageSquare, LuStar } from "react-icons/lu";
 import Link from "next/link";
+import { IconChat, IconStar } from "@/components/icons";
 import { formatDate } from "@/lib/format";
 import type { TicketRow } from "@/lib/support";
 import { cn } from "@/lib/utils";
@@ -56,7 +56,7 @@ export function TicketsTable({ tickets, now, hideCabinet }: { tickets: TicketRow
 								<span className="flex items-center gap-2 text-xs text-muted-foreground">
 									{t.requesterName && <span className="truncate">{t.requesterName}</span>}
 									<span className="inline-flex items-center gap-0.5">
-										<LuMessageSquare className="size-3" />
+										<IconChat className="size-3" />
 										{t.messageCount}
 									</span>
 								</span>
@@ -70,7 +70,7 @@ export function TicketsTable({ tickets, now, hideCabinet }: { tickets: TicketRow
 											{t.tenant.name}
 										</Link>
 										{t.prioritySupport && (
-											<LuStar className="size-3 fill-amber-400 text-amber-500" aria-label="Support prioritaire" />
+											<IconStar className="size-3 fill-amber-400 text-amber-500" aria-label="Support prioritaire" />
 										)}
 									</span>
 								) : (

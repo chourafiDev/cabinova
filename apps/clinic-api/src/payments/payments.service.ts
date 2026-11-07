@@ -425,12 +425,29 @@ export class PaymentsService {
       discount: number;
       paid: number;
       acts: string[];
+      payments: {
+        id: string;
+        kind: 'payment' | 'refund';
+        method: string;
+        amount: number;
+        receivedAt: string;
+        receiptNumber: string | null;
+      }[];
     }>(
       `select c.appointment_id as "appointmentId", a.starts_at as "startsAt",
               u.name as practitioner, c.total, c.discount,
               (select ${PAID} from payments where charge_id = c.id) as paid,
               array(select label from charge_items i where i.charge_id = c.id
-                     order by position) as acts
+                     order by position) as acts,
+              -- What was taken (and given back), each with its reçu.
+              coalesce((select json_agg(json_build_object(
+                          'id', p.id, 'kind', p.kind, 'method', p.method,
+                          'amount', p.amount, 'receivedAt', p.received_at,
+                          'receiptNumber', p.receipt_number)
+                          order by p.received_at)
+                          from payments p
+                         where p.charge_id = c.id and p.cancelled_at is null),
+                       '[]') as payments
          from charges c
          join appointments a on a.id = c.appointment_id
          join users u on u.id = c.practitioner_id

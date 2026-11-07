@@ -5,6 +5,7 @@ import type * as React from "react";
 import { type RowData, Subscribe, type Table } from "@tanstack/react-table";
 import { cn } from "cn";
 
+import { IconChevronLeft, IconChevronRight, IconChevronsLeft, IconChevronsRight } from "@/components/icons";
 import type { DataTableFeatures } from "@/lib/data-table-features";
 
 import { Button } from "@/components/ui/button";
@@ -16,7 +17,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { LuChevronLeft, LuChevronRight, LuChevronsLeft, LuChevronsRight } from "react-icons/lu";
 
 interface DataTablePaginationProps<
   TData extends RowData,
@@ -126,7 +126,7 @@ function DataTablePaginationContent<TData extends RowData>({
             onClick={() => table.setPageIndex(0)}
             disabled={!canPreviousPage}
           >
-            <LuChevronsLeft
+            <IconChevronsLeft
             />
           </Button>
           <Button
@@ -136,7 +136,7 @@ function DataTablePaginationContent<TData extends RowData>({
             onClick={() => table.previousPage()}
             disabled={!canPreviousPage}
           >
-            <LuChevronLeft
+            <IconChevronLeft
             />
           </Button>
           <Button
@@ -146,7 +146,7 @@ function DataTablePaginationContent<TData extends RowData>({
             onClick={() => table.nextPage()}
             disabled={!canNextPage}
           >
-            <LuChevronRight
+            <IconChevronRight
             />
           </Button>
           <Button
@@ -157,7 +157,7 @@ function DataTablePaginationContent<TData extends RowData>({
             onClick={() => table.setPageIndex(pageCount - 1)}
             disabled={!canNextPage}
           >
-            <LuChevronsRight
+            <IconChevronsRight
             />
           </Button>
         </div>

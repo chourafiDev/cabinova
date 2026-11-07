@@ -54,6 +54,14 @@ export const clinicSettings = pgTable(
     defaultAppointmentMinutes: smallint('default_appointment_minutes')
       .notNull()
       .default(30),
+    /**
+     * Public holidays the cabinet works (their keys, e.g. "labourDay"): the
+     * agenda stays open on them. The others close it, as by default.
+     */
+    openHolidays: text('open_holidays')
+      .array()
+      .notNull()
+      .default(sql`'{}'::text[]`),
     /** Opening hours saved or accepted (getting-started checklist). */
     hoursConfirmedAt: timestamp('hours_confirmed_at', { withTimezone: true }),
     /** Staff must use two-factor sign-in (Équipe). */

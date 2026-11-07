@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { HiMagnifyingGlass } from "react-icons/hi2";
+import { IconSearch } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 
 // Shown inside the dashboard layout when a page calls notFound()
@@ -8,7 +8,7 @@ export default function DashboardNotFound() {
 	return (
 		<div className="flex flex-1 flex-col items-center justify-center gap-3 py-20 text-center">
 			<div className="bg-primary/10 text-primary flex size-12 items-center justify-center rounded-xl">
-				<HiMagnifyingGlass className="size-5" />
+				<IconSearch className="size-5" />
 			</div>
 			<h1 className="text-lg font-semibold">Page introuvable</h1>
 			<p className="text-muted-foreground max-w-sm text-sm">
