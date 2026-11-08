@@ -13,6 +13,7 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import type { ClinicSession } from "@/lib/session";
+import { ChatHeaderButton } from "./chat-header-button";
 import { CommandPalette } from "./command-palette";
 import { findNavItem } from "./nav";
 import { NotificationBell } from "./notification-bell";
@@ -31,7 +32,7 @@ export function SiteHeader({
 	const title = t(findNavItem(pathname, useSearchParams())?.key ?? "dashboard");
 
 	return (
-		<header className="sticky top-0 z-10 flex h-14 shrink-0 items-center gap-2 border-b bg-background px-4 md:rounded-t-xl">
+		<header className="sticky top-0 z-50 flex h-14 shrink-0 items-center gap-2 border-b bg-background px-4 md:rounded-t-xl">
 			<SidebarTrigger className="-ms-1" />
 			<Separator
 				orientation="vertical"
@@ -45,8 +46,11 @@ export function SiteHeader({
 				</BreadcrumbList>
 			</Breadcrumb>
 			<div className="ms-auto flex flex-1 items-center justify-end gap-2">
+				<div className="flex items-center gap-2 mr-6">
+					{user.role === "owner" && <MeetingButton />}
+					<ChatHeaderButton />
+				</div>
 				<CommandPalette spaces={spaces} role={user.role} />
-				{user.role === "owner" && <MeetingButton />}
 				<NotificationBell />
 				<span data-tour="account" className="flex items-center gap-2">
 					<ThemeToggle />

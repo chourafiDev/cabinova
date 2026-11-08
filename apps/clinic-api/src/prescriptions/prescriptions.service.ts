@@ -10,7 +10,7 @@ import type { PrescriptionDto } from './dto.js';
 const PRESCRIPTION = `pr.id, pr.appointment_id as "appointmentId", pr.items,
   pr.notes, pr.updated_at as "updatedAt"`;
 
-/** Ordonnances, one per visit. Callers check the user is a doctor. */
+/** Ordonnances, one per visit. Callers check who may write (doctors) or browse a patient's history. */
 @Injectable()
 export class PrescriptionsService {
   constructor(private readonly appointments: AppointmentsService) {}

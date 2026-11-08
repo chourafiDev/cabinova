@@ -1,8 +1,11 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
-/* Dark mode follows the visitor's system setting. */
-@custom-variant dark (@media (prefers-color-scheme: dark));
+/*
+ * Light or dark: <html data-theme> is set before the first paint (layout.tsx)
+ * from the visitor's choice, or from the system setting until they choose.
+ */
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
 
 @theme inline {
   --color-background: var(--background);
@@ -25,6 +28,7 @@
   --color-highlight: var(--highlight);
   --font-sans: var(--font-sans);
   --font-mono: var(--font-geist-mono);
+  --font-serif: var(--font-serif);
   --radius-lg: 0.75rem;
   --radius-xl: 1rem;
   --radius-2xl: 1.25rem;
@@ -96,45 +100,46 @@
   --color-sky-800: #144F64;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --brand-soft: color-mix(in oklab, var(--brand) 30%, #121214);
-    --background: #0e0e10;
-    --foreground: #ececee;
-    --card: #17171a;
-    --muted: #1e1e22;
-    --muted-foreground: #a1a1aa;
-    --border: #2a2a30;
-    /* The plum is lifted to keep its contrast on dark surfaces. */
-    --primary: color-mix(in oklab, var(--brand) 55%, white);
-    --primary-foreground: #0e0e10;
-    --accent: color-mix(in oklab, var(--brand) 22%, #17171a);
-    /* Lighter status colours, readable on the dark cards. */
-    --success: #8BC6A6;
-    --warning: #FFC857;
-    --warning-strong: #FFC857;
-    --info: #7FB8CC;
-    /* The light shades the dark: variants use for text. */
-    --color-emerald-200: #B9DCC9;
-    --color-emerald-300: var(--success);
-    --color-emerald-400: var(--success);
-    --color-amber-200: #FFE2A6;
-    --color-sky-200: #A9D0DE;
-    --color-sky-300: var(--info);
+:root[data-theme="dark"] {
+  --brand-soft: color-mix(in oklab, var(--brand) 30%, #121214);
+  --background: #0e0e10;
+  --foreground: #ececee;
+  --card: #17171a;
+  --muted: #1e1e22;
+  --muted-foreground: #a1a1aa;
+  --border: #2a2a30;
+  /* The plum is lifted to keep its contrast on dark surfaces. */
+  --primary: color-mix(in oklab, var(--brand) 55%, white);
+  --primary-foreground: #0e0e10;
+  --accent: color-mix(in oklab, var(--brand) 22%, #17171a);
+  /* Lighter status colours, readable on the dark cards. */
+  --success: #8BC6A6;
+  --warning: #FFC857;
+  --warning-strong: #FFC857;
+  --info: #7FB8CC;
+  /* The light shades the dark: variants use for text. */
+  --color-emerald-200: #B9DCC9;
+  --color-emerald-300: var(--success);
+  --color-emerald-400: var(--success);
+  --color-amber-200: #FFE2A6;
+  --color-sky-200: #A9D0DE;
+  --color-sky-300: var(--info);
   }
-}
 
 @layer base {
   * {
-    border-color: var(--border);
+  border-color: var(--border);
+  }
+  :root[data-theme="dark"] {
+  color-scheme: dark;
   }
   html {
-    scroll-behavior: smooth;
-    scroll-padding-top: 5rem;
+  scroll-behavior: smooth;
+  scroll-padding-top: 5rem;
   }
   body {
-    background: var(--background);
-    color: var(--foreground);
+  background: var(--background);
+  color: var(--foreground);
   }
 }
 

@@ -97,7 +97,7 @@ export default async function ReceiptPage({ params }: PageProps<"/receipts/[id]"
 							<>
 								<tr>
 									<td colSpan={3} className="py-1 text-end text-zinc-600">
-										Remboursement
+										Réduction
 									</td>
 									<td className="py-1 text-end">− {mad(r.discount)}</td>
 								</tr>

@@ -106,8 +106,13 @@ export class PaymentsController {
   }
 
   @Get('cashier/today')
-  desk(@Clinic() { db }: ClinicContext, @CurrentSpace() space: Space) {
-    return this.payments.desk(db, space.id);
+  desk(
+    @Clinic() { db }: ClinicContext,
+    @CurrentUser() user: ClinicUser,
+    @CurrentSpace() space: Space,
+  ) {
+    // The day's figures: the responsible doctor only (the desk counts the cash blind).
+    return this.payments.desk(db, space.id, user.role === 'owner');
   }
 
   @Activity('cashier.close')

@@ -89,10 +89,18 @@
     "settlement": "Règlement",
     "collect": "Encaisser",
     "view": "Voir",
-    "unpaid": "Impayés",
-    "unpaidHint": "Visites passées qui n’ont pas été entièrement réglées.",
-    "visit": "Visite",
-    "due": "Reste à payer"
+    "kpi": {
+      "today": "Aujourd’hui",
+      "received": "Total encaissé",
+      "receivedHint": "Paiements reçus aujourd’hui dans cet espace, remboursements déduits, quelle que soit la date de la visite.",
+      "visits": "Visites",
+      "visitsHint": "Rendez-vous du jour dans cet espace, hors annulés.",
+      "cancelled": "Visites annulées",
+      "cancelledHint": "Rendez-vous du jour annulés dans cet espace.",
+      "rate": "Taux de paiement",
+      "rateHint": "Part du montant des visites du jour déjà encaissée : {collected} sur {billed}.",
+      "paidVisits": "{paid} sur {count, plural, one {# visite réglée} other {# visites réglées}}"
+    }
   },
   "settlement": {
     "toBill": "À facturer",
@@ -169,9 +177,9 @@
     "newActHint": "Enregistré dans Paramètres › Tarifs et ajouté à la visite.",
     "cancelNewAct": "Annuler",
     "addNewAct": "Ajouter",
-    "discount": "Remboursement",
+    "discount": "Réduction",
     "discountHint": "Retiré de ce que le patient paie à l’accueil.",
-    "discountInvalid": "Le remboursement dépasse le montant des actes ({amount}).",
+    "discountInvalid": "La réduction dépasse le montant des actes ({amount}).",
     "actsTotal": "Actes",
     "patientPays": "À payer par le patient",
     "save": "Enregistrer",

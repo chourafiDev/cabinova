@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { IconArrowLeft, IconClose, IconMenu } from "@/components/icons";
 import { Logo } from "@/components/landing/logo";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { DocsNav } from "./docs-nav";
 import { DocsSearchButton } from "./docs-search";
 
@@ -39,6 +40,7 @@ export function DocsHeader() {
 					<div className="ms-auto w-10 sm:w-64">
 						<DocsSearchButton />
 					</div>
+					<ThemeToggle />
 					<Link href="/" className="text-muted-foreground hover:text-foreground hidden items-center gap-1.5 text-sm md:flex">
 						<IconArrowLeft className="size-4" /> Retour au site
 					</Link>

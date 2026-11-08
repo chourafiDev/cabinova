@@ -77,7 +77,7 @@
  *   White      #ffffff  → background
  *   Grey       #EFEFED  → sidebar, muted states
  * Status (coolors.co/1f2041-4b3f72-ffc857-119da4-19647e, on trial):
- *   Success    #126543  → paid, saved, done
+ *   Success    #36ad86  → paid, saved, done
  *   Warning    #FFC857  → to collect, attention (a fill: #976213 when it is text)
  *   Info       #19647E  → absences, hints
  *   Highlight  #119DA4  → charts, icons (never small text: too light)
@@ -108,7 +108,7 @@
   --accent: color-mix(in oklab, var(--brand) 8%, white);
   --accent-foreground: var(--ink);
   --destructive: #b42318;
-  --success: #126543;
+  --success: #36ad86;
   --warning: #FFC857;
   --warning-strong: #976213;
   --info: #19647E;

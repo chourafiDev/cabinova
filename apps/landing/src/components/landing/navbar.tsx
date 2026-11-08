@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { IconArrowRight, IconClose, IconLogin, IconMenu } from "@/components/icons";
 import { clinicUrl, demoHref, NAV, TENANT_BASE_DOMAIN } from "@/lib/site";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { cn } from "@/lib/utils";
 import { Logo } from "./logo";
 
@@ -20,13 +21,14 @@ export function Navbar() {
 	}, []);
 
 	return (
-		<header
-			className={cn(
-				"fixed inset-x-0 top-0 z-50 transition-colors duration-300",
-				scrolled || menu ? "bg-background/80 border-b backdrop-blur-xl" : "border-b border-transparent",
-			)}
-		>
-			<nav className="mx-auto flex h-16 max-w-6xl items-center gap-6 px-4 sm:px-6" aria-label="Navigation principale">
+		<header className="fixed inset-x-0 top-0 z-50 px-3 pt-3 sm:px-4">
+			<nav
+				className={cn(
+					"mx-auto flex h-14 max-w-6xl items-center gap-6 rounded-full border px-3 transition-all duration-300 sm:px-4",
+					scrolled || menu ? "bg-background/80 shadow-lg shadow-black/5 backdrop-blur-xl" : "border-transparent",
+				)}
+				aria-label="Navigation principale"
+			>
 				<a href="#" aria-label="Cabinova, retour en haut" className="shrink-0">
 					<Logo />
 				</a>
@@ -40,16 +42,17 @@ export function Navbar() {
 					))}
 				</ul>
 				<div className="ms-auto flex items-center gap-2 lg:ms-0">
+					<ThemeToggle />
 					<button
 						type="button"
 						onClick={() => setLogin(true)}
-						className="hover:bg-muted hidden h-9 items-center gap-1.5 rounded-full px-3 text-sm font-medium transition-colors sm:flex"
+						className="hover:bg-muted hidden h-9 items-center gap-1.5 rounded-full px-3 text-sm font-medium whitespace-nowrap transition-colors sm:flex"
 					>
 						<IconLogin className="size-4" /> Se connecter
 					</button>
 					<a
 						href={demoHref}
-						className="btn-raised bg-primary text-primary-foreground hidden h-9 items-center gap-1.5 rounded-full px-4 text-sm font-medium shadow-sm transition hover:opacity-90 sm:flex"
+						className="btn-raised bg-primary text-primary-foreground hidden h-10 items-center gap-1.5 rounded-full px-5 text-sm font-medium whitespace-nowrap shadow-sm transition hover:opacity-90 sm:flex"
 					>
 						Demander une démo <IconArrowRight className="size-4" />
 					</a>
@@ -65,7 +68,7 @@ export function Navbar() {
 				</div>
 			</nav>
 			{menu && (
-				<div className="border-t px-4 pb-4 lg:hidden">
+				<div className="bg-background/95 mx-auto mt-2 max-w-6xl rounded-3xl border px-4 pb-4 shadow-lg backdrop-blur-xl lg:hidden">
 					<ul className="grid gap-1 py-3">
 						{NAV.map((item) => (
 							<li key={item.href}>

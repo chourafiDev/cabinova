@@ -1,4 +1,5 @@
 import type { CertificateKind } from "./certificates";
+import { fold } from "./format";
 
 /**
  * Cabinova's library of certificates: the ones Moroccan doctors write most,
@@ -235,13 +236,6 @@ export const blankCertificate = (name: string, kind: CertificateKind) =>
 	`${EXAMINED}, et atteste que …….</p>` +
 	(kind === "period" ? "<p>Durée : {jours} jours, du {du} au {au} inclus.</p>" : "") +
 	SIGN_OFF;
-
-/** Lower case, no accents: "Aptitude à la Conduite" → "aptitude a la conduite". */
-export const fold = (text: string) =>
-	text
-		.normalize("NFD")
-		.replace(/\p{M}/gu, "")
-		.toLowerCase();
 
 /** Every word typed must start a word of the name or the keywords. */
 export function matches(query: string, haystack: string) {

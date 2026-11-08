@@ -12,7 +12,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import type { Appointment, Practitioner } from "@/lib/appointments";
-import { formatFileNumber, fullName, isMedicalRole, patientHref } from "@/lib/patients";
+import { dossierHref, formatFileNumber, fullName, isMedicalRole, patientHref } from "@/lib/patients";
 import { useFormat } from "@/lib/use-format";
 import { useNow } from "@/lib/use-now";
 import { useWaitingActions } from "@/lib/use-waiting-actions";
@@ -46,9 +46,7 @@ export function WaitingRoom({ practitioners }: { practitioners: Practitioner[] }
 				</Button>
 			</div>
 
-			{inConsultation.length > 0 && (
-				<InConsultation visits={inConsultation} />
-			)}
+			{inConsultation.length > 0 && <InConsultation visits={inConsultation} doctor={doctor} />}
 
 			{isPending ? (
 				<div className="bg-card grid gap-2 rounded-xl border p-4">
@@ -78,26 +76,46 @@ export function WaitingRoom({ practitioners }: { practitioners: Practitioner[] }
 type Actions = ReturnType<typeof useWaitingActions>;
 
 /**
- * Who is with a doctor now: the room is taken. Only the doctor ends the
- * visit, from the patient's dossier ("Terminer la consultation").
+ * Who is with a doctor now: the room is taken. A doctor gets back into the
+ * dossier from here (after closing its tab, say); only the doctor ends the
+ * visit, from the dossier ("Terminer la consultation").
  */
-function InConsultation({ visits }: { visits: Appointment[] }) {
+function InConsultation({ visits, doctor }: { visits: Appointment[]; doctor: boolean }) {
 	const t = useTranslations("agenda.waiting");
+	const now = useNow();
+	const fmt = useFormat();
 	return (
 		<div className="grid gap-2">
-			{visits.map((a) => (
-				<div key={a.id} className="bg-primary flex flex-wrap items-center gap-3 rounded-xl px-4 py-3">
-					<span className="bg-white/10 text-white flex size-8 shrink-0 items-center justify-center rounded-lg">
-						<IconStethoscope className="size-4" />
-					</span>
-					<div className="min-w-0 flex-1 space-y-1">
-						<p className="text-white/80 bg-white/20 px-2 py-0.5 rounded-full inline-flex text-xs">{t("inConsultation")}</p>
-						<p className="text-white truncate text-sm font-semibold">
-							{fullName(a.patient)} <span className="text-white/50 font-normal">· {a.practitioner.name}</span>
-						</p>
+			{visits.map((a) => {
+				const since = a.consultationStartedAt ? Math.max(0, differenceInMinutes(now, new Date(a.consultationStartedAt))) : null;
+				return (
+					<div key={a.id} className="bg-primary flex flex-wrap items-center gap-3 rounded-xl px-4 py-3">
+						<span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-white/10 text-white">
+							<IconStethoscope className="size-4" />
+						</span>
+						<div className="min-w-0 flex-1 space-y-1">
+							<p className="inline-flex rounded-full bg-white/20 px-2 py-0.5 text-xs text-white/80">
+								{t("inConsultation")}
+								{since !== null && (
+									<span className="ms-1 tabular-nums">
+										· {since < 1 ? t("justNow") : t("since", { duration: fmt.duration(since) })}
+									</span>
+								)}
+							</p>
+							<p className="truncate text-sm font-semibold text-white">
+								{fullName(a.patient)} <span className="font-normal text-white/50">· {a.practitioner.name}</span>
+							</p>
+						</div>
+						{doctor && (
+							<Button asChild size="sm" variant="secondary" className="bg-background text-foreground hover:bg-background/90">
+								<Link href={dossierHref(a.patient.id, a.id)}>
+									<IconFolderOpen /> {t("resume")}
+								</Link>
+							</Button>
+						)}
 					</div>
-				</div>
-			))}
+				);
+			})}
 		</div>
 	);
 }

@@ -143,7 +143,7 @@ export function NotificationBell() {
 				>
 					<IconBell />
 					{unread > 0 && (
-						<span className="bg-primary text-primary-foreground absolute -end-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[10px] font-semibold tabular-nums">
+						<span className="bg-primary text-primary-foreground absolute -end-1 -top-1 flex h-[18px] w-[18px] items-center justify-center rounded-full px-1 text-[10px] font-semibold tabular-nums">
 							{unread > 9 ? "9+" : unread}
 						</span>
 					)}

@@ -13,6 +13,7 @@ import { EventDetailsTrigger } from "@/calendar/components/dialogs/event-details
 import type { IEvent } from "@/calendar/interfaces";
 import type { VariantProps } from "class-variance-authority";
 import { Abbreviation } from "@/components/act-picker";
+import { cn } from "@/lib/utils";
 import { IconClock, IconText, IconUser } from "@/components/icons";
 
 const agendaEventCardVariants = cva(
@@ -27,6 +28,8 @@ const agendaEventCardVariants = cva(
         yellow: "border-yellow-200 bg-yellow-50 text-yellow-700 dark:border-yellow-800 dark:bg-yellow-950 dark:text-yellow-300 [&_.event-dot]:fill-yellow-600",
         purple: "border-purple-200 bg-purple-50 text-purple-700 dark:border-purple-800 dark:bg-purple-950 dark:text-purple-300 [&_.event-dot]:fill-purple-600",
         orange: "border-orange-200 bg-orange-50 text-orange-700 dark:border-orange-800 dark:bg-orange-950 dark:text-orange-300 [&_.event-dot]:fill-orange-600",
+        amber: "border-amber-200 bg-amber-50 text-amber-800 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-300 [&_.event-dot]:fill-amber-600",
+        brand: "border-primary/40 bg-primary/15 text-primary dark:border-primary/50 dark:bg-primary/25 [&_.event-dot]:fill-primary",
         gray: "border-neutral-200 bg-neutral-50 text-neutral-900 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-300 [&_.event-dot]:fill-neutral-600",
 
         // Dot variants
@@ -34,6 +37,8 @@ const agendaEventCardVariants = cva(
         "green-dot": "bg-neutral-50 dark:bg-neutral-900 [&_.event-dot]:fill-green-600",
         "red-dot": "bg-neutral-50 dark:bg-neutral-900 [&_.event-dot]:fill-red-600",
         "orange-dot": "bg-neutral-50 dark:bg-neutral-900 [&_.event-dot]:fill-orange-600",
+        "amber-dot": "bg-neutral-50 dark:bg-neutral-900 [&_.event-dot]:fill-amber-600",
+        "brand-dot": "bg-neutral-50 dark:bg-neutral-900 [&_.event-dot]:fill-primary",
         "purple-dot": "bg-neutral-50 dark:bg-neutral-900 [&_.event-dot]:fill-purple-600",
         "yellow-dot": "bg-neutral-50 dark:bg-neutral-900 [&_.event-dot]:fill-yellow-600",
         "gray-dot": "bg-neutral-50 dark:bg-neutral-900 [&_.event-dot]:fill-neutral-600",
@@ -87,7 +92,7 @@ export function AgendaEventCard({ event, eventCurrentDay, eventTotalDays }: IPro
                   {t("multiDay", { day: eventCurrentDay, total: eventTotalDays })} •{" "}
                 </span>
               )}
-              <bdi>{event.title}</bdi>
+              <bdi className={cn(event.status === "cancelled" && "line-through")}>{event.title}</bdi>
             </p>
           </div>
 

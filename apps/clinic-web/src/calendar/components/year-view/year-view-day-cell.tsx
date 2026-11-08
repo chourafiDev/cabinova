@@ -1,6 +1,7 @@
 import { isToday } from "date-fns";
 
 import { useCalendar } from "@/calendar/contexts/calendar-context";
+import { isReleased } from "@/calendar/helpers";
 
 import { cn } from "@/lib/utils";
 
@@ -16,7 +17,7 @@ export function YearViewDayCell({ day, date, events }: IProps) {
   const { setSelectedDate, setView } = useCalendar();
 
   const maxIndicators = 3;
-  const eventCount = events.length;
+  const eventCount = events.filter((e) => !isReleased(e)).length;
 
   const handleClick = () => {
     setSelectedDate(date);
@@ -52,6 +53,8 @@ export function YearViewDayCell({ day, date, events }: IProps) {
                   event.color === "yellow" && "bg-yellow-600",
                   event.color === "purple" && "bg-purple-600",
                   event.color === "orange" && "bg-orange-600",
+                  event.color === "amber" && "bg-amber-500",
+                  event.color === "brand" && "bg-primary",
                   event.color === "gray" && "bg-neutral-600"
                 )}
               />
@@ -66,7 +69,9 @@ export function YearViewDayCell({ day, date, events }: IProps) {
                   events[0].color === "red" && "bg-red-600",
                   events[0].color === "yellow" && "bg-yellow-600",
                   events[0].color === "purple" && "bg-purple-600",
-                  events[0].color === "orange" && "bg-orange-600"
+                  events[0].color === "orange" && "bg-orange-600",
+                  events[0].color === "amber" && "bg-amber-500",
+                  events[0].color === "brand" && "bg-primary"
                 )}
               />
               <span className="text-[7px] text-muted-foreground">+{eventCount - 1}</span>

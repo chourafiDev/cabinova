@@ -45,14 +45,16 @@ export class PrescriptionsController {
     return this.prescriptions.medications(db, user.id);
   }
 
+  /**
+   * A visit's ordonnance: read and printed by the whole staff (the front
+   * desk hands it over); only doctors write it.
+   */
   @Get('visit/:id')
   visit(
     @Clinic() { db }: ClinicContext,
     @CurrentSpace() space: Space,
-    @CurrentUser() user: ClinicUser,
     @Param('id', ParseUUIDPipe) id: string,
   ) {
-    assertMedical(user);
     return this.prescriptions.visit(db, space.id, id);
   }
 
@@ -60,10 +62,8 @@ export class PrescriptionsController {
   print(
     @Clinic() { db }: ClinicContext,
     @CurrentSpace() space: Space,
-    @CurrentUser() user: ClinicUser,
     @Param('id', ParseUUIDPipe) id: string,
   ) {
-    assertMedical(user);
     return this.prescriptions.print(db, space.id, id);
   }
 

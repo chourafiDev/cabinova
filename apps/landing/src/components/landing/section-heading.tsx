@@ -1,6 +1,11 @@
 import { cn } from "@/lib/utils";
 
-/** The pill, title and lead every section starts with. */
+/** The italic serif words that close a heading ("…en un seul endroit"). */
+export function Accent({ children }: { children: React.ReactNode }) {
+	return <span className="font-serif font-normal tracking-normal italic">{children}</span>;
+}
+
+/** A section's title and lead, centred or at the start. */
 export function SectionHeading({
 	eyebrow,
 	title,
@@ -8,7 +13,7 @@ export function SectionHeading({
 	className,
 	align = "center",
 }: {
-	eyebrow: string;
+	eyebrow?: string;
 	title: React.ReactNode;
 	description?: React.ReactNode;
 	className?: string;
@@ -16,15 +21,12 @@ export function SectionHeading({
 }) {
 	return (
 		<div className={cn("max-w-2xl", align === "center" && "mx-auto text-center", className)}>
-			<p
-				className={cn(
-					"bg-accent text-primary mb-4 w-fit rounded-full px-3 py-1 text-xs font-medium",
-					align === "center" && "mx-auto",
-				)}
-			>
-				{eyebrow}
-			</p>
-			<h2 className="text-3xl font-semibold tracking-tight text-balance sm:text-4xl">{title}</h2>
+			{eyebrow && (
+				<p className={cn("bg-accent text-primary mb-4 w-fit rounded-full px-3 py-1 text-xs font-medium", align === "center" && "mx-auto")}>
+					{eyebrow}
+				</p>
+			)}
+			<h2 className="text-3xl font-medium tracking-tight text-balance sm:text-5xl">{title}</h2>
 			{description && <p className="text-muted-foreground mt-4 text-base text-pretty sm:text-lg">{description}</p>}
 		</div>
 	);

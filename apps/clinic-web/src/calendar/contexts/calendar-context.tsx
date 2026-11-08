@@ -5,6 +5,7 @@ import { createContext, useContext, useMemo, useState } from "react";
 
 import { holidayOf } from "@/calendar/helpers";
 import type { IEvent, IUser } from "@/calendar/interfaces";
+import type { AppointmentStatus } from "@/lib/appointments";
 import type { TBadgeVariant, TCalendarView, TSchedule, TVisibleHours, TWorkingHours } from "@/calendar/types";
 import { type Closure, covers, dayKey } from "@/lib/closures";
 import type { OpeningHours } from "@/lib/session";
@@ -17,6 +18,9 @@ interface ICalendarContext {
   setSelectedDate: (date: Date | undefined) => void;
   selectedUserId: IUser["id"] | "all";
   setSelectedUserId: (userId: IUser["id"] | "all") => void;
+  /** The statuses shown; none: every one. */
+  selectedStatuses: AppointmentStatus[];
+  setSelectedStatuses: (statuses: AppointmentStatus[]) => void;
   badgeVariant: TBadgeVariant;
   setBadgeVariant: (variant: TBadgeVariant) => void;
   /** Practitioners */
@@ -85,6 +89,8 @@ export function CalendarProvider({
   setSelectedDate,
   selectedUserId,
   setSelectedUserId,
+  selectedStatuses,
+  setSelectedStatuses,
   canWrite,
   openingHours,
   defaultDuration,
@@ -100,6 +106,8 @@ export function CalendarProvider({
   setSelectedDate: (date: Date) => void;
   selectedUserId: IUser["id"] | "all";
   setSelectedUserId: (userId: IUser["id"] | "all") => void;
+  selectedStatuses: AppointmentStatus[];
+  setSelectedStatuses: (statuses: AppointmentStatus[]) => void;
   canWrite: boolean;
   openingHours: OpeningHours;
   defaultDuration: number;
@@ -138,6 +146,8 @@ export function CalendarProvider({
         setSelectedDate: (date) => date && setSelectedDate(date),
         selectedUserId,
         setSelectedUserId,
+        selectedStatuses,
+        setSelectedStatuses,
         badgeVariant,
         setBadgeVariant,
         users,

@@ -53,6 +53,7 @@ import {
   Login,
   Logout,
   MagicStar,
+  Messages2,
   MessageText,
   Mobile,
   Money,
@@ -73,6 +74,7 @@ import {
   Scan,
   Scanning,
   SearchNormal1,
+  Send2,
   Setting2,
   ShieldCross,
   ShieldSlash,
@@ -95,6 +97,7 @@ import {
   UserRemove,
   UserTick,
   Video,
+  VolumeSlash,
   Wallet,
   Warning2,
   WeightMeter,
@@ -119,8 +122,8 @@ import {
   LuChevronDown,
   LuChevronLeft,
   LuChevronRight,
-  LuChevronUp,
   LuChevronsUpDown,
+  LuChevronUp,
   LuColumns2,
   LuEllipsis,
   LuEllipsisVertical,
@@ -133,6 +136,8 @@ import {
   LuLoaderCircle,
   LuPanelLeft,
   LuPill,
+  LuPin,
+  LuPinOff,
   LuPlugZap,
   LuPlus,
   LuRedo2,
@@ -182,6 +187,7 @@ export const IconCalendarRemove = bulk(CalendarRemove);
 export const IconCall = bulk(Call);
 export const IconCamera = bulk(Camera);
 export const IconChart = bulk(Chart);
+export const IconChat = bulk(Messages2);
 export const IconCheckCircle = bulk(TickCircle);
 export const IconClipboard = bulk(ClipboardText);
 export const IconClock = bulk(Clock);
@@ -224,6 +230,7 @@ export const IconMail = bulk(Sms);
 export const IconMessage = bulk(MessageText);
 export const IconMobile = bulk(Mobile);
 export const IconMoney = bulk(Money);
+export const IconMute = bulk(VolumeSlash);
 export const IconMonitor = bulk(Monitor);
 export const IconMoon = bulk(Moon);
 export const IconNote = bulk(Stickynote);
@@ -237,6 +244,7 @@ export const IconRuler = bulk(Ruler);
 export const IconScan = bulk(Scan);
 export const IconScanSearch = bulk(Scanning);
 export const IconSearch = bulk(SearchNormal1);
+export const IconSend = bulk(Send2);
 export const IconSettings = bulk(Setting2);
 export const IconShieldAlert = bulk(ShieldCross);
 export const IconShieldCheck = bulk(ShieldTick);
@@ -293,6 +301,8 @@ export const IconListOrdered: AppIcon = LuListOrdered;
 export const IconMore: AppIcon = LuEllipsis;
 export const IconMoreVertical: AppIcon = LuEllipsisVertical;
 export const IconPill: AppIcon = LuPill;
+export const IconPin: AppIcon = LuPin;
+export const IconPinOff: AppIcon = LuPinOff;
 export const IconPlug: AppIcon = LuPlugZap;
 export const IconPlus: AppIcon = LuPlus;
 export const IconRedo: AppIcon = LuRedo2;

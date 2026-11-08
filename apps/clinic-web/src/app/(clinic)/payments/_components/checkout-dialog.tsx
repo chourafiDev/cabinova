@@ -83,7 +83,7 @@ export function CheckoutDialog({
 
 /**
  * The doctor's side, in the page (the dossier's Prix tab): the acts and a
- * remboursement, saved with one button. No money here: the front desk
+ * réduction, saved with one button. No money here: the front desk
  * collects it from the patient's file (Paiements › Encaisser).
  */
 export function CheckoutPanel({ appointmentId }: { appointmentId: string }) {
@@ -174,7 +174,7 @@ function CheckoutForm({
 	const inline = useContext(Inline);
 	const { appointment: visit } = account;
 	const owner = user.role === "owner";
-	// The remboursement is the doctor's; the desk sees it, never changes it.
+	// The réduction is the doctor’s; the desk sees it, never changes it.
 	const medical = isMedicalRole(user.role);
 	// The dossier records the acts; money is taken at the desk.
 	const collects = !inline;

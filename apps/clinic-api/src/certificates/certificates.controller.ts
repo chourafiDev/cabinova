@@ -39,6 +39,19 @@ export class CertificatesController {
     return this.certificates.list(db, space.id, patientId);
   }
 
+  /**
+   * A visit's certificates: read and printed by the whole staff (the front
+   * desk hands them over); only doctors write or cancel them.
+   */
+  @Get('visit/:id')
+  visit(
+    @Clinic() { db }: ClinicContext,
+    @CurrentSpace() space: Space,
+    @Param('id', ParseUUIDPipe) id: string,
+  ) {
+    return this.certificates.forVisit(db, space.id, id);
+  }
+
   @Activity('certificate.create', 'certificate')
   @Post()
   create(
@@ -68,10 +81,8 @@ export class CertificatesController {
   print(
     @Clinic() { db }: ClinicContext,
     @CurrentSpace() space: Space,
-    @CurrentUser() user: ClinicUser,
     @Param('id', ParseUUIDPipe) id: string,
   ) {
-    assertMedical(user);
     return this.certificates.print(db, space.id, id);
   }
 }

@@ -14,6 +14,8 @@ const eventBulletVariants = cva("size-2 rounded-full", {
       purple: "bg-purple-600 dark:bg-purple-500",
       gray: "bg-neutral-600 dark:bg-neutral-500",
       orange: "bg-orange-600 dark:bg-orange-500",
+      amber: "bg-amber-500",
+      brand: "bg-primary",
     },
   },
   defaultVariants: {

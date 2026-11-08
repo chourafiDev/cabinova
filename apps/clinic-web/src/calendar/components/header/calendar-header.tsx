@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 
 import { useCalendar } from "@/calendar/contexts/calendar-context";
 import { UserSelect } from "@/calendar/components/header/user-select";
+import { StatusFilter } from "@/calendar/components/header/status-filter";
 import { TodayButton } from "@/calendar/components/header/today-button";
 import { DateNavigator } from "@/calendar/components/header/date-navigator";
 import { useAppointmentDialogs } from "@/calendar/components/dialogs/appointment-dialogs";
@@ -65,6 +66,7 @@ export function CalendarHeader({ view, events }: IProps) {
           </div>
 
           <UserSelect />
+          <StatusFilter />
         </div>
 
         {canWrite && (

@@ -3,7 +3,7 @@
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { format, subDays } from "date-fns";
 import { useTranslations } from "next-intl";
-import { parseAsIsoDate, parseAsString, parseAsStringEnum, useQueryStates } from "nuqs";
+import { parseAsArrayOf, parseAsIsoDate, parseAsString, parseAsStringEnum, useQueryStates } from "nuqs";
 import { useMemo } from "react";
 
 import { ClientContainer } from "@/calendar/components/client-container";
@@ -12,7 +12,15 @@ import { AppointmentPanel } from "@/calendar/components/dialogs/appointment-pane
 import { CalendarProvider } from "@/calendar/contexts/calendar-context";
 import type { TCalendarView } from "@/calendar/types";
 import { api } from "@/lib/api-client";
-import { type Appointment, APPOINTMENTS_KEY, type Practitioner, toEvent, visibleRange } from "@/lib/appointments";
+import {
+	type Appointment,
+	APPOINTMENT_STATUSES,
+	APPOINTMENTS_KEY,
+	type AppointmentStatus,
+	type Practitioner,
+	toEvent,
+	visibleRange,
+} from "@/lib/appointments";
 import type { OpeningHours } from "@/lib/session";
 import { CLOSURES_KEY, type Closure } from "@/lib/closures";
 import { cn } from "@/lib/utils";
@@ -24,6 +32,8 @@ const searchParams = {
 	view: parseAsStringEnum<TCalendarView>([...VIEWS]).withDefault("week"),
 	date: parseAsIsoDate,
 	practitioner: parseAsString.withDefault("all"),
+	/** The statuses shown (?statut=confirmed,arrived); none: every one. */
+	statut: parseAsArrayOf(parseAsStringEnum<AppointmentStatus>([...APPOINTMENT_STATUSES])).withDefault([]),
 	/** Patient id: open the booking dialog for them (link from the patient file). */
 	book: parseAsString,
 };
@@ -43,7 +53,7 @@ export function Agenda({
 	/** The public holidays the cabinet works (keys). */
 	openHolidays: string[];
 }) {
-	const [{ view, date, practitioner, book }, setParams] = useQueryStates(searchParams, { history: "replace" });
+	const [{ view, date, practitioner, statut, book }, setParams] = useQueryStates(searchParams, { history: "replace" });
 	const selectedDate = useMemo(() => date ?? new Date(), [date]);
 	const t = useTranslations("agenda");
 	const range = visibleRange(view, selectedDate);
@@ -52,7 +62,8 @@ export function Agenda({
 		queryKey: [...APPOINTMENTS_KEY, range.from.toISOString(), range.to.toISOString()],
 		queryFn: () =>
 			api<Appointment[]>(
-				`/appointments?${new URLSearchParams({ from: range.from.toISOString(), to: range.to.toISOString() })}`,
+				// Cancelled visits and no-shows too: they stay visible, without taking the slot.
+				`/appointments?${new URLSearchParams({ from: range.from.toISOString(), to: range.to.toISOString(), includeCancelled: "true" })}`,
 			),
 		placeholderData: keepPreviousData,
 	});
@@ -65,7 +76,10 @@ export function Agenda({
 		placeholderData: keepPreviousData,
 	});
 
-	const events = useMemo(() => (data ?? []).map(toEvent), [data]);
+	const events = useMemo(
+		() => (data ?? []).filter((a) => statut.length === 0 || statut.includes(a.status)).map(toEvent),
+		[data, statut],
+	);
 	const users = useMemo(() => practitioners.map((p) => ({ ...p, picturePath: null })), [practitioners]);
 
 	return (
@@ -81,6 +95,8 @@ export function Agenda({
 			}
 			selectedUserId={practitioner}
 			setSelectedUserId={(id) => setParams({ practitioner: id === "all" ? null : id })}
+			selectedStatuses={statut}
+			setSelectedStatuses={(statuses) => setParams({ statut: statuses.length ? statuses : null })}
 			canWrite={canWrite}
 			openingHours={openingHours}
 			defaultDuration={defaultDuration}

@@ -30,11 +30,13 @@ export type AppointmentStatus = (typeof APPOINTMENT_STATUSES)[number];
 export const STATUS_COLORS: Record<AppointmentStatus, TEventColor> = {
 	scheduled: "blue",
 	confirmed: "purple",
-	arrived: "orange",
-	in_consultation: "yellow",
+	arrived: "amber",
+	in_consultation: "orange",
 	completed: "green",
-	no_show: "red",
-	cancelled: "gray",
+	// Both stay in the agenda without taking the slot: an absence in grey,
+	// a cancellation in red and struck through.
+	no_show: "gray",
+	cancelled: "red",
 };
 
 export type Appointment = {

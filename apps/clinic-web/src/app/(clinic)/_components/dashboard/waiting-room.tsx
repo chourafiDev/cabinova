@@ -18,15 +18,15 @@ export function WaitingRoom({ appointments }: { appointments: NonNullable<Dashbo
 	return (
 		<ChartCard eyebrow={t("eyebrow")} title={t("title")}>
 			<div className="grid gap-3">
-				<div className="rounded-lg bg-accent/60 p-3">
-					<p className="mb-1 flex items-center gap-1.5 text-xs text-primary">
+				<div className="rounded-lg bg-brand p-3">
+					<p className="border border-white/40 text-white inline-flex px-2 py-0.5 mb-2 rounded-full text-xs">
 						<IconStethoscope className="size-3.5" /> {t("current")}
 					</p>
 					{current.length > 0 ? (
 						current.map((a) => (
 							<div key={a.id}>
-								<p className="text-sm font-semibold">{fullName(a.patient)}</p>
-								<p className="text-xs text-muted-foreground">
+								<p className="text-sm text-white font-semibold">{fullName(a.patient)}</p>
+								<p className="text-xs text-white/60">
 									{a.walkIn ? t("walkIn") : t("appointmentAt", { time: format.clock(a.startsAt) })} · {a.practitioner.name}
 								</p>
 							</div>

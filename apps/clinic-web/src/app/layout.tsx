@@ -64,7 +64,8 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
               <TooltipProvider>{children}</TooltipProvider>
             </QueryProvider>
           </NuqsAdapter>
-          <Toaster dir={dir} containerAriaLabel={t("toasts")} />
+          {/* Above the chat button, bottom-end of the clinic pages. */}
+          <Toaster dir={dir} containerAriaLabel={t("toasts")} offset={{ bottom: 88 }} mobileOffset={{ bottom: 84 }} />
         </ThemeProvider>
         </DirectionProvider>
         </NextIntlClientProvider>

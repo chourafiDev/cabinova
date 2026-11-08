@@ -1,6 +1,6 @@
 import { IconPlus } from "@/components/icons";
 import { CONTACT_EMAIL, FAQ } from "@/lib/site";
-import { SectionHeading } from "./section-heading";
+import { Accent, SectionHeading } from "./section-heading";
 
 /** Common questions, as native disclosure widgets (keyboard and screen reader friendly). */
 export function Faq() {
@@ -9,8 +9,11 @@ export function Faq() {
 			<div className="mx-auto grid max-w-6xl gap-10 px-4 sm:px-6 lg:grid-cols-[1fr_1.4fr]">
 				<SectionHeading
 					align="start"
-					eyebrow="FAQ"
-					title="Vos questions, nos réponses"
+					title={
+						<>
+							Vos questions, <Accent>nos réponses</Accent>
+						</>
+					}
 					description={
 						<>
 							Une autre question ? Écrivez-nous à{" "}

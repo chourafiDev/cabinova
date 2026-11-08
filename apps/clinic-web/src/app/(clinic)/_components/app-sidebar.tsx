@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/sidebar";
 import { directionOf } from "@/i18n/config";
 import type { ClinicSession } from "@/lib/session";
+import { ChatBadge } from "./chat-badge";
 import { HelpCard } from "./help-card";
 import { SpaceSwitcher } from "./space-switcher";
 import { findNavItem, navGroups, visibleNavItems } from "./nav";
@@ -77,6 +78,7 @@ export function AppSidebar({
 											<LinkPending />
 										</Link>
 									</SidebarMenuButton>
+									{item.key === "messages" && <ChatBadge />}
 								</SidebarMenuItem>
 							))}
 						</SidebarMenu>

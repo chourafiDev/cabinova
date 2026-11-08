@@ -53,6 +53,17 @@ export class CertificatesService {
     return rows;
   }
 
+  /** The certificates given at one visit of this space, oldest first. */
+  async forVisit(db: Pool, spaceId: string, appointmentId: string) {
+    const { rows } = await db.query(
+      `select ${CERTIFICATE} from ${FROM}
+        where c.appointment_id = $1 and p.space_id = $2
+        order by c.created_at`,
+      [appointmentId, spaceId],
+    );
+    return rows;
+  }
+
   async create(db: Pool, spaceId: string, dto: CertificateDto, userId: string) {
     const patient = await this.patient(db, spaceId, dto.patientId);
     if (patient.archived) {

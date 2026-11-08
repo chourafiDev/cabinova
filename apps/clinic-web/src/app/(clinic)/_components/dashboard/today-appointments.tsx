@@ -43,7 +43,7 @@ export function TodayAppointments({ appointments }: { appointments: NonNullable<
 					</Button>
 				</div>
 			) : (
-				<ol className="-mx-2 divide-y">
+				<ol className="-mx-2 divide-y space-y-1">
 					{appointments.map((a) => {
 						const age = ageOf(a.patient.birthDate);
 						return (
@@ -62,7 +62,7 @@ export function TodayAppointments({ appointments }: { appointments: NonNullable<
 									</p>
 								</div>
 								<Avatar className="size-8 rounded-full">
-									<AvatarFallback className="rounded-full bg-muted text-xs font-medium">
+									<AvatarFallback className="rounded-full bg-brand text-white text-xs font-medium">
 										{initials(`${a.patient.firstName} ${a.patient.lastName}`)}
 									</AvatarFallback>
 								</Avatar>

@@ -1,74 +1,89 @@
-import {
-	type AppIcon,
-	IconDevices,
-	IconEyeOff,
-	IconHistory,
-	IconKey,
-	IconLayers,
-	IconServer,
-} from "@/components/icons";
-import { BackgroundBeams } from "@/components/ui/background-beams";
+import { type AppIcon, IconDevices, IconEyeOff, IconHistory, IconKey, IconLayers, IconServer } from "@/components/icons";
+import { cn } from "@/lib/utils";
+import { PhoneMockup } from "./phone-mockup";
+import { Accent, SectionHeading } from "./section-heading";
 
-const POINTS: { icon: AppIcon; title: string; description: string }[] = [
-	{
-		icon: IconServer,
-		title: "Une base de données par cabinet",
-		description: "Vos patients ne partagent jamais une table avec ceux d’un autre cabinet.",
-	},
-	{
-		icon: IconKey,
-		title: "Accès chiffrés",
-		description: "Les identifiants de votre base sont chiffrés (AES-256), les mots de passe jamais stockés en clair.",
-	},
-	{
-		icon: IconEyeOff,
-		title: "Le secret médical respecté",
-		description: "Les antécédents ne sont visibles que par les médecins ; les chiffres, que par le responsable.",
-	},
-	{
-		icon: IconLayers,
-		title: "Sites cloisonnés",
-		description: "Chaque espace ne voit que ses propres patients, rendez-vous et encaissements.",
-	},
-	{
-		icon: IconDevices,
-		title: "Appareils sous contrôle",
-		description: "Voyez où vous êtes connecté et déconnectez un appareil perdu à distance.",
-	},
-	{
-		icon: IconHistory,
-		title: "Rien ne s’efface",
-		description: "Paiements annulés avec un motif, dossiers archivés plutôt que supprimés.",
-	},
+type Point = { icon: AppIcon; title: string; description: string; side: "start" | "end"; row: "top" | "middle" | "bottom" };
+
+const POINTS: Point[] = [
+	{ side: "start", row: "top", icon: IconServer, title: "Une base par cabinet", description: "Vos patients ne partagent jamais une table avec ceux d’un autre cabinet." },
+	{ side: "start", row: "middle", icon: IconKey, title: "Accès chiffrés", description: "Identifiants de base chiffrés (AES-256), mots de passe jamais en clair." },
+	{ side: "start", row: "bottom", icon: IconEyeOff, title: "Secret médical", description: "Les antécédents ne sont visibles que par les médecins." },
+	{ side: "end", row: "top", icon: IconLayers, title: "Sites cloisonnés", description: "Chaque espace ne voit que ses patients, rendez-vous et encaissements." },
+	{ side: "end", row: "middle", icon: IconDevices, title: "Appareils sous contrôle", description: "Déconnectez à distance un appareil perdu." },
+	{ side: "end", row: "bottom", icon: IconHistory, title: "Rien ne s’efface", description: "Paiements annulés avec un motif, dossiers archivés plutôt que supprimés." },
 ];
 
-/** Why a cabinet can trust Cabinova with its patients' data. */
+/*
+ * Wide screens: a dashed circle (radius 18rem) around the phone, a dot on it
+ * for each point at 140°, 180° and 220° (mirrored on the right), and the text
+ * set outside the circle from that dot, so the line never crosses it.
+ * cos 40° × 18 ≈ 13.8rem, sin 40° × 18 ≈ 11.6rem.
+ */
+const AT: Record<Point["row"], { x: string; y: string }> = {
+	top: { x: "13.8rem", y: "-11.6rem" },
+	middle: { x: "18rem", y: "0rem" },
+	bottom: { x: "13.8rem", y: "11.6rem" },
+};
+const GAP = "1.5rem";
+
+/** Why a cabinet can trust Cabinova: six points around the app. */
 export function Security() {
 	return (
-		<section id="securite" className="py-20 sm:py-28">
+		<section id="securite" className="overflow-hidden py-20 sm:py-28">
 			<div className="mx-auto max-w-6xl px-4 sm:px-6">
-				<div className="bg-ink relative overflow-hidden rounded-[2rem] border border-white/10 px-6 py-14 text-white sm:px-12 sm:py-16">
-					<BackgroundBeams className="opacity-60" />
-					<div className="relative z-10">
-						<p className="mb-4 w-fit rounded-full bg-white/10 px-3 py-1 text-xs font-medium text-white/80">Sécurité</p>
-						<h2 className="max-w-2xl text-3xl font-semibold tracking-tight text-balance sm:text-4xl">
-							Les données de vos patients, protégées comme il se doit
-						</h2>
-						<p className="mt-4 max-w-2xl text-white/70">
-							Cabinova a été pensé dès le départ pour le secret médical : isolation, chiffrement et droits d’accès par rôle.
-						</p>
-						<ul className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-							{POINTS.map((p) => (
-								<li key={p.title} className="rounded-2xl border border-white/10 bg-white/[0.04] p-5 backdrop-blur-sm">
-									<span className="flex size-9 items-center justify-center rounded-xl bg-white/10">
-										<p.icon className="size-4" />
-									</span>
-									<h3 className="mt-4 font-semibold">{p.title}</h3>
-									<p className="mt-1.5 text-sm leading-relaxed text-white/65">{p.description}</p>
-								</li>
-							))}
-						</ul>
-					</div>
+				<SectionHeading
+					title={
+						<>
+							Les données de vos patients, <Accent>bien protégées</Accent>
+						</>
+					}
+					description="Cabinova a été pensé dès le départ pour le secret médical : isolation, chiffrement et droits d’accès par rôle."
+				/>
+				<div className="relative mt-16 xl:h-[44rem]">
+					<span
+						aria-hidden
+						className="border-primary/30 absolute top-1/2 left-1/2 hidden size-[36rem] -translate-1/2 rounded-full border-2 border-dashed xl:block"
+					/>
+					{POINTS.map((p) => (
+						<span
+							key={p.title}
+							aria-hidden
+							className="bg-primary ring-background absolute hidden size-3 -translate-1/2 rounded-full ring-4 xl:block"
+							style={{
+								left: `calc(50% ${p.side === "start" ? "-" : "+"} ${AT[p.row].x})`,
+								top: `calc(50% + ${AT[p.row].y})`,
+							}}
+						/>
+					))}
+					<PhoneMockup screen="dossier" className="xl:absolute xl:top-1/2 xl:left-1/2 xl:-translate-1/2" />
+					<ul className="mt-14 grid gap-10 sm:grid-cols-2 lg:grid-cols-3 xl:mt-0 xl:block">
+						{POINTS.map((p) => (
+							<li
+								key={p.title}
+								className={cn(
+									"flex flex-col gap-2 xl:absolute xl:w-60",
+									p.side === "start" ? "xl:right-(--h) xl:items-end xl:text-end" : "xl:left-(--h)",
+									p.row === "top" && "xl:bottom-(--v)",
+									p.row === "bottom" && "xl:top-(--v)",
+									p.row === "middle" && "xl:top-1/2 xl:-translate-y-1/2",
+								)}
+								style={
+									{
+										// From the dot, outwards: the box never reaches inside the circle.
+										"--h": `calc(50% + ${AT[p.row].x} + ${GAP})`,
+										"--v": `calc(50% + ${AT[p.row].y.replace("-", "")} - 0.5rem)`,
+									} as React.CSSProperties
+								}
+							>
+								<span className="bg-accent text-primary flex size-10 items-center justify-center rounded-xl">
+									<p.icon className="size-5" />
+								</span>
+								<h3 className="text-lg font-medium">{p.title}</h3>
+								<p className="text-muted-foreground text-sm leading-relaxed">{p.description}</p>
+							</li>
+						))}
+					</ul>
 				</div>
 			</div>
 		</section>

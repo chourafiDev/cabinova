@@ -29,6 +29,18 @@ import {
   Timer1,
   UserRemove,
   Warning2,
+  Clock,
+  Health,
+  Hospital,
+  Messages2,
+  Notification,
+  Profile,
+  Star1,
+  TickCircle,
+  Translate,
+  UserTick,
+  Moon,
+  Sun1,
   type Icon,
   type IconProps,
 } from "iconsax-reactjs";
@@ -95,6 +107,18 @@ export const IconSparkles = bulk(MagicStar);
 export const IconSupport = bulk(Lifebuoy);
 export const IconUserRemove = bulk(UserRemove);
 export const IconUsers = bulk(Profile2User);
+export const IconMoon = bulk(Moon);
+export const IconSun = bulk(Sun1);
+export const IconBell = bulk(Notification);
+export const IconChat = bulk(Messages2);
+export const IconCheckCircle = bulk(TickCircle);
+export const IconClock = bulk(Clock);
+export const IconHealth = bulk(Health);
+export const IconHospital = bulk(Hospital);
+export const IconLanguage = bulk(Translate);
+export const IconProfile = bulk(Profile);
+export const IconStar = bulk(Star1);
+export const IconUserCheck = bulk(UserTick);
 
 // Kept from Lucide: control glyphs (chevrons, close, check, spinner) and what
 // Iconsax lacks.

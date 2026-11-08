@@ -111,7 +111,9 @@
     "back": "Il est revenu",
     "leftToast": "{patient} est parti(e) : visite annulée",
     "backToast": "{patient} est de retour en salle d’attente",
-    "undo": "Annuler"
+    "undo": "Annuler",
+    "resume": "Reprendre la consultation",
+    "since": "depuis {duration}"
   },
   "walkIn": {
     "title": "Patient sans rendez-vous",
@@ -159,7 +161,7 @@
       "overpaid": "Trop-perçu : {amount} à rendre",
       "acts": "Actes",
       "actsTotal": "Actes",
-      "discount": "Remboursement",
+      "discount": "Réduction",
       "patientPays": "À payer par le patient",
       "alreadyPaid": "Déjà payé",
       "remaining": "Reste à encaisser",
@@ -170,7 +172,21 @@
       "markPaid": "Payé · {amount}",
       "paidToast": "{amount} encaissés · {name}",
       "payError": "Enregistrement du paiement impossible",
-      "locked": "La caisse du jour est clôturée : plus aucun paiement aujourd’hui dans cet espace."
+      "locked": "La caisse du jour est clôturée : plus aucun paiement aujourd’hui dans cet espace.",
+      "tabs": {
+        "payment": "Règlement",
+        "prescription": "Ordonnance",
+        "certificates": "Certificats"
+      },
+      "noPrescription": "Aucune ordonnance pour cette visite.",
+      "printPrescription": "Imprimer l’ordonnance",
+      "noCertificate": "Aucun certificat pour cette visite."
     }
+  },
+  "statusFilter": {
+    "label": "Filtrer par statut",
+    "all": "Tous les statuts",
+    "some": "{count} statuts",
+    "reset": "Afficher tous les statuts"
   }
 }

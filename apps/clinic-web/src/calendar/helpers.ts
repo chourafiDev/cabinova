@@ -60,14 +60,17 @@ export function getEventsCount(events: IEvent[], date: Date, view: TCalendarView
     month: isSameMonth,
   };
 
-  return events.filter(event => compareFns[view](new Date(event.startDate), date)).length;
+  return events.filter(event => !isReleased(event) && compareFns[view](new Date(event.startDate), date)).length;
 }
+
+/** Cancelled or no-show: still shown in the agenda, but no longer taking the slot. */
+export const isReleased = (event: IEvent) => event.status === "cancelled" || event.status === "no_show";
 
 // ================ Week and day view helper functions ================ //
 
 export function getCurrentEvents(events: IEvent[]) {
   const now = new Date();
-  return events.filter(event => isWithinInterval(now, { start: parseISO(event.startDate), end: parseISO(event.endDate) })) || null;
+  return events.filter(event => !isReleased(event) && isWithinInterval(now, { start: parseISO(event.startDate), end: parseISO(event.endDate) })) || null;
 }
 
 export function groupEvents(dayEvents: IEvent[]) {

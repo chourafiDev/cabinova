@@ -128,5 +128,8 @@
   "STORAGE_NOT_CONFIGURED": "إرسال الوثائق غير متاح بعد.",
   "STORAGE_UNAVAILABLE": "تخزين الوثائق لا يستجيب. أعد المحاولة بعد قليل.",
   "PATIENT_HOMONYM": "يوجد مريض بنفس الاسم. افتح ملفه، أو أكّد أنه شخص آخر.",
-  "DISCOUNT_TOO_HIGH": "المبلغ المسترجع يتجاوز مبلغ الإجراءات ({amount})."
+  "DISCOUNT_TOO_HIGH": "التخفيض يتجاوز مبلغ الإجراءات ({amount}).",
+  "CONVERSATION_NOT_FOUND": "المحادثة غير موجودة.",
+  "CHAT_USER_NOT_FOUND": "هذا الزميل ليس (أو لم يعد) ضمن الفريق.",
+  "GROUP_NAME_REQUIRED": "أعطِ اسمًا للمجموعة."
 }

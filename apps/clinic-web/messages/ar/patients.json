@@ -93,7 +93,7 @@
     "settled": "مسدد",
     "collect": "تحصيل",
     "view": "عرض",
-    "discount": "استرجاع {amount}"
+    "discount": "تخفيض {amount}"
   },
   "archive": {
     "restored": "تمت استعادة الملف",

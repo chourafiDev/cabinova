@@ -14,7 +14,7 @@ import type { Appointment } from "@/lib/appointments";
 import { dossierHref, formatFileNumber, fullName, isMedicalRole, patientHref } from "@/lib/patients";
 import { useFormat } from "@/lib/use-format";
 import { cn } from "@/lib/utils";
-import { PaymentDetailDialog } from "./payment-detail-dialog";
+import { VisitSheet } from "./visit-sheet";
 import { useWaiting } from "./use-today";
 
 /** What is left to pay on a visit: null when settled. */
@@ -26,7 +26,7 @@ const MAX_VISIT_MINUTES = 8 * 60;
 
 /**
  * Patients vus: today's visits the doctor finished ("Terminer"), the latest
- * first. The front desk sees what each one owes (acts, remboursement, paid)
+ * first. The front desk sees what each one owes (acts, réduction, paid)
  * before taking the money; the doctor gets back to a file in one click.
  */
 export function SeenToday() {
@@ -66,7 +66,7 @@ export function SeenToday() {
 				<SeenTable seen={seen} doctor={doctor} onDetail={setDetail} />
 			)}
 
-			<PaymentDetailDialog appointmentId={detail} onOpenChange={(open) => !open && setDetail(null)} />
+			<VisitSheet appointmentId={detail} onOpenChange={(open) => !open && setDetail(null)} />
 		</div>
 	);
 }

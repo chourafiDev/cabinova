@@ -45,7 +45,7 @@ const periodOf = (preset: HistoryPreset) => {
 };
 
 /**
- * Encaissements. Everyone: the day's desk (visits to check out, unpaid,
+ * Encaissements. Everyone: the day's desk (visits to check out,
  * the cash close). The responsible doctor also: the history with totals,
  * and the closes with their differences.
  */

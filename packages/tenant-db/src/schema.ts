@@ -981,3 +981,83 @@ export const meetingParticipants = pgTable(
     index('meeting_participants_user_idx').on(t.userId),
   ],
 );
+
+/**
+ * Staff chat (Messages): a conversation between two colleagues, a named
+ * group, or the whole cabinet's room (one, everyone in it). Messages stay
+ * in the cabinet's own database, like everything else.
+ */
+export const conversations = pgTable(
+  'conversations',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    /** "direct" | "group" | "cabinet" */
+    kind: text('kind').notNull(),
+    /** Groups only. */
+    name: text('name'),
+    /** Two colleagues' ids, sorted: one direct conversation per pair. */
+    directKey: text('direct_key').unique(),
+    createdBy: uuid('created_by').references(() => users.id, {
+      onDelete: 'set null',
+    }),
+    lastMessageAt: timestamp('last_message_at', { withTimezone: true }),
+    ...timestamps,
+  },
+  (t) => [
+    check(
+      'conversations_kind',
+      sql`${t.kind} in ('direct', 'group', 'cabinet')`,
+    ),
+    uniqueIndex('conversations_cabinet_idx')
+      .on(t.kind)
+      .where(sql`${t.kind} = 'cabinet'`),
+  ],
+);
+
+/** Who is in a conversation, and how each one sees it. */
+export const conversationMembers = pgTable(
+  'conversation_members',
+  {
+    conversationId: uuid('conversation_id')
+      .notNull()
+      .references(() => conversations.id, { onDelete: 'cascade' }),
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    /** Messages after this are unread. */
+    lastReadAt: timestamp('last_read_at', { withTimezone: true }),
+    pinnedAt: timestamp('pinned_at', { withTimezone: true }),
+    /** Muted: no unread count in the sidebar. */
+    mutedAt: timestamp('muted_at', { withTimezone: true }),
+    /** Hidden from the list until a new message comes in. */
+    archivedAt: timestamp('archived_at', { withTimezone: true }),
+    joinedAt: timestamp('joined_at', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.conversationId, t.userId] }),
+    index('conversation_members_user_idx').on(t.userId),
+  ],
+);
+
+export const chatMessages = pgTable(
+  'chat_messages',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    conversationId: uuid('conversation_id')
+      .notNull()
+      .references(() => conversations.id, { onDelete: 'cascade' }),
+    senderId: uuid('sender_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'restrict' }),
+    body: text('body').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [
+    check('chat_messages_body', sql`char_length(${t.body}) between 1 and 4000`),
+    index('chat_messages_conversation_idx').on(t.conversationId, t.createdAt),
+  ],
+);

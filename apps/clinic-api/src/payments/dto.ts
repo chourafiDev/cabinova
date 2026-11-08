@@ -115,7 +115,7 @@ export class CheckoutDto {
   payment?: PaymentDto;
 
   /**
-   * Remboursement (centimes): taken off what the patient pays. Doctors
+   * Réduction (centimes): taken off what the patient pays. Doctors
    * only; left out, the visit keeps the one it has.
    */
   @IsOptional()

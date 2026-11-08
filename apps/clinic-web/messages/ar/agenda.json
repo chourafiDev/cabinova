@@ -111,7 +111,9 @@
     "back": "عاد",
     "leftToast": "غادر {patient}: أُلغيت الزيارة",
     "backToast": "عاد {patient} إلى قاعة الانتظار",
-    "undo": "تراجع"
+    "undo": "تراجع",
+    "resume": "متابعة الاستشارة",
+    "since": "منذ {duration}"
   },
   "walkIn": {
     "title": "مريض بدون موعد",
@@ -159,7 +161,7 @@
       "overpaid": "مبلغ زائد: {amount} يجب إرجاعه",
       "acts": "الإجراءات",
       "actsTotal": "الإجراءات",
-      "discount": "استرجاع",
+      "discount": "تخفيض",
       "patientPays": "على المريض أداؤه",
       "alreadyPaid": "المؤدى",
       "remaining": "الباقي للاستخلاص",
@@ -170,7 +172,21 @@
       "markPaid": "تم الأداء · {amount}",
       "paidToast": "تم استخلاص {amount} · {name}",
       "payError": "تعذّر تسجيل الأداء",
-      "locked": "تم إغلاق صندوق اليوم: لا مزيد من الأداءات اليوم في هذا الفضاء."
+      "locked": "تم إغلاق صندوق اليوم: لا مزيد من الأداءات اليوم في هذا الفضاء.",
+      "tabs": {
+        "payment": "الأداء",
+        "prescription": "الوصفة الطبية",
+        "certificates": "الشهادات"
+      },
+      "noPrescription": "لا توجد وصفة طبية لهذه الزيارة.",
+      "printPrescription": "طباعة الوصفة الطبية",
+      "noCertificate": "لا توجد شهادة لهذه الزيارة."
     }
+  },
+  "statusFilter": {
+    "label": "التصفية حسب الحالة",
+    "all": "كل الحالات",
+    "some": "{count, plural, zero {لا حالات} one {حالة واحدة} two {حالتان} few {# حالات} many {# حالة} other {# حالة}}",
+    "reset": "عرض كل الحالات"
   }
 }

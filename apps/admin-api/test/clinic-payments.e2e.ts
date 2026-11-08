@@ -168,6 +168,20 @@ describe('clinic: payments', () => {
       balance: 0,
     });
     expect(desk.closed).toBeNull();
+    // The desk counts the cash blind: the day's figures are the owner's.
+    expect(desk.summary).toBeUndefined();
+    const { body: ownerDesk } = await cab(owner)
+      .get('/cashier/today')
+      .expect(200);
+    expect(ownerDesk.summary).toMatchObject({
+      received: 55000,
+      visits: 1,
+      cancelled: 0,
+      billed: 55000,
+      collected: 55000,
+      billedVisits: 1,
+      paidVisits: 1,
+    });
   });
 
   it('abbreviates acts; deletes one never charged, archives one that was', async () => {
@@ -360,7 +374,7 @@ describe('clinic: payments', () => {
     ).toBeNull();
   });
 
-  it('takes the doctor’s remboursement off what the patient pays at the desk', async () => {
+  it('takes the doctor’s réduction off what the patient pays at the desk', async () => {
     const { body: me } = await cab(owner).get('/auth/me').expect(200);
     const { body: patient } = await cab(owner)
       .post('/patients')
@@ -374,7 +388,7 @@ describe('clinic: payments', () => {
     });
     const acts = consultation.price + ecg.price;
 
-    // The doctor saves the acts and a remboursement, no payment.
+    // The doctor saves the acts and a réduction, no payment.
     const { body: saved } = await cab(owner)
       .post(`/appointments/${visit.id}/checkout`)
       .send({ items: items(), discount: 10000 })
@@ -415,7 +429,7 @@ describe('clinic: payments', () => {
       total: acts - 10000,
       balance: acts - 10000,
     });
-    // Fewer acts than the remboursement: it shrinks to the acts' price.
+    // Fewer acts than the réduction: it shrinks to the acts' price.
     const { body: shrunk } = await cab()
       .post(`/appointments/${visit.id}/checkout`)
       .send({ items: [{ label: 'Certificat', unitPrice: 5000, quantity: 1 }] })

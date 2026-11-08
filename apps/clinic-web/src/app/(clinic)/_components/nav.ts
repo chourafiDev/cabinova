@@ -2,6 +2,7 @@ import {
   type AppIcon,
   IconCalendar,
   IconChart,
+  IconChat,
   IconClock,
   IconDashboard,
   IconIdCard,
@@ -32,6 +33,7 @@ export const navGroups: { key: string; items: NavItem[] }[] = [
       { key: "absences", href: "/absences", icon: IconSun, shortcut: "c" },
       { key: "patients", href: "/patients", icon: IconUsers, shortcut: "p" },
       { key: "meetings", href: "/meetings", icon: IconVideo, shortcut: "m" },
+      { key: "messages", href: "/messages", icon: IconChat, shortcut: "t" },
     ],
   },
   // The three tabs of the Agenda page, one click away each.

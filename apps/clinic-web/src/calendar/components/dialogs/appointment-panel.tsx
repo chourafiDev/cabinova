@@ -314,7 +314,7 @@ function PanelContent({ event, onClose }: { event: IEvent; onClose: () => void }
                   <IconChevronDown className="size-4" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="start">
+              <DropdownMenuContent align="start" className="min-w-56">
                 <DropdownMenuLabel className="text-muted-foreground text-xs font-normal">
                   {panel("changeStatus")}
                 </DropdownMenuLabel>

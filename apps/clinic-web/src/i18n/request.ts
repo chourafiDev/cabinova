@@ -8,7 +8,7 @@ import { DEFAULT_LOCALE, isLocale, LOCALE_COOKIE } from "./config";
  * of the sign-in pages, else French.
  */
 /** One file per area in messages/<locale>/. */
-const NAMESPACES = ["common", "nav", "auth", "billing", "tour", "dashboard", "agenda", "patients", "payments", "reports", "team", "settings", "meetings", "dossier", "absences"];
+const NAMESPACES = ["common", "nav", "auth", "billing", "tour", "dashboard", "agenda", "patients", "payments", "reports", "team", "settings", "meetings", "dossier", "absences", "chat"];
 
 export default getRequestConfig(async () => {
 	const state = await getClinicState().catch(() => null);

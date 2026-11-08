@@ -1,111 +1,66 @@
-import {
-	type AppIcon,
-	IconCalendar,
-	IconChart,
-	IconClipboard,
-	IconLocation,
-	IconReceipt,
-	IconUsers,
-} from "@/components/icons";
-import { GlowingEffect } from "@/components/ui/glowing-effect";
+import { type AppIcon, IconCalendar, IconChart, IconClipboard, IconLocation, IconReceipt } from "@/components/icons";
 import { cn } from "@/lib/utils";
-import { SectionHeading } from "./section-heading";
+import { Accent, SectionHeading } from "./section-heading";
 
-type Feature = {
-	icon: AppIcon;
-	title: string;
-	description: string;
-	points: string[];
-	className: string;
-	visual?: React.ReactNode;
-};
+type Feature = { icon: AppIcon; title: string; description: string; visual: React.ReactNode };
 
-const FEATURES: Feature[] = [
+const MAIN: Feature[] = [
 	{
 		icon: IconCalendar,
 		title: "Agenda et salle d’attente",
-		description:
-			"Prenez les rendez-vous en quelques clics, suivez l’arrivée des patients et faites-les entrer dans l’ordre.",
-		points: ["Vue jour, semaine, mois", "Horaires d’ouverture par site", "Alerte de double réservation"],
-		className: "md:col-span-2",
+		description: "Prenez les rendez-vous en quelques clics, suivez l’arrivée des patients et faites-les entrer dans l’ordre.",
 		visual: <AgendaVisual />,
-	},
-	{
-		icon: IconClipboard,
-		title: "Dossiers patients",
-		description: "Identité, couverture (CNSS, CNOPS, AMO…) et historique des visites, retrouvés par nom, téléphone ou CIN.",
-		points: ["Antécédents réservés aux médecins", "Allergies mises en avant"],
-		className: "",
-	},
-	{
-		icon: IconReceipt,
-		title: "Encaissements et reçus",
-		description: "Tarifs du cabinet, paiements partiels, reçus numérotés avec le montant en lettres, clôture de caisse le soir.",
-		points: ["Espèces, carte, chèque, virement", "Remboursements tracés"],
-		className: "",
 	},
 	{
 		icon: IconChart,
 		title: "Statistiques",
-		description:
-			"Consultations, nouveaux patients, absences, affluence par heure et chiffre d’affaires : votre activité en un coup d’œil.",
-		points: ["Comparaison avec la période précédente", "Par médecin et par site"],
-		className: "md:col-span-2",
+		description: "Consultations, nouveaux patients, absences, affluence et chiffre d’affaires, comparés à la période précédente.",
 		visual: <StatsVisual />,
 	},
+];
+
+const MORE: Feature[] = [
 	{
-		icon: IconUsers,
-		title: "Équipe et rôles",
-		description: "Invitez médecins et secrétaires par e-mail ; chacun voit ce dont il a besoin, rien de plus.",
-		points: ["Invitation par lien sécurisé", "Accès coupé en un clic"],
-		className: "",
+		icon: IconClipboard,
+		title: "Dossiers patients",
+		description: "Identité, couverture (CNSS, CNOPS, AMO…), antécédents et ordonnances, retrouvés par nom, téléphone ou CIN.",
+		visual: <SearchVisual />,
+	},
+	{
+		icon: IconReceipt,
+		title: "Encaissements et reçus",
+		description: "Paiements partiels, reçus numérotés avec le montant en lettres, clôture de caisse le soir.",
+		visual: <ReceiptVisual />,
 	},
 	{
 		icon: IconLocation,
 		title: "Plusieurs sites",
-		description: "Un cabinet à Casablanca, un autre à Rabat : chaque espace garde ses patients, son agenda et son équipe.",
-		points: ["Données isolées par espace", "Vue d’ensemble pour le responsable"],
-		className: "md:col-span-2",
+		description: "Chaque espace garde ses patients, son agenda et son équipe ; le responsable voit tout.",
 		visual: <SitesVisual />,
 	},
 ];
 
-/** What the app does, as a bento grid with Aceternity's glowing borders. */
+/** What the app does: two large cards, then three. */
 export function Features() {
 	return (
 		<section id="fonctionnalites" className="py-20 sm:py-28">
 			<div className="mx-auto max-w-6xl px-4 sm:px-6">
 				<SectionHeading
-					eyebrow="Fonctionnalités"
-					title="Tout le cabinet, du rendez-vous au reçu"
+					title={
+						<>
+							Tout le cabinet, <Accent>du rendez-vous au reçu</Accent>
+						</>
+					}
 					description="Une seule application pour l’accueil, la consultation et la gestion, pensée avec des médecins et des secrétaires."
 				/>
-				<ul className="mt-12 grid grid-cols-1 gap-4 md:grid-cols-3">
-					{FEATURES.map((f) => (
-						<li key={f.title} className={cn("min-h-[15rem] list-none", f.className)}>
-							<div className="relative h-full rounded-3xl border p-2">
-								<GlowingEffect spread={40} glow disabled={false} proximity={64} inactiveZone={0.01} borderWidth={2} />
-								<div className="bg-card relative flex h-full flex-col gap-5 overflow-hidden rounded-2xl border p-6 shadow-sm">
-									<div className={cn("flex h-full flex-col gap-5", f.visual && "lg:flex-row")}>
-										<div className="flex flex-1 flex-col gap-3">
-											<span className="bg-accent text-primary flex size-10 items-center justify-center rounded-xl">
-												<f.icon className="size-5" />
-											</span>
-											<h3 className="text-lg font-semibold tracking-tight">{f.title}</h3>
-											<p className="text-muted-foreground text-sm leading-relaxed">{f.description}</p>
-											<ul className="mt-auto grid gap-1.5 pt-2 text-sm">
-												{f.points.map((p) => (
-													<li key={p} className="flex items-center gap-2">
-														<span className="bg-primary size-1.5 rounded-full" /> {p}
-													</li>
-												))}
-											</ul>
-										</div>
-										{f.visual && <div className="lg:w-[46%]">{f.visual}</div>}
-									</div>
-								</div>
-							</div>
-						</li>
+				<ul className="mt-14 grid gap-4 md:grid-cols-2">
+					{MAIN.map((f) => (
+						<Card key={f.title} feature={f} large />
+					))}
+				</ul>
+				<ul className="mt-4 grid gap-4 md:grid-cols-3">
+					{MORE.map((f) => (
+						<Card key={f.title} feature={f} />
 					))}
 				</ul>
 			</div>
@@ -113,18 +68,32 @@ export function Features() {
 	);
 }
 
-/** A day column of the agenda (decorative). */
+function Card({ feature: f, large }: { feature: Feature; large?: boolean }) {
+	return (
+		<li className="bg-muted/60 flex flex-col overflow-hidden rounded-3xl border p-6 sm:p-8">
+			<h3 className={cn("flex items-center gap-2.5 font-medium tracking-tight", large ? "text-2xl" : "text-xl")}>
+				<f.icon className="text-primary size-6 shrink-0" /> {f.title}
+			</h3>
+			<p className="text-muted-foreground mt-3 max-w-md text-sm leading-relaxed">{f.description}</p>
+			<div className="bg-card mt-8 flex flex-1 flex-col justify-center rounded-2xl border p-4 shadow-sm" aria-hidden>
+				{f.visual}
+			</div>
+		</li>
+	);
+}
+
+/** A day column of the agenda, in the status colours of the app. */
 function AgendaVisual() {
 	const slots = [
-		{ time: "09:00", name: "Amina F.", reason: "Contrôle tension", tone: "bg-emerald-50 text-emerald-800 dark:bg-emerald-500/15 dark:text-emerald-200", status: "Vu" },
+		{ time: "09:00", name: "Amina F.", reason: "Contrôle tension", tone: "bg-emerald-50 text-emerald-800 dark:bg-emerald-500/15 dark:text-emerald-200", status: "Terminé" },
 		{ time: "09:30", name: "Youssef B.", reason: "Fièvre et toux", tone: "bg-amber-50 text-amber-900 dark:bg-amber-500/15 dark:text-amber-200", status: "En salle" },
-		{ time: "10:00", name: "Khadija E.", reason: "Bilan annuel", tone: "bg-sky-50 text-sky-800 dark:bg-sky-500/15 dark:text-sky-200", status: "Confirmé" },
-		{ time: "10:30", name: "Mehdi T.", reason: "Certificat médical", tone: "bg-muted text-foreground", status: "Planifié" },
+		{ time: "10:00", name: "Khadija E.", reason: "Bilan annuel", tone: "bg-purple-50 text-purple-800 dark:bg-purple-500/15 dark:text-purple-200", status: "Confirmé" },
+		{ time: "10:30", name: "Mehdi T.", reason: "Certificat médical", tone: "bg-sky-50 text-sky-800 dark:bg-sky-500/15 dark:text-sky-200", status: "Prévu" },
 	];
 	return (
-		<div aria-hidden className="bg-muted/60 grid h-full content-center gap-2 rounded-2xl p-3">
+		<div className="grid gap-2">
 			{slots.map((s) => (
-				<div key={s.time} className="bg-card flex items-center gap-3 rounded-xl border px-3 py-2 text-xs shadow-sm">
+				<div key={s.time} className="flex items-center gap-3 rounded-xl border px-3 py-2 text-xs">
 					<span className="text-muted-foreground w-10 tabular-nums">{s.time}</span>
 					<span className="min-w-0 flex-1">
 						<span className="block truncate font-medium">{s.name}</span>
@@ -137,56 +106,96 @@ function AgendaVisual() {
 	);
 }
 
-/** Busy hours, as in the Statistiques page (decorative). */
+/** Consultations over six months. */
 function StatsVisual() {
-	const rows = [
-		[2, 5, 8, 6, 1, 0, 4, 7, 5],
-		[3, 7, 9, 7, 2, 0, 5, 8, 4],
-		[1, 4, 6, 5, 1, 0, 3, 6, 6],
-		[2, 6, 7, 8, 2, 0, 4, 9, 7],
-		[3, 5, 9, 6, 1, 0, 5, 7, 5],
-	];
+	const months = [
+		["Mai", 52],
+		["Juin", 61],
+		["Juil.", 48],
+		["Août", 57],
+		["Sept.", 74],
+		["Oct.", 88],
+	] as const;
 	return (
-		<div aria-hidden className="bg-muted/60 flex h-full flex-col justify-center gap-1.5 rounded-2xl p-4">
-			{rows.map((row, r) => (
-				<div key={r} className="flex items-center gap-1.5">
-					<span className="text-muted-foreground w-7 text-[10px]">{["Lun", "Mar", "Mer", "Jeu", "Ven"][r]}</span>
-					{row.map((v, c) => (
-						<span
-							key={c}
-							className="h-5 flex-1 rounded-[4px]"
-							style={{ background: v === 0 ? "var(--card)" : `color-mix(in oklab, var(--brand) ${15 + v * 9}%, var(--card))` }}
-						/>
-					))}
-				</div>
-			))}
-			<p className="text-muted-foreground mt-2 text-[10px]">Affluence par jour et par heure</p>
+		<div>
+			<div className="flex items-baseline justify-between">
+				<p className="text-2xl font-semibold">380</p>
+				<span className="rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-medium text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300">
+					+19 %
+				</span>
+			</div>
+			<p className="text-muted-foreground text-[11px]">Consultations · 6 derniers mois</p>
+			<div className="mt-4 flex h-32 items-end gap-3">
+				{months.map(([label, value], i) => (
+					<div key={label} className="flex h-full flex-1 flex-col items-center gap-1.5">
+						<div className="flex w-full flex-1 items-end">
+							<div
+								className={cn("w-full rounded-t-[4px]", i === months.length - 1 ? "bg-brand" : "bg-brand/25")}
+								style={{ height: `${(value / 88) * 100}%` }}
+							/>
+						</div>
+						<span className="text-muted-foreground text-[10px]">{label}</span>
+					</div>
+				))}
+			</div>
 		</div>
 	);
 }
 
-/** The space switcher with two sites (decorative). */
-function SitesVisual() {
-	const sites = [
-		{ name: "Casablanca · Maârif", detail: "412 patients · 9 RDV aujourd’hui", current: true },
-		{ name: "Rabat · Agdal", detail: "186 patients · 5 RDV aujourd’hui", current: false },
-	];
+function SearchVisual() {
 	return (
-		<div aria-hidden className="bg-muted/60 grid h-full content-center gap-2 rounded-2xl p-3">
-			{sites.map((s) => (
-				<div
-					key={s.name}
-					className={cn("bg-card flex items-center gap-3 rounded-xl border px-3 py-2.5 text-xs shadow-sm", s.current && "ring-primary/40 ring-2")}
-				>
-					<span className="bg-accent text-primary flex size-8 items-center justify-center rounded-lg">
-						<IconLocation className="size-4" />
+		<div className="grid gap-2 text-xs">
+			<p className="bg-muted text-muted-foreground rounded-lg px-3 py-2">Rechercher : « 0661 »</p>
+			{[
+				["Amina F.", "0661 23 45 67 · CNOPS"],
+				["Omar B.", "0661 98 12 30 · AMO"],
+			].map(([name, detail]) => (
+				<p key={name} className="rounded-lg border px-3 py-2">
+					<span className="block font-medium">{name}</span>
+					<span className="text-muted-foreground">{detail}</span>
+				</p>
+			))}
+		</div>
+	);
+}
+
+function ReceiptVisual() {
+	return (
+		<div className="text-xs">
+			<div className="flex justify-between">
+				<span className="font-medium">Reçu n° 2026-0418</span>
+				<span className="rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-medium text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300">
+					Payé
+				</span>
+			</div>
+			<p className="mt-3 flex justify-between">
+				<span className="text-muted-foreground">Consultation</span> 300 MAD
+			</p>
+			<p className="mt-1 flex justify-between">
+				<span className="text-muted-foreground">ECG</span> 200 MAD
+			</p>
+			<p className="mt-3 flex justify-between border-t pt-2 font-semibold">
+				<span>Total</span> 500 MAD
+			</p>
+			<p className="text-muted-foreground mt-1 italic">Cinq cents dirhams</p>
+		</div>
+	);
+}
+
+function SitesVisual() {
+	return (
+		<div className="grid gap-2 text-xs">
+			{[
+				["Casablanca · Maârif", "9 RDV aujourd’hui", true],
+				["Rabat · Agdal", "5 RDV aujourd’hui", false],
+			].map(([name, detail, current]) => (
+				<p key={name as string} className={cn("flex items-center gap-2 rounded-lg border px-3 py-2", current && "ring-primary/40 ring-2")}>
+					<IconLocation className="text-primary size-4" />
+					<span className="flex-1">
+						<span className="block font-medium">{name}</span>
+						<span className="text-muted-foreground">{detail}</span>
 					</span>
-					<span className="min-w-0 flex-1">
-						<span className="block truncate font-medium">{s.name}</span>
-						<span className="text-muted-foreground block truncate">{s.detail}</span>
-					</span>
-					{s.current && <span className="bg-primary text-primary-foreground rounded-full px-2 py-0.5 text-[10px] font-medium">Actuel</span>}
-				</div>
+				</p>
 			))}
 		</div>
 	);

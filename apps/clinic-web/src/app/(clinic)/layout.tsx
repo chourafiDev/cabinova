@@ -12,6 +12,7 @@ import { BillingBanner } from './_components/billing/billing-banner';
 import { allNavItems } from './_components/nav';
 import { ProductTour } from './_components/tour/product-tour';
 import { AppSidebar } from './_components/app-sidebar';
+import { ChatLauncher } from './_components/chat-launcher';
 import { SiteFooter } from './_components/site-footer';
 import { SiteHeader } from './_components/site-header';
 
@@ -51,6 +52,7 @@ export default async function ClinicLayout({ children }: LayoutProps<'/'>) {
           {notice && <BillingBanner notice={notice} />}
           <div className="flex min-w-0 flex-1 flex-col p-4">{children}</div>
           <SiteFooter />
+          <ChatLauncher />
           <KeyboardShortcuts
             navigation={allNavItems
               .filter((i) => i.shortcut)

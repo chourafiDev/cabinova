@@ -122,6 +122,48 @@ describe('clinic: certificates', () => {
     ).toHaveLength(2);
   });
 
+  it("hands a visit's ordonnance and certificates to the front desk, read-only", async () => {
+    const { body: me } = await cab(owner).get('/auth/me').expect(200);
+    const { body: visit } = await cab(owner)
+      .post('/appointments')
+      .send({
+        patientId,
+        practitionerId: me.user.id,
+        startsAt: '2026-11-10T10:00:00+00:00',
+        endsAt: '2026-11-10T10:30:00+00:00',
+        reason: 'Consultation',
+      })
+      .expect(201);
+    const ordonnance = {
+      items: [{ medication: 'Paracétamol 1 g', posology: '1 cp x 3 / j', duration: '5 jours' }],
+    };
+    await cab(secretary)
+      .put(`/prescriptions/visit/${visit.id}`)
+      .send(ordonnance)
+      .expect(403);
+    await cab(owner).put(`/prescriptions/visit/${visit.id}`).send(ordonnance).expect(200);
+    const { body: given } = await cab(owner)
+      .post('/certificates')
+      .send({ patientId, appointmentId: visit.id, kind: 'day', startsOn: '2026-11-10', body: '<p>Apte</p>' })
+      .expect(201);
+
+    const { body: rx } = await cab(secretary)
+      .get(`/prescriptions/visit/${visit.id}`)
+      .expect(200);
+    expect(rx.prescription.items).toEqual([
+      { medication: 'Paracétamol 1 g', posology: '1 cp x 3 / j', duration: '5 jours' },
+    ]);
+    await cab(secretary).get(`/prescriptions/visit/${visit.id}/print`).expect(200);
+    const { body: certificates } = await cab(secretary)
+      .get(`/certificates/visit/${visit.id}`)
+      .expect(200);
+    expect(certificates.map((c: { id: string }) => c.id)).toEqual([given.id]);
+    await cab(secretary).get(`/certificates/${given.id}/print`).expect(200);
+    // The patient's whole history stays the doctors'.
+    await cab(secretary).get('/prescriptions').query({ patientId }).expect(403);
+    await cab(secretary).post(`/certificates/${given.id}/cancel`).expect(403);
+  });
+
   it("keeps each doctor's own models", async () => {
     await cab(secretary).get('/certificate-models').expect(403);
     const { body: model } = await cab(owner)

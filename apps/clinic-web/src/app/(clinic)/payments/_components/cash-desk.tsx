@@ -9,8 +9,11 @@ import { AppointmentStatusBadge } from "@/components/appointment-status-badge";
 import { useCurrentUser } from "@/components/current-user";
 import {
 	IconCalendarCheck,
+	IconCalendarRemove,
+	IconChart,
 	IconCheckCircle,
 	IconLock,
+	IconWallet,
 	IconReceipt,
 	IconSpinner,
 	IconWarning,
@@ -28,6 +31,8 @@ import {
 import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
+import { KpiCard } from "../../_components/kpi-card";
+import { VisitSheet } from "../../appointments/_components/visit-sheet";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Textarea } from "@/components/ui/textarea";
 import { api } from "@/lib/api-client";
@@ -59,12 +64,13 @@ function Settlement({ total, paid, balance }: { total: number | null; paid: numb
 
 /**
  * Caisse du jour, for the whole staff: today's visits in the space and
- * what each still owes, older unpaid visits, and the day's close.
+ * what each still owes, and the day's close.
  */
 export function CashDesk({ spaceName }: { spaceName: string | null }) {
 	const user = useCurrentUser();
 	const desk = useQuery({ queryKey: ["desk"], queryFn: () => api<Desk>("/cashier/today") });
 	const [checkout, setCheckout] = useState<string | null>(null);
+	const [viewing, setViewing] = useState<string | null>(null);
 	const [closing, setClosing] = useState(false);
 	const t = useTranslations("payments.desk");
 	const format = useFormat();
@@ -79,7 +85,8 @@ export function CashDesk({ spaceName }: { spaceName: string | null }) {
 			</div>
 		);
 	}
-	const { visits, unpaid, closed, day } = desk.data;
+	const { visits, closed, day, summary } = desk.data;
+	const today = t("kpi.today");
 
 	return (
 		<div className="grid gap-4">
@@ -104,6 +111,27 @@ export function CashDesk({ spaceName }: { spaceName: string | null }) {
 					</Button>
 				)}
 			</div>
+
+			{summary && (
+				<div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+					<KpiCard icon={IconWallet} title={t("kpi.received")} value={mad(summary.received)} period={today} hint={t("kpi.receivedHint")} />
+					<KpiCard icon={IconCalendarCheck} title={t("kpi.visits")} value={summary.visits} period={today} hint={t("kpi.visitsHint")} />
+					<KpiCard
+						icon={IconCalendarRemove}
+						title={t("kpi.cancelled")}
+						value={summary.cancelled}
+						period={today}
+						hint={t("kpi.cancelledHint")}
+					/>
+					<KpiCard
+						icon={IconChart}
+						title={t("kpi.rate")}
+						value={summary.billed > 0 ? `${Math.round((summary.collected / summary.billed) * 100)} %` : "—"}
+						period={summary.billedVisits > 0 ? t("kpi.paidVisits", { paid: summary.paidVisits, count: summary.billedVisits }) : today}
+						hint={t("kpi.rateHint", { collected: mad(summary.collected), billed: mad(summary.billed) })}
+					/>
+				</div>
+			)}
 
 			<section className="bg-card overflow-hidden rounded-xl border">
 				<h2 className="border-b px-4 py-3 text-sm font-semibold">{t("visits")}</h2>
@@ -147,7 +175,12 @@ export function CashDesk({ spaceName }: { spaceName: string | null }) {
 											<Settlement total={v.total} paid={v.paid} balance={v.balance} />
 										</TableCell>
 										<TableCell className="text-end">
-											<Button size="sm" variant={owed && !closed ? "default" : "outline"} onClick={() => setCheckout(v.id)}>
+											<Button
+													size="sm"
+													variant={owed && !closed ? "default" : "outline"}
+													// Voir: the visit's details, read only; only Encaisser opens the checkout.
+													onClick={() => (owed && !closed ? setCheckout(v.id) : setViewing(v.id))}
+												>
 												{owed && !closed ? (
 													<>
 														<IconReceipt /> {t("collect")}
@@ -165,51 +198,8 @@ export function CashDesk({ spaceName }: { spaceName: string | null }) {
 				)}
 			</section>
 
-			{unpaid.length > 0 && (
-				<section className="bg-card overflow-hidden rounded-xl border">
-					<div className="border-b px-4 py-3">
-						<h2 className="text-sm font-semibold">{t("unpaid")}</h2>
-						<p className="text-muted-foreground text-xs">{t("unpaidHint")}</p>
-					</div>
-					<Table>
-						<TableHeader>
-							<TableRow>
-								<TableHead>{t("visit")}</TableHead>
-								<TableHead>{t("patient")}</TableHead>
-								<TableHead className="hidden md:table-cell">{t("doctor")}</TableHead>
-								<TableHead className="text-end">{t("due")}</TableHead>
-								<TableHead className="w-28" />
-							</TableRow>
-						</TableHeader>
-						<TableBody>
-							{unpaid.map((v) => (
-								<TableRow key={v.id}>
-									<TableCell className="tabular-nums">{format.date(v.startsAt, { month: "short" })}</TableCell>
-									<TableCell>
-										<div className="font-medium">
-											{v.patient.firstName} {v.patient.lastName}
-										</div>
-										<div className="text-muted-foreground text-xs tabular-nums">{formatFileNumber(v.patient.fileNumber)}</div>
-									</TableCell>
-									<TableCell className="text-muted-foreground hidden md:table-cell">{v.practitioner}</TableCell>
-									<TableCell className="text-end font-medium tabular-nums">{mad(v.balance)}</TableCell>
-									<TableCell className="text-end">
-										<Button size="sm" variant={closed ? "outline" : "default"} onClick={() => setCheckout(v.id)}>
-											{closed ? t("view") : (
-												<>
-													<IconReceipt /> {t("collect")}
-												</>
-											)}
-										</Button>
-									</TableCell>
-								</TableRow>
-							))}
-						</TableBody>
-					</Table>
-				</section>
-			)}
-
 			<CheckoutDialog appointmentId={checkout} onOpenChange={(o) => !o && setCheckout(null)} />
+			<VisitSheet appointmentId={viewing} onOpenChange={(o) => !o && setViewing(null)} />
 			<CloseDialog open={closing} onOpenChange={setClosing} owner={user.role === "owner"} />
 		</div>
 	);

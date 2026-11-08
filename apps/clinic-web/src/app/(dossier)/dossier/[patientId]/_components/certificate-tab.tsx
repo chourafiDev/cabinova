@@ -26,7 +26,8 @@ import { Popover, PopoverAnchor, PopoverContent } from "@/components/ui/popover"
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { api } from "@/lib/api-client";
-import { blankCertificate, CATALOG, fold, matches } from "@/lib/certificate-catalog";
+import { blankCertificate, CATALOG, matches } from "@/lib/certificate-catalog";
+import { fold } from "@/lib/format";
 import {
 	BUILT_IN,
 	type Certificate,

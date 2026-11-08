@@ -93,7 +93,7 @@
     "settled": "réglé",
     "collect": "Encaisser",
     "view": "Voir",
-    "discount": "remboursement {amount}"
+    "discount": "réduction {amount}"
   },
   "archive": {
     "restored": "Dossier restauré",

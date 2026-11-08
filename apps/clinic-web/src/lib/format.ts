@@ -27,3 +27,10 @@ export function initials(name: string) {
     .map((part) => part[0]!.toUpperCase())
     .join("");
 }
+
+/** Lower case, no accents: what a search compares ("Fès" finds "fes"). */
+export const fold = (text: string) =>
+	text
+		.normalize("NFD")
+		.replace(/\p{M}/gu, "")
+		.toLowerCase();

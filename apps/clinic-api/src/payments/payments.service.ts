@@ -116,9 +116,9 @@ export class PaymentsService {
       chargeId: visit.charge_id,
       items: items.rows,
       payments: payments.rows,
-      /** The acts' sum, before the remboursement. */
+      /** The acts' sum, before the réduction. */
       subtotal: total + discount,
-      /** Remboursement granted by the doctor. */
+      /** Réduction granted by the doctor. */
       discount,
       /** What the patient pays: subtotal − discount. */
       total,
@@ -256,7 +256,7 @@ export class PaymentsService {
   }
 
   /**
-   * The remboursement to keep on the visit: the doctor's new one, or the
+   * The réduction to keep on the visit: the doctor's new one, or the
    * one it had (the desk re-saving the acts never changes it), never more
    * than the acts.
    */
@@ -280,7 +280,7 @@ export class PaymentsService {
       throw new BadRequestException({
         code: 'DISCOUNT_TOO_HIGH',
         params: { amount: mad(subtotal) },
-        message: `Le remboursement dépasse le montant des actes (${mad(subtotal)}).`,
+        message: `La réduction dépasse le montant des actes (${mad(subtotal)}).`,
       });
     }
     return requested;
@@ -469,10 +469,11 @@ export class PaymentsService {
 
   /**
    * The desk's day in a space: today's visits and what each still owes,
-   * older unpaid visits, and whether the cash is closed. No totals.
+   * older unpaid visits, and whether the cash is closed. The day's figures
+   * (`summary`) only with `withSummary`: the desk counts the cash blind.
    */
-  async desk(db: Pool, spaceId: string) {
-    const [visits, unpaid, close] = await Promise.all([
+  async desk(db: Pool, spaceId: string, withSummary = false) {
+    const [visits, unpaid, close, day] = await Promise.all([
       db.query(
         `select a.id, a.starts_at as "startsAt", a.status,
                 json_build_object('id', pa.id, 'firstName', pa.first_name,
@@ -509,6 +510,19 @@ export class PaymentsService {
           where cc.space_id = $1 and cc.day = ${TODAY}`,
         [spaceId],
       ),
+      withSummary
+        ? db.query<{ received: number; cancelled: number }>(
+            // Received today in this space, whatever the visit's day; and
+            // today's cancelled visits.
+            `select (select ${PAID} from payments
+                      where space_id = $1
+                        and (received_at at time zone ${TZ})::date = ${TODAY}) as received,
+                    (select count(*)::int from appointments
+                      where space_id = $1 and status = 'cancelled'
+                        and (starts_at at time zone ${TZ})::date = ${TODAY}) as cancelled`,
+            [spaceId],
+          )
+        : null,
     ]);
     const withBalance = <T extends { total: number | null; paid: number }>(
       r: T,
@@ -516,11 +530,26 @@ export class PaymentsService {
       ...r,
       balance: r.total === null ? null : r.total - r.paid,
     });
+    const todays = visits.rows.map(withBalance);
+    const billed = todays.filter((v) => v.total !== null && v.total > 0);
     return {
       day: today(),
       closed: close.rows[0] ?? null,
-      visits: visits.rows.map(withBalance),
+      visits: todays,
       unpaid: unpaid.rows.map(withBalance),
+      ...(day && {
+        summary: {
+          /** Net received today (payments − refunds), all visits. */
+          received: day.rows[0].received,
+          visits: todays.length,
+          cancelled: day.rows[0].cancelled,
+          /** Today's visits with something to pay, and what they bring in. */
+          billed: billed.reduce((s, v) => s + (v.total ?? 0), 0),
+          collected: billed.reduce((s, v) => s + Math.min(v.paid, v.total ?? 0), 0),
+          billedVisits: billed.length,
+          paidVisits: billed.filter((v) => (v.balance ?? 0) <= 0).length,
+        },
+      }),
     };
   }
 

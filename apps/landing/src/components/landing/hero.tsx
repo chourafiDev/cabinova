@@ -1,163 +1,83 @@
-import {
-	IconArrowRight,
-	IconCalendarCheck,
-	IconMoney,
-	IconPlay,
-	IconSparkles,
-	IconUserRemove,
-} from "@/components/icons";
-import { FlipWords } from "@/components/ui/flip-words";
-import { Spotlight } from "@/components/ui/spotlight-new";
+import { IconArrowRight, IconPlay, IconServer, IconShieldCheck, IconStethoscope } from "@/components/icons";
 import { demoHref, TRIAL_DAYS } from "@/lib/site";
-import { cn } from "@/lib/utils";
+import { PhoneMockup } from "./phone-mockup";
+import { Accent } from "./section-heading";
 
-const MONTHS = [
-	{ label: "Mai", value: 52 },
-	{ label: "Juin", value: 61 },
-	{ label: "Juil.", value: 48 },
-	{ label: "Août", value: 57 },
-	{ label: "Sept.", value: 74 },
-	{ label: "Oct.", value: 88 },
-];
-const WAITING = [
-	{ initials: "SA", name: "Salma A.", time: "10:30" },
-	{ initials: "OB", name: "Omar B.", time: "11:00" },
-	{ initials: "HL", name: "Houda L.", time: "11:30" },
-];
+const WAITING = ["SA", "OB", "HL"];
 
-/** First screen: the promise, the two calls to action, a glimpse of the app. */
+/** First screen: the promise, two calls to action, the app on a phone between two cards. */
 export function Hero() {
 	return (
-		<section className="relative overflow-hidden pt-28 pb-16 sm:pt-36">
-			{/* Soft grid and plum glow, as in the reference design. */}
-			<div
-				aria-hidden
-				className="absolute inset-0 -z-10 [background-image:linear-gradient(to_right,var(--border)_1px,transparent_1px),linear-gradient(to_bottom,var(--border)_1px,transparent_1px)] [background-size:56px_56px] [mask-image:radial-gradient(ellipse_70%_60%_at_50%_0%,black,transparent)] opacity-70"
-			/>
-			<div aria-hidden className="bg-brand/20 absolute -top-40 left-1/2 -z-10 h-[34rem] w-[60rem] -translate-x-1/2 rounded-full blur-3xl" />
-			<Spotlight
-				gradientFirst="radial-gradient(68.54% 68.72% at 55.02% 31.46%, rgb(97 63 117 / 0.10) 0, rgb(97 63 117 / 0.03) 50%, transparent 80%)"
-				gradientSecond="radial-gradient(50% 50% at 50% 50%, rgb(97 63 117 / 0.07) 0, rgb(97 63 117 / 0.02) 80%, transparent 100%)"
-				gradientThird="radial-gradient(50% 50% at 50% 50%, rgb(97 63 117 / 0.05) 0, rgb(97 63 117 / 0.02) 80%, transparent 100%)"
-			/>
+		<section className="relative overflow-hidden pt-32 sm:pt-40">
+			{/* Soft colour fields behind the title. */}
+			<div aria-hidden className="pointer-events-none absolute inset-0 -z-10">
+				<div className="bg-brand/15 absolute -top-32 left-[8%] h-[30rem] w-[30rem] rounded-full blur-3xl" />
+				<div className="bg-highlight/10 absolute top-10 right-[6%] h-[26rem] w-[26rem] rounded-full blur-3xl" />
+			</div>
 
 			<div className="mx-auto max-w-6xl px-4 text-center sm:px-6">
-				<p className="bg-card/70 text-muted-foreground mx-auto mb-6 flex w-fit items-center gap-2 rounded-full border px-3 py-1 text-xs font-medium shadow-sm backdrop-blur sm:text-sm">
-					<IconSparkles className="text-primary size-3.5" />
+				<p className="bg-card/80 text-muted-foreground mx-auto mb-6 flex w-fit items-center gap-2 rounded-full border py-1 ps-1 pe-3 text-xs font-medium shadow-sm backdrop-blur sm:text-sm">
+					<span className="bg-accent text-primary flex size-6 items-center justify-center rounded-full">
+						<IconStethoscope className="size-3.5" />
+					</span>
 					Conçu pour les cabinets médicaux au Maroc
 				</p>
-				<h1 className="mx-auto max-w-4xl text-4xl leading-[1.1] font-semibold tracking-tight text-balance sm:text-6xl">
-					Votre cabinet médical,
-					<br className="hidden sm:block" /> enfin simple à
-					<FlipWords words={["organiser", "gérer", "piloter"]} className="text-primary px-2" />
+				<h1 className="mx-auto max-w-4xl text-4xl leading-[1.08] font-medium tracking-tight text-balance sm:text-6xl lg:text-7xl">
+					Tout votre cabinet médical <Accent>sur un seul écran</Accent>
 				</h1>
 				<p className="text-muted-foreground mx-auto mt-6 max-w-2xl text-base text-pretty sm:text-lg">
-					Agenda, dossiers patients, encaissements et statistiques : tout le cabinet sur un seul écran, pour le médecin
-					et la secrétaire. Dans une base de données dédiée à votre cabinet.
+					Agenda, salle d’attente, dossiers patients, encaissements et statistiques, pour le médecin et la secrétaire. Dans une base de
+					données dédiée à votre cabinet.
 				</p>
 				<div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
 					<a
 						href={demoHref}
-						className="btn-raised bg-primary text-primary-foreground flex h-12 items-center gap-2 rounded-full px-6 font-medium transition hover:-translate-y-0.5 hover:opacity-95"
+						className="btn-raised bg-primary text-primary-foreground flex h-12 items-center gap-2 rounded-full px-6 font-medium transition hover:-translate-y-0.5"
 					>
-						Essayer {TRIAL_DAYS} jours gratuitement <IconArrowRight className="size-4" />
+						Essayer {TRIAL_DAYS} jours gratuitement <IconArrowRight className="size-4 rtl:rotate-180" />
 					</a>
-					<a href="#fonctionnalites" className="bg-card hover:bg-muted flex h-12 items-center gap-2 rounded-full border px-6 font-medium transition">
-						<IconPlay className="size-4" /> Découvrir l’application
+					<a href="#comment" className="bg-card hover:bg-muted flex h-12 items-center gap-2 rounded-full border px-6 font-medium transition">
+						<IconPlay className="text-primary size-5" /> Comment ça marche
 					</a>
 				</div>
 				<p className="text-muted-foreground mt-4 text-xs">Sans engagement · Paiement par virement · Support en français</p>
 
-				<HeroPreview />
-			</div>
-		</section>
-	);
-}
+				<div className="relative mt-16">
+					<PhoneMockup className="translate-y-6" />
 
-/** A stylised view of the clinic app (decorative; the figures are examples). */
-function HeroPreview() {
-	const max = Math.max(...MONTHS.map((m) => m.value));
-	return (
-		<div className="relative mx-auto mt-14 max-w-5xl" aria-hidden>
-			<div className="from-brand/15 absolute -inset-x-8 -inset-y-6 -z-10 rounded-[2.5rem] bg-gradient-to-b to-transparent blur-2xl" />
-			<div className="bg-card/80 grid gap-3 rounded-3xl border p-3 text-start shadow-2xl shadow-black/5 backdrop-blur sm:grid-cols-4 sm:p-4">
-				<div className="grid gap-3">
-					<Tile icon={IconCalendarCheck} label="Rendez-vous aujourd’hui" value="18" badge="+3" />
-					<Tile icon={IconMoney} label="Encaissé ce mois" value="48 750 MAD" className="hidden sm:block" />
-				</div>
-
-				<div className="bg-card rounded-2xl border p-4 sm:col-span-2">
-					<div className="flex items-baseline justify-between">
-						<p className="text-muted-foreground text-xs">Consultations</p>
-						<span className="rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-medium text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300">
-							+19 %
+					{/* Left card: where the data lives. */}
+					<div className="bg-card/90 absolute bottom-24 start-0 hidden w-72 rounded-3xl border p-6 text-start shadow-xl shadow-black/5 backdrop-blur lg:block xl:start-6">
+						<span className="flex size-10 items-center justify-center rounded-xl bg-emerald-50 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300">
+							<IconShieldCheck className="size-5" />
 						</span>
+						<p className="mt-5 text-lg font-medium">Une base par cabinet</p>
+						<p className="text-muted-foreground mt-1.5 text-sm">Vos patients ne partagent jamais une table avec ceux d’un autre cabinet.</p>
+						<p className="text-muted-foreground mt-4 flex items-center gap-1.5 text-xs">
+							<IconServer className="text-primary size-4" /> Accès chiffrés · AES-256
+						</p>
 					</div>
-					<p className="mt-1 text-2xl font-semibold">380</p>
-					<p className="text-muted-foreground text-[11px]">6 derniers mois</p>
-					<div className="mt-4 flex h-32 items-end gap-3">
-						{MONTHS.map((m, i) => (
-							<div key={m.label} className="flex h-full flex-1 flex-col items-center gap-1.5">
-								<div className="flex w-full flex-1 items-end">
-									<div
-										className={
-											i === MONTHS.length - 1
-												? "bg-brand w-full rounded-t-md"
-												: "w-full rounded-t-md bg-[repeating-linear-gradient(135deg,var(--brand-soft)_0_6px,transparent_6px_10px)] ring-1 ring-[var(--brand-soft)] ring-inset"
-										}
-										style={{ height: `${(m.value / max) * 100}%` }}
-									/>
-								</div>
-								<span className="text-muted-foreground text-[10px]">{m.label}</span>
-							</div>
-						))}
-					</div>
-				</div>
 
-				<div className="grid gap-3">
-					<div className="bg-brand rounded-2xl p-4 text-white">
-						<p className="text-xs text-white/70">Salle d’attente</p>
-						<p className="mt-1 text-2xl font-semibold">3 patients</p>
-						<ul className="mt-3 grid gap-2">
+					{/* Right card: the waiting room, live. */}
+					<div className="bg-card/90 absolute top-24 end-0 hidden w-72 rounded-3xl border p-6 text-start shadow-xl shadow-black/5 backdrop-blur lg:block xl:end-6">
+						<p className="text-muted-foreground text-xs font-medium tracking-wider uppercase">Salle d’attente</p>
+						<p className="mt-2 text-lg font-medium">3 patients attendent</p>
+						<p className="text-muted-foreground mt-1.5 text-sm">La secrétaire les enregistre, le médecin les fait entrer dans l’ordre.</p>
+						<div className="mt-4 flex items-center">
 							{WAITING.map((w) => (
-								<li key={w.name} className="flex items-center gap-2 text-xs">
-									<span className="flex size-6 items-center justify-center rounded-full bg-white/15 text-[10px] font-semibold">{w.initials}</span>
-									<span className="flex-1">{w.name}</span>
-									<span className="text-white/60 tabular-nums">{w.time}</span>
-								</li>
+								<span
+									key={w}
+									className="bg-accent text-primary border-card -ms-2 flex size-9 items-center justify-center rounded-full border-2 text-[11px] font-semibold first:ms-0"
+								>
+									{w}
+								</span>
 							))}
-						</ul>
+							<span className="text-muted-foreground ms-3 text-xs">Suivant : Salma A.</span>
+						</div>
 					</div>
-					<Tile icon={IconUserRemove} label="Taux d’absence" value="4,1 %" badge="−2 pts" className="hidden sm:block" />
 				</div>
 			</div>
-		</div>
-	);
-}
-
-function Tile({
-	icon: Icon,
-	label,
-	value,
-	badge,
-	className,
-}: {
-	icon: React.ComponentType<{ className?: string }>;
-	label: string;
-	value: string;
-	badge?: string;
-	className?: string;
-}) {
-	return (
-		<div className={cn("bg-card rounded-2xl border p-4", className)}>
-			<span className="bg-accent text-primary flex size-8 items-center justify-center rounded-lg">
-				<Icon className="size-4" />
-			</span>
-			<p className="text-muted-foreground mt-3 text-xs">{label}</p>
-			<div className="mt-0.5 flex items-baseline justify-between gap-2">
-				<p className="text-xl font-semibold">{value}</p>
-				{badge && <span className="text-[10px] font-medium text-emerald-600 dark:text-emerald-400">{badge}</span>}
-			</div>
-		</div>
+			{/* The phone sinks into the page. */}
+			<div aria-hidden className="from-background pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t to-transparent" />
+		</section>
 	);
 }

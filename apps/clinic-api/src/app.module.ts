@@ -32,6 +32,8 @@ import {
   CertificatesController,
 } from './certificates/certificates.controller.js';
 import { CertificatesService } from './certificates/certificates.service.js';
+import { ChatController } from './chat/chat.controller.js';
+import { ChatService } from './chat/chat.service.js';
 import { DocumentsController } from './documents/documents.controller.js';
 import { DocumentsService } from './documents/documents.service.js';
 import { StorageService } from './documents/storage.service.js';
@@ -99,6 +101,7 @@ import { TenancyService } from './tenancy/tenancy.service.js';
     CertificatesController,
     DocumentsController,
     CertificateModelsController,
+    ChatController,
     DashboardController,
     SettingsController,
     TeamController,
@@ -125,6 +128,7 @@ import { TenancyService } from './tenancy/tenancy.service.js';
     ConsultationsService,
     PrescriptionsService,
     CertificatesService,
+    ChatService,
     DocumentsService,
     StorageService,
     DashboardService,

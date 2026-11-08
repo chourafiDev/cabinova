@@ -68,9 +68,9 @@ export type Account = {
 	chargeId: string | null;
 	items: (ChargeItem & { id: string })[];
 	payments: Movement[];
-	/** The acts' sum, before the remboursement. */
+	/** The acts' sum, before the réduction. */
 	subtotal: number;
-	/** Remboursement the doctor granted: taken off what the patient pays. */
+	/** Réduction the doctor granted: taken off what the patient pays. */
 	discount: number;
 	/** What the patient pays: subtotal − discount. */
 	total: number;
@@ -98,6 +98,18 @@ export type Desk = {
 		paid: number;
 		balance: number | null;
 	}[];
+	/** The day's figures: the responsible doctor only (the desk counts the cash blind). */
+	summary?: {
+		/** Net received today (payments − refunds), all visits. */
+		received: number;
+		visits: number;
+		cancelled: number;
+		/** Today's visits with something to pay: what they bring in, and what is in. */
+		billed: number;
+		collected: number;
+		billedVisits: number;
+		paidVisits: number;
+	};
 	unpaid: {
 		id: string;
 		startsAt: string;
@@ -172,7 +184,7 @@ export type PatientAccount = {
 /** GET /payments/:id/receipt */
 export type Receipt = Movement & {
 	total: number;
-	/** Remboursement granted on the visit. */
+	/** Réduction granted on the visit. */
 	discount: number;
 	space: { name: string; city: string | null; address: string | null; phone: string | null };
 	patient: { firstName: string; lastName: string; fileNumber: number; cin: string | null };
