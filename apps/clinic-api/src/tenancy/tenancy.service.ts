@@ -3,15 +3,18 @@ import {
   ForbiddenException,
   Inject,
   Injectable,
+  Logger,
   NotFoundException,
   type OnApplicationShutdown,
   ServiceUnavailableException,
 } from '@nestjs/common';
+import { moroccoDay } from '@cabinova/morocco-time';
 import { ConfigService } from '@nestjs/config';
 import type { SecretBox } from '@cabinova/secret-box';
 import type { Env } from '../config/env.js';
 import { CatalogService, SECRET_BOX } from '../database/catalog.module.js';
 import { POOL } from '../database/pool.js';
+import { markMissedVisits } from '../appointments/missed-visits.js';
 import { subdomainOf } from './host.js';
 import { isBehind } from './schema-version.js';
 
@@ -41,8 +44,11 @@ const CACHE_MS = 30_000;
 
 @Injectable()
 export class TenancyService implements OnApplicationShutdown {
+  private readonly logger = new Logger(TenancyService.name);
   private readonly baseDomains: string[];
   private readonly hosts = new Map<string, { row: Row | null; at: number }>();
+  /** The day (Moroccan) each cabinet's missed visits were last marked Absent. */
+  private readonly swept = new Map<string, string>();
   /** One small pool per cabinet, replaced when its credentials change. */
   private readonly pools = new Map<string, { secret: string; pool: Pool }>();
 
@@ -92,10 +98,30 @@ export class TenancyService implements OnApplicationShutdown {
       });
     }
     const { id, name, specialty, city, status } = row;
+    const db = this.poolFor(row);
+    await this.dailyUpkeep(id, db);
     return {
       tenant: { id, name, specialty, city, status, subdomain: row.subdomain },
-      db: this.poolFor(row),
+      db,
     };
+  }
+
+  /**
+   * Once a day per cabinet, on its first request: yesterday's appointments
+   * nobody came to become "Absent". Harmless to repeat (several instances,
+   * a restart); a failure only waits for the next request.
+   */
+  private async dailyUpkeep(tenantId: string, db: Pool) {
+    const day = moroccoDay();
+    if (this.swept.get(tenantId) === day) return;
+    try {
+      await markMissedVisits(db);
+      this.swept.set(tenantId, day);
+    } catch (error) {
+      this.logger.warn(
+        `Missed visits not marked for ${tenantId}: ${String(error)}`,
+      );
+    }
   }
 
   /** The cabinet's identity changed: the next request reads it again. */

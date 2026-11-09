@@ -18,6 +18,7 @@ import { CommandPalette } from "./command-palette";
 import { findNavItem } from "./nav";
 import { NotificationBell } from "./notification-bell";
 import { UserMenu } from "./user-menu";
+import { VisitChips } from "./visit-chips";
 
 export function SiteHeader({
 	user,
@@ -46,9 +47,10 @@ export function SiteHeader({
 				</BreadcrumbList>
 			</Breadcrumb>
 			<div className="ms-auto flex flex-1 items-center justify-end gap-2">
-				<div className="flex items-center gap-2 mr-6">
+				<div className="flex items-center gap-2 mr-4">
 					{user.role === "owner" && <MeetingButton />}
 					<ChatHeaderButton />
+					<VisitChips />
 				</div>
 				<CommandPalette spaces={spaces} role={user.role} />
 				<NotificationBell />

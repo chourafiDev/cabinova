@@ -31,5 +31,13 @@
     "profile": "Mon profil",
     "hours": "Horaires & agenda",
     "integrations": "Intégrations"
+  },
+  "visitChips": {
+    "waiting": "en attente",
+    "waitingLabel": "{count, plural, one {# patient en salle d’attente} other {# patients en salle d’attente}}",
+    "callNext": "Suivant",
+    "callNextTitle": "Faire entrer {patient}",
+    "resume": "Reprendre la consultation de {patient}",
+    "minutes": "{count, plural, =0 {à l’instant} other {# min}}"
   }
 }

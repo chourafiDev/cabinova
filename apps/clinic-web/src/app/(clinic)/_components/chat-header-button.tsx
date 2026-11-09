@@ -22,7 +22,7 @@ export function ChatHeaderButton() {
 			asChild
 			variant="outline"
 			size="sm"
-			className="hover:bg-green/5 border bg-white text-green h-8 rounded-full !shadow-none"
+			className="hover:bg-green/10 border border-green/40 bg-green/5 text-green h-8 rounded-full !shadow-none"
 			aria-label={
 				unread
 					? `${t("title")} · ${t("unreadMessages", { count: unread })}`

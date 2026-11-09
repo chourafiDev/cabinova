@@ -4,6 +4,7 @@ import {
   bookToday,
   captureInvitations,
   createClinicApp,
+  markMissedVisits,
   onCabinet,
   openEveryDay,
   provisionCabinet,
@@ -299,5 +300,49 @@ describe('clinic: agenda', () => {
     expect(all.kpis.appointmentsToday).toBeGreaterThanOrEqual(
       seen.kpis.appointmentsToday,
     );
+  });
+
+  it('marks past visits nobody came to as Absent, and only those', async () => {
+    const { body: planned } = await book({
+      startsAt: at('17:00'),
+      endsAt: at('17:30'),
+    }).expect(201);
+    const { body: confirmed } = await book({
+      startsAt: at('17:30'),
+      endsAt: at('18:00'),
+    }).expect(201);
+    await cab()
+      .post(`/appointments/${confirmed.id}/status`)
+      .send({ status: 'confirmed' })
+      .expect(200);
+    const upcoming = await bookToday(clinic, 'agenda-atlas', doctor, tenant, {
+      patientId,
+      practitionerId: doctorId,
+      // Noon, Moroccan time, is safely inside today.
+      from: '12:30',
+      to: '12:50',
+      allowOverlap: true,
+    });
+
+    expect(await markMissedVisits(tenant)).toBeGreaterThanOrEqual(2);
+    const statuses = new Map((await day(true)).map((a) => [a.id, a.status]));
+    expect(statuses.get(planned.id)).toBe('no_show');
+    expect(statuses.get(confirmed.id)).toBe('no_show');
+    // Visits that happened keep their status; today's are not over yet.
+    expect(statuses.get(firstId)).toBe('completed');
+    const { body: todays } = await cab()
+      .get('/appointments')
+      .query({
+        from: new Date(Date.now() - 86_400_000).toISOString(),
+        to: new Date(Date.now() + 2 * 86_400_000).toISOString(),
+      })
+      .expect(200);
+    expect(
+      (todays as { id: string; status: string }[]).find(
+        (a) => a.id === upcoming.id,
+      )?.status,
+    ).toBe('scheduled');
+    // Nothing left to mark: a second run changes nothing.
+    expect(await markMissedVisits(tenant)).toBe(0);
   });
 });

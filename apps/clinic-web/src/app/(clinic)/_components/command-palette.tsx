@@ -123,7 +123,7 @@ export function CommandPalette({ spaces, role }: { spaces: ClinicSession["spaces
 			<button
 				type="button"
 				onClick={() => setOpen(true)}
-				className="text-muted-foreground hover:bg-gray/5 flex h-9 items-center gap-2 rounded-lg border bg-background px-2.5 text-sm transition-colors sm:w-72"
+				className="text-muted-foreground hover:bg-gray/5 flex h-9 items-center gap-2 rounded-lg border bg-background px-2.5 text-sm transition-colors sm:w-60"
 				aria-label={t("open")}
 			>
 				<IconSearch className="size-4 shrink-0" />

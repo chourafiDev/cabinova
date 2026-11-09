@@ -242,3 +242,20 @@ export async function bookToday(
     return rows[0];
   });
 }
+
+/**
+ * The clinic API's daily upkeep, run now (it otherwise waits for a cabinet's
+ * first request of the day): past visits still Planifié or Confirmé become
+ * Absent. Returns how many changed.
+ */
+export async function markMissedVisits(admin: {
+  agent: Agent;
+  tenantId: string;
+}) {
+  const { markMissedVisits: run } = (await import(
+    clinicSrc('appointments/missed-visits.ts')
+  )) as {
+    markMissedVisits: (db: Pool) => Promise<number>;
+  };
+  return withTenantDb(admin.agent, admin.tenantId, (pool) => run(pool));
+}
