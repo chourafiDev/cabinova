@@ -54,7 +54,9 @@
       "payments": "Paiements",
       "medical": "Antécédents",
       "vitals": "Constantes",
-      "documents": "Documents"
+      "documents": "Documents",
+      "prescriptions": "Ordonnances",
+      "certificates": "Certificats"
     },
     "knownAllergies": "allergies connues",
     "archivedOn": "Dossier archivé le {date} : consultable, mais plus modifiable. Restaurez-le pour le modifier ou prendre rendez-vous.",

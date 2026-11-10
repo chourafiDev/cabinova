@@ -79,6 +79,7 @@ A pnpm monorepo (`pnpm@9`, Node 22).
 
 **Patients and consultations**
 - Patient files with a dossier, consultations, vitals, prescriptions, certificates and documents (stored on R2).
+- In the patient sheet, doctors also get **Ordonnances** and **Certificats** history tabs, read-only, with a reprint link. Cancelled certificates show struck through.
 - Reusable phrases and printable documents.
 
 **Payments**
@@ -176,6 +177,7 @@ Run these from the repo root:
 Add new entries at the top, as *date: what changed*.
 
 - **2026-11-10**
+  - Patient sheet: Ordonnances and Certificats history tabs (doctors only).
   - At the end of an appointment's day, Confirmé becomes Absent and Planifié becomes Annulé.
   - Header chips for the waiting room ("Suivant") and the current consultation.
   - "Reprendre la consultation" in the waiting room.

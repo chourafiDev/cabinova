@@ -39,6 +39,7 @@ import { useFormat } from "@/lib/use-format";
 import { cn } from "@/lib/utils";
 import { ArchiveDialog } from "./archive-button";
 import { DocumentsTab } from "./documents-tab";
+import { CertificatesTab, PrescriptionsTab } from "./medical-history-tabs";
 import { PatientBalance, PatientPayments } from "./patient-payments";
 import { VitalsTab } from "./vitals-tab";
 
@@ -306,8 +307,8 @@ export function PatientDetails({
 			/>
 
 			<Tabs defaultValue="overview" className="min-h-0 flex-1 gap-0">
-				<div className="border-b px-5 py-2">
-					<TabsList className="w-full">
+				<div className="overflow-x-auto border-b px-5 py-2">
+					<TabsList className="w-full min-w-max">
 						<TabsTrigger value="overview">
 							{t("tabs.overview")}
 						</TabsTrigger>
@@ -324,6 +325,8 @@ export function PatientDetails({
 						</TabsTrigger>
 						<TabsTrigger value="vitals">{t("tabs.vitals")}</TabsTrigger>
 						<TabsTrigger value="documents">{t("tabs.documents")}</TabsTrigger>
+						{medical && <TabsTrigger value="prescriptions">{t("tabs.prescriptions")}</TabsTrigger>}
+						{medical && <TabsTrigger value="certificates">{t("tabs.certificates")}</TabsTrigger>}
 					</TabsList>
 				</div>
 
@@ -487,6 +490,17 @@ export function PatientDetails({
 				<TabsContent value="documents" className="min-h-0 overflow-y-auto p-5">
 					<DocumentsTab patientId={patient.id} archived={archived} />
 				</TabsContent>
+
+				{medical && (
+					<>
+						<TabsContent value="prescriptions" className="min-h-0 overflow-y-auto p-5">
+							<PrescriptionsTab patientId={patient.id} />
+						</TabsContent>
+						<TabsContent value="certificates" className="min-h-0 overflow-y-auto p-5">
+							<CertificatesTab patientId={patient.id} />
+						</TabsContent>
+					</>
+				)}
 			</Tabs>
 		</>
 	);
