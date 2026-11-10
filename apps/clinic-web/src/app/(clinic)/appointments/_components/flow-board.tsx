@@ -381,10 +381,10 @@ function FlowCard({
 								<IconMoreVertical />
 							</Button>
 						</DropdownMenuTrigger>
-						<DropdownMenuContent align="end">
+						<DropdownMenuContent align="end" className="min-w-52">
 							<DropdownMenuLabel className="text-muted-foreground text-xs font-normal">{t("moveTo")}</DropdownMenuLabel>
 							{targets.map((c) => (
-								<DropdownMenuItem key={c} onSelect={() => onMove(c)}>
+								<DropdownMenuItem key={c} className="whitespace-nowrap" onSelect={() => onMove(c)}>
 									<span className={cn("size-2 rounded-full", DOT[c])} /> {c === "arrived" ? t("waiting") : status(c)}
 								</DropdownMenuItem>
 							))}
