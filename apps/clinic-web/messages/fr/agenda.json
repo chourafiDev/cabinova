@@ -85,7 +85,8 @@
   "tabs": {
     "waiting": "Salle d’attente",
     "agenda": "Agenda",
-    "seen": "Patients vus"
+    "seen": "Patients vus",
+    "board": "Tableau"
   },
   "waiting": {
     "order": "N°",
@@ -188,5 +189,25 @@
     "all": "Tous les statuts",
     "some": "{count} statuts",
     "reset": "Afficher tous les statuts"
+  },
+  "board": {
+    "search": "Rechercher un patient…",
+    "practitioner": "Praticien",
+    "allPractitioners": "Tous les praticiens",
+    "count": "{count, plural, =0 {Aucune visite aujourd’hui} one {# visite aujourd’hui} other {# visites aujourd’hui}}",
+    "loadError": "Impossible de charger les visites du jour. Réessayez.",
+    "waiting": "Salle d’attente",
+    "walkIn": "Patient sans RDV",
+    "moveTo": "Déplacer vers",
+    "dropHere": "Déposer ici",
+    "late": "En retard",
+    "doneAt": "Fini à {time}",
+    "empty": {
+      "scheduled": "Aucun rendez-vous à confirmer",
+      "confirmed": "Aucun rendez-vous confirmé",
+      "arrived": "Personne n’attend",
+      "in_consultation": "Aucune consultation en cours",
+      "completed": "Les visites terminées s’affichent ici"
+    }
   }
 }

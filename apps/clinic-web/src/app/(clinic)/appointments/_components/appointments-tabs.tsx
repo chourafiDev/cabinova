@@ -3,14 +3,15 @@
 import { useTranslations } from "next-intl";
 import { parseAsString, parseAsStringEnum, useQueryStates } from "nuqs";
 import { useState } from "react";
-import { IconCalendar, IconClock, IconUserCheck } from "@/components/icons";
+import { IconCalendar, IconClock, IconKanban, IconUserCheck } from "@/components/icons";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { Practitioner } from "@/lib/appointments";
+import { FlowBoard } from "./flow-board";
 import { SeenToday } from "./seen-today";
 import { useWaiting } from "./use-today";
 import { WaitingRoom } from "./waiting-room";
 
-const TABS = ["waiting", "seen", "agenda"] as const;
+const TABS = ["waiting", "board", "seen", "agenda"] as const;
 type Tab = (typeof TABS)[number];
 
 const searchParams = {
@@ -21,7 +22,7 @@ const searchParams = {
 	book: parseAsString,
 };
 
-/** Waiting room first, then who was seen today, then the agenda. The tab lives in the URL. */
+/** Waiting room first, then the day's flow board, who was seen today, then the agenda. The tab lives in the URL. */
 export function AppointmentsTabs({ agenda, practitioners }: { agenda: React.ReactNode; practitioners: Practitioner[] }) {
 	const [{ tab, view, date, book }, setParams] = useQueryStates(searchParams, { history: "replace" });
 	const { waiting, seen } = useWaiting();
@@ -32,29 +33,37 @@ export function AppointmentsTabs({ agenda, practitioners }: { agenda: React.Reac
 
 	return (
 		<Tabs value={current} onValueChange={(v) => setParams({ tab: v as Tab })} className="min-w-0 gap-4">
-			<TabsList>
-				<TabsTrigger value="waiting" className="px-3">
-					<IconClock /> {t("waiting")}
-					{waiting.length > 0 && (
-						<span className="bg-primary text-primary-foreground rounded-full px-1.5 text-xs font-semibold tabular-nums">
-							{waiting.length}
-						</span>
-					)}
-				</TabsTrigger>
-				<TabsTrigger value="seen" className="px-3">
-					<IconUserCheck /> {t("seen")}
-					{seen.length > 0 && (
-						<span className="bg-primary text-primary-foreground rounded-full px-1.5 text-xs font-semibold tabular-nums">
-							{seen.length}
-						</span>
-					)}
-				</TabsTrigger>
-				<TabsTrigger value="agenda" className="px-3">
-					<IconCalendar /> {t("agenda")}
-				</TabsTrigger>
-			</TabsList>
+			<div className="no-scrollbar -mx-1 overflow-x-auto px-1">
+				<TabsList className="min-w-max">
+					<TabsTrigger value="waiting" className="px-3">
+						<IconClock /> {t("waiting")}
+						{waiting.length > 0 && (
+							<span className="bg-primary text-primary-foreground rounded-full px-1.5 text-xs font-semibold tabular-nums">
+								{waiting.length}
+							</span>
+						)}
+					</TabsTrigger>
+					<TabsTrigger value="board" className="px-3">
+						<IconKanban /> {t("board")}
+					</TabsTrigger>
+					<TabsTrigger value="seen" className="px-3">
+						<IconUserCheck /> {t("seen")}
+						{seen.length > 0 && (
+							<span className="bg-primary text-primary-foreground rounded-full px-1.5 text-xs font-semibold tabular-nums">
+								{seen.length}
+							</span>
+						)}
+					</TabsTrigger>
+					<TabsTrigger value="agenda" className="px-3">
+						<IconCalendar /> {t("agenda")}
+					</TabsTrigger>
+				</TabsList>
+			</div>
 			<TabsContent value="waiting" className="min-w-0">
 				<WaitingRoom practitioners={practitioners} />
+			</TabsContent>
+			<TabsContent value="board" className="min-w-0">
+				<FlowBoard practitioners={practitioners} />
 			</TabsContent>
 			<TabsContent value="seen" className="min-w-0">
 				<SeenToday />

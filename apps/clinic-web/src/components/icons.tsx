@@ -45,6 +45,7 @@ import {
   Home2,
   InfoCircle,
   Key,
+  Kanban,
   Keyboard,
   Lifebuoy,
   Link,
@@ -219,6 +220,7 @@ export const IconHourglass = bulk(Timer);
 export const IconIdCard = bulk(Personalcard);
 export const IconInfo = bulk(InfoCircle);
 export const IconKey = bulk(Key);
+export const IconKanban = bulk(Kanban);
 export const IconKeyboard = bulk(Keyboard);
 export const IconLab = bulk(ChemicalGlass);
 export const IconLink = bulk(Link);

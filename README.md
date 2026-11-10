@@ -72,6 +72,7 @@ A pnpm monorepo (`pnpm@9`, Node 22).
 - When an appointment's day ends:
   - **Confirmé** becomes **Absent**;
   - **Planifié** becomes **Annulé**.
+- **Tableau** tab: today's patient flow as a kanban board (Planifié → Confirmé → Salle d'attente → En consultation → Terminé). Drag a card, or use its menu, to change the status. The desk moves cards between the first three columns; only a doctor moves a card into or out of En consultation. Visits are finished in the dossier, so Terminé accepts no drops.
 - Waiting room tab for today's visits. When a consultation is in progress, the doctor sees a "Reprendre la consultation" button.
 - Header chips:
   - patients waiting, with a **Suivant** shortcut to call the doctor's next patient;
@@ -178,6 +179,7 @@ Run these from the repo root:
 Add new entries at the top, as *date: what changed*.
 
 - **2026-11-10**
+  - Agenda: new Tableau tab, a kanban board of the day's patient flow.
   - Paid visits are read-only in the checkout (UI and API).
   - New icon (airplane) for Congés et absences.
   - Patient sheet: Ordonnances and Certificats history tabs (doctors only).
