@@ -168,7 +168,6 @@ Run these from the repo root:
 - **Icons:** each web app imports icons only from its own `@/components/icons` (Iconsax Bulk). Lint enforces this.
 - **Time:** use `moroccoZone` from `packages/morocco-time`. Node's built-in time zone data is stale for Morocco.
 - **i18n:** clinic-web keeps its messages in `fr` and `ar` JSON files, one per namespace. Every new string goes in both.
-- **No AI in the product:** features use built-in templates and search, not LLM services.
 - **Money is for the owner:** the cash desk counts blind, so money totals are shown only to the owner.
 
 ## What's new
