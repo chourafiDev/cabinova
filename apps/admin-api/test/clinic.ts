@@ -245,8 +245,8 @@ export async function bookToday(
 
 /**
  * The clinic API's daily upkeep, run now (it otherwise waits for a cabinet's
- * first request of the day): past visits still Planifié or Confirmé become
- * Absent. Returns how many changed.
+ * first request of the day): past visits still Confirmé become Absent, still
+ * Planifié become Annulé. Returns how many changed.
  */
 export async function markMissedVisits(admin: {
   agent: Agent;

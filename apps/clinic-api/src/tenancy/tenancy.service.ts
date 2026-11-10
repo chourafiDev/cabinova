@@ -47,7 +47,7 @@ export class TenancyService implements OnApplicationShutdown {
   private readonly logger = new Logger(TenancyService.name);
   private readonly baseDomains: string[];
   private readonly hosts = new Map<string, { row: Row | null; at: number }>();
-  /** The day (Moroccan) each cabinet's missed visits were last marked Absent. */
+  /** The day (Moroccan) each cabinet's past visits were last closed. */
   private readonly swept = new Map<string, string>();
   /** One small pool per cabinet, replaced when its credentials change. */
   private readonly pools = new Map<string, { secret: string; pool: Pool }>();
@@ -107,9 +107,10 @@ export class TenancyService implements OnApplicationShutdown {
   }
 
   /**
-   * Once a day per cabinet, on its first request: yesterday's appointments
-   * nobody came to become "Absent". Harmless to repeat (several instances,
-   * a restart); a failure only waits for the next request.
+   * Once a day per cabinet, on its first request: past appointments still
+   * "Confirmé" become "Absent", still "Planifié" become "Annulé". Harmless to
+   * repeat (several instances, a restart); a failure only waits for the next
+   * request.
    */
   private async dailyUpkeep(tenantId: string, db: Pool) {
     const day = moroccoDay();

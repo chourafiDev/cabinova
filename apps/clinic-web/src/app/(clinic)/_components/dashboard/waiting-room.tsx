@@ -32,7 +32,7 @@ export function WaitingRoom({ appointments }: { appointments: NonNullable<Dashbo
 							</div>
 						))
 					) : (
-						<p className="text-sm text-muted-foreground">{t("nobody")}</p>
+						<p className="text-sm text-white">{t("nobody")}</p>
 					)}
 				</div>
 

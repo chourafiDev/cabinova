@@ -302,7 +302,7 @@ describe('clinic: agenda', () => {
     );
   });
 
-  it('marks past visits nobody came to as Absent, and only those', async () => {
+  it('closes past visits: Confirmé becomes Absent, Planifié becomes Annulé', async () => {
     const { body: planned } = await book({
       startsAt: at('17:00'),
       endsAt: at('17:30'),
@@ -326,7 +326,7 @@ describe('clinic: agenda', () => {
 
     expect(await markMissedVisits(tenant)).toBeGreaterThanOrEqual(2);
     const statuses = new Map((await day(true)).map((a) => [a.id, a.status]));
-    expect(statuses.get(planned.id)).toBe('no_show');
+    expect(statuses.get(planned.id)).toBe('cancelled');
     expect(statuses.get(confirmed.id)).toBe('no_show');
     // Visits that happened keep their status; today's are not over yet.
     expect(statuses.get(firstId)).toBe('completed');
