@@ -86,6 +86,7 @@ A pnpm monorepo (`pnpm@9`, Node 22).
 - Cash desk (*Caisse du jour*) with blind cash counting.
 - *Visites du jour* table. Its "Voir" button opens a read-only view; "Encaisser" records a payment.
 - Owner-only KPIs: total received, number of visits, cancelled visits and payment rate.
+- A visit paid in full is final: the checkout shows its details only, and the API refuses changes (`VISIT_SETTLED`). To correct it, cancel the payment first.
 - Tariffs, reports.
 
 **Team and communication**
@@ -177,6 +178,8 @@ Run these from the repo root:
 Add new entries at the top, as *date: what changed*.
 
 - **2026-11-10**
+  - Paid visits are read-only in the checkout (UI and API).
+  - New icon (airplane) for Congés et absences.
   - Patient sheet: Ordonnances and Certificats history tabs (doctors only).
   - At the end of an appointment's day, Confirmé becomes Absent and Planifié becomes Annulé.
   - Header chips for the waiting room ("Suivant") and the current consultation.

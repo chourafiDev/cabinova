@@ -297,6 +297,88 @@ function CheckoutForm({
 		);
 	}
 
+	// Paid in full: the details only. To correct it, cancel the payment first
+	// (in the movements below); the visit then opens for editing again.
+	if (account.total > 0 && account.balance <= 0) {
+		return (
+			<div className="grid gap-5">
+				<Head>
+					<Title>{t("detailTitle", { name: patientName })}</Title>
+					<Description>
+						<span className="first-letter:uppercase">
+							{format.date(visit.startsAt, { weekday: "long", year: undefined, hour: "2-digit", minute: "2-digit" })}
+						</span>{" "}
+						· {visit.practitioner.name} · {formatFileNumber(visit.patient.fileNumber)}
+					</Description>
+				</Head>
+
+				<p className="flex items-start gap-2 rounded-lg bg-emerald-50 p-3 text-sm text-emerald-800 dark:bg-emerald-500/15 dark:text-emerald-300">
+					<IconCheckCircle className="mt-0.5 size-4 shrink-0" />
+					{t("settledNotice")}
+				</p>
+
+				<section className="grid gap-2">
+					<h3 className="text-sm font-medium">{t("acts")}</h3>
+					<ul className="divide-y rounded-lg border text-sm">
+						{account.items.map((item) => (
+							<li key={item.id} className="flex items-center gap-3 px-3 py-2">
+								<span className="min-w-0 flex-1 truncate">{item.label}</span>
+								{item.quantity > 1 && (
+									<span className="text-muted-foreground tabular-nums">
+										{item.quantity} × {mad(item.unitPrice)}
+									</span>
+								)}
+								<span className="w-24 text-end font-medium tabular-nums">{mad(item.unitPrice * item.quantity)}</span>
+							</li>
+						))}
+					</ul>
+				</section>
+
+				<dl className="bg-muted/50 grid gap-1.5 rounded-lg p-3 text-sm">
+					<div className="flex justify-between">
+						<dt className="text-muted-foreground">{account.discount > 0 ? t("actsTotal") : t("total")}</dt>
+						<dd className="font-medium tabular-nums">{mad(account.subtotal)}</dd>
+					</div>
+					{account.discount > 0 && (
+						<div className="flex justify-between">
+							<dt className="text-muted-foreground">{t("discount")}</dt>
+							<dd className="tabular-nums text-emerald-700">− {mad(account.discount)}</dd>
+						</div>
+					)}
+					<div className="flex justify-between">
+						<dt className="text-muted-foreground">{t("alreadyPaid")}</dt>
+						<dd className="tabular-nums">{mad(account.paid)}</dd>
+					</div>
+					{account.balance < 0 && (
+						<div className="flex justify-between border-t pt-1.5">
+							<dt className="font-medium">{t("overpaid")}</dt>
+							<dd className="font-semibold tabular-nums">{mad(-account.balance)}</dd>
+						</div>
+					)}
+				</dl>
+
+				{account.payments.length > 0 && (
+					<Movements
+						account={account}
+						user={user}
+						onChange={async (next) => {
+							queryClient.setQueryData(["account", visit.id], next);
+							await refresh();
+						}}
+					/>
+				)}
+
+				{!inline && (
+					<Footer>
+						<Button type="button" variant="outline" onClick={onDone}>
+							{t("close")}
+						</Button>
+					</Footer>
+				)}
+			</div>
+		);
+	}
+
 	const locked = account.dayClosed;
 	const methodInfo = METHODS.find((m) => m.value === method)!;
 	// The price list, searched by name or abbreviation; without a search, the first few.

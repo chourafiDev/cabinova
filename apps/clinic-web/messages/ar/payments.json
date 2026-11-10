@@ -185,7 +185,9 @@
     "save": "حفظ",
     "savedForDesk": "تم الحفظ: {amount} للاستخلاص في الاستقبال",
     "deskWillCollect": "{amount} للاستخلاص في الاستقبال",
-    "priceTitle": "ثمن الفحص · {name}"
+    "priceTitle": "ثمن الفحص · {name}",
+    "detailTitle": "التفاصيل · {name}",
+    "settledNotice": "الزيارة مسددة: لم يعد من الممكن تعديل الأعمال والمبلغ. للتصحيح، ألغِ الدفعة أدناه أولًا."
   },
   "movements": {
     "payments": "المدفوعات",

@@ -7,9 +7,9 @@ import {
   IconDashboard,
   IconIdCard,
   IconSettings,
-  IconSun,
   IconUserCheck,
   IconUsers,
+  IconVacation,
   IconVideo,
   IconWallet,
 } from "@/components/icons";
@@ -30,7 +30,7 @@ export const navGroups: { key: string; items: NavItem[] }[] = [
     key: "cabinet",
     items: [
       { key: "dashboard", href: "/", icon: IconDashboard, shortcut: "d" },
-      { key: "absences", href: "/absences", icon: IconSun, shortcut: "c" },
+      { key: "absences", href: "/absences", icon: IconVacation, shortcut: "c" },
       { key: "patients", href: "/patients", icon: IconUsers, shortcut: "p" },
       { key: "meetings", href: "/meetings", icon: IconVideo, shortcut: "m" },
       { key: "messages", href: "/messages", icon: IconChat, shortcut: "t" },

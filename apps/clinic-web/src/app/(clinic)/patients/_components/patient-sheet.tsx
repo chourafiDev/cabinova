@@ -66,7 +66,7 @@ export function PatientSheet({
 
 	return (
 		<Sheet open={open} onOpenChange={(next) => !next && close()}>
-			<SheetContent className={`w-full gap-0 data-[side=right]:sm:max-w-2xl ${SHEET_AT_END}`}>
+			<SheetContent className={`w-full gap-0 data-[side=right]:sm:max-w-4xl ${SHEET_AT_END}`}>
 				{creating ? (
 					<>
 						<SheetHeader className="border-b p-5">

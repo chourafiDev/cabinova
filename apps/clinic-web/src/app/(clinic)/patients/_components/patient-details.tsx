@@ -307,7 +307,7 @@ export function PatientDetails({
 			/>
 
 			<Tabs defaultValue="overview" className="min-h-0 flex-1 gap-0">
-				<div className="overflow-x-auto border-b px-5 py-2">
+				<div className="no-scrollbar overflow-x-auto border-b px-5 py-2">
 					<TabsList className="w-full min-w-max">
 						<TabsTrigger value="overview">
 							{t("tabs.overview")}

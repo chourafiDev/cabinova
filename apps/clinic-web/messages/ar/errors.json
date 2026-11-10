@@ -131,5 +131,6 @@
   "DISCOUNT_TOO_HIGH": "التخفيض يتجاوز مبلغ الإجراءات ({amount}).",
   "CONVERSATION_NOT_FOUND": "المحادثة غير موجودة.",
   "CHAT_USER_NOT_FOUND": "هذا الزميل ليس (أو لم يعد) ضمن الفريق.",
-  "GROUP_NAME_REQUIRED": "أعطِ اسمًا للمجموعة."
+  "GROUP_NAME_REQUIRED": "أعطِ اسمًا للمجموعة.",
+  "VISIT_SETTLED": "هذه الزيارة مسددة: ألغِ الدفعة أولًا لتعديلها."
 }

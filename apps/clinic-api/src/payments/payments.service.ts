@@ -162,6 +162,20 @@ export class PaymentsService {
           message: 'Ce rendez-vous est annulé : rien à encaisser.',
         });
       }
+      // A visit paid in full is final: to correct it, cancel the payment first.
+      const { rows: settled } = await client.query<{ id: string }>(
+        `select c.id from charges c
+          where c.appointment_id = $1 and c.total > 0
+            and (select ${PAID} from payments where charge_id = c.id) >= c.total`,
+        [appointmentId],
+      );
+      if (settled.length > 0) {
+        throw new ConflictException({
+          code: 'VISIT_SETTLED',
+          message:
+            'Cette visite est réglée : annulez d’abord le paiement pour la modifier.',
+        });
+      }
       // An act deleted meanwhile: the line stays, unlinked.
       const { rows: known } = await client.query<{ id: string }>(
         'select id from acts where id = any($1::uuid[])',
@@ -545,7 +559,10 @@ export class PaymentsService {
           cancelled: day.rows[0].cancelled,
           /** Today's visits with something to pay, and what they bring in. */
           billed: billed.reduce((s, v) => s + (v.total ?? 0), 0),
-          collected: billed.reduce((s, v) => s + Math.min(v.paid, v.total ?? 0), 0),
+          collected: billed.reduce(
+            (s, v) => s + Math.min(v.paid, v.total ?? 0),
+            0,
+          ),
           billedVisits: billed.length,
           paidVisits: billed.filter((v) => (v.balance ?? 0) <= 0).length,
         },

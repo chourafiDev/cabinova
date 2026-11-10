@@ -185,7 +185,9 @@
     "save": "Enregistrer",
     "savedForDesk": "Enregistré : {amount} à encaisser à l’accueil",
     "deskWillCollect": "{amount} à encaisser par l’accueil",
-    "priceTitle": "Prix de la consultation · {name}"
+    "priceTitle": "Prix de la consultation · {name}",
+    "detailTitle": "Détail · {name}",
+    "settledNotice": "Visite réglée : les actes et le montant ne se modifient plus. Pour corriger, annulez d’abord le paiement ci-dessous."
   },
   "movements": {
     "payments": "Paiements",

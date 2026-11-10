@@ -12,8 +12,8 @@ import {
 	IconFlag,
 	IconPlus,
 	IconSpinner,
-	IconSun,
 	IconTrash,
+	IconVacation,
 	IconWarning,
 } from "@/components/icons";
 import { Badge } from "@/components/ui/badge";
@@ -63,7 +63,7 @@ export function AbsencesView({
 			<header className="flex flex-wrap items-center justify-between gap-3">
 				<div className="flex items-center gap-3">
 					<span className="bg-primary/10 text-primary flex size-9 items-center justify-center rounded-lg">
-						<IconSun className="size-4" />
+						<IconVacation className="size-4" />
 					</span>
 					<div>
 						<h1 className="text-lg leading-tight font-semibold">{t("title")}</h1>
@@ -123,7 +123,7 @@ function ClosureList({ when, user, onAdd }: { when: "upcoming" | "past"; user: U
 	if (data.length === 0) {
 		return (
 			<div className="bg-card flex flex-col items-center gap-2 rounded-xl border px-6 py-14 text-center">
-				<IconSun className="text-muted-foreground size-6" />
+				<IconVacation className="text-muted-foreground size-6" />
 				<p className="font-medium">{t(`empty.${when}`)}</p>
 				{when === "upcoming" && <p className="text-muted-foreground max-w-sm text-sm">{t("empty.hint")}</p>}
 				{onAdd && (

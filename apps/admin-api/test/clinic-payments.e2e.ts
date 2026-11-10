@@ -148,6 +148,15 @@ describe('clinic: payments', () => {
     expect(second).toMatchObject({ balance: 0, paid: 55000 });
     cardPaymentId = second.paymentId;
 
+    // Paid in full: the acts are final, for everyone.
+    for (const who of [undefined, owner]) {
+      const { body: settled } = await cab(who)
+        .post(`/appointments/${appointmentId}/checkout`)
+        .send({ items: [{ label: 'Ajout', unitPrice: 5000, quantity: 1 }] })
+        .expect(409);
+      expect(settled.code).toBe('VISIT_SETTLED');
+    }
+
     const { body: receipt } = await cab()
       .get(`/payments/${second.paymentId}/receipt`)
       .expect(200);
@@ -236,6 +245,11 @@ describe('clinic: payments', () => {
       .send({ reason: 'Mauvais montant' })
       .expect(200);
     expect(cancelled.balance).toBe(25000);
+    // No longer paid in full: the acts can be corrected again.
+    await cab()
+      .post(`/appointments/${appointmentId}/checkout`)
+      .send({ items: items() })
+      .expect(200);
     await cab()
       .post(`/payments/${cardPaymentId}/cancel`)
       .send({ reason: 'Encore' })
