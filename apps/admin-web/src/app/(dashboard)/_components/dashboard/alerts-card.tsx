@@ -1,13 +1,13 @@
-import { CircleAlert, CircleCheck, Info, TriangleAlert } from "lucide-react";
 import Link from "next/link";
+import { IconAlertCircle, IconCheckCircle, IconInfo, IconWarning } from "@/components/icons";
 import type { DashboardAlert } from "@/lib/dashboard";
 import { cn } from "@/lib/utils";
 import { ChartCard } from "./chart-card";
 
 const SEVERITY = {
-	critical: { icon: CircleAlert, label: "Critique", tone: "bg-red-50 text-red-700" },
-	warning: { icon: TriangleAlert, label: "Attention", tone: "bg-amber-50 text-amber-800" },
-	info: { icon: Info, label: "Info", tone: "bg-sky-50 text-sky-700" },
+	critical: { icon: IconAlertCircle, label: "Critique", tone: "bg-red-50 text-red-700" },
+	warning: { icon: IconWarning, label: "Attention", tone: "bg-amber-50 text-amber-800" },
+	info: { icon: IconInfo, label: "Info", tone: "bg-sky-50 text-sky-700" },
 } as const;
 
 /** What the alerts watch, shown as passed checks when nothing is wrong. */
@@ -39,7 +39,7 @@ export function AlertsCard({ alerts }: { alerts: DashboardAlert[] }) {
 					{CHECKS.map((check) => (
 						<li key={check} className="flex items-center gap-2.5">
 							<span className="flex size-6 items-center justify-center rounded-md bg-emerald-50">
-								<CircleCheck className="size-3.5 text-emerald-600" aria-hidden />
+								<IconCheckCircle className="size-3.5 text-emerald-600" aria-hidden />
 							</span>
 							{check}
 						</li>
@@ -62,8 +62,8 @@ export function AlertsCard({ alerts }: { alerts: DashboardAlert[] }) {
 								</Link>
 								<ul className="ms-8.5 grid gap-0.5 text-xs text-muted-foreground">
 									{alert.items.map((item) => (
-										<li key={item.tenantId} className="truncate">
-											<Link href={`/tenants/${item.tenantId}`} className="text-foreground hover:underline">
+										<li key={item.href ?? item.tenantId} className="truncate">
+											<Link href={item.href ?? `/tenants/${item.tenantId}`} className="text-foreground hover:underline">
 												{item.name}
 											</Link>
 											{item.detail && ` — ${item.detail}`}

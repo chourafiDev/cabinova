@@ -1,12 +1,22 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Check, Gauge, Hash, Layers, Loader, Plus, Settings2, Tag, Wallet } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Controller, type FieldPath, useForm, useWatch } from "react-hook-form";
 import { toast } from "sonner";
+import {
+	IconCheck,
+	IconGauge,
+	IconHash,
+	IconLayers,
+	IconPlus,
+	IconSettings,
+	IconSpinner,
+	IconTag,
+	IconWallet,
+} from "@/components/icons";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Field, FieldDescription, FieldError, FieldLabel } from "@/components/ui/field";
@@ -33,7 +43,7 @@ const LEVELS: { value: FeatureLevel; label: string; tone: string }[] = [
 	{ value: "limited", label: "Limité", tone: "bg-amber-500 text-white" },
 	{ value: "addon", label: "Option", tone: "bg-sky-600 text-white" },
 	{ value: "custom", label: "Sur mesure", tone: "bg-violet-600 text-white" },
-	{ value: "none", label: "Non", tone: "bg-zinc-700 text-white" },
+	{ value: "none", label: "Non", tone: "bg-muted-foreground text-background" },
 ];
 
 const toCentimes = (v: string | undefined) => Math.round(Number((v ?? "").replace(",", ".")) * 100) || 0;
@@ -163,7 +173,7 @@ export function PlanForm(
 					</div>
 				)}
 
-				<FormSection step={1} icon={Tag} title="Identité" description="Ce que voient les administrateurs en choisissant une offre.">
+				<FormSection step={1} icon={IconTag} title="Identité" description="Ce que voient les administrateurs en choisissant une offre.">
 					<div className="grid gap-4 sm:grid-cols-2">
 						{text("name", "Nom", {
 							autoFocus: !editing,
@@ -201,7 +211,7 @@ export function PlanForm(
 
 				<FormSection
 					step={2}
-					icon={Wallet}
+					icon={IconWallet}
 					title="Tarifs et essai"
 					description="Montants hors taxe en dirhams ; l’essai précède la première facture."
 				>
@@ -223,7 +233,7 @@ export function PlanForm(
 
 				<FormSection
 					step={3}
-					icon={Gauge}
+					icon={IconGauge}
 					title="Limites"
 					description="Copiées dans les quotas du cabinet à sa création. Vide = illimité."
 				>
@@ -237,7 +247,7 @@ export function PlanForm(
 
 				<FormSection
 					step={4}
-					icon={Layers}
+					icon={IconLayers}
 					title="Fonctionnalités"
 					description="Le niveau de chaque fonctionnalité du catalogue dans cette offre."
 				>
@@ -286,11 +296,12 @@ export function PlanForm(
 						))}
 					</ul>
 					<p className="text-xs text-muted-foreground">
-						Le catalogue se gère dans{" "}
+						Les fonctionnalités viennent du code ; leur statut (bêta, désactivation) et les exceptions par cabinet se
+						gèrent dans{" "}
 						<Link href="/features" className="underline">
 							Fonctionnalités
-						</Link>{" "}
-						(bêta, désactivation, exceptions par cabinet).
+						</Link>
+						.
 					</p>
 				</FormSection>
 			</div>
@@ -323,7 +334,7 @@ export function PlanForm(
 						<ul className={cn("grid gap-1 text-xs", included.length > 0 && "border-t pt-2")}>
 							{included.map((f) => {
 									const level = levelOf(f.key);
-									const Icon = level === "addon" ? Plus : level === "custom" ? Settings2 : level === "limited" ? Hash : Check;
+									const Icon = level === "addon" ? IconPlus : level === "custom" ? IconSettings : level === "limited" ? IconHash : IconCheck;
 									return (
 										<li key={f.key} className="flex items-center gap-1.5">
 											<Icon className={cn("size-3.5 shrink-0", level === "addon" ? "text-sky-600" : "text-emerald-600")} />
@@ -364,7 +375,7 @@ export function PlanForm(
 				)}
 
 				<Button type="submit" className="w-full" disabled={isSubmitting || (editing && !isDirty)}>
-					{isSubmitting && <Loader className="animate-spin" />}
+					{isSubmitting && <IconSpinner className="animate-spin" />}
 					{editing ? (isDirty ? "Enregistrer les modifications" : "Aucune modification") : "Créer l’offre"}
 				</Button>
 				<Button asChild variant="ghost" className="w-full">

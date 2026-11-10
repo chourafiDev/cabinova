@@ -6,6 +6,8 @@ export class ApiError extends Error {
     public status: number,
     public code: string | undefined,
     message: string,
+    /** The whole error body, for extra fields (e.g. attemptsLeft). */
+    public details: Record<string, unknown> = {},
   ) {
     super(message);
   }
@@ -18,7 +20,7 @@ export async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
   });
   if (!res.ok) {
     const body = await res.json().catch(() => null);
-    throw new ApiError(res.status, body?.code, body?.message ?? res.statusText);
+    throw new ApiError(res.status, body?.code, body?.message ?? res.statusText, body ?? {});
   }
   return res.status === 204 ? (undefined as T) : res.json();
 }

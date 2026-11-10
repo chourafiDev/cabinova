@@ -1,14 +1,15 @@
-import { ArrowLeft, Monitor, Smartphone } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { IconArrowLeft, IconMobile, IconMonitor } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import { formatDate } from "@/lib/format";
 import { can } from "@/lib/permissions";
 import type { PermissionInfo, PlatformRole, PlatformUserDetail, UserHistoryEntry } from "@/lib/platform-users";
+import { ACTION_LABELS } from "@/lib/security";
 import { apiGet } from "@/lib/server-api";
 import { getSession } from "@/lib/session";
 import { FormCard } from "../../_components/shared/form-card";
-import { UserStatusBadge } from "../_components/user-status-badge";
+import { TwoFactorBadge, UserStatusBadge } from "../_components/user-status-badge";
 import { AccessForm } from "./access-form";
 import { UserActions } from "./user-actions";
 
@@ -18,15 +19,6 @@ export async function generateMetadata({ params }: PageProps<"/users/[id]">) {
 }
 
 const dateTime = (value: string) => formatDate(value, { month: "short", hour: "2-digit", minute: "2-digit" });
-
-const HISTORY_LABELS: Record<string, string> = {
-	"platform_user.invite": "Invitation envoyée",
-	"platform_user.update": "Accès modifiés",
-	"platform_user.deactivate": "Compte désactivé",
-	"platform_user.reactivate": "Compte réactivé",
-	"platform_user.link": "Nouveau lien envoyé",
-	"platform_user.sessions_revoke": "Sessions fermées",
-};
 
 const initials = (name: string) =>
 	name
@@ -76,7 +68,7 @@ export default async function UserPage({ params }: PageProps<"/users/[id]">) {
 			<div className="mb-4 flex flex-wrap items-center gap-3 border-b border-dashed border-foreground/20 pb-4">
 				<Button asChild variant="outline" size="icon-sm" aria-label="Retour aux utilisateurs">
 					<Link href="/users">
-						<ArrowLeft className="size-4" />
+						<IconArrowLeft className="size-4" />
 					</Link>
 				</Button>
 				<span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-sm font-semibold text-primary">
@@ -87,6 +79,7 @@ export default async function UserPage({ params }: PageProps<"/users/[id]">) {
 						<span className="truncate">{user.name}</span>
 						{isSelf && <span className="text-sm font-normal text-muted-foreground">(vous)</span>}
 						<UserStatusBadge status={user.status} inviteExpired={user.inviteExpired} />
+						{user.status === "active" && <TwoFactorBadge enabled={user.twoFactorEnabled} />}
 					</h1>
 					<span className="truncate text-xs text-muted-foreground">
 						{user.email} · {user.roles.map((r) => r.name).join(", ")} ·{" "}
@@ -95,7 +88,13 @@ export default async function UserPage({ params }: PageProps<"/users/[id]">) {
 				</div>
 				{canManage && (
 					<div className="ms-auto">
-						<UserActions userId={user.id} name={user.name} status={user.status} isSelf={isSelf} />
+						<UserActions
+							userId={user.id}
+							name={user.name}
+							status={user.status}
+							isSelf={isSelf}
+							twoFactorEnabled={user.twoFactorEnabled}
+						/>
 					</div>
 				)}
 			</div>
@@ -122,7 +121,7 @@ export default async function UserPage({ params }: PageProps<"/users/[id]">) {
 								<ul className="grid gap-2.5">
 									{user.sessions.map((s) => {
 										const { label, mobile } = device(s.userAgent);
-										const Icon = mobile ? Smartphone : Monitor;
+										const Icon = mobile ? IconMobile : IconMonitor;
 										return (
 											<li key={s.id} className="flex items-start gap-2.5 text-sm">
 												<span className="mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-md bg-muted">
@@ -149,7 +148,7 @@ export default async function UserPage({ params }: PageProps<"/users/[id]">) {
 									{history.map((h) => (
 										<li key={h.id} className="relative grid text-sm leading-tight">
 											<span className="absolute -start-[21px] top-1 size-2.5 rounded-full border-2 border-background bg-primary" aria-hidden />
-											<span className="font-medium">{HISTORY_LABELS[h.action] ?? h.action}</span>
+											<span className="font-medium">{ACTION_LABELS[h.action] ?? h.action}</span>
 											<span className="text-xs text-muted-foreground">
 												{h.actor?.name ?? "Système"} · {dateTime(h.createdAt)}
 											</span>

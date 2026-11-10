@@ -5,6 +5,23 @@ import nextTs from "eslint-config-next/typescript";
 const eslintConfig = defineConfig([
   ...nextVitals,
   ...nextTs,
+  // Icons come from @/components/icons only (Iconsax "Bulk", plus a few
+  // Lucide glyphs); that file is the one place that imports icon packages.
+  {
+    ignores: ["src/components/icons.tsx"],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          paths: ["lucide-react", "react-icons", "iconsax-reactjs"].map((name) => ({
+            name,
+            message: "Import icons from \"@/components/icons\" (add new ones there).",
+          })),
+          patterns: [{ group: ["react-icons/*"], message: "Import icons from \"@/components/icons\" (add new ones there)." }],
+        },
+      ],
+    },
+  },
   // Vendored from tablecn (https://tablecn.com). It intentionally uses the
   // "latest ref" pattern, which React Compiler's refs rule flags. Kept as-is
   // so the files can be updated from the registry.

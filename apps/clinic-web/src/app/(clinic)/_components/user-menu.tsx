@@ -1,0 +1,79 @@
+"use client";
+
+import { useTranslations } from "next-intl";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { IconChevronDown, IconCompass, IconLogout, IconUser } from "@/components/icons";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuLabel,
+	DropdownMenuSeparator,
+	DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { api } from "@/lib/api-client";
+import { initials } from "@/lib/format";
+import type { ClinicSession } from "@/lib/session";
+import { TOUR_REPLAY_HREF } from "./tour/product-tour";
+
+/** Avatar + name in the header, with the account menu. */
+export function UserMenu({ user }: { user: ClinicSession["user"] }) {
+	const router = useRouter();
+	const t = useTranslations("common");
+
+	async function signOut() {
+		await api("/auth/logout", { method: "POST" }).catch(() => {});
+		router.replace("/login");
+		router.refresh();
+	}
+
+	return (
+		<DropdownMenu>
+			<DropdownMenuTrigger asChild>
+				<button
+					type="button"
+					className="hover:bg-muted data-[state=open]:bg-muted flex items-center gap-2 rounded-lg p-1 pe-2 transition-colors"
+				>
+					<Avatar className="size-8 rounded-lg">
+						<AvatarFallback className="bg-primary text-primary-foreground rounded-lg text-xs font-semibold">
+							{initials(user.name.replace(/^dr\.?\s+/i, ""))}
+						</AvatarFallback>
+					</Avatar>
+					<span className="hidden text-start leading-tight md:grid">
+						<span className="max-w-36 truncate text-sm font-medium">{user.name}</span>
+						<span className="text-muted-foreground max-w-36 truncate text-xs">{t(`roles.${user.role}`)}</span>
+					</span>
+					<IconChevronDown className="text-muted-foreground size-4" />
+				</button>
+			</DropdownMenuTrigger>
+			<DropdownMenuContent align="end" sideOffset={6} className="min-w-64 rounded-lg">
+				<DropdownMenuLabel className="font-normal">
+					<div className="grid text-sm leading-tight">
+						<span className="truncate font-medium">{user.name}</span>
+						<span className="text-muted-foreground truncate text-xs">{user.email}</span>
+					</div>
+				</DropdownMenuLabel>
+				<DropdownMenuSeparator />
+				<DropdownMenuItem asChild>
+					<Link href="/settings/profile">
+						<IconUser />
+						{t("userMenu.profile")}
+					</Link>
+				</DropdownMenuItem>
+				<DropdownMenuItem asChild>
+					<Link href={TOUR_REPLAY_HREF}>
+						<IconCompass />
+						{t("userMenu.tour")}
+					</Link>
+				</DropdownMenuItem>
+				<DropdownMenuSeparator />
+				<DropdownMenuItem variant="destructive" onSelect={signOut}>
+					<IconLogout className="rtl:-scale-x-100" />
+					{t("userMenu.signOut")}
+				</DropdownMenuItem>
+			</DropdownMenuContent>
+		</DropdownMenu>
+	);
+}

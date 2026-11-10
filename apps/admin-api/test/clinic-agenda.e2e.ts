@@ -1,0 +1,348 @@
+import type { INestApplication } from '@nestjs/common';
+import { type Agent, createApp, signInAdmin } from './app.js';
+import {
+  bookToday,
+  captureInvitations,
+  createClinicApp,
+  markMissedVisits,
+  onCabinet,
+  openEveryDay,
+  provisionCabinet,
+  signInDoctor,
+} from './clinic.js';
+
+/** 2026-11-02 (a Monday) at hh:mm, Moroccan time (UTC+1). */
+const at = (hhmm: string) => `2026-11-02T${hhmm}:00+00:00`;
+
+/**
+ * The agenda of a space: booking, no double booking (across spaces too)
+ * unless accepted, the status flow, and isolation between spaces.
+ */
+describe('clinic: agenda', () => {
+  let admin: INestApplication;
+  let clinic: INestApplication;
+  let doctor: Agent;
+  let doctorId: string;
+  let tenant: { agent: Agent; tenantId: string };
+  let patientId: string;
+  let firstId: string;
+  let principalId: string;
+
+  const cab = () => onCabinet(clinic, 'agenda-atlas', doctor);
+  const book = (body: Record<string, unknown>) =>
+    cab()
+      .post('/appointments')
+      .send({
+        patientId,
+        practitionerId: doctorId,
+        reason: 'Consultation',
+        ...body,
+      });
+  const day = async (includeCancelled = false) =>
+    (
+      await cab()
+        .get('/appointments')
+        .query({
+          from: at('00:00'),
+          to: '2026-11-03T00:00:00+00:00',
+          includeCancelled,
+        })
+        .expect(200)
+    ).body as { id: string; status: string }[];
+
+  beforeAll(async () => {
+    admin = await createApp();
+    const adminAgent = await signInAdmin(admin);
+    const invitations = captureInvitations(admin);
+    tenant = {
+      agent: adminAgent,
+      tenantId: await provisionCabinet(
+        adminAgent,
+        'agenda-atlas',
+        'agenda@e2e.test',
+      ),
+    };
+    clinic = await createClinicApp();
+    doctor = await signInDoctor(
+      clinic,
+      'agenda-atlas',
+      invitations.get('agenda@e2e.test')!,
+    );
+    const { body: me } = await cab().get('/auth/me').expect(200);
+    doctorId = me.user.id;
+    principalId = me.spaces.current.id;
+    const { body: patient } = await cab()
+      .post('/patients')
+      .send({ firstName: 'Omar', lastName: 'Alaoui', sex: 'male' })
+      .expect(201);
+    patientId = patient.id;
+  });
+  afterAll(async () => {
+    await clinic?.close();
+    await admin?.close();
+  });
+
+  it('lists the practitioners of the space', async () => {
+    const { body } = await cab().get('/appointments/practitioners').expect(200);
+    expect(body).toEqual([{ id: doctorId, name: 'Dr agenda-atlas' }]);
+  });
+
+  it('books an appointment with its patient and practitioner', async () => {
+    const { body } = await book({
+      startsAt: at('10:00'),
+      endsAt: at('10:30'),
+      reason: 'Fièvre',
+    }).expect(201);
+    firstId = body.id;
+    expect(body).toMatchObject({
+      status: 'scheduled',
+      reason: 'Fièvre',
+      arrivedAt: null,
+      patient: { id: patientId, lastName: 'Alaoui', fileNumber: 1 },
+      practitioner: { id: doctorId },
+    });
+    expect(new Date(body.startsAt).toISOString()).toBe(
+      '2026-11-02T10:00:00.000Z',
+    );
+  });
+
+  it('refuses a double booking unless the user accepts it', async () => {
+    const { body } = await book({
+      startsAt: at('10:15'),
+      endsAt: at('10:45'),
+    }).expect(409);
+    expect(body).toMatchObject({
+      code: 'SLOT_TAKEN',
+      message:
+        'Le praticien a déjà un rendez-vous de 10:00 à 10:30 (Espace principal).',
+      params: { from: '10:00', to: '10:30', space: 'Espace principal' },
+    });
+    const { body: forced } = await book({
+      startsAt: at('10:15'),
+      endsAt: at('10:45'),
+      allowOverlap: true,
+    }).expect(201);
+    // Back-to-back is fine.
+    await book({ startsAt: at('10:45'), endsAt: at('11:00') }).expect(201);
+    expect((await day()).map((a) => a.id)).toContain(forced.id);
+    await book({ startsAt: at('11:00'), endsAt: at('10:00') }).expect(400);
+  });
+
+  it('frees the slot when cancelled, and checks it again when reopened', async () => {
+    const { body: cancelled } = await book({
+      startsAt: at('14:00'),
+      endsAt: at('14:30'),
+    }).expect(201);
+    await cab()
+      .post(`/appointments/${cancelled.id}/status`)
+      .send({ status: 'cancelled' })
+      .expect(200);
+    expect((await day()).map((a) => a.id)).not.toContain(cancelled.id);
+    expect((await day(true)).map((a) => a.id)).toContain(cancelled.id);
+
+    await book({ startsAt: at('14:00'), endsAt: at('14:30') }).expect(201);
+    const { body } = await cab()
+      .post(`/appointments/${cancelled.id}/status`)
+      .send({ status: 'scheduled' })
+      .expect(409);
+    expect(body.code).toBe('SLOT_TAKEN');
+  });
+
+  it('follows the visit: arrived, in consultation, completed — then locked', async () => {
+    const status = async (s: string) =>
+      (
+        await cab()
+          .post(`/appointments/${firstId}/status`)
+          .send({ status: s })
+          .expect(200)
+      ).body;
+    const arrived = await status('arrived');
+    expect(arrived.arrivedAt).toEqual(expect.any(String));
+    expect((await status('in_consultation')).arrivedAt).toBe(arrived.arrivedAt);
+    await status('completed');
+    const { body } = await cab()
+      .put(`/appointments/${firstId}`)
+      .send({
+        patientId,
+        practitionerId: doctorId,
+        startsAt: at('16:00'),
+        endsAt: at('16:30'),
+      })
+      .expect(400);
+    expect(body.code).toBe('COMPLETED');
+  });
+
+  it('keeps each space’s agenda apart, but one doctor in one place at a time', async () => {
+    await cab().post('/spaces').send({ name: 'Marrakech' }).expect(201);
+    // Marrakech: an empty agenda, nothing from the first space reachable.
+    expect(await day(true)).toEqual([]);
+    await cab()
+      .post(`/appointments/${firstId}/status`)
+      .send({ status: 'cancelled' })
+      .expect(404);
+    const { body: wrongPatient } = await book({
+      startsAt: at('09:00'),
+      endsAt: at('09:30'),
+    }).expect(400);
+    expect(wrongPatient.code).toBe('PATIENT_UNAVAILABLE');
+
+    // A Marrakech patient can't be seen by the same doctor while they're in Fès.
+    const { body: local } = await cab()
+      .post('/patients')
+      .send({ firstName: 'Salma', lastName: 'Bennani', sex: 'female' })
+      .expect(201);
+    const { body: clash } = await cab()
+      .post('/appointments')
+      .send({
+        patientId: local.id,
+        practitionerId: doctorId,
+        reason: 'Consultation',
+        startsAt: at('14:15'),
+        endsAt: at('14:45'),
+      })
+      .expect(409);
+    expect(clash.message).toContain('(Espace principal)');
+
+    await cab()
+      .put('/spaces/current')
+      .send({ spaceId: principalId })
+      .expect(200);
+    expect((await day()).length).toBeGreaterThan(0);
+  });
+
+  it('refuses a slot outside opening hours, and leaves an old one alone', async () => {
+    // Defaults: closed on Sunday, 08:00 – 18:00 on Monday.
+    const sunday = await book({
+      startsAt: '2026-11-08T10:00:00+00:00',
+      endsAt: '2026-11-08T10:30:00+00:00',
+    }).expect(400);
+    expect(sunday.body.code).toBe('OUTSIDE_HOURS');
+    await book({ startsAt: at('07:30'), endsAt: at('08:00') }).expect(400);
+    await book({ startsAt: at('17:45'), endsAt: at('18:15') }).expect(400);
+    // "Réserver quand même" doesn't get around it.
+    await book({
+      startsAt: at('19:00'),
+      endsAt: at('19:30'),
+      allowOverlap: true,
+    }).expect(400);
+
+    const { body: late } = await book({
+      startsAt: at('17:30'),
+      endsAt: at('18:00'),
+    }).expect(201);
+    const move = (startsAt: string, endsAt: string, reason?: string) =>
+      cab().put(`/appointments/${late.id}`).send({
+        patientId,
+        practitionerId: doctorId,
+        startsAt,
+        endsAt,
+        reason,
+      });
+    await move(at('18:30'), at('19:00')).expect(400);
+
+    // Booked before the hours changed: it can still be edited, not moved.
+    const { body: me } = await cab().get('/auth/me').expect(200);
+    await cab()
+      .put(`/spaces/${me.spaces.current.id}/hours`)
+      .send({ openingHours: { 1: [{ from: '08:00', to: '12:00' }] } })
+      .expect(200);
+    await move(at('17:30'), at('18:00'), 'Contrôle').expect(200);
+    await move(at('17:45'), at('18:15')).expect(400);
+    await cab()
+      .post(`/appointments/${late.id}/status`)
+      .send({ status: 'cancelled' });
+    await openEveryDay(clinic, 'agenda-atlas', doctor);
+  });
+
+  it('feeds the dashboard from the agenda, per space and for all spaces', async () => {
+    const { body: before } = await cab().get('/dashboard').expect(200);
+    expect(before.scope).toBe('space');
+    expect(before.week).toHaveLength(6);
+    // Noon, Moroccan time, is safely inside today.
+    const today = await bookToday(clinic, 'agenda-atlas', doctor, tenant, {
+      patientId,
+      practitionerId: doctorId,
+      from: '12:00',
+      to: '12:20',
+      allowOverlap: true,
+    });
+
+    const { body: after } = await cab().get('/dashboard').expect(200);
+    expect(after.kpis.appointmentsToday).toBe(
+      before.kpis.appointmentsToday + 1,
+    );
+    expect(after.kpis.upcomingToday).toBe(before.kpis.upcomingToday + 1);
+    const listed = after.appointments.find(
+      (a: { id: string }) => a.id === today.id,
+    );
+    // "Nouveau" on the dashboard: no completed visit before this one
+    // (depends on today's date versus this suite's fixed November dates).
+    expect(listed).toMatchObject({
+      status: 'scheduled',
+      firstVisit: expect.any(Boolean),
+    });
+
+    await cab()
+      .post(`/appointments/${today.id}/status`)
+      .send({ status: 'completed' })
+      .expect(200);
+    const { body: seen } = await cab().get('/dashboard').expect(200);
+    expect(seen.kpis.seenToday).toBe(before.kpis.seenToday + 1);
+    expect(seen.kpis.upcomingToday).toBe(before.kpis.upcomingToday);
+
+    const { body: all } = await cab().get('/dashboard?scope=all').expect(200);
+    expect(all.scope).toBe('all');
+    expect(all.appointments).toBeNull();
+    expect(all.bySpace.map((s: { name: string }) => s.name)).toEqual([
+      'Espace principal',
+      'Marrakech',
+    ]);
+    expect(all.kpis.appointmentsToday).toBeGreaterThanOrEqual(
+      seen.kpis.appointmentsToday,
+    );
+  });
+
+  it('closes past visits: Confirmé becomes Absent, Planifié becomes Annulé', async () => {
+    const { body: planned } = await book({
+      startsAt: at('17:00'),
+      endsAt: at('17:30'),
+    }).expect(201);
+    const { body: confirmed } = await book({
+      startsAt: at('17:30'),
+      endsAt: at('18:00'),
+    }).expect(201);
+    await cab()
+      .post(`/appointments/${confirmed.id}/status`)
+      .send({ status: 'confirmed' })
+      .expect(200);
+    const upcoming = await bookToday(clinic, 'agenda-atlas', doctor, tenant, {
+      patientId,
+      practitionerId: doctorId,
+      // Noon, Moroccan time, is safely inside today.
+      from: '12:30',
+      to: '12:50',
+      allowOverlap: true,
+    });
+
+    expect(await markMissedVisits(tenant)).toBeGreaterThanOrEqual(2);
+    const statuses = new Map((await day(true)).map((a) => [a.id, a.status]));
+    expect(statuses.get(planned.id)).toBe('cancelled');
+    expect(statuses.get(confirmed.id)).toBe('no_show');
+    // Visits that happened keep their status; today's are not over yet.
+    expect(statuses.get(firstId)).toBe('completed');
+    const { body: todays } = await cab()
+      .get('/appointments')
+      .query({
+        from: new Date(Date.now() - 86_400_000).toISOString(),
+        to: new Date(Date.now() + 2 * 86_400_000).toISOString(),
+      })
+      .expect(200);
+    expect(
+      (todays as { id: string; status: string }[]).find(
+        (a) => a.id === upcoming.id,
+      )?.status,
+    ).toBe('scheduled');
+    // Nothing left to mark: a second run changes nothing.
+    expect(await markMissedVisits(tenant)).toBe(0);
+  });
+});

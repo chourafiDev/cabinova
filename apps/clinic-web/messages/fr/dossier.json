@@ -1,0 +1,269 @@
+{
+  "title": "Dossier patient",
+  "notFound": "Ce dossier est introuvable dans cet espace.",
+  "back": "Salle d’attente",
+  "walkIn": "Sans rendez-vous",
+  "appointmentAt": "RDV {time}",
+  "allergies": "Allergies :",
+  "consultation": "Consultation",
+  "visitError": "Impossible de charger cette visite.",
+  "noVisit": "Aucune consultation en cours",
+  "noVisitHint": "Ouvrez le dossier depuis la salle d’attente pour commencer la consultation d’un patient. Son historique reste consultable à droite.",
+  "toWaitingRoom": "Aller à la salle d’attente",
+  "finish": "Terminer la consultation",
+  "finished": "Consultation de {patient} terminée",
+  "finishError": "Impossible de terminer la consultation.",
+  "save": {
+    "saving": "Enregistrement…",
+    "saved": "Enregistré à {time}",
+    "error": "Non enregistré : vérifiez les valeurs"
+  },
+  "sections": {
+    "complaint": "Motif et histoire",
+    "vitals": "Constantes",
+    "examination": "Examen clinique",
+    "diagnosis": "Diagnostic",
+    "plan": "Conduite à tenir",
+    "nextVisit": "Pour la prochaine visite"
+  },
+  "fields": {
+    "complaint": "Motif de consultation",
+    "history": "Histoire de la maladie",
+    "examination": "Examen clinique",
+    "diagnosis": "Diagnostic",
+    "plan": "Conduite à tenir"
+  },
+  "placeholders": {
+    "complaint": "Pourquoi le patient consulte-t-il aujourd’hui ?",
+    "complaintWithAct": "Pourquoi le patient consulte-t-il ? (acte prévu : {act})",
+    "history": "Début, évolution, signes associés, traitements déjà pris…",
+    "examination": "Examen général et par appareil…",
+    "diagnosis": "Diagnostic retenu ou hypothèses",
+    "plan": "Traitement, examens demandés, conseils, prochain contrôle…",
+    "nextVisitNote": "Ex. : contrôler la TA, revoir le bilan lipidique…"
+  },
+  "vitals": {
+    "checkRed": "Vérifiez les valeurs en rouge",
+    "bloodPressure": "Tension artérielle",
+    "heartRate": "Pouls",
+    "temperature": "Température",
+    "spo2": "SpO₂",
+    "weight": "Poids",
+    "height": "Taille",
+    "bmi": "IMC",
+    "glycemia": "À jeun",
+    "reuse": "Reprendre {value}",
+    "last": "Dernier : {value} ({date})",
+    "bmiCategory": {
+      "under": "Maigreur",
+      "normal": "Normal",
+      "over": "Surpoids",
+      "obese": "Obésité"
+    },
+    "glycemiaPostprandial": "Post-prandiale",
+    "hba1c": "HbA1c",
+    "systolic": "Systolique",
+    "diastolic": "Diastolique",
+    "groups": {
+      "general": "Générales",
+      "cardio": "Cardio-vasculaire",
+      "glycemia": "Glycémie"
+    }
+  },
+  "aside": {
+    "medical": "Antécédents",
+    "contact": "Patient",
+    "adminFile": "Fiche administrative",
+    "civility": {
+      "male": "M.",
+      "female": "Mme"
+    },
+    "exactAge": "{years, plural, =0 {} one {# an } other {# ans }}{months, plural, =0 {} other {# mois }}{days, plural, =0 {} one {# jour} other {# jours}}",
+    "coverage": "Mutuelle",
+    "phone": "GSM",
+    "email": "E-mail",
+    "cin": "CIN",
+    "address": "Adresse",
+    "emergency": "À prévenir"
+  },
+  "history": {
+    "title": "Consultations précédentes",
+    "empty": "Première consultation : aucun historique pour l’instant.",
+    "noDiagnosis": "Sans diagnostic noté",
+    "prescription": "Ordonnance",
+    "reprint": "Réimprimer"
+  },
+  "nextVisitHint": "Rappel affiché en haut du dossier à la prochaine consultation.",
+  "timerTitle": "Durée de la consultation",
+  "justStarted": "À l’instant",
+  "phrases": {
+    "button": "Modèles",
+    "empty": "Aucun modèle pour ce champ. Enregistrez les phrases que vous écrivez souvent.",
+    "remove": "Supprimer",
+    "newPlaceholder": "Nouveau modèle…",
+    "add": "Ajouter",
+    "saveCurrent": "Enregistrer le texte du champ comme modèle",
+    "saved": "Modèle enregistré",
+    "saveError": "Enregistrement impossible."
+  },
+  "notes": {
+    "reminder": "À revoir aujourd’hui (note du {date})",
+    "permanent": "Note permanente",
+    "permanentPlaceholder": "Ce que tout médecin doit savoir à chaque visite (ex. : malentendant, parler fort)",
+    "edit": "Modifier",
+    "add": "Ajouter une note permanente",
+    "cancel": "Annuler",
+    "save": "Enregistrer",
+    "saveError": "Enregistrement impossible."
+  },
+  "trends": {
+    "title": "Évolution",
+    "empty": "Les courbes apparaissent dès qu’une mesure est prise à deux consultations.",
+    "measures": {
+      "weight": "Poids",
+      "pressure": "TA",
+      "glycemia": "Glycémie",
+      "hba1c": "HbA1c"
+    },
+    "unit": "En {unit}"
+  },
+  "tabs": {
+    "prescription": "Ordonnance",
+    "interrogatoire": "Interrogatoire et examen",
+    "certificat": "Certificat",
+    "prix": "Prix consultation",
+    "bilan": "Bilan biologique",
+    "compteRendu": "Compte rendu",
+    "historique": "Historique"
+  },
+  "prescription": {
+    "title": "Ordonnance",
+    "print": "Imprimer",
+    "renew": "Renouveler celle du {date}",
+    "renewed": "{count, plural, one {# médicament repris} other {# médicaments repris}} de l’ordonnance du {date}.",
+    "saveFirst": "L’ordonnance n’a pas pu être enregistrée : réessayez avant d’imprimer.",
+    "add": "Ajouter un médicament",
+    "remove": "Retirer ce médicament",
+    "medication": "Médicament",
+    "posology": "Posologie",
+    "duration": "Durée",
+    "notes": "Conseils (imprimés sous les médicaments)",
+    "placeholders": {
+      "medication": "Médicament, dosage et forme : Amlodipine 5 mg, comprimé",
+      "posology": "Posologie : 1 comprimé le matin",
+      "duration": "Durée : 3 mois",
+      "notes": "À prendre au cours des repas, revoir dans 1 mois avec le bilan…"
+    }
+  },
+  "latest": {
+    "title": "Dernières constantes",
+    "history": "Historique",
+    "empty": "Aucune constante prise pour l’instant.",
+    "sheetTitle": "Historique des constantes",
+    "sheetDescription": "{count, plural, one {# mesure} other {# mesures}}, prises par l’équipe ou en consultation.",
+    "source": {
+      "staff": "Équipe",
+      "visit": "Consultation"
+    },
+    "unusual": "Valeur inhabituelle",
+    "takenOn": "Mesuré le {date}",
+    "first": "Première mesure",
+    "stable": "Stable",
+    "change": "{value} vs avant",
+    "normal": "Normale",
+    "bp": {
+      "Right": "TA bras droit",
+      "Left": "TA bras gauche"
+    },
+    "watch": "À surveiller",
+    "historyCount": "Historique ({count})"
+  },
+  "planned": {
+    "title": "Bientôt disponible",
+    "bilan": "Analyses biologiques demandées",
+    "compteRendu": "Compte rendu de la consultation"
+  },
+  "certificate": {
+    "title": "Certificat médical",
+    "kind": {
+      "day": "Certificat d’un jour",
+      "period": "Certificat d’une période"
+    },
+    "date": "Date",
+    "days": "Nb jours",
+    "from": "Du",
+    "to": "Au (inclus)",
+    "models": "Modèles :",
+    "builtIn": {
+      "rest": "Repos (période)",
+      "medical": "Certificat médical (jour)"
+    },
+    "manageModels": "Gérer mes modèles",
+    "reapply": "Réappliquer le modèle (le texte suivra de nouveau les dates)",
+    "final": "Un certificat enregistré ne se modifie plus : en cas d’erreur, annulez-le et refaites-le.",
+    "saveAndPrint": "Enregistrer et imprimer",
+    "saved": "Certificat enregistré",
+    "saveError": "Enregistrement impossible.",
+    "datesError": "La fin de la période doit suivre son début.",
+    "history": "Historique des certificats",
+    "empty": "Aucun certificat pour ce patient.",
+    "periodSummary": "Repos de {days, plural, one {# jour} other {# jours}} · du {from} au {to}",
+    "daySummary": "Certificat du {date}",
+    "givenOn": "Délivré le {date} par {by}",
+    "cancelledOn": "annulé le {date} par {by}",
+    "cancelled": "Annulé",
+    "print": "Imprimer",
+    "cancel": "Annuler",
+    "confirmCancel": "Annuler le certificat ?",
+    "cancelDone": "Certificat annulé",
+    "modelsSheet": {
+      "title": "Mes modèles de certificat",
+      "description": "Écrits une fois, ils se remplissent avec le patient et les dates. Seul vous les voyez.",
+      "new": "Nouveau modèle",
+      "empty": "Aucun modèle : les modèles Cabinova restent disponibles.",
+      "name": "Nom du modèle",
+      "namePlaceholder": "Ex. Arrêt de travail, Aptitude au sport",
+      "text": "Texte",
+      "blanks": "Blancs remplis automatiquement :",
+      "nameError": "Nom du modèle : 2 caractères minimum.",
+      "saved": "Modèle enregistré",
+      "error": "Opération impossible.",
+      "cancel": "Annuler",
+      "save": "Enregistrer",
+      "edit": "Modifier {name}",
+      "delete": "Supprimer {name}",
+      "confirmDelete": "Supprimer ?",
+      "deleted": "« {name} » supprimé"
+    },
+    "finder": {
+      "label": "Rechercher un certificat",
+      "placeholder": "Quel certificat ? Ex. sport, non-contagion, mariage, permis…",
+      "mine": "Mon modèle",
+      "day": "Un jour",
+      "period": "Période",
+      "custom": "Rédiger « {name} » (texte à compléter)"
+    }
+  },
+  "backToPatients": "Liste des patients",
+  "payments": {
+    "title": "Historique des paiements",
+    "empty": "Aucun paiement",
+    "emptyHint": "Les actes enregistrés et les paiements reçus par l’accueil apparaîtront ici, avec leurs reçus.",
+    "receipt": "Reçu",
+    "nothingPaid": "Rien encaissé pour cette visite.",
+    "loadError": "Impossible de charger les paiements."
+  },
+  "prescriptions": {
+    "title": "Historique des ordonnances",
+    "empty": "Aucune ordonnance",
+    "emptyHint": "Les ordonnances rédigées pendant les consultations apparaîtront ici, prêtes à être réimprimées.",
+    "reprint": "Réimprimer"
+  },
+  "leave": {
+    "title": "Retourner à la salle d’attente ?",
+    "unfinished": "La consultation de {patient} n’est pas terminée : elle reste « En consultation » et vous pourrez la reprendre depuis la salle d’attente. Vos notes et l’ordonnance sont enregistrées.",
+    "saved": "Vos notes et l’ordonnance sont enregistrées.",
+    "stay": "Rester dans le dossier",
+    "confirm": "Aller à la salle d’attente"
+  }
+}

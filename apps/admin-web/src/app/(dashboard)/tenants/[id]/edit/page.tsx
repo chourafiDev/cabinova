@@ -1,6 +1,6 @@
-import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { IconArrowLeft } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import { can } from "@/lib/permissions";
 import { apiGet } from "@/lib/server-api";
@@ -23,7 +23,7 @@ export default async function EditTenantPage({ params }: PageProps<"/tenants/[id
 			<div className="mb-4 flex items-center gap-3 border-b border-dashed border-foreground/20 pb-4">
 				<Button asChild variant="outline" size="icon-sm" aria-label="Retour au cabinet">
 					<Link href={`/tenants/${id}`}>
-						<ArrowLeft className="size-4" />
+						<IconArrowLeft className="size-4" />
 					</Link>
 				</Button>
 				<h1 className="font-semibold">Modifier {tenant.name}</h1>

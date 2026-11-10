@@ -1,18 +1,43 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import {
+  addressOf,
+  bankDetails,
+  button,
+  escapeHtml,
+  layout,
+  longDate,
+  type MailLocale,
+  money,
+  quoteEmail,
+} from '@cabinova/mail';
 import { Resend } from 'resend';
 import type { Env } from '../config/env.js';
+import { PlatformConfigService } from '../settings/platform-config.service.js';
+
+/** `tenants.locale`: the responsible doctor's language. */
+export const mailLocale = (locale: string): MailLocale =>
+  locale === 'ar' ? 'ar' : 'fr';
 
 @Injectable()
 export class EmailService {
   private readonly logger = new Logger(EmailService.name);
   private readonly resend: Resend | null;
   private readonly from: string;
+  private readonly publicOrigin: string;
+  /** Development without Resend: unsent e-mails' links go to the log. */
+  private readonly logLinks: boolean;
 
-  constructor(config: ConfigService<Env, true>) {
+  constructor(
+    config: ConfigService<Env, true>,
+    private readonly platform: PlatformConfigService,
+  ) {
     const apiKey = config.get('RESEND_API_KEY');
     this.resend = apiKey ? new Resend(apiKey) : null;
     this.from = config.get('EMAIL_FROM');
+    // Absolute links (logo) point at the admin app, which proxies /api.
+    this.publicOrigin = config.get('WEB_ORIGIN').split(',')[0].trim();
+    this.logLinks = config.get('NODE_ENV') === 'development';
     if (!this.resend) {
       this.logger.warn(
         'RESEND_API_KEY is not set: emails are logged instead of sent.',
@@ -26,17 +51,33 @@ export class EmailService {
     name: string;
     tenantName: string;
     url: string;
+    locale: MailLocale;
   }) {
+    if (to.locale === 'ar') {
+      await this.send({
+        to: to.email,
+        locale: 'ar',
+        subject: `دعوة للانضمام إلى ${to.tenantName} على {{PLATFORM}}`,
+        body: `
+          <p>مرحبًا ${escapeHtml(to.name)}،</p>
+          <p>تمت إضافتك إلى فريق <strong>${escapeHtml(to.tenantName)}</strong> على {{PLATFORM}}.</p>
+          <p>اختر كلمة المرور للوصول إلى فضائك:</p>
+          ${button(to.url, 'اختيار كلمة المرور')}
+          <p style="color:#6b7280;font-size:12px">هذا الرابط صالح لمدة 7 أيام ولمرة واحدة فقط.</p>
+        `,
+      });
+      return;
+    }
     await this.send({
       to: to.email,
-      subject: `Vous êtes invité(e) à rejoindre ${to.tenantName} sur Cabinova`,
-      html: layout(`
+      subject: `Vous êtes invité(e) à rejoindre ${to.tenantName} sur {{PLATFORM}}`,
+      body: `
         <p>Bonjour ${escapeHtml(to.name)},</p>
-        <p>Vous avez été ajouté(e) à l'équipe de <strong>${escapeHtml(to.tenantName)}</strong> sur Cabinova.</p>
+        <p>Vous avez été ajouté(e) à l'équipe de <strong>${escapeHtml(to.tenantName)}</strong> sur {{PLATFORM}}.</p>
         <p>Choisissez votre mot de passe pour accéder à votre espace :</p>
         ${button(to.url, 'Choisir mon mot de passe')}
         <p style="color:#6b7280;font-size:12px">Ce lien est valable 7 jours et ne peut servir qu'une seule fois.</p>
-      `),
+      `,
     });
   }
 
@@ -50,12 +91,12 @@ export class EmailService {
     await this.send({
       to: to.email,
       subject: `Réinitialisation de votre mot de passe — ${to.tenantName}`,
-      html: layout(`
+      body: `
         <p>Bonjour ${escapeHtml(to.name)},</p>
         <p>Un nouveau lien pour choisir votre mot de passe sur <strong>${escapeHtml(to.tenantName)}</strong> a été généré.</p>
         ${button(to.url, 'Choisir un nouveau mot de passe')}
         <p style="color:#6b7280;font-size:12px">Ce lien est valable 7 jours et ne peut servir qu'une seule fois. Les liens précédents ne fonctionnent plus. Si vous n'êtes pas à l'origine de cette demande, contactez l'administrateur de votre clinique.</p>
-      `),
+      `,
     });
   }
 
@@ -69,18 +110,18 @@ export class EmailService {
     await this.send({
       to: to.email,
       subject: to.isReset
-        ? 'Nouveau mot de passe — administration Cabinova'
-        : 'Votre accès à l’administration Cabinova',
-      html: layout(`
+        ? 'Nouveau mot de passe — administration {{PLATFORM}}'
+        : 'Votre accès à l’administration {{PLATFORM}}',
+      body: `
         <p>Bonjour ${escapeHtml(to.name)},</p>
         <p>${
           to.isReset
-            ? 'Un lien pour choisir un nouveau mot de passe sur l’administration Cabinova a été généré.'
-            : 'Un accès à l’administration de la plateforme Cabinova a été créé pour vous.'
+            ? 'Un lien pour choisir un nouveau mot de passe sur l’administration {{PLATFORM}} a été généré.'
+            : 'Un accès à l’administration de la plateforme {{PLATFORM}} a été créé pour vous.'
         }</p>
         ${button(to.url, 'Choisir mon mot de passe')}
         <p style="color:#6b7280;font-size:12px">Ce lien est valable 7 jours et ne peut servir qu'une seule fois. Si vous n'attendiez pas ce message, ignorez-le.</p>
-      `),
+      `,
     });
   }
 
@@ -93,7 +134,11 @@ export class EmailService {
     email: string;
     name: string;
     tenantName: string;
-    kind: 'invoice' | 'overdue' | 'receipt';
+    locale: MailLocale;
+    kind:
+      'invoice' | 'overdue' | 'receipt' | 'suspension_warning' | 'suspended';
+    /** suspension_warning: the day access will be cut. */
+    suspendOn?: Date;
     invoice: {
       number: string;
       description: string;
@@ -108,41 +153,194 @@ export class EmailService {
       swift?: string;
     } | null;
   }) {
-    const amount = new Intl.NumberFormat('fr-MA', {
-      style: 'currency',
-      currency: 'MAD',
-    }).format(to.invoice.amount / 100);
-    const due = new Intl.DateTimeFormat('fr-MA', { dateStyle: 'long' }).format(
-      to.invoice.dueAt,
-    );
-    const rib = to.bank
-      ? `<table role="presentation" style="width:100%;margin:12px 0;border:1px solid #e5e7eb;border-radius:8px;font-size:13px">
-          <tr><td style="padding:8px 12px;color:#6b7280">Titulaire</td><td style="padding:8px 12px">${escapeHtml(to.bank.accountHolder)}</td></tr>
-          <tr><td style="padding:8px 12px;color:#6b7280">Banque</td><td style="padding:8px 12px">${escapeHtml(to.bank.bankName)}</td></tr>
-          <tr><td style="padding:8px 12px;color:#6b7280">RIB</td><td style="padding:8px 12px;font-family:monospace">${escapeHtml(to.bank.rib.replace(/(\d{3})(\d{3})(\d{16})(\d{2})/, '$1 $2 $3 $4'))}</td></tr>
-          ${to.bank.swift ? `<tr><td style="padding:8px 12px;color:#6b7280">SWIFT</td><td style="padding:8px 12px">${escapeHtml(to.bank.swift)}</td></tr>` : ''}
-          <tr><td style="padding:8px 12px;color:#6b7280">Référence</td><td style="padding:8px 12px;font-weight:600">${escapeHtml(to.invoice.number)}</td></tr>
-        </table>`
-      : '<p>Les coordonnées bancaires vous seront communiquées par le support Cabinova.</p>';
+    const amount = money(to.invoice.amount, to.locale);
+    const due = longDate(to.invoice.dueAt, to.locale);
+    const suspendOn = to.suspendOn ? longDate(to.suspendOn, to.locale) : '';
+    const number = escapeHtml(to.invoice.number);
+    const description = escapeHtml(to.invoice.description);
+    const rib = bankDetails(to.bank, to.invoice.number, to.locale);
+    if (to.locale === 'ar') {
+      const intro = {
+        invoice: `فاتورتك <strong>${number}</strong> بمبلغ <strong>${amount}</strong> متاحة (${description}). يرجى أداؤها عبر تحويل بنكي قبل <strong>${due}</strong>، مع ذكر المرجع أدناه.`,
+        overdue: `ما لم نكن مخطئين، لم يتم بعد أداء الفاتورة <strong>${number}</strong> بمبلغ <strong>${amount}</strong>، المستحقة بتاريخ ${due}. يرجى إجراء التحويل في أقرب وقت.`,
+        receipt: `توصلنا بتحويلك الخاص بالفاتورة <strong>${number}</strong> (${amount}). شكرًا! اشتراكك محيّن.`,
+        suspension_warning: `لم يتم بعد أداء الفاتورة <strong>${number}</strong> بمبلغ <strong>${amount}</strong>، المستحقة بتاريخ ${due}. بدون تحويل، سيتم تعليق الوصول إلى فضائك بتاريخ <strong>${suspendOn}</strong>. تبقى بياناتك محفوظة.`,
+        suspended: `بسبب عدم أداء الفاتورة <strong>${number}</strong> (${amount})، تم تعليق الوصول إلى فضائك. بياناتك محفوظة: يُعاد الوصول تلقائيًا فور توصلنا بتحويلك.`,
+      }[to.kind];
+      const subject = {
+        invoice: `الفاتورة ${to.invoice.number} — ${to.tenantName}`,
+        overdue: `تذكير: الفاتورة ${to.invoice.number} في انتظار الأداء`,
+        receipt: `تم استلام الأداء — الفاتورة ${to.invoice.number}`,
+        suspension_warning: `تذكير أخير: الفاتورة ${to.invoice.number} قبل التعليق`,
+        suspended: `تم تعليق الوصول — الفاتورة ${to.invoice.number} غير مؤداة`,
+      }[to.kind];
+      await this.send({
+        to: to.email,
+        locale: 'ar',
+        subject,
+        body: `
+          <p>مرحبًا ${escapeHtml(to.name)}،</p>
+          <p>${intro}</p>
+          ${to.kind === 'receipt' ? '' : rib}
+          <p style="color:#6b7280;font-size:12px">العيادة: ${escapeHtml(to.tenantName)}. لأي سؤال، أجب على هذه الرسالة.</p>
+        `,
+      });
+      return;
+    }
     const intro = {
       invoice: `Votre facture <strong>${escapeHtml(to.invoice.number)}</strong> de <strong>${amount}</strong> est disponible (${escapeHtml(to.invoice.description)}). Merci de la régler par virement avant le <strong>${due}</strong>, en indiquant la référence ci-dessous.`,
       overdue: `Sauf erreur de notre part, la facture <strong>${escapeHtml(to.invoice.number)}</strong> de <strong>${amount}</strong>, échue le ${due}, n'a pas encore été réglée. Merci d'effectuer le virement dès que possible.`,
       receipt: `Nous avons bien reçu votre virement pour la facture <strong>${escapeHtml(to.invoice.number)}</strong> (${amount}). Merci ! Votre abonnement est à jour.`,
+      suspension_warning: `La facture <strong>${escapeHtml(to.invoice.number)}</strong> de <strong>${amount}</strong>, échue le ${due}, n'est toujours pas réglée. Sans virement d'ici là, l'accès à votre espace sera suspendu le <strong>${suspendOn}</strong>. Vos données restent conservées.`,
+      suspended: `Faute de paiement de la facture <strong>${escapeHtml(to.invoice.number)}</strong> (${amount}), l'accès à votre espace est suspendu. Vos données sont conservées : dès réception de votre virement, l'accès est rétabli automatiquement.`,
     }[to.kind];
     const subject = {
       invoice: `Facture ${to.invoice.number} — ${to.tenantName}`,
       overdue: `Rappel : facture ${to.invoice.number} en attente de paiement`,
       receipt: `Paiement reçu — facture ${to.invoice.number}`,
+      suspension_warning: `Dernier rappel : facture ${to.invoice.number} avant suspension`,
+      suspended: `Accès suspendu — facture ${to.invoice.number} impayée`,
     }[to.kind];
     await this.send({
       to: to.email,
       subject,
-      html: layout(`
+      body: `
         <p>Bonjour ${escapeHtml(to.name)},</p>
         <p>${intro}</p>
         ${to.kind === 'receipt' ? '' : rib}
         <p style="color:#6b7280;font-size:12px">Cabinet : ${escapeHtml(to.tenantName)}. Pour toute question, répondez à ce message.</p>
-      `),
+      `,
+    });
+  }
+
+  /** A devis to pay by transfer, or a reminder about one. */
+  async sendQuote(to: Parameters<typeof quoteEmail>[0] & { email: string }) {
+    await this.send({ to: to.email, locale: to.locale, ...quoteEmail(to) });
+  }
+
+  /** The payment was confirmed: the facture, and the plan is running. */
+  async sendSubscriptionStarted(to: {
+    email: string;
+    name: string;
+    tenantName: string;
+    planName: string;
+    invoice: { number: string; amount: number };
+    url: string;
+    locale: MailLocale;
+  }) {
+    const amount = money(to.invoice.amount, to.locale);
+    if (to.locale === 'ar') {
+      await this.send({
+        to: to.email,
+        locale: 'ar',
+        subject: `الفاتورة ${to.invoice.number} — اشتراكك ${to.planName} نشط`,
+        body: `
+          <p>مرحبًا ${escapeHtml(to.name)}،</p>
+          <p>توصلنا بأدائك بمبلغ <strong>${amount}</strong>. شكرًا!</p>
+          <p>اشتراكك <strong>${escapeHtml(to.planName)}</strong> نشط. فاتورتك <strong>${escapeHtml(to.invoice.number)}</strong> متاحة في فضائك.</p>
+          ${button(to.url, 'عرض الفاتورة')}
+          <p style="color:#6b7280;font-size:12px">العيادة: ${escapeHtml(to.tenantName)}. لأي سؤال، أجب على هذه الرسالة.</p>
+        `,
+      });
+      return;
+    }
+    await this.send({
+      to: to.email,
+      subject: `Facture ${to.invoice.number} — votre abonnement ${to.planName} est actif`,
+      body: `
+        <p>Bonjour ${escapeHtml(to.name)},</p>
+        <p>Nous avons bien reçu votre paiement de <strong>${amount}</strong>. Merci !</p>
+        <p>Votre abonnement <strong>${escapeHtml(to.planName)}</strong> est actif. Votre facture <strong>${escapeHtml(to.invoice.number)}</strong> est disponible dans votre espace.</p>
+        ${button(to.url, 'Voir la facture')}
+        <p style="color:#6b7280;font-size:12px">Cabinet : ${escapeHtml(to.tenantName)}. Pour toute question, répondez à ce message.</p>
+      `,
+    });
+  }
+
+  /** "Your trial ends on …": what happens next and how to pay. */
+  async sendTrialEnding(to: {
+    email: string;
+    name: string;
+    tenantName: string;
+    planName: string;
+    endsAt: Date;
+    /** Centimes per period, after discount. */
+    amount: number;
+    period: 'monthly' | 'annual';
+    locale: MailLocale;
+  }) {
+    const amount = money(to.amount, to.locale);
+    const endsOn = longDate(to.endsAt, to.locale);
+    if (to.locale === 'ar') {
+      await this.send({
+        to: to.email,
+        locale: 'ar',
+        subject: `تنتهي فترتك التجريبية على {{PLATFORM}} بتاريخ ${endsOn}`,
+        body: `
+          <p>مرحبًا ${escapeHtml(to.name)}،</p>
+          <p>تنتهي الفترة التجريبية لـ <strong>${escapeHtml(to.tenantName)}</strong> بتاريخ <strong>${endsOn}</strong>.</p>
+          <p>سيستمر بعدها اشتراكك <strong>${escapeHtml(to.planName)}</strong> بمبلغ <strong>${amount}</strong> في ${to.period === 'annual' ? 'السنة' : 'الشهر'}. إذا لم تطلب عرض السعر بعد، ستتوصل به في هذا التاريخ مع معلوماتنا البنكية للتحويل.</p>
+          <p>لاختيار باقة أخرى، افتح «اشتراكي» في فضائك. لأي سؤال، أجب ببساطة على هذه الرسالة.</p>
+        `,
+      });
+      return;
+    }
+    await this.send({
+      to: to.email,
+      subject: `Votre essai {{PLATFORM}} se termine le ${endsOn}`,
+      body: `
+        <p>Bonjour ${escapeHtml(to.name)},</p>
+        <p>La période d'essai de <strong>${escapeHtml(to.tenantName)}</strong> se termine le <strong>${endsOn}</strong>.</p>
+        <p>Votre abonnement <strong>${escapeHtml(to.planName)}</strong> continuera ensuite à <strong>${amount}</strong> par ${to.period === 'annual' ? 'an' : 'mois'}. Si vous n'avez pas encore demandé votre devis, vous le recevrez à cette date avec nos coordonnées bancaires pour le virement.</p>
+        <p>Pour choisir une autre offre, ouvrez « Mon abonnement » dans votre espace. Pour toute question, répondez simplement à ce message.</p>
+      `,
+    });
+  }
+
+  /** Avoir issued on a paid invoice: refunded, or credited on the next invoices. */
+  async sendCreditNote(to: {
+    email: string;
+    name: string;
+    tenantName: string;
+    number: string;
+    invoiceNumber: string;
+    kind: 'refund' | 'credit';
+    amount: number;
+    reason: string;
+    locale: MailLocale;
+  }) {
+    const amount = money(to.amount, to.locale);
+    if (to.locale === 'ar') {
+      await this.send({
+        to: to.email,
+        locale: 'ar',
+        subject: `إشعار دائن ${to.number} — الفاتورة ${to.invoiceNumber}`,
+        body: `
+          <p>مرحبًا ${escapeHtml(to.name)}،</p>
+          <p>أصدرنا الإشعار الدائن <strong>${escapeHtml(to.number)}</strong> بمبلغ <strong>${amount}</strong> على الفاتورة ${escapeHtml(to.invoiceNumber)} (${escapeHtml(to.reason)}).</p>
+          <p>${
+            to.kind === 'refund'
+              ? 'تم رد هذا المبلغ إليك عبر تحويل بنكي.'
+              : 'سيُخصم هذا المبلغ تلقائيًا من فواتيرك القادمة.'
+          }</p>
+          <p style="color:#6b7280;font-size:12px">العيادة: ${escapeHtml(to.tenantName)}. لأي سؤال، أجب على هذه الرسالة.</p>
+        `,
+      });
+      return;
+    }
+    await this.send({
+      to: to.email,
+      subject: `Avoir ${to.number} — facture ${to.invoiceNumber}`,
+      body: `
+        <p>Bonjour ${escapeHtml(to.name)},</p>
+        <p>Nous avons émis l'avoir <strong>${escapeHtml(to.number)}</strong> de <strong>${amount}</strong> sur la facture ${escapeHtml(to.invoiceNumber)} (${escapeHtml(to.reason)}).</p>
+        <p>${
+          to.kind === 'refund'
+            ? 'Ce montant vous a été remboursé par virement.'
+            : 'Ce montant sera déduit automatiquement de vos prochaines factures.'
+        }</p>
+        <p style="color:#6b7280;font-size:12px">Cabinet : ${escapeHtml(to.tenantName)}. Pour toute question, répondez à ce message.</p>
+      `,
     });
   }
 
@@ -153,72 +351,176 @@ export class EmailService {
     tenantName: string;
     /** e.g. "suspendu", "réactivé" */
     outcome: string;
+    /** The same, for an Arabic reader. */
+    outcomeAr: string;
     /** Set when the change is scheduled rather than already applied. */
     effectiveOn?: string;
     comment: string;
+    locale: MailLocale;
   }) {
+    if (to.locale === 'ar') {
+      const status = escapeHtml(to.outcomeAr);
+      await this.send({
+        to: to.email,
+        locale: 'ar',
+        subject: `عيادتكم ${to.tenantName}: ${to.outcomeAr}`,
+        body: `
+          <p>مرحبًا ${escapeHtml(to.name)}،</p>
+          <p>حالة عيادتكم <strong>${escapeHtml(to.tenantName)}</strong> على {{PLATFORM}}: ${status}${to.effectiveOn ? ` ابتداءً من ${escapeHtml(to.effectiveOn)}` : ''}.</p>
+          <p style="white-space:pre-line;border-inline-start:3px solid #e5e7eb;padding-inline-start:12px;color:#374151">${escapeHtml(to.comment)}</p>
+          <p style="color:#6b7280;font-size:12px">بيانات عيادتكم محفوظة. لأي سؤال، أجب على هذه الرسالة أو اتصل بدعم {{PLATFORM}}.</p>
+        `,
+      });
+      return;
+    }
     const when = to.effectiveOn
       ? `sera ${escapeHtml(to.outcome)} à compter du ${escapeHtml(to.effectiveOn)}`
       : `a été ${escapeHtml(to.outcome)}`;
     await this.send({
       to: to.email,
       subject: `Votre cabinet ${to.tenantName} ${to.effectiveOn ? `sera ${to.outcome}` : `a été ${to.outcome}`}`,
-      html: layout(`
+      body: `
         <p>Bonjour ${escapeHtml(to.name)},</p>
-        <p>Votre cabinet <strong>${escapeHtml(to.tenantName)}</strong> ${when} sur Cabinova.</p>
+        <p>Votre cabinet <strong>${escapeHtml(to.tenantName)}</strong> ${when} sur {{PLATFORM}}.</p>
         <p style="white-space:pre-line;border-inline-start:3px solid #e5e7eb;padding-inline-start:12px;color:#374151">${escapeHtml(to.comment)}</p>
-        <p style="color:#6b7280;font-size:12px">Les données de votre cabinet sont conservées. Pour toute question, répondez à ce message ou contactez le support Cabinova.</p>
-      `),
+        <p style="color:#6b7280;font-size:12px">Les données de votre cabinet sont conservées. Pour toute question, répondez à ce message ou contactez le support {{PLATFORM}}.</p>
+      `,
     });
   }
 
-  private async send(message: { to: string; subject: string; html: string }) {
+  /**
+   * Support (Module "Support et assistance"): an acknowledgement when a
+   * ticket is opened, or an agent's reply. The ticket number in the subject
+   * lets the cabinet's answer be matched to it.
+   */
+  async sendSupportMessage(to: {
+    email: string;
+    name: string | null;
+    tenantName: string | null;
+    ticket: { number: string; subject: string };
+    kind: 'acknowledgement' | 'reply';
+    body: string;
+    agentName: string | null;
+  }) {
+    const intro =
+      to.kind === 'acknowledgement'
+        ? `Nous avons bien reçu votre demande <strong>${escapeHtml(to.ticket.number)}</strong> et nous la traitons.`
+        : `Réponse à votre demande <strong>${escapeHtml(to.ticket.number)}</strong> :`;
+    await this.send({
+      to: to.email,
+      subject: `[${to.ticket.number}] ${to.ticket.subject}`,
+      body: `
+        <p>Bonjour${to.name ? ` ${escapeHtml(to.name)}` : ''},</p>
+        <p>${intro}</p>
+        <p style="white-space:pre-line;border-inline-start:3px solid #e5e7eb;padding-inline-start:12px;color:#374151">${escapeHtml(to.body)}</p>
+        <p>${to.agentName ? `${escapeHtml(to.agentName)}<br>` : ''}Support {{PLATFORM}}</p>
+        <p style="color:#6b7280;font-size:12px">${to.tenantName ? `Cabinet : ${escapeHtml(to.tenantName)}. ` : ''}Pour répondre, répondez à ce message en gardant la référence ${escapeHtml(to.ticket.number)} dans l’objet.</p>
+      `,
+    });
+  }
+
+  /** "Paramètres → E-mails": proves the provider and sender work. */
+  async sendTest(to: string) {
+    await this.send({
+      to,
+      subject: 'E-mail de test — {{PLATFORM}}',
+      body: `
+        <p>Bonjour,</p>
+        <p>Cet e-mail de test confirme que l’envoi fonctionne avec la configuration actuelle : expéditeur, adresse de réponse, signature et identité visuelle.</p>
+      `,
+    });
+    return { delivered: !!this.resend };
+  }
+
+  /** Internal alert to the team's recipients (Paramètres → Notifications). */
+  async sendTeamAlert(alert: {
+    to: string[];
+    subject: string;
+    lines: string[];
+    /** Admin path, e.g. "/support/…". */
+    path: string;
+  }) {
+    for (const to of alert.to) {
+      await this.send({
+        to,
+        subject: `[Alerte] ${alert.subject}`,
+        body: `
+          <p><strong>${escapeHtml(alert.subject)}</strong></p>
+          ${alert.lines.map((l) => `<p style="margin:4px 0">${escapeHtml(l)}</p>`).join('')}
+          ${button(`${this.publicOrigin}${alert.path}`, 'Ouvrir dans l’administration')}
+          <p style="color:#6b7280;font-size:12px">Alerte envoyée à l’équipe {{PLATFORM}}. Réglez ces alertes dans Configuration → Notifications.</p>
+        `,
+        internal: true,
+      });
+    }
+  }
+
+  private async send(message: {
+    to: string;
+    subject: string;
+    body: string;
+    /** Team alerts: no signature or support footer. */
+    internal?: boolean;
+    locale?: MailLocale;
+  }) {
+    const { general, email, branding } = await this.platform.all();
+    const name = general.platformName;
+    const logoUrl = branding.logo
+      ? `${this.publicOrigin}/api${(await this.platform.branding()).logoUrl}`
+      : null;
+    const html = layout(
+      message.body,
+      {
+        name,
+        color: branding.primaryColor,
+        logoUrl,
+        footer: message.internal
+          ? null
+          : [
+              email.signature,
+              [general.supportEmail, general.supportPhone, general.websiteUrl]
+                .filter(Boolean)
+                .join(' · ') || null,
+            ],
+      },
+      message.locale,
+    )
+      .replaceAll('{{PLATFORM}}', escapeHtml(name))
+      .replaceAll('{{BRAND}}', branding.primaryColor);
+    const subject = message.subject.replaceAll('{{PLATFORM}}', name);
+    const address = email.senderAddress ?? addressOf(this.from);
+    const from = `${email.senderName.replace(/[<>"]/g, '')} <${address}>`;
+
     if (!this.resend) {
       this.logger.log(
-        `[dev email] to=${message.to} subject="${message.subject}"`,
+        `[dev email] from="${from}" to=${message.to} subject="${subject}"`,
       );
+      // Invitation and reset links carry tokens: logged in development only.
+      if (this.logLinks) {
+        for (const [, href] of html.matchAll(/href="(http[^"]+)"/g)) {
+          if (!href.startsWith('mailto:'))
+            this.logger.log(
+              `[dev email]   link: ${href.replaceAll('&amp;', '&')}`,
+            );
+        }
+      }
       return;
     }
     const { error } = await this.resend.emails.send({
-      from: this.from,
+      from,
       to: message.to,
-      subject: message.subject,
-      html: message.html,
+      subject,
+      html,
+      ...(email.replyTo && { replyTo: email.replyTo }),
     });
     if (error) {
       // Never blocks the invite/reset flow: the UI still offers the link to copy.
       this.logger.error(`Email to ${message.to} failed: ${error.message}`);
     }
   }
-}
 
-function escapeHtml(value: string) {
-  return value.replace(
-    /[&<>"']/g,
-    (c) =>
-      ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[
-        c
-      ]!,
-  );
-}
-
-function button(url: string, label: string) {
-  return `<a href="${url}" style="display:inline-block;background:#613f75;color:#fff;text-decoration:none;padding:12px 24px;border-radius:8px;font-weight:600;margin:16px 0">${escapeHtml(label)}</a>`;
-}
-
-function layout(body: string) {
-  return `<!doctype html>
-<html lang="fr">
-  <body style="margin:0;background:#f4f3f6;padding:32px 16px;font-family:-apple-system,Segoe UI,Roboto,sans-serif">
-    <table role="presentation" width="100%" style="max-width:480px;margin:0 auto;background:#fff;border-radius:12px;overflow:hidden">
-      <tr><td style="padding:24px 32px 0">
-        <span style="display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:8px;background:#613f75;color:#fff;font-weight:700;font-size:16px">C</span>
-        <span style="font-weight:700;font-size:16px;margin-inline-start:10px;vertical-align:middle">Cabinova</span>
-      </td></tr>
-      <tr><td style="padding:24px 32px 32px;color:#111;font-size:14px;line-height:1.6">
-        ${body}
-      </td></tr>
-    </table>
-  </body>
-</html>`;
+  /** What the configuration page shows about delivery. */
+  status() {
+    return { provider: this.resend ? 'resend' : null, defaultFrom: this.from };
+  }
 }

@@ -16,6 +16,7 @@ export type PlatformUserRow = {
 	email: string;
 	status: PlatformUserStatus;
 	inviteExpired: boolean;
+	twoFactorEnabled: boolean;
 	lastLoginAt: string | null;
 	createdAt: string;
 	roles: { key: string; name: string }[];
@@ -64,7 +65,11 @@ export const RESOURCE_LABELS: Record<string, string> = {
 	settings: "Configuration",
 };
 
-/** Catalog grouped by resource, in catalog order. */
+/**
+ * Catalog grouped by resource, in catalog order. Besides "read" (Consulter)
+ * and "write" (Gérer), an area can hold extra permissions (e.g.
+ * tenants:data, support:all), shown as their own switch; each implies read.
+ */
 export function groupPermissions(catalog: PermissionInfo[]) {
 	const groups = new Map<string, PermissionInfo[]>();
 	for (const p of catalog) groups.set(p.resource, [...(groups.get(p.resource) ?? []), p]);
@@ -72,6 +77,9 @@ export function groupPermissions(catalog: PermissionInfo[]) {
 		resource,
 		label: RESOURCE_LABELS[resource] ?? resource,
 		permissions,
+		read: permissions.find((p) => p.action === "read"),
+		write: permissions.find((p) => p.action === "write"),
+		extras: permissions.filter((p) => p.action !== "read" && p.action !== "write"),
 	}));
 }
 

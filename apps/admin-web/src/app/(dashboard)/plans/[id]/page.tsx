@@ -1,6 +1,6 @@
-import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { IconArrowLeft } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import { can } from "@/lib/permissions";
 import { type Plan, toPlanInput } from "@/lib/plans";
@@ -19,14 +19,14 @@ export default async function EditPlanPage({ params }: PageProps<"/plans/[id]">)
 	const { id } = await params;
 	const session = await getSession();
 	if (!session || !can(session.user.permissions, "subscriptions:write")) notFound();
-	const [plan, catalog] = await Promise.all([apiGet<Plan>(`/plans/${id}`), apiGet<FeatureRow[]>("/features")]);
+	const [plan, catalog] = await Promise.all([apiGet<Plan>(`/plans/${id}`), apiGet<FeatureRow[]>("/features").then((all) => all.filter((f) => f.implemented))]);
 
 	return (
 		<>
 			<div className="mb-4 flex items-center gap-3 border-b border-dashed border-foreground/20 pb-4">
 				<Button asChild variant="outline" size="icon-sm" aria-label="Retour aux offres">
 					<Link href="/plans">
-						<ArrowLeft className="size-4" />
+						<IconArrowLeft className="size-4" />
 					</Link>
 				</Button>
 				<h1 className="font-semibold">Modifier l’offre {plan.name}</h1>

@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { HiServerStack } from "react-icons/hi2";
-import { LuDatabase, LuDatabaseZap, LuGitPullRequestArrow, LuTriangleAlert } from "react-icons/lu";
+import { IconMigration, IconServer, IconWarning } from "@/components/icons";
 import { Badge } from "@/components/ui/badge";
 import { formatDate } from "@/lib/format";
 import { can } from "@/lib/permissions";
@@ -33,7 +32,7 @@ export default async function TechnicalPage() {
 	return (
 		<ListTransitionProvider>
 			<ListHeader
-				icon={<HiServerStack />}
+				icon={<IconServer />}
 				total={overview.total}
 				label={{ singular: "Base de cabinet", plural: "Bases de cabinets" }}
 				action={
@@ -45,14 +44,14 @@ export default async function TechnicalPage() {
 
 			<div className="mb-3 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
 				<KpiCard
-					icon={LuDatabase}
+					icon={IconServer}
 					title="Schéma courant"
 					value={<code className="text-base">{overview.latestSchemaVersion ?? "—"}</code>}
 					period="@cabinova/tenant-db"
 					hint="Dernière migration du schéma des bases de cabinets."
 				/>
 				<KpiCard
-					icon={LuGitPullRequestArrow}
+					icon={IconMigration}
 					title="En retard de migration"
 					value={overview.behind}
 					valueClassName={overview.behind ? "text-amber-700" : undefined}
@@ -60,7 +59,7 @@ export default async function TechnicalPage() {
 					hint="Bases dont la version du schéma n'est pas la dernière."
 				/>
 				<KpiCard
-					icon={LuDatabaseZap}
+					icon={IconServer}
 					title="Injoignables"
 					value={overview.unhealthy}
 					valueClassName={overview.unhealthy ? "text-red-700" : undefined}
@@ -68,7 +67,7 @@ export default async function TechnicalPage() {
 					hint="Bases dont le dernier test de connexion a échoué (test automatique toutes les 10 minutes)."
 				/>
 				<KpiCard
-					icon={LuTriangleAlert}
+					icon={IconWarning}
 					title="Migrations échouées"
 					value={overview.failedMigrations}
 					valueClassName={overview.failedMigrations ? "text-red-700" : undefined}

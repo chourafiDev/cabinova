@@ -1,0 +1,134 @@
+{
+  "title": "Statistiques",
+  "comparedTo": "comparé aux {days} jours précédents",
+  "buckets": {
+    "day": "Jour",
+    "week": "Semaine",
+    "month": "Mois"
+  },
+  "tabs": {
+    "overview": "Vue d’ensemble",
+    "revenue": "Encaissements",
+    "patients": "Patients",
+    "affluence": "Affluence",
+    "doctorsSpaces": "Médecins et espaces",
+    "doctors": "Médecins",
+    "spaces": "Espaces"
+  },
+  "overview": {
+    "activity": "Activité",
+    "appointments": "{count} rendez-vous",
+    "keyPoints": "Points clés",
+    "cancellationRate": "Taux d’annulation",
+    "peakHour": "Heure de pointe",
+    "peakValue": "{day}. {hour} h",
+    "leadTime": "Délai de réservation",
+    "sameDay": "Le jour même",
+    "days": "{count, plural, one {# jour} other {# jours}}",
+    "outstanding": "Reste dû"
+  },
+  "revenue": {
+    "received": "Encaissé",
+    "refunded": "{amount} remboursés",
+    "outstanding": "{amount} restent dus",
+    "byMethod": "Par mode de paiement",
+    "noPayments": "Aucun paiement sur la période.",
+    "byAct": "Par acte"
+  },
+  "patients": {
+    "seen": "Patients vus",
+    "sex": "Sexe",
+    "women": "Femmes",
+    "men": "Hommes",
+    "age": "Âge",
+    "coverage": "Couverture"
+  },
+  "ages": {
+    "0-14": "0–14 ans",
+    "15-24": "15–24 ans",
+    "25-44": "25–44 ans",
+    "45-64": "45–64 ans",
+    "65+": "65 ans et plus",
+    "unknown": "Âge inconnu"
+  },
+  "leadTimes": {
+    "same-day": "Le jour même",
+    "1-2": "1 à 2 jours",
+    "3-7": "3 à 7 jours",
+    "8-14": "8 à 14 jours",
+    "15-30": "15 à 30 jours",
+    "31+": "Plus d’un mois"
+  },
+  "affluence": {
+    "byDayHour": "Par jour et par heure",
+    "onPeriod": "Rendez-vous sur la période",
+    "leadTime": "Délai de réservation",
+    "sameDayHint": "La moitié des rendez-vous sont pris le jour même",
+    "daysHint": "La moitié des rendez-vous sont pris {days} à l’avance ou moins",
+    "empty": "Aucun rendez-vous sur la période.",
+    "hour": "{hour} h",
+    "cell": "{day} {from} h – {to} h : {count} rendez-vous",
+    "count": "{count} rendez-vous",
+    "range": "{day}, {from} h – {to} h",
+    "busiest": "Créneaux les plus chargés :",
+    "slot": "{day}. {hour} h",
+    "less": "Moins",
+    "more": "Plus"
+  },
+  "team": {
+    "consultationsByDoctor": "Consultations par médecin",
+    "patients": "{count, plural, one {# patient} other {# patients}}",
+    "absences": "{rate} d’absences",
+    "receivedByDoctor": "Encaissé par médecin",
+    "consultationsBySpace": "Consultations par espace",
+    "newPatients": "{count, plural, one {# nouveau patient} other {# nouveaux patients}}"
+  },
+  "cards": {
+    "received": "Encaissé",
+    "receivedHint": "Paiements reçus sur la période, remboursements déduits.",
+    "consultations": "Consultations",
+    "consultationsHint": "Rendez-vous marqués « vu » sur la période.",
+    "seen": "Patients vus",
+    "seenHint": "Patients différents vus au moins une fois sur la période.",
+    "newPatients": "Nouveaux patients",
+    "newPatientsHint": "Patients dont la toute première consultation au cabinet a eu lieu sur la période.",
+    "noShowRate": "Taux d’absence",
+    "noShowHint": "Patients absents parmi les rendez-vous passés (vus + absents)."
+  },
+  "empty": {
+    "title": "Aucun rendez-vous sur cette période",
+    "hint": "Les statistiques se remplissent avec l’agenda : choisissez une autre période ou un autre espace.",
+    "noData": "Aucune donnée sur la période."
+  },
+  "series": {
+    "completed": "Vus",
+    "pending": "À venir",
+    "noShow": "Absents",
+    "cancelled": "Annulés",
+    "newPatients": "Nouveaux",
+    "returningPatients": "Déjà suivis"
+  },
+  "filters": {
+    "period": "Période",
+    "7j": "7 jours",
+    "30j": "30 jours",
+    "90j": "3 mois",
+    "12m": "12 mois",
+    "custom": "Personnalisée",
+    "pickDates": "Choisissez deux dates",
+    "apply": "Appliquer",
+    "space": "Espace",
+    "allSpaces": "Tous les espaces",
+    "doctor": "Médecin",
+    "allDoctors": "Tous les médecins",
+    "you": "{name} (vous)",
+    "appointments": "Rendez-vous",
+    "wholeCabinet": "Tout le cabinet",
+    "mine": "Mes rendez-vous"
+  },
+  "view": {
+    "label": "Affichage",
+    "chart": "Graphique",
+    "table": "Tableau"
+  }
+}

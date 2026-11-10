@@ -1,6 +1,6 @@
-import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { IconArrowLeft } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import { can } from "@/lib/permissions";
 import { EMPTY_PLAN, type PlanRow } from "@/lib/plans";
@@ -15,7 +15,7 @@ export default async function NewPlanPage() {
 	const session = await getSession();
 	if (!session || !can(session.user.permissions, "subscriptions:write")) notFound();
 	const [catalog, templates] = await Promise.all([
-		apiGet<FeatureRow[]>("/features"),
+		apiGet<FeatureRow[]>("/features").then((all) => all.filter((f) => f.implemented)),
 		apiGet<PlanRow[]>("/plans?active=true"),
 	]);
 
@@ -24,7 +24,7 @@ export default async function NewPlanPage() {
 			<div className="mb-4 flex items-center gap-3 border-b border-dashed border-foreground/20 pb-4">
 				<Button asChild variant="outline" size="icon-sm" aria-label="Retour aux offres">
 					<Link href="/plans">
-						<ArrowLeft className="size-4" />
+						<IconArrowLeft className="size-4" />
 					</Link>
 				</Button>
 				<h1 className="font-semibold">Nouvelle offre</h1>

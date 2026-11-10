@@ -1,0 +1,30 @@
+// Fetch wrapper for the NestJS API, called from the browser through the
+// /api proxy (next.config.ts). The session cookie is sent automatically.
+
+import { translateError } from "./api-errors";
+
+export class ApiError extends Error {
+  constructor(
+    public status: number,
+    public code: string | undefined,
+    message: string,
+    /** The whole error body, for extra fields (e.g. attemptsLeft). */
+    public details: Record<string, unknown> = {},
+  ) {
+    super(message);
+  }
+}
+
+export async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
+  const res = await fetch(`/api${path}`, {
+    ...init,
+    // A file upload (FormData) gets its multipart type, boundary included, from the browser.
+    headers: init.body instanceof FormData ? init.headers : { "Content-Type": "application/json", ...init.headers },
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => null);
+    const error = { status: res.status, ...body };
+    throw new ApiError(res.status, body?.code, translateError(error, document.documentElement.lang), body ?? {});
+  }
+  return res.status === 204 ? (undefined as T) : res.json();
+}

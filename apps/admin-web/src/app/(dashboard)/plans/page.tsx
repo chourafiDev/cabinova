@@ -1,7 +1,6 @@
-import { Pencil } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { HiCreditCard } from "react-icons/hi2";
+import { IconCard, IconCoupon, IconEdit, IconPlus } from "@/components/icons";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { can } from "@/lib/permissions";
@@ -27,7 +26,7 @@ export default async function PlansPage() {
 	const session = await getSession();
 	if (!session || !can(session.user.permissions, "subscriptions:read")) notFound();
 	const canWrite = can(session.user.permissions, "subscriptions:write");
-	const [plans, catalog] = await Promise.all([apiGet<PlanRow[]>("/plans"), apiGet<FeatureRow[]>("/features")]);
+	const [plans, catalog] = await Promise.all([apiGet<PlanRow[]>("/plans"), apiGet<FeatureRow[]>("/features").then((all) => all.filter((f) => f.implemented))]);
 
 	const limits: { label: string; value: (p: PlanRow) => React.ReactNode }[] = [
 		{ label: "Médecins", value: (p) => formatLimit(p.maxDoctors) },
@@ -43,10 +42,25 @@ export default async function PlansPage() {
 	return (
 		<ListTransitionProvider>
 			<ListHeader
-				icon={<HiCreditCard />}
+				icon={<IconCard />}
 				total={plans.length}
 				label={{ singular: "Offre", plural: "Offres" }}
-				create={canWrite ? { href: "/plans/new", label: "Nouvelle offre" } : undefined}
+				action={
+					<div className="flex w-full gap-2 md:w-auto">
+						<Button asChild variant="outline">
+							<Link href="/plans/promo-codes">
+								<IconCoupon /> Codes promo
+							</Link>
+						</Button>
+						{canWrite && (
+							<Button asChild>
+								<Link href="/plans/new">
+									<IconPlus /> Nouvelle offre
+								</Link>
+							</Button>
+						)}
+					</div>
+				}
 			/>
 
 			{plans.length === 0 ? (
@@ -74,7 +88,7 @@ export default async function PlansPage() {
 											{canWrite && (
 												<Button asChild variant="ghost" size="icon-xs" aria-label={`Modifier ${plan.name}`}>
 													<Link href={`/plans/${plan.id}`}>
-														<Pencil />
+														<IconEdit />
 													</Link>
 												</Button>
 											)}

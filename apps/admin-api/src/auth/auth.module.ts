@@ -6,18 +6,20 @@ import { AuthService } from './auth.service.js';
 import { PermissionsGuard, SessionAuthGuard } from './guards.js';
 import { LocalStrategy } from './local.strategy.js';
 import { SessionStrategy } from './session.strategy.js';
+import { TwoFactorService } from './two-factor.service.js';
 
 @Module({
   imports: [PassportModule],
   controllers: [AuthController],
   providers: [
     AuthService,
+    TwoFactorService,
     LocalStrategy,
     SessionStrategy,
     // Order matters: authenticate first, then check permissions.
     { provide: APP_GUARD, useClass: SessionAuthGuard },
     { provide: APP_GUARD, useClass: PermissionsGuard },
   ],
-  exports: [AuthService],
+  exports: [AuthService, TwoFactorService],
 })
 export class AuthModule {}

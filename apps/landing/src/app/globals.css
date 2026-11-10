@@ -1,0 +1,176 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+/*
+ * Light or dark: <html data-theme> is set before the first paint (layout.tsx)
+ * from the visitor's choice, or from the system setting until they choose.
+ */
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-accent: var(--accent);
+  --color-brand: var(--brand);
+  --color-brand-soft: var(--brand-soft);
+  --color-ink: var(--ink);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-warning-strong: var(--warning-strong);
+  --color-info: var(--info);
+  --color-highlight: var(--highlight);
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-geist-mono);
+  --font-serif: var(--font-serif);
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+  --radius-2xl: 1.25rem;
+  --radius-3xl: 1.75rem;
+  --animate-scroll: scroll var(--animation-duration, 40s) var(--animation-direction, forwards) linear infinite;
+
+  @keyframes scroll {
+    to {
+      transform: translate(calc(-50% - 0.5rem));
+    }
+  }
+}
+
+/*
+ * Cabinova's palette, the same as the clinic and Super Admin apps:
+ *   Brand Plum #613F75 · Ink #1F2041 · White · Grey #EFEFED
+ *   Status: Success #126543 · Warning #FFC857 (text #976213) · Info #19647E
+ *   Highlight #119DA4 (charts, icons; never small text)
+ * The Tailwind status shades (emerald, amber, sky) are mapped onto these.
+ */
+:root {
+  --brand: #613f75;
+  --ink: #1F2041;
+  --brand-soft: color-mix(in oklab, var(--brand) 10%, white);
+  --background: #ffffff;
+  --foreground: var(--ink);
+  --card: #ffffff;
+  --muted: #f6f5f8;
+  --muted-foreground: color-mix(in oklab, var(--ink) 58%, white);
+  --border: color-mix(in oklab, var(--ink) 9%, white);
+  --primary: var(--brand);
+  --primary-foreground: #ffffff;
+  --accent: color-mix(in oklab, var(--brand) 7%, white);
+  --success: #126543;
+  --warning: #FFC857;
+  --warning-strong: #976213;
+  --info: #19647E;
+  --highlight: #119DA4;
+
+  /* Status shades on the palette: pale tints for badges, dark ones for text.
+     Mid shades (500–600: solid fills) are fixed in both modes. */
+  --color-emerald-50: color-mix(in oklab, var(--success) 8%, white);
+  --color-emerald-100: color-mix(in oklab, var(--success) 15%, white);
+  --color-emerald-200: color-mix(in oklab, var(--success) 28%, white);
+  --color-emerald-300: color-mix(in oklab, var(--success) 50%, white);
+  --color-emerald-400: color-mix(in oklab, var(--success) 75%, white);
+  --color-emerald-500: #1A7A52;
+  --color-emerald-600: #126543;
+  --color-emerald-700: var(--success);
+  --color-emerald-800: #0E5236;
+  --color-emerald-900: #0B4029;
+  --color-amber-50: color-mix(in oklab, var(--warning) 18%, white);
+  --color-amber-100: color-mix(in oklab, var(--warning) 35%, white);
+  --color-amber-200: color-mix(in oklab, var(--warning) 60%, white);
+  --color-amber-300: var(--warning);
+  --color-amber-400: var(--warning);
+  --color-amber-500: #F2B33D;
+  --color-amber-600: #976213;
+  --color-amber-700: var(--warning-strong);
+  --color-amber-800: #7A4F0F;
+  --color-amber-900: #5E3C0B;
+  --color-sky-50: color-mix(in oklab, var(--info) 8%, white);
+  --color-sky-100: color-mix(in oklab, var(--info) 15%, white);
+  --color-sky-200: color-mix(in oklab, var(--info) 28%, white);
+  --color-sky-300: color-mix(in oklab, var(--info) 55%, white);
+  --color-sky-500: #1F7A99;
+  --color-sky-600: #19647E;
+  --color-sky-700: var(--info);
+  --color-sky-800: #144F64;
+}
+
+:root[data-theme="dark"] {
+  --brand-soft: color-mix(in oklab, var(--brand) 30%, #121214);
+  --background: #0e0e10;
+  --foreground: #ececee;
+  --card: #17171a;
+  --muted: #1e1e22;
+  --muted-foreground: #a1a1aa;
+  --border: #2a2a30;
+  /* The plum is lifted to keep its contrast on dark surfaces. */
+  --primary: color-mix(in oklab, var(--brand) 55%, white);
+  --primary-foreground: #0e0e10;
+  --accent: color-mix(in oklab, var(--brand) 22%, #17171a);
+  /* Lighter status colours, readable on the dark cards. */
+  --success: #8BC6A6;
+  --warning: #FFC857;
+  --warning-strong: #FFC857;
+  --info: #7FB8CC;
+  /* The light shades the dark: variants use for text. */
+  --color-emerald-200: #B9DCC9;
+  --color-emerald-300: var(--success);
+  --color-emerald-400: var(--success);
+  --color-amber-200: #FFE2A6;
+  --color-sky-200: #A9D0DE;
+  --color-sky-300: var(--info);
+  }
+
+@layer base {
+  * {
+  border-color: var(--border);
+  }
+  :root[data-theme="dark"] {
+  color-scheme: dark;
+  }
+  html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 5rem;
+  }
+  body {
+  background: var(--background);
+  color: var(--foreground);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/*
+ * Buttons, after Clerk's: a soft sheen from the top, flat otherwise. No
+ * edge or outer shadow, and no CSS filter on hover: a filter puts the button
+ * on its own layer and blurs its text.
+ */
+@utility btn-raised {
+  background-image: linear-gradient(180deg, rgb(255 255 255 / 0.1), rgb(255 255 255 / 0));
+  &:hover {
+    background-image: linear-gradient(180deg, rgb(255 255 255 / 0.18), rgb(255 255 255 / 0.06));
+  }
+  &:active {
+    background-image: linear-gradient(180deg, rgb(0 0 0 / 0.06), rgb(0 0 0 / 0.06));
+  }
+}
+@utility btn-surface {
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.06);
+  transition: background-color 120ms, box-shadow 120ms;
+}

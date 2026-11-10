@@ -6,6 +6,7 @@ import { Slot } from "radix-ui";
 import { composeEventHandlers } from "radix-ui/internal";
 import * as React from "react";
 
+import { IconCheck, IconChevronDown } from "@/components/icons";
 import {
   Command,
   CommandEmpty,
@@ -19,7 +20,6 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { ChevronDown, Check } from "lucide-react";
 
 type FacetedSelectedValue<Multiple extends boolean> = Multiple extends true
   ? string[]
@@ -274,7 +274,7 @@ function FacetedValue({
         className="flex w-full items-center gap-1 text-muted-foreground"
       >
         {placeholder}
-        <ChevronDown className="ms-auto size-4 shrink-0 text-muted-foreground" />
+        <IconChevronDown className="ms-auto size-4 shrink-0 text-muted-foreground" />
       </span>
     );
   }
@@ -457,7 +457,7 @@ function FacetedItemIndicator({
           {children}
         </span>
       )}
-      <Check className="invisible group-data-checked/command-item:visible" />
+      <IconCheck className="invisible group-data-checked/command-item:visible" />
     </span>
   );
 }

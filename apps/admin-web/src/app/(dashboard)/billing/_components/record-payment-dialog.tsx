@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
+import { DatePicker } from "@/components/date-picker";
 import { Button } from "@/components/ui/button";
 import {
 	Dialog,
@@ -54,15 +55,19 @@ export function RecordPaymentDialog({
 		setSaving(true);
 		setError(null);
 		try {
-			const result = await api<{ tenantSuspended: boolean }>(`/billing/invoices/${invoice.id}/payments`, {
+			const result = await api<{ tenantSuspended: boolean; reactivated: boolean }>(`/billing/invoices/${invoice.id}/payments`, {
 				method: "POST",
 				body: JSON.stringify({ amount: cents, receivedAt, reference, note }),
 			});
 			onOpenChange(false);
 			router.refresh();
-			if (result.tenantSuspended) {
+			if (result.reactivated) {
+				toast.success(`Virement enregistré — ${invoice.tenant.name} est réactivé`, {
+					description: "Il avait été suspendu pour impayé ; l’accès est rétabli.",
+				});
+			} else if (result.tenantSuspended) {
 				toast.success(`Virement enregistré — ${invoice.tenant.name} est suspendu`, {
-					description: "Réactivez le cabinet depuis sa fiche (Statut → Réactiver).",
+					description: "Suspendu pour un autre motif, ou d’autres factures restent impayées : vérifiez sa fiche.",
 					action: { label: "Ouvrir", onClick: () => router.push(`/tenants/${invoice.tenantId}`) },
 				});
 			} else {
@@ -96,7 +101,7 @@ export function RecordPaymentDialog({
 						</Field>
 						<Field>
 							<FieldLabel htmlFor="pay-date">Reçu le</FieldLabel>
-							<Input id="pay-date" type="date" value={receivedAt} max={format(new Date(), "yyyy-MM-dd")} onChange={(e) => setReceivedAt(e.target.value)} />
+							<DatePicker id="pay-date" value={receivedAt} max={format(new Date(), "yyyy-MM-dd")} onChange={setReceivedAt} />
 						</Field>
 					</div>
 					<Field>

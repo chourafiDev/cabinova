@@ -1,0 +1,2 @@
+ALTER TABLE "clinic_settings" ADD COLUMN "default_appointment_minutes" smallint DEFAULT 30 NOT NULL;--> statement-breakpoint
+ALTER TABLE "spaces" ADD COLUMN "opening_hours" jsonb DEFAULT '{"0":[],"1":[{"from":"08:00","to":"18:00"}],"2":[{"from":"08:00","to":"18:00"}],"3":[{"from":"08:00","to":"18:00"}],"4":[{"from":"08:00","to":"18:00"}],"5":[{"from":"08:00","to":"18:00"}],"6":[{"from":"08:00","to":"13:00"}]}'::jsonb NOT NULL;

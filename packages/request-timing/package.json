@@ -1,0 +1,15 @@
+{
+  "name": "@cabinova/request-timing",
+  "version": "0.0.1",
+  "private": true,
+  "description": "How long each API request takes, and how much of it is the database: a Server-Timing header on every response and a log line for slow requests. Shared by admin-api and clinic-api.",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./src/index.d.ts",
+      "default": "./src/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": ["src"]
+}

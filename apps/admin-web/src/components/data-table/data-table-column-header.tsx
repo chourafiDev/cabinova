@@ -5,6 +5,7 @@ import type * as React from "react";
 import { type Column, type RowData, Subscribe } from "@tanstack/react-table";
 import { cn } from "cn";
 
+import { IconChevronDown, IconChevronsUpDown, IconChevronUp, IconClose, IconEyeOff } from "@/components/icons";
 import type { DataTableFeatures } from "@/lib/data-table-features";
 
 import {
@@ -14,7 +15,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { ChevronDown, ChevronUp, ChevronsUpDown, X, EyeOff } from "lucide-react";
 
 interface DataTableColumnHeaderProps<
   TData extends RowData,
@@ -83,13 +83,13 @@ function DataTableColumnHeaderMenu<TData extends RowData, TValue>({
         {label}
         {column.getCanSort() &&
           (sorted === "desc" ? (
-            <ChevronDown
+            <IconChevronDown
             />
           ) : sorted === "asc" ? (
-            <ChevronUp
+            <IconChevronUp
             />
           ) : (
-            <ChevronsUpDown
+            <IconChevronsUpDown
             />
           ))}
       </DropdownMenuTrigger>
@@ -101,7 +101,7 @@ function DataTableColumnHeaderMenu<TData extends RowData, TValue>({
               checked={sorted === "asc"}
               onClick={() => column.toggleSorting(false)}
             >
-              <ChevronUp
+              <IconChevronUp
               />
               Croissant
             </DropdownMenuCheckboxItem>
@@ -110,7 +110,7 @@ function DataTableColumnHeaderMenu<TData extends RowData, TValue>({
               checked={sorted === "desc"}
               onClick={() => column.toggleSorting(true)}
             >
-              <ChevronDown
+              <IconChevronDown
               />
               Décroissant
             </DropdownMenuCheckboxItem>
@@ -119,7 +119,7 @@ function DataTableColumnHeaderMenu<TData extends RowData, TValue>({
                 className="ps-2 [&_svg]:text-muted-foreground"
                 onClick={() => column.clearSorting()}
               >
-                <X
+                <IconClose
                 />
                 Réinitialiser
               </DropdownMenuItem>
@@ -132,7 +132,7 @@ function DataTableColumnHeaderMenu<TData extends RowData, TValue>({
             checked={!isVisible}
             onClick={() => column.toggleVisibility(false)}
           >
-            <EyeOff
+            <IconEyeOff
             />
             Masquer
           </DropdownMenuCheckboxItem>

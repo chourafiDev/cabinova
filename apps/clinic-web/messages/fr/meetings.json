@@ -1,0 +1,103 @@
+{
+  "meeting": "Réunion",
+  "newMeeting": "Nouvelle réunion",
+  "title": "Réunions",
+  "ownerHint": "Vos réunions d’équipe sur Google Meet.",
+  "staffHint": "Les réunions auxquelles vous êtes invité(e).",
+  "liveCount": "{count, plural, one {# réunion en cours} other {# réunions en cours}}",
+  "upcoming": "En cours et à venir",
+  "past": "Passées et annulées",
+  "empty": "Aucune réunion prévue",
+  "emptyOwner": "Démarrez une réunion Google Meet avec votre équipe, maintenant ou à l’heure de votre choix.",
+  "emptyStaff": "Quand le médecin responsable vous invitera, la réunion apparaîtra ici et dans vos notifications.",
+  "join": "Rejoindre",
+  "copyLink": "Copier le lien",
+  "copied": "Lien de la réunion copié",
+  "actions": "Actions de la réunion",
+  "addPeople": "Ajouter des personnes",
+  "cancelMeeting": "Annuler la réunion",
+  "organizedBy": "Organisée par {name}",
+  "people": "{count, plural, one {# invité} other {# invités}}",
+  "status": {
+    "live": "En cours",
+    "upcoming": "À venir",
+    "ended": "Terminée",
+    "cancelled": "Annulée"
+  },
+  "strip": {
+    "label": "Réunion en cours",
+    "live": "Réunion en cours",
+    "soon": "Réunion à {time}",
+    "by": "par {name}",
+    "join": "Rejoindre"
+  },
+  "new": {
+    "title": "Nouvelle réunion",
+    "description": "Une réunion Google Meet avec les membres de votre choix. Chacun reçoit une notification et une invitation par e-mail.",
+    "who": "Participants",
+    "selected": "{count, plural, =0 {Personne de sélectionné} one {# sélectionné} other {# sélectionnés}}",
+    "groups": {
+      "everyone": "Toute l’équipe",
+      "doctors": "Médecins",
+      "secretaries": "Secrétaires"
+    },
+    "search": "Rechercher un membre",
+    "noMatch": "Aucun membre ne correspond.",
+    "noTeam": "Votre équipe est vide : invitez d’abord des membres dans Équipe.",
+    "peopleError": "Choisissez au moins une personne.",
+    "when": "Quand",
+    "whenOptions": {
+      "now": {
+        "label": "Maintenant",
+        "hint": "Google Meet s’ouvre tout de suite."
+      },
+      "later": {
+        "label": "Planifier",
+        "hint": "À la date et l’heure de votre choix."
+      }
+    },
+    "date": "Date",
+    "time": "Heure",
+    "whenError": "Choisissez une date et une heure à venir.",
+    "subject": "Sujet",
+    "optional": "(facultatif)",
+    "subjectPlaceholder": "Réunion d’équipe",
+    "duration": "Durée",
+    "minutes": "{count} min",
+    "cancel": "Annuler",
+    "startNow": "Démarrer la réunion",
+    "plan": "Planifier la réunion",
+    "started": "Réunion démarrée",
+    "planned": "Réunion planifiée",
+    "invitedHint": "{count, plural, one {# personne prévenue} other {# personnes prévenues}} par notification et par e-mail.",
+    "error": "La réunion n’a pas pu être créée.",
+    "connectFirst": "Connectez votre compte Google",
+    "connectFirstHint": "Les réunions sont créées dans votre agenda Google, avec un lien Google Meet. C’est à faire une seule fois.",
+    "notConfigured": "Réunions bientôt disponibles",
+    "notConfiguredHint": "Les réunions Google Meet ne sont pas encore activées pour Cabinova. Contactez le support si vous en avez besoin.",
+    "copyLink": "Copier le lien"
+  },
+  "add": {
+    "title": "Ajouter des personnes",
+    "hint": "Elles seront invitées à « {title} » et prévenues tout de suite.",
+    "everyone": "Toute l’équipe est déjà invitée.",
+    "cancel": "Annuler",
+    "submit": "{count, plural, =0 {Ajouter} one {Ajouter # personne} other {Ajouter # personnes}}",
+    "done": "{count, plural, one {# personne ajoutée} other {# personnes ajoutées}}",
+    "error": "Impossible d’ajouter ces personnes."
+  },
+  "cancel": {
+    "title": "Annuler cette réunion ?",
+    "hint": "{count, plural, one {L’invité sera prévenu} other {Les # invités seront prévenus}} par notification et par e-mail. Le lien Google Meet ne fonctionnera plus.",
+    "keep": "Garder",
+    "submit": "Annuler la réunion",
+    "done": "Réunion annulée",
+    "error": "La réunion n’a pas pu être annulée."
+  },
+  "card": {
+    "startsIn": "Commence {ago}",
+    "endsIn": "Se termine {ago}",
+    "minutes": "{count} min",
+    "andOthers": "{name} et {count, plural, one {# autre} other {# autres}}"
+  }
+}

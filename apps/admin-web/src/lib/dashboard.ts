@@ -7,7 +7,7 @@ export type DashboardAlert = {
 	severity: "critical" | "warning" | "info";
 	title: string;
 	count: number;
-	items: { tenantId: string; name: string; detail?: string }[];
+	items: { tenantId: string | null; name: string; detail?: string; href?: string }[];
 	href: string;
 };
 

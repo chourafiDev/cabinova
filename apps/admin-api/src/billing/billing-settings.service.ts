@@ -14,7 +14,12 @@ export type BillingSettings = Omit<BillingSettingsDto, never>;
 const KEY = 'billing';
 
 /** Defaults until the Super Admin fills in the RIB. */
-const DEFAULTS = { graceDays: 7, invoiceDaysBefore: 7 };
+const DEFAULTS = {
+  graceDays: 7,
+  invoiceDaysBefore: 7,
+  trialReminderDays: 3,
+  suspendAfterDays: 0,
+};
 
 /** The issuer and RIB printed on invoices (platform_settings "billing"). */
 @Injectable()
@@ -33,7 +38,7 @@ export class BillingSettingsService {
       .from(platformSettings)
       .where(eq(platformSettings.key, KEY));
     return row
-      ? { ...(row.value as BillingSettings), configured: true }
+      ? { ...DEFAULTS, ...(row.value as BillingSettings), configured: true }
       : { ...DEFAULTS, configured: false };
   }
 

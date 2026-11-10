@@ -1,10 +1,10 @@
 "use client";
 
-import { Plus, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
+import { IconPlus, IconTrash } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import { api } from "@/lib/api-client";
 import type { FeatureDetail, FeatureOverride } from "@/lib/features";
@@ -52,7 +52,7 @@ export function FeatureOverrides({
 			action={
 				canWrite && (
 					<Button size="sm" variant="outline" onClick={() => setTarget({ featureKey: feature.key, featureName: feature.name })}>
-						<Plus /> {beta ? "Ajouter un testeur" : "Ajouter une exception"}
+						<IconPlus /> {beta ? "Ajouter un testeur" : "Ajouter une exception"}
 					</Button>
 				)
 			}
@@ -97,7 +97,7 @@ export function FeatureOverrides({
 										Modifier
 									</Button>
 									<Button size="icon-sm" variant="ghost" aria-label={`Retirer l’exception de ${o.tenantName}`} onClick={() => remove(o)}>
-										<Trash2 />
+										<IconTrash />
 									</Button>
 								</div>
 							)}

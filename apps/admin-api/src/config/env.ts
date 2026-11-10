@@ -6,44 +6,69 @@ const base64Key = z
     message: 'must be 32 bytes, base64-encoded (openssl rand -base64 32)',
   });
 
-const envSchema = z.object({
-  NODE_ENV: z
-    .enum(['development', 'production', 'test'])
-    .default('development'),
-  PORT: z.coerce.number().default(4000),
-  /** Neon pooled connection string, catalog database (app role). */
-  DATABASE_URL: z.url(),
-  /** Origin of the Super Admin Next.js app, comma-separated (CORS with credentials). */
-  WEB_ORIGIN: z.string().default('http://localhost:3000'),
-  /** Express "trust proxy": the Next.js app proxies /api to this server. */
-  TRUST_PROXY: z.string().default('loopback'),
-  /**
-   * Resend API key. Optional: without it, EmailService logs instead of
-   * sending, and invite/reset links fall back to "copy the link" in the UI.
-   */
-  RESEND_API_KEY: z.string().optional(),
-  /** "from" address for transactional email, e.g. "Cabinova <notifications@cabinova.ma>". */
-  EMAIL_FROM: z.string().default('Cabinova <onboarding@resend.dev>'),
+const envSchema = z
+  .object({
+    NODE_ENV: z
+      .enum(['development', 'production', 'test'])
+      .default('development'),
+    PORT: z.coerce.number().default(4000),
+    /** Neon pooled connection string, catalog database (app role). */
+    DATABASE_URL: z.url(),
+    /** Origin of the Super Admin Next.js app, comma-separated (CORS with credentials). */
+    WEB_ORIGIN: z.string().default('http://localhost:3000'),
+    /** Express "trust proxy": the Next.js app proxies /api to this server. */
+    TRUST_PROXY: z.string().default('loopback'),
+    /** Requests at least this slow are logged, with their database time (see app.setup.ts). */
+    SLOW_REQUEST_MS: z.coerce.number().int().min(0).default(500),
+    /** "true": log every request's timing, not only the slow ones. */
+    LOG_ALL_REQUESTS: z.stringbool().default(false),
+    /**
+     * Resend API key. Optional: without it, EmailService logs instead of
+     * sending, and invite/reset links fall back to "copy the link" in the UI.
+     */
+    RESEND_API_KEY: z.string().optional(),
+    /** "from" address for transactional email, e.g. "Cabinova <notifications@cabinova.ma>". */
+    EMAIL_FROM: z.string().default('Cabinova <onboarding@resend.dev>'),
 
-  // Module 4 — database per clinic. Provisioning is refused until these are set.
-  /**
-   * Master key for clinic database credentials: 32 random bytes, base64
-   * (`openssl rand -base64 32`). Lose it and every clinic's credentials are
-   * unreadable — keep it in a secret manager, never in git.
-   */
-  TENANT_SECRETS_KEY: base64Key.optional(),
-  /** Version stored with each secret; bump it when rotating the key. */
-  TENANT_SECRETS_KEY_VERSION: z.coerce.number().int().min(1).default(1),
-  /** Old keys still readable during a rotation: "1:<base64>,2:<base64>". */
-  TENANT_SECRETS_PREVIOUS_KEYS: z.string().optional(),
-  /**
-   * Owner connection used to create each clinic's database and role (needs
-   * CREATEDB and CREATEROLE), e.g. the Neon project's neondb_owner URL.
-   */
-  TENANT_DB_ADMIN_URL: z.url().optional(),
-  /** Clinics are served at <subdomain>.<TENANT_BASE_DOMAIN>. */
-  TENANT_BASE_DOMAIN: z.string().default('cabinova.ma'),
-});
+    // Module 4 — database per clinic. Provisioning is refused until these are set.
+    /**
+     * Master key for clinic database credentials: 32 random bytes, base64
+     * (`openssl rand -base64 32`). Lose it and every clinic's credentials are
+     * unreadable — keep it in a secret manager, never in git.
+     */
+    TENANT_SECRETS_KEY: base64Key.optional(),
+    /** Version stored with each secret; bump it when rotating the key. */
+    TENANT_SECRETS_KEY_VERSION: z.coerce.number().int().min(1).default(1),
+    /** Old keys still readable during a rotation: "1:<base64>,2:<base64>". */
+    TENANT_SECRETS_PREVIOUS_KEYS: z.string().optional(),
+    /**
+     * Owner connection used to create each clinic's database and role (needs
+     * CREATEDB and CREATEROLE), e.g. the Neon project's neondb_owner URL.
+     */
+    TENANT_DB_ADMIN_URL: z.url().optional(),
+    /** Clinics are served at <subdomain>.<TENANT_BASE_DOMAIN>. */
+    TENANT_BASE_DOMAIN: z.string().default('cabinova.ma'),
+    /**
+     * Clinic app address in links sent to cabinets, "{subdomain}" replaced,
+     * e.g. "http://{subdomain}.localhost:3002" in development. Defaults to
+     * https://<subdomain>.<TENANT_BASE_DOMAIN>.
+     */
+    CLINIC_APP_URL: z
+      .string()
+      .refine((v) => v.includes('{subdomain}'), {
+        message: 'must contain {subdomain}',
+      })
+      .optional(),
+    /**
+     * Tests and CI only: "host:port" of Neon's wsproxy in front of a plain
+     * Postgres (test/docker-compose.yml). Refused in production.
+     */
+    NEON_WS_PROXY: z.string().optional(),
+  })
+  .refine((env) => !(env.NODE_ENV === 'production' && env.NEON_WS_PROXY), {
+    message: 'NEON_WS_PROXY is for tests only',
+    path: ['NEON_WS_PROXY'],
+  });
 
 export type Env = z.infer<typeof envSchema>;
 

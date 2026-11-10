@@ -28,6 +28,7 @@ export const FEATURE_STATUS_TONES: Record<FeatureStatus, string> = {
 
 /** Why a cabinet has (or hasn't) a feature — see resolve.ts in the API. */
 export const SOURCE_LABELS = {
+	not_implemented: "Absente du code",
 	plan: "Selon l’offre",
 	override: "Exception",
 	beta: "Bêta (non testeur)",
@@ -43,6 +44,8 @@ export type Feature = {
 	status: FeatureStatus;
 	disabledReason: string | null;
 	sortOrder: number;
+	/** In the code registry (@cabinova/features); false = never available, can be deleted. */
+	implemented: boolean;
 };
 
 /** GET /features row. */

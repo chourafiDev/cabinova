@@ -1,0 +1,52 @@
+// Types and helpers of Équipe (clinic-api src/team).
+
+export type StaffRole = "doctor" | "secretary";
+
+export type MemberStatus = "active" | "invited" | "expired" | "disabled";
+
+/** A member of the cabinet's staff (GET /team). */
+export type Member = {
+	id: string;
+	name: string;
+	email: string;
+	role: "owner" | StaffRole;
+	roleLabel: string;
+	status: MemberStatus;
+	/** Invitation not accepted yet: when its link stops working. */
+	inviteExpiresAt: string | null;
+	lastLoginAt: string | null;
+	createdAt: string;
+	spaceIds: string[];
+	/** Appointments to come with them as the doctor. */
+	upcomingAppointments: number;
+	twoFactor: boolean;
+};
+
+export type Quota = { used: number; max: number | null };
+
+export type Team = {
+	members: Member[];
+	/** Active accounts against the offer; the owner counts as a doctor. */
+	limits: { doctors: Quota; secretaries: Quota };
+	/** Open spaces, to choose where each member works. */
+	spaces: { id: string; name: string; city: string | null }[];
+	/** Everyone must use two-factor sign-in. */
+	requireTwoFactor: boolean;
+};
+
+/** A link to give a member (POST /team, POST /team/:id/link). */
+export type MemberLink = {
+	url: string;
+	expiresAt: string;
+	/** "logged": no e-mail provider (development). */
+	delivery: "sent" | "logged" | "failed";
+	kind: "invitation" | "password";
+};
+
+export const ROLES: StaffRole[] = ["doctor", "secretary"];
+
+/** The quota a role uses. */
+export const quotaOf = (team: Team, role: StaffRole) =>
+	role === "doctor" ? team.limits.doctors : team.limits.secretaries;
+
+export const isFull = ({ used, max }: Quota) => max !== null && used >= max;

@@ -1,0 +1,76 @@
+import "server-only";
+import { cache } from "react";
+import { type Unavailable, serverApi, unavailableFrom } from "./server-api";
+
+export type ClinicSession = {
+	user: {
+		id: string;
+		name: string;
+		email: string;
+		role: string;
+		roleLabel: string;
+		/** The cabinet requires 2FA and this account hasn't set it up. */
+		twoFactorSetupRequired: boolean;
+		/** Their own language, else the cabinet's. */
+		locale: string;
+	};
+	cabinet: { name: string; specialty: string | null; city: string | null; subdomain: string };
+	subscription: {
+		plan: string | null;
+		status: "trialing" | "active" | "past_due" | "cancelled" | null;
+		trialEndsAt: string | null;
+		currentPeriodEnd: string | null;
+		currentPeriodStart: string | null;
+		quotePending: boolean;
+		invoiceDueAt: string | null;
+		doctors: { used: number; max: number | null };
+		secretaries: { used: number; max: number | null };
+		storage: { usedMb: number | null; quotaMb: number | null };
+	};
+	/** First-sign-in product tour finished or skipped (saved per account). */
+	onboarding: { tourCompleted: boolean };
+	/** The spaces (branches) this person may enter; null before migration 0004. */
+	spaces: { current: Space; spaces: Space[] } | null;
+};
+
+/** A branch of the cabinet (Fès, Marrakech…), isolated from the others. */
+export type Space = {
+	id: string;
+	name: string;
+	city: string | null;
+	address: string | null;
+	phone: string | null;
+	openingHours: OpeningHours;
+};
+
+/**
+ * Weekly opening hours by day (Date.getDay(): "0" = Sunday), each day's
+ * periods in "HH:MM"; an empty list means closed.
+ */
+export type OpeningHours = Record<"0" | "1" | "2" | "3" | "4" | "5" | "6", { from: string; to: string }[]>;
+
+export type ClinicState =
+	| { status: "signed-in"; session: ClinicSession }
+	| { status: "signed-out" }
+	| { status: "unavailable"; reason: Unavailable };
+
+/** Who is signed in to this cabinet (GET /auth/me). Once per request. */
+export const getClinicState = cache(async (): Promise<ClinicState> => {
+	const res = await serverApi("/auth/me");
+	if (res.ok) return { status: "signed-in", session: await res.json() };
+	const reason = await unavailableFrom(res);
+	if (reason) return { status: "unavailable", reason };
+	if (res.status === 401) return { status: "signed-out" };
+	throw new Error(`GET /auth/me failed: ${res.status}`);
+});
+
+export type CabinetInfo = Pick<ClinicSession["cabinet"], "name" | "specialty" | "city" | "subdomain">;
+
+/** The cabinet's public identity, for the sign-in pages. */
+export async function getCabinet(): Promise<{ cabinet: CabinetInfo } | { reason: Unavailable }> {
+	const res = await serverApi("/clinic");
+	if (res.ok) return { cabinet: await res.json() };
+	const reason = await unavailableFrom(res);
+	if (reason) return { reason };
+	throw new Error(`GET /clinic failed: ${res.status}`);
+}

@@ -1,0 +1,227 @@
+{
+  "language": {
+    "title": "اللغة",
+    "description": "لغة التطبيق في حسابك. لا يؤثر ذلك على لغة باقي الفريق.",
+    "label": "لغة الواجهة",
+    "saved": "تم حفظ اللغة",
+    "error": "تعذر الحفظ",
+    "switcher": "تغيير اللغة"
+  },
+  "loadingPage": "جارٍ تحميل الصفحة…",
+  "close": "إغلاق",
+  "toggleMenu": "إظهار القائمة أو إخفاؤها",
+  "menu": "القائمة",
+  "menuDescription": "التنقل في العيادة.",
+  "support": "الاتصال بدعم Cabinova",
+  "footer": "Cabinova · بياناتكم الطبية مستضافة في قاعدة البيانات الخاصة بعيادتكم.",
+  "poweredBy": "بدعم من Cabinova",
+  "appDescription": "عيادتكم الطبية عبر الإنترنت.",
+  "help": {
+    "title": "هل تحتاج إلى مساعدة؟",
+    "description": "فريق Cabinova يجيب عن أسئلتكم.",
+    "action": "الاتصال بالدعم"
+  },
+  "roles": {
+    "owner": "الطبيب المسؤول",
+    "doctor": "طبيب",
+    "secretary": "سكرتيرة"
+  },
+  "userMenu": {
+    "profile": "ملفي الشخصي",
+    "tour": "إعادة الجولة التعريفية",
+    "signOut": "تسجيل الخروج"
+  },
+  "theme": {
+    "label": "مظهر الواجهة",
+    "title": "المظهر",
+    "light": "فاتح",
+    "dark": "داكن",
+    "system": "حسب النظام"
+  },
+  "unavailable": {
+    "TENANT_SUSPENDED": "الوصول موقوف",
+    "TENANT_NOT_READY": "العيادة قيد الإعداد",
+    "SERVICE_UNAVAILABLE": "الخدمة غير متاحة",
+    "TENANT_OUTDATED": "جارٍ التحديث",
+    "default": "العيادة غير موجودة"
+  },
+  "palette": {
+    "open": "فتح لوحة الأوامر",
+    "trigger": "الانتقال إلى…",
+    "title": "لوحة الأوامر",
+    "description": "الانتقال إلى صفحة أو تنفيذ إجراء",
+    "placeholder": "الانتقال إلى صفحة أو تنفيذ إجراء…",
+    "empty": "لا توجد نتائج لـ « {term} ».",
+    "pages": "الصفحات",
+    "actions": "الإجراءات",
+    "goToSpace": "الانتقال إلى الفضاء {space}",
+    "tour": "إعادة الجولة التعريفية",
+    "themeLight": "المظهر الفاتح",
+    "themeDark": "المظهر الداكن",
+    "themeSystem": "مظهر النظام",
+    "shortcuts": "اختصارات لوحة المفاتيح",
+    "signOut": "تسجيل الخروج",
+    "navigate": "التنقل",
+    "select": "فتح",
+    "escape": "Esc",
+    "dismiss": "إغلاق"
+  },
+  "shortcuts": {
+    "title": "اختصارات لوحة المفاتيح",
+    "description": "غير مفعلة أثناء الكتابة في حقل.",
+    "general": "عام",
+    "navigation": "التنقل",
+    "openPalette": "فتح لوحة الأوامر",
+    "search": "بحث",
+    "toggleSidebar": "إظهار القائمة الجانبية أو إخفاؤها",
+    "show": "عرض الاختصارات",
+    "closeWindow": "إغلاق نافذة",
+    "then": "ثم",
+    "hint": "ثم حرف…",
+    "hintList": "(? لعرض القائمة)"
+  },
+  "notifications": {
+    "title": "الإشعارات",
+    "unread": "الإشعارات، {count} غير مقروءة",
+    "readAll": "تعليم الكل كمقروء",
+    "empty": "لا توجد إشعارات حاليًا.",
+    "unreadDot": "غير مقروء",
+    "appointmentAt": "موعد {time}",
+    "walkIn": "بدون موعد",
+    "codes": {
+      "arrived": "{patient} في قاعة الانتظار",
+      "no_show": "لم يحضر {patient}",
+      "cancelled": "أُلغي موعد {patient}",
+      "member_joined": "انضم {name} إلى فريقك",
+      "quote_due": "عرض السعر {number} للأداء",
+      "invoice_billed": "الفاتورة {number} للأداء",
+      "invoice_overdue": "الفاتورة {number} متأخرة",
+      "invoice_paid": "الفاتورة {number} متاحة",
+      "meeting_invite": "يدعوك {by} إلى اجتماع",
+      "meeting_cancelled": "ألغى {by} الاجتماع",
+      "left": "غادر {patient} دون استشارة",
+      "returned": "عاد {patient} إلى قاعة الانتظار"
+    },
+    "meetingNow": "{title} · الآن",
+    "meetingAt": "{title} · {date} على الساعة {time}"
+  },
+  "space": {
+    "switch": "{cabinet}، الفضاء {space} — تغيير الفضاء",
+    "changed": "الفضاء: {space}",
+    "switchError": "تعذر التغيير",
+    "offer": "باقة {plan}",
+    "noOffer": "لا توجد باقة",
+    "trialing": "فترة تجريبية مجانية",
+    "pastDue": "في انتظار الدفع",
+    "seeQuote": "عرض عرض السعر",
+    "chooseOffer": "اختيار باقتي",
+    "manage": "إدارة",
+    "settings": "الإعدادات",
+    "team": "الفريق",
+    "spaces": "الفضاءات",
+    "manageTitle": "إدارة",
+    "cabinet": "العيادة",
+    "hours": "أوقات العمل",
+    "tarifs": "الأسعار",
+    "spacesLink": "الفضاءات",
+    "new": "فضاء جديد",
+    "newDescription": "موقع تابع للعيادة (مثلًا في مدينة أخرى). مرضاه وفريقه ومواعيده منفصلة عن باقي الفضاءات.",
+    "name": "الاسم",
+    "namePlaceholder": "مثال: مراكش جيليز",
+    "city": "المدينة",
+    "phone": "الهاتف",
+    "address": "العنوان",
+    "nameError": "اسم الفضاء: حرفان على الأقل.",
+    "created": "تم إنشاء الفضاء « {name} »",
+    "createError": "تعذر الإنشاء",
+    "cancel": "إلغاء",
+    "create": "إنشاء الفضاء"
+  },
+  "age": "{age} سنة",
+  "stats": "الإحصائيات",
+  "appointmentStatus": {
+    "scheduled": "مبرمج",
+    "confirmed": "مؤكد",
+    "arrived": "في قاعة الانتظار",
+    "in_consultation": "في الاستشارة",
+    "completed": "منتهٍ",
+    "no_show": "غائب",
+    "cancelled": "ملغى"
+  },
+  "notFound": {
+    "title": "الصفحة غير موجودة",
+    "message": "هذه الصفحة غير موجودة أو تم نقلها.",
+    "back": "العودة إلى لوحة التحكم"
+  },
+  "sex": {
+    "male": "ذكر",
+    "female": "أنثى"
+  },
+  "coverage": {
+    "none": "بدون",
+    "cnss": "CNSS (AMO)",
+    "cnops": "CNOPS",
+    "amo_tadamon": "AMO تضامن",
+    "far": "FAR",
+    "private": "تأمين خاص"
+  },
+  "pagination": {
+    "label": "ترقيم الصفحات",
+    "page": "الصفحة {page} من {total}",
+    "previous": "السابقة",
+    "next": "التالية"
+  },
+  "breadcrumb": "مسار التنقل",
+  "toasts": "الإشعارات",
+  "noShowRisk": {
+    "label": "خطر الغياب",
+    "tooltip": "تغيّب {count} مرات عن مواعيده: أكّد مواعيده مسبقًا.",
+    "noteTitle": "تغيّب هذا المريض عن {count} مواعيد.",
+    "noteAdvice": "اتصل به في اليوم السابق لتأكيد حضوره."
+  },
+  "holidays": {
+    "estimated": "تاريخ تقديري: يتوقف على رؤية الهلال (± يوم واحد).",
+    "names": {
+      "newYear": "رأس السنة الميلادية",
+      "independenceManifesto": "ذكرى تقديم وثيقة الاستقلال",
+      "amazighNewYear": "رأس السنة الأمازيغية",
+      "labourDay": "عيد الشغل",
+      "throneDay": "عيد العرش",
+      "ouedEdDahab": "ذكرى استرجاع وادي الذهب",
+      "revolutionDay": "ذكرى ثورة الملك والشعب",
+      "youthDay": "عيد الشباب",
+      "unityDay": "عيد الوحدة",
+      "greenMarch": "ذكرى المسيرة الخضراء",
+      "independenceDay": "عيد الاستقلال",
+      "islamicNewYear": "فاتح محرم",
+      "mawlid": "عيد المولد النبوي",
+      "eidAlFitr": "عيد الفطر",
+      "eidAlAdha": "عيد الأضحى"
+    },
+    "worked": "العيادة مفتوحة"
+  },
+  "actPicker": {
+    "placeholder": "اختر عملًا",
+    "search": "الاسم أو الاختصار (مثال CS)…",
+    "empty": "لم يُعثر على أي عمل."
+  },
+  "editor": {
+    "toolbar": "التنسيق",
+    "bold": "عريض",
+    "italic": "مائل",
+    "underline": "تسطير",
+    "strike": "يتوسطه خط",
+    "left": "محاذاة لليسار",
+    "center": "توسيط",
+    "right": "محاذاة لليمين",
+    "justify": "ضبط",
+    "bulletList": "قائمة نقطية",
+    "orderedList": "قائمة مرقمة",
+    "undo": "تراجع",
+    "redo": "إعادة"
+  },
+  "datePicker": {
+    "placeholder": "اختر تاريخًا",
+    "clear": "مسح التاريخ"
+  }
+}

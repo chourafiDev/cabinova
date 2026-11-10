@@ -1,10 +1,10 @@
 "use client";
 
-import { Check, Minus } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
+import { IconCheck, IconMinus } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import { api } from "@/lib/api-client";
 import { SOURCE_LABELS, type TenantFeatures } from "@/lib/features";
@@ -102,9 +102,9 @@ export function TenantFeaturesTab({
 								<td className={td}>
 									<span className="flex items-center gap-1.5">
 										{f.effective.enabled ? (
-											<Check className="size-4 text-emerald-600" aria-label="Active" />
+											<IconCheck className="size-4 text-emerald-600" aria-label="Active" />
 										) : (
-											<Minus className="size-4 text-muted-foreground" aria-label="Inactive" />
+											<IconMinus className="size-4 text-muted-foreground" aria-label="Inactive" />
 										)}
 										<span className={cn("text-xs", f.effective.source === "kill_switch" ? "text-red-700" : "text-muted-foreground")}>
 											{SOURCE_LABELS[f.effective.source]}

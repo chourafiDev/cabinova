@@ -21,6 +21,8 @@ export interface TenantDatabaseProvider {
   readonly provider: string;
   readonly mode: string;
   create(tenant: { id: string; slug: string }): Promise<ProvisionedDatabase>;
+  /** Permanently removes the database and its role (after the retention period). */
+  drop(db: { databaseName: string; roleName: string }): Promise<void>;
 }
 
 export const TENANT_DB_PROVIDER = Symbol('TENANT_DB_PROVIDER');
@@ -107,6 +109,34 @@ export class NeonDatabaseProvider implements TenantDatabaseProvider {
       roleName,
       password,
     };
+  }
+
+  /**
+   * Drops the clinic database, then its role. The database is dropped as
+   * the clinic role (its owner): the platform owner holds SET on it but no
+   * inherited rights. Fails if someone is still connected.
+   */
+  async drop({
+    databaseName,
+    roleName,
+  }: {
+    databaseName: string;
+    roleName: string;
+  }) {
+    const pool = new Pool({ connectionString: this.adminUrl.toString() });
+    try {
+      const client = await pool.connect();
+      try {
+        await client.query(`set role ${ident(roleName)}`);
+        await client.query(`drop database if exists ${ident(databaseName)}`);
+      } finally {
+        await client.query('reset role');
+        client.release();
+      }
+      await pool.query(`drop role if exists ${ident(roleName)}`);
+    } finally {
+      await pool.end();
+    }
   }
 }
 

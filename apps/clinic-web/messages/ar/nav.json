@@ -1,0 +1,43 @@
+{
+  "groups": {
+    "cabinet": "العيادة",
+    "agenda": "المواعيد",
+    "management": "التسيير",
+    "administration": "الإدارة"
+  },
+  "items": {
+    "dashboard": "لوحة التحكم",
+    "appointments": "المواعيد",
+    "absences": "العطل والغيابات",
+    "patients": "المرضى",
+    "meetings": "الاجتماعات",
+    "messages": "الرسائل",
+    "payments": "المداخيل",
+    "reports": "الإحصائيات",
+    "staff": "الفريق",
+    "settings": "الإعدادات",
+    "calendar": "التقويم",
+    "waiting": "قاعة الانتظار",
+    "seen": "المرضى الذين تمت معاينتهم"
+  },
+  "home": "{cabinet} — لوحة التحكم",
+  "titles": {
+    "settings": "{page} · الإعدادات",
+    "activity": "سجل النشاط",
+    "tarifs": "الأسعار",
+    "spaces": "الفضاءات",
+    "sessions": "الجلسات النشطة",
+    "cabinet": "العيادة",
+    "profile": "ملفي الشخصي",
+    "hours": "أوقات العمل والمواعيد",
+    "integrations": "التكاملات"
+  },
+  "visitChips": {
+    "waiting": "في الانتظار",
+    "waitingLabel": "{count, plural, zero {لا أحد في قاعة الانتظار} one {مريض واحد في قاعة الانتظار} two {مريضان في قاعة الانتظار} few {# مرضى في قاعة الانتظار} many {# مريضًا في قاعة الانتظار} other {# مريض في قاعة الانتظار}}",
+    "callNext": "التالي",
+    "callNextTitle": "إدخال {patient}",
+    "resume": "متابعة استشارة {patient}",
+    "minutes": "{count, plural, =0 {الآن} other {# د}}"
+  }
+}

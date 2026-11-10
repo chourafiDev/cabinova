@@ -1,0 +1,1 @@
+ALTER TABLE "acts" ADD COLUMN "abbreviation" text;

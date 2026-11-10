@@ -1,10 +1,13 @@
+import { isFeatureKey } from '@cabinova/features';
 import {
   BadRequestException,
   ConflictException,
   Injectable,
+  Logger,
   NotFoundException,
+  type OnApplicationBootstrap,
 } from '@nestjs/common';
-import { and, asc, eq, ne } from 'drizzle-orm';
+import { and, asc, eq, ne, sql } from 'drizzle-orm';
 import { type AuditActor, diff, writeAudit } from '../audit/audit.js';
 import { DatabaseService } from '../database/database.module.js';
 import {
@@ -15,31 +18,38 @@ import {
   tenants,
 } from '../database/schema/index.js';
 import type { FeatureLevel, PlanFeatures } from '../plans/catalog.js';
-import type {
-  CreateFeatureDto,
-  SetOverrideDto,
-  UpdateFeatureDto,
-} from './dto.js';
+import type { SetOverrideDto, UpdateFeatureDto } from './dto.js';
 import { isOverrideActive, resolveFeature } from './resolve.js';
+import { syncFeatureCatalog } from './sync.js';
 
-const EDITABLE = [
-  'name',
-  'description',
-  'category',
-  'sortOrder',
-  'status',
-  'disabledReason',
-] as const;
+/** The admin manages status only; name, category and order come from the code. */
+const EDITABLE = ['status', 'disabledReason'] as const;
 
 /**
- * "Fonctionnalités et options": the feature catalog (create, beta, global
- * switch-off), per-cabinet exceptions with optional dates, and what each
+ * "Fonctionnalités et options": the feature catalog (synced from the code at
+ * startup — see sync.ts; the admin puts in beta or switches off), per-cabinet exceptions with optional dates, and what each
  * cabinet effectively gets (resolve.ts). "Usage" figures are reach — how
  * many cabinets can use a feature now; actual usage needs the clinic app.
  */
 @Injectable()
-export class FeaturesService {
+export class FeaturesService implements OnApplicationBootstrap {
+  private readonly logger = new Logger(FeaturesService.name);
+
   constructor(private readonly database: DatabaseService) {}
+
+  /** Every start (so every deploy): the catalog follows @cabinova/features. */
+  async onApplicationBootstrap() {
+    try {
+      const r = await syncFeatureCatalog(this.database.db);
+      if (r.added.length || r.notInCode.length) {
+        this.logger.log(
+          `Feature catalog synced from the code registry: +${r.added.join(', ') || '0'}; not in code: ${r.notInCode.join(', ') || 'none'}`,
+        );
+      }
+    } catch (err) {
+      this.logger.error('Feature catalog sync failed', err);
+    }
+  }
 
   /** The catalog with each plan's level and the number of cabinets reached. */
   async list() {
@@ -63,6 +73,7 @@ export class FeaturesService {
       const reached = cabinets.filter((c) => {
         const o = mine.find((x) => x.tenantId === c.id);
         return resolveFeature({
+          implemented: feature.implemented,
           status: feature.status,
           planLevel: c.planFeatures
             ? (c.planFeatures[feature.key] ?? 'none')
@@ -115,39 +126,38 @@ export class FeaturesService {
     };
   }
 
-  create(actor: AuditActor, dto: CreateFeatureDto) {
-    return this.database.db.transaction(async (tx) => {
-      const [taken] = await tx
-        .select({ key: features.key })
-        .from(features)
-        .where(eq(features.key, dto.key));
-      if (taken) {
-        throw new ConflictException({
-          code: 'FEATURE_KEY_TAKEN',
-          message: 'Une fonctionnalité utilise déjà cet identifiant.',
-        });
-      }
-      const [feature] = await tx
-        .insert(features)
-        .values({
-          key: dto.key,
-          name: dto.name,
-          description: dto.description ?? null,
-          category: dto.category ?? null,
-          sortOrder: dto.sortOrder ?? 0,
-          status: dto.status,
-          disabledReason:
-            dto.status === 'disabled' ? (dto.disabledReason ?? null) : null,
-        })
-        .returning();
-      await this.audit(tx, actor, 'feature.create', dto.key, {
-        status: dto.status,
+  /**
+   * Deletes a feature the code no longer implements, with its exceptions
+   * and its level in every plan. A feature the code implements can't be
+   * deleted (it would come back at the next start).
+   */
+  remove(actor: AuditActor, key: string) {
+    if (isFeatureKey(key)) {
+      throw new ConflictException({
+        code: 'FEATURE_IN_CODE',
+        message:
+          'Cette fonctionnalité existe dans le code : retirez-la du registre (@cabinova/features) pour pouvoir la supprimer.',
       });
-      return feature;
+    }
+    return this.database.db.transaction(async (tx) => {
+      await this.find(key, tx);
+      const removed = await tx
+        .delete(tenantFeatureOverrides)
+        .where(eq(tenantFeatureOverrides.featureKey, key))
+        .returning({ id: tenantFeatureOverrides.id });
+      await tx
+        .update(subscriptionPlans)
+        .set({ features: sql`${subscriptionPlans.features} - ${key}` })
+        .where(sql`${subscriptionPlans.features} ? ${key}`);
+      await tx.delete(features).where(eq(features.key, key));
+      await this.audit(tx, actor, 'feature.delete', key, {
+        overridesRemoved: removed.length,
+      });
+      return { ok: true };
     });
   }
 
-  /** Edits, puts in beta, or switches off (kill switch) — always audited. */
+  /** Puts in beta, reactivates, or switches off (kill switch) — always audited. */
   update(actor: AuditActor, key: string, dto: UpdateFeatureDto) {
     return this.database.db.transaction(async (tx) => {
       const [feature] = await tx
@@ -157,10 +167,6 @@ export class FeaturesService {
         .for('update');
       if (!feature) throw new NotFoundException('Fonctionnalité introuvable.');
       const next = {
-        name: dto.name,
-        description: dto.description ?? null,
-        category: dto.category ?? null,
-        sortOrder: dto.sortOrder ?? feature.sortOrder,
         status: dto.status,
         disabledReason:
           dto.status === 'disabled' ? (dto.disabledReason ?? null) : null,
@@ -219,6 +225,7 @@ export class FeaturesService {
             active: isOverrideActive(override, now),
           },
           effective: resolveFeature({
+            implemented: feature.implemented,
             status: feature.status,
             planLevel,
             override,
@@ -236,6 +243,12 @@ export class FeaturesService {
     key: string,
     dto: SetOverrideDto,
   ) {
+    if (!isFeatureKey(key)) {
+      throw new BadRequestException({
+        code: 'FEATURE_NOT_IN_CODE',
+        message: 'Fonctionnalité absente du code : aucune exception possible.',
+      });
+    }
     const startsAt = dto.startsAt ? new Date(dto.startsAt) : null;
     const endsAt = dto.endsAt ? new Date(dto.endsAt) : null;
     if (startsAt && endsAt && endsAt <= startsAt) {
@@ -311,11 +324,15 @@ export class FeaturesService {
     });
   }
 
+  /** The catalog, each feature flagged with whether the code implements it. */
   private catalog() {
     return this.database.db
       .select()
       .from(features)
-      .orderBy(asc(features.sortOrder), asc(features.name));
+      .orderBy(asc(features.sortOrder), asc(features.name))
+      .then((rows) =>
+        rows.map((f) => ({ ...f, implemented: isFeatureKey(f.key) })),
+      );
   }
 
   /** Cabinets (not closed) with their live plan's feature levels. */
@@ -353,7 +370,7 @@ export class FeaturesService {
       .from(features)
       .where(eq(features.key, key));
     if (!feature) throw new NotFoundException('Fonctionnalité introuvable.');
-    return feature;
+    return { ...feature, implemented: isFeatureKey(feature.key) };
   }
 
   private audit(

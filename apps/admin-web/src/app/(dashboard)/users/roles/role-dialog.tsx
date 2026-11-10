@@ -1,9 +1,9 @@
 "use client";
 
-import { Info, Lock, ShieldCheck } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
+import { IconInfo, IconLock, IconShieldCheck } from "@/components/icons";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -44,11 +44,7 @@ export function RoleDialog({
 	const [selected, setSelected] = useState<Set<string>>(new Set(role.permissions));
 	const [saving, setSaving] = useState(false);
 
-	const groups = groupPermissions(catalog).map((g) => ({
-		...g,
-		read: g.permissions.find((p) => p.action === "read"),
-		write: g.permissions.find((p) => p.action === "write"),
-	}));
+	const groups = groupPermissions(catalog);
 	const initial = new Set(role.permissions);
 	const changes = catalog.filter((p) => selected.has(p.key) !== initial.has(p.key)).length;
 
@@ -67,8 +63,20 @@ export function RoleDialog({
 				else {
 					next.delete(read.key);
 					if (write) next.delete(write.key);
+					for (const extra of group.extras) next.delete(extra.key);
 				}
 			}
+			return next;
+		});
+
+	/** An extra permission (e.g. "Voir tous les tickets") implies Consulter. */
+	const toggleExtra = (group: (typeof groups)[number], key: string, on: boolean) =>
+		setSelected((current) => {
+			const next = new Set(current);
+			if (on) {
+				next.add(key);
+				if (group.read && myPermissions.includes(group.read.key)) next.add(group.read.key);
+			} else next.delete(key);
 			return next;
 		});
 
@@ -95,7 +103,7 @@ export function RoleDialog({
 		const locked = !myPermissions.includes(permission.key);
 		return (
 			<span className="inline-flex items-center gap-1.5" title={locked ? "Vous n’avez pas cette permission" : permission.description}>
-				{locked && <Lock className="size-3 text-muted-foreground" aria-hidden />}
+				{locked && <IconLock className="size-3 text-muted-foreground" aria-hidden />}
 				<Switch
 					checked={selected.has(permission.key)}
 					disabled={locked}
@@ -118,7 +126,7 @@ export function RoleDialog({
 			<DialogContent className="flex max-h-[88vh] flex-col gap-0 overflow-hidden p-0 sm:max-w-xl">
 				<DialogHeader className="flex-row items-start gap-3 border-b px-5 pt-5 pb-4 text-start">
 					<span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
-						<ShieldCheck className="size-4" />
+						<IconShieldCheck className="size-4" />
 					</span>
 					<div className="grid min-w-0 gap-1">
 						<DialogTitle>{role.name}</DialogTitle>
@@ -151,7 +159,27 @@ export function RoleDialog({
 									</div>
 									<div className="flex justify-center">{cell(group, "read")}</div>
 									<div className="flex justify-center">{cell(group, "write")}</div>
-								</li>
+									{group.extras.map((extra) => {
+										const locked = !myPermissions.includes(extra.key);
+										return (
+											<label
+												key={extra.key}
+												className="col-span-3 mt-1.5 flex items-center justify-between gap-3 rounded-md bg-muted/50 px-2.5 py-1.5"
+											>
+												<span className="text-xs">{extra.description}</span>
+												<span className="inline-flex items-center gap-1.5">
+													{locked && <IconLock className="size-3 text-muted-foreground" aria-hidden />}
+													<Switch
+														checked={selected.has(extra.key)}
+														disabled={locked}
+														onCheckedChange={(on) => toggleExtra(group, extra.key, on)}
+														aria-label={`${extra.description} (${group.label})`}
+													/>
+												</span>
+											</label>
+										);
+									})}
+									</li>
 							);
 						})}
 					</ul>
@@ -159,7 +187,7 @@ export function RoleDialog({
 
 				{role.userCount > 0 && (
 					<p className="flex items-center gap-2 border-t bg-amber-50 px-5 py-2 text-xs text-amber-900">
-						<Info className="size-3.5 shrink-0" />
+						<IconInfo className="size-3.5 shrink-0" />
 						Les changements s’appliquent immédiatement à {plural(role.userCount, "utilisateur")}.
 					</p>
 				)}

@@ -3,10 +3,21 @@
   "private": true,
   "packageManager": "pnpm@9.14.4",
   "scripts": {
-    "dev": "pnpm --parallel --filter admin-api --filter admin-web dev",
+    "dev": "pnpm --parallel --filter admin-api --filter admin-web --filter clinic-api --filter clinic-web dev",
     "dev:api": "pnpm --filter admin-api start:dev",
     "dev:web": "pnpm --filter admin-web dev",
+    "dev:landing": "pnpm --filter landing dev",
     "build": "pnpm -r build",
-    "lint": "pnpm -r lint"
+    "lint": "pnpm -r lint",
+    "typecheck": "pnpm -r typecheck",
+    "test": "pnpm -r test",
+    "test:e2e": "pnpm --filter admin-api test:e2e:db"
+  },
+  "pnpm": {
+    "overrides": {
+      "body-parser@>=2.0.0 <2.4.0": "^2.4.0",
+      "fast-uri@>=3.0.0 <3.1.9": "^3.1.9",
+      "@esbuild-kit/core-utils>esbuild": "^0.25.0"
+    }
   }
 }

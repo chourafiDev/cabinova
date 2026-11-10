@@ -1,4 +1,4 @@
-import { Pool, neonConfig } from '@neondatabase/serverless';
+import { Pool } from '@neondatabase/serverless';
 import {
   Global,
   Inject,
@@ -8,12 +8,11 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { drizzle, type NeonDatabase } from 'drizzle-orm/neon-serverless';
-import ws from 'ws';
 import type { Env } from '../config/env.js';
+import { configureNeon } from './neon.js';
 import * as schema from './schema/index.js';
 
-// WebSocket driver (not HTTP): needed for interactive transactions.
-neonConfig.webSocketConstructor = ws;
+configureNeon();
 
 export type Database = NeonDatabase<typeof schema>;
 export type Transaction = Parameters<Parameters<Database['transaction']>[0]>[0];
@@ -33,6 +32,19 @@ export class DatabaseService implements OnApplicationShutdown {
   }
 }
 
+/**
+ * Idle connections are kept a minute (reconnecting costs a handshake), not
+ * longer: one dropped while idle (sleep, network change) can look alive,
+ * and a query on it waits forever. A query that gets no answer is stopped
+ * after 30 s, which also discards its connection; waiting for a free one
+ * gives up after 30 s (time for Neon to wake up a suspended database).
+ */
+const POOL_TIMEOUTS = {
+  idleTimeoutMillis: 60_000,
+  connectionTimeoutMillis: 30_000,
+  query_timeout: 30_000,
+};
+
 @Global()
 @Module({
   providers: [
@@ -40,7 +52,10 @@ export class DatabaseService implements OnApplicationShutdown {
       provide: DB_POOL,
       inject: [ConfigService],
       useFactory: (config: ConfigService<Env, true>) =>
-        new Pool({ connectionString: config.get('DATABASE_URL') }),
+        new Pool({
+          connectionString: config.get('DATABASE_URL'),
+          ...POOL_TIMEOUTS,
+        }),
     },
     {
       provide: DB,

@@ -10,6 +10,7 @@ export const PLATFORM_PERMISSIONS = {
   'dashboard:read': 'Voir le tableau de bord global',
   'tenants:read': 'Voir les cabinets',
   'tenants:write': 'Créer et gérer les cabinets',
+  'tenants:data': 'Exporter et supprimer les données des cabinets',
   'subscriptions:read': 'Voir les abonnements',
   'subscriptions:write': 'Gérer les offres et abonnements',
   'billing:read': 'Voir la facturation',
@@ -20,6 +21,8 @@ export const PLATFORM_PERMISSIONS = {
   'users:write': 'Gérer les utilisateurs et permissions de la plateforme',
   'support:read': 'Voir les tickets de support',
   'support:write': 'Traiter les tickets de support',
+  'support:all':
+    'Voir tous les tickets, y compris ceux assignés aux autres agents',
   'security:read': "Voir le journal d'audit et les événements sensibles",
   'settings:read': 'Voir la configuration globale',
   'settings:write': 'Modifier la configuration globale',

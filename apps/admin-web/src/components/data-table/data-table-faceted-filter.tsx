@@ -5,6 +5,7 @@ import { cn } from "cn";
 
 import { type Column, type RowData, Subscribe } from "@tanstack/react-table";
 
+import { IconAddCircle, IconError } from "@/components/icons";
 import type { DataTableFeatures } from "@/lib/data-table-features";
 import type { Option } from "@/lib/data-table-types";
 
@@ -24,7 +25,6 @@ import {
   FacetedValue,
 } from "@/components/ui/faceted";
 import { Separator } from "@/components/ui/separator";
-import { XCircle, PlusCircle } from "lucide-react";
 import { focusRing } from "@/lib/focus-ring"
 
 interface DataTableFacetedFilterProps<TData extends RowData, TValue> {
@@ -106,11 +106,11 @@ function DataTableFacetedFilterContent<TData extends RowData, TValue>({
               className={cn(focusRing, "rounded-sm opacity-70 transition-opacity hover:opacity-100")}
               onClick={onReset}
             >
-              <XCircle
+              <IconError
               />
             </div>
           ) : (
-            <PlusCircle
+            <IconAddCircle
             />
           )}
           {title}

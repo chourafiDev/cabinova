@@ -1,6 +1,6 @@
-import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { IconArrowLeft } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import type { FeatureDetail, FeatureRow } from "@/lib/features";
 import { can } from "@/lib/permissions";
@@ -35,7 +35,7 @@ export default async function FeaturePage({ params }: PageProps<"/features/[key]
 			<div className="mb-4 flex flex-wrap items-center gap-3 border-b border-dashed border-foreground/20 pb-4">
 				<Button asChild variant="outline" size="icon-sm" aria-label="Retour aux fonctionnalités">
 					<Link href="/features">
-						<ArrowLeft className="size-4" />
+						<IconArrowLeft className="size-4" />
 					</Link>
 				</Button>
 				<div className="grid min-w-0 leading-tight">
@@ -80,7 +80,7 @@ export default async function FeaturePage({ params }: PageProps<"/features/[key]
 				<FeatureOverrides
 					feature={feature}
 					tenants={tenants.data.map((t) => ({ id: t.id, name: t.name }))}
-					canWrite={canWrite}
+					canWrite={canWrite && feature.implemented}
 				/>
 			</div>
 		</>

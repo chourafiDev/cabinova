@@ -1,0 +1,123 @@
+{
+  "scope": "Périmètre",
+  "allSpaces": "Tous les espaces",
+  "welcome": {
+    "hello": "Bonjour,",
+    "upcoming": "{count} rendez-vous encore prévus aujourd’hui au {cabinet}.",
+    "none": "Plus de rendez-vous prévus aujourd’hui au {cabinet}.",
+    "newAppointment": "Nouveau rendez-vous",
+    "newPatient": "Nouveau patient"
+  },
+  "kpi": {
+    "appointments": "Rendez-vous",
+    "upcoming": "{count} à venir",
+    "appointmentsHint": "Rendez-vous prévus aujourd’hui, hors annulations.",
+    "openAgenda": "Ouvrir l’agenda",
+    "seen": "Patients vus",
+    "sameDay": "vs même jour, semaine dernière",
+    "seenHint": "Rendez-vous terminés aujourd’hui.",
+    "newPatients": "Nouveaux patients",
+    "thisMonth": "Ce mois-ci",
+    "newPatientsHint": "Dossiers créés ce mois-ci, comparés au mois dernier.",
+    "seePatients": "Voir les patients",
+    "received": "Encaissé aujourd’hui",
+    "receivedHint": "Paiements reçus aujourd’hui moins les remboursements.",
+    "openPayments": "Ouvrir les encaissements",
+    "toCollect": "À encaisser",
+    "toCollectPeriod": "{count, plural, one {visite terminée aujourd’hui} other {visites terminées aujourd’hui}}",
+    "toCollectHint": "Visites terminées aujourd’hui qui ne sont pas encore entièrement réglées.",
+    "openCashier": "Ouvrir la caisse du jour",
+    "new": "Nouveau",
+    "pts": "pts"
+  },
+  "checklist": {
+    "title": "Bien démarrer avec Cabinova",
+    "progress": "{done} sur {total} étapes terminées",
+    "hide": "Masquer cette liste",
+    "progressLabel": "Progression",
+    "done": "Terminé",
+    "todo": "À faire",
+    "ok": "C’est bon",
+    "error": "Action impossible",
+    "hours": {
+      "title": "Vérifiez vos horaires",
+      "hint": "L’agenda n’accepte de rendez-vous que pendant ces horaires.",
+      "action": "Vérifier"
+    },
+    "acts": {
+      "title": "Ajoutez vos tarifs",
+      "hint": "Consultation, contrôle, ECG… pour encaisser en un clic.",
+      "action": "Ajouter"
+    },
+    "team": {
+      "title": "Invitez votre équipe",
+      "hint": "Votre secrétaire ou un confrère reçoit un lien par e-mail.",
+      "action": "Inviter"
+    },
+    "patient": {
+      "title": "Créez un premier patient",
+      "hint": "Son dossier, sa couverture et ses antécédents au même endroit.",
+      "action": "Créer"
+    },
+    "appointment": {
+      "title": "Prenez un premier rendez-vous",
+      "hint": "Il apparaît dans l’agenda et dans la salle d’attente.",
+      "action": "Ouvrir l’agenda"
+    }
+  },
+  "spaces": {
+    "title": "Par espace",
+    "space": "Espace",
+    "today": "RDV aujourd’hui",
+    "waiting": "En attente",
+    "seen": "Vus",
+    "newPatients": "Nouveaux patients (mois)"
+  },
+  "subscription": {
+    "eyebrow": "Mon abonnement",
+    "offer": "Offre {plan}",
+    "noOffer": "Aucune offre",
+    "noSubscription": "Pas d’abonnement en cours",
+    "trialing": "Essai gratuit",
+    "active": "Abonnement actif",
+    "past_due": "En attente de paiement",
+    "cancelled": "Abonnement résilié",
+    "until": "jusqu’au {date}.",
+    "chooseHint": "Choisissez votre offre pour recevoir votre devis.",
+    "doctors": "Médecins",
+    "secretaries": "Secrétaires",
+    "storage": "Stockage",
+    "unlimited": "illimité",
+    "gb": "Go",
+    "period": "du {from} au {to}."
+  },
+  "today": {
+    "eyebrow": "Aujourd’hui",
+    "title": "Rendez-vous du jour",
+    "handled": "{done} / {total} traités",
+    "openAgenda": "Ouvrir l’agenda",
+    "empty": "Aucun rendez-vous aujourd’hui.",
+    "plan": "Planifier un rendez-vous",
+    "minutes": "{count} min",
+    "new": "Nouveau"
+  },
+  "waitingRoom": {
+    "eyebrow": "En direct",
+    "title": "Salle d’attente",
+    "current": "En consultation",
+    "appointmentAt": "RDV {time}",
+    "nobody": "Personne pour le moment.",
+    "waiting": "{count, plural, one {# patient en attente} other {# patients en attente}}",
+    "empty": "La salle d’attente est vide.",
+    "arrivedAt": "Arrivé(e) à {time}",
+    "walkIn": "Sans RDV"
+  },
+  "week": {
+    "title": "Activité de la semaine",
+    "appointments": "Rendez-vous",
+    "consultations": "Consultations",
+    "summary": "consultations · {count} rendez-vous prévus",
+    "table": "Voir les données en tableau",
+    "day": "Jour"
+  }
+}

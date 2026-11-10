@@ -5,5 +5,6 @@ import { FeaturesService } from './features.service.js';
 @Module({
   controllers: [FeaturesController],
   providers: [FeaturesService],
+  exports: [FeaturesService],
 })
 export class FeaturesModule {}

@@ -1,0 +1,127 @@
+"use client";
+
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
+import { useState } from "react";
+import { toast } from "sonner";
+import { IconArrowRight, IconCheck, IconClose } from "@/components/icons";
+import { Button } from "@/components/ui/button";
+import { api } from "@/lib/api-client";
+import { NEW_PATIENT_HREF } from "@/lib/patients";
+import { cn } from "@/lib/utils";
+
+/** GET /onboarding/checklist: each step, from what the cabinet really did. */
+export type ChecklistSteps = {
+	hours: boolean;
+	acts: boolean;
+	team: boolean;
+	patient: boolean;
+	appointment: boolean;
+};
+
+const STEPS: { key: keyof ChecklistSteps; href: string }[] = [
+	{ key: "hours", href: "/settings/hours" },
+	{ key: "acts", href: "/settings/tarifs" },
+	{ key: "team", href: "/staff" },
+	{ key: "patient", href: NEW_PATIENT_HREF },
+	{ key: "appointment", href: "/appointments?view=day" },
+];
+
+/** First steps of a new cabinet, on the dashboard until they're done or hidden. */
+export function GettingStarted({ steps }: { steps: ChecklistSteps }) {
+	const router = useRouter();
+	const [saving, setSaving] = useState(false);
+	const t = useTranslations("dashboard.checklist");
+	const done = STEPS.filter((s) => steps[s.key]).length;
+	if (done === STEPS.length) return null;
+	const next = STEPS.find((s) => !steps[s.key]);
+
+	const post = async (path: string) => {
+		setSaving(true);
+		try {
+			await api(`/onboarding/checklist/${path}`, { method: "POST" });
+			router.refresh();
+		} catch (err) {
+			toast.error(err instanceof Error ? err.message : t("error"));
+		} finally {
+			setSaving(false);
+		}
+	};
+
+	return (
+		<section aria-labelledby="getting-started" className="bg-card mb-4 rounded-xl border p-5">
+			<header className="flex items-start justify-between gap-3">
+				<div className="grid gap-0.5">
+					<h2 id="getting-started" className="font-semibold">
+						{t("title")}
+					</h2>
+					<p className="text-muted-foreground text-sm">
+						{t("progress", { done, total: STEPS.length })}
+					</p>
+				</div>
+				<Button
+					size="icon"
+					variant="ghost"
+					className="size-8 shrink-0"
+					aria-label={t("hide")}
+					title={t("hide")}
+					disabled={saving}
+					onClick={() => post("dismiss")}
+				>
+					<IconClose />
+				</Button>
+			</header>
+
+			<div
+				role="progressbar"
+				aria-label={t("progressLabel")}
+				aria-valuemin={0}
+				aria-valuemax={STEPS.length}
+				aria-valuenow={done}
+				className="bg-muted mt-3 h-1.5 overflow-hidden rounded-full"
+			>
+				<div className="bg-primary h-full rounded-full transition-all" style={{ width: `${(done / STEPS.length) * 100}%` }} />
+			</div>
+
+			<ol className="mt-2 divide-y">
+				{STEPS.map((step) => {
+					const isDone = steps[step.key];
+					const isNext = step === next;
+					return (
+						<li key={step.key} className="flex flex-wrap items-center gap-x-3 gap-y-2 py-3 last:pb-0">
+							<span
+								className={cn(
+									"flex size-5 shrink-0 items-center justify-center rounded-full border",
+									isDone && "bg-primary border-primary text-primary-foreground",
+									isNext && "border-primary",
+								)}
+							>
+								{isDone && <IconCheck className="size-3" />}
+								<span className="sr-only">{isDone ? t("done") : t("todo")}</span>
+							</span>
+							<div className="min-w-0 flex-1 basis-52">
+								<p className={cn("text-sm font-medium", isDone && "text-muted-foreground line-through")}>{t(`${step.key}.title`)}</p>
+								{!isDone && <p className="text-muted-foreground text-xs">{t(`${step.key}.hint`)}</p>}
+							</div>
+							{!isDone && (
+								<div className="flex items-center gap-1">
+									{step.key === "hours" && (
+										<Button size="sm" variant="ghost" disabled={saving} onClick={() => post("hours")}>
+											{t("ok")}
+										</Button>
+									)}
+									<Button asChild size="sm" variant={isNext ? "default" : "outline"}>
+										<Link href={step.href}>
+											{t(`${step.key}.action`)} {isNext && <IconArrowRight className="rtl:rotate-180" />}
+										</Link>
+									</Button>
+								</div>
+							)}
+						</li>
+					);
+				})}
+			</ol>
+		</section>
+	);
+}

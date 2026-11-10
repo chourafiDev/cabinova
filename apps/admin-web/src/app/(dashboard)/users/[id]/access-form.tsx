@@ -1,11 +1,11 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Check, Lock, RotateCcw } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Controller, useForm, useWatch } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
+import { IconCheck, IconLock, IconReset } from "@/components/icons";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Field, FieldDescription, FieldError, FieldLabel } from "@/components/ui/field";
@@ -80,11 +80,7 @@ export function AccessForm({
 	const effective = effectivePermissions(roles, roleKeys, active);
 	const exceptionCount = Object.keys(active).length;
 
-	const groups = groupPermissions(catalog).map((g) => ({
-		...g,
-		read: g.permissions.find((p) => p.action === "read"),
-		write: g.permissions.find((p) => p.action === "write"),
-	}));
+	const groups = groupPermissions(catalog);
 
 	/** Sets one permission's effective state, recording an exception only if it differs from the roles. */
 	const setPermission = (next: Record<string, OverrideEffect>, key: string, on: boolean) => {
@@ -103,7 +99,17 @@ export function AccessForm({
 		if (action === "read" && read) {
 			setPermission(next, read.key, on);
 			if (!on && write && effective.has(write.key)) setPermission(next, write.key, false);
+			if (!on) for (const extra of group.extras) if (effective.has(extra.key)) setPermission(next, extra.key, false);
 		}
+		form.setValue("overrides", next, { shouldDirty: true });
+	};
+
+	/** An extra permission (e.g. "Voir tous les tickets") implies Consulter. */
+	const toggleExtra = (group: (typeof groups)[number], key: string, on: boolean) => {
+		const next = { ...active };
+		setPermission(next, key, on);
+		const read = group.read;
+		if (on && read && !effective.has(read.key) && myPermissions.includes(read.key)) setPermission(next, read.key, true);
 		form.setValue("overrides", next, { shouldDirty: true });
 	};
 
@@ -128,7 +134,7 @@ export function AccessForm({
 			<span className="inline-flex flex-col items-center gap-1">
 				<span className="inline-flex items-center gap-1.5">
 					{!readOnly && !myPermissions.includes(permission.key) && (
-						<Lock className="size-3 text-muted-foreground" aria-label="Vous n’avez pas cette permission" />
+						<IconLock className="size-3 text-muted-foreground" aria-label="Vous n’avez pas cette permission" />
 					)}
 					<Switch
 						checked={effective.has(permission.key)}
@@ -176,7 +182,7 @@ export function AccessForm({
 												checked ? "border-primary bg-primary/5 ring-1 ring-primary" : "disabled:opacity-50",
 											)}
 										>
-											{checked && <Check className="absolute end-2.5 top-2.5 size-4 text-primary" aria-hidden />}
+											{checked && <IconCheck className="absolute end-2.5 top-2.5 size-4 text-primary" aria-hidden />}
 											<span className="pe-5 font-medium">{role.name}</span>
 											<span className="text-xs text-muted-foreground">{role.permissions.length} permissions</span>
 										</button>
@@ -216,7 +222,7 @@ export function AccessForm({
 								size="sm"
 								onClick={() => form.setValue("overrides", {}, { shouldDirty: true })}
 							>
-								<RotateCcw /> Revenir au rôle
+								<IconReset /> Revenir au rôle
 							</Button>
 						)
 					}
@@ -243,7 +249,42 @@ export function AccessForm({
 									</div>
 									<div className="flex justify-center">{cell(group, "read")}</div>
 									<div className="flex justify-center">{cell(group, "write")}</div>
-								</li>
+									{group.extras.map((extra) => {
+										const effect = active[extra.key];
+										const locked = readOnly || (!myPermissions.includes(extra.key) && !effective.has(extra.key));
+										return (
+											<label
+												key={extra.key}
+												className="col-span-3 mt-1.5 flex items-center justify-between gap-3 rounded-md bg-muted/50 px-2.5 py-1.5"
+											>
+												<span className="flex flex-wrap items-center gap-1.5 text-xs">
+													{extra.description}
+													{effect && (
+														<span
+															className={cn(
+																"rounded px-1 text-[10px] font-medium leading-4",
+																effect === "grant" ? "bg-emerald-50 text-emerald-700" : "bg-red-50 text-red-700",
+															)}
+														>
+															{effect === "grant" ? "Ajoutée" : "Retirée"}
+														</span>
+													)}
+												</span>
+												<span className="inline-flex items-center gap-1.5">
+													{!readOnly && !myPermissions.includes(extra.key) && (
+														<IconLock className="size-3 text-muted-foreground" aria-label="Vous n’avez pas cette permission" />
+													)}
+													<Switch
+														checked={effective.has(extra.key)}
+														disabled={locked}
+														onCheckedChange={(on) => toggleExtra(group, extra.key, on)}
+														aria-label={`${extra.description} (${group.label})`}
+													/>
+												</span>
+											</label>
+										);
+									})}
+									</li>
 							);
 						})}
 					</ul>

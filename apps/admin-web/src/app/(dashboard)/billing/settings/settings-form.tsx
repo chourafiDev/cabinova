@@ -1,11 +1,21 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { CalendarClock, Check, CircleAlert, Landmark, Loader, Mail, ReceiptText } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { type FieldPath, useForm, useWatch } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
+import {
+	IconAlertCircle,
+	IconBan,
+	IconBank,
+	IconBellRing,
+	IconCalendarClock,
+	IconCheck,
+	IconMail,
+	IconReceiptText,
+	IconSpinner,
+} from "@/components/icons";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Field, FieldDescription, FieldError, FieldLabel } from "@/components/ui/field";
@@ -16,7 +26,11 @@ import { cn } from "@/lib/utils";
 import { FormSection } from "../../_components/shared/form-section";
 
 const optional = (max: number) => z.string().trim().max(max);
-const days = z.string().refine((v) => Number.isInteger(Number(v)) && Number(v) >= 0 && Number(v) <= 60, "Entre 0 et 60");
+const range = (max: number) =>
+	z
+		.string()
+		.refine((v) => v.trim() !== "" && Number.isInteger(Number(v)) && Number(v) >= 0 && Number(v) <= max, `Entre 0 et ${max}`);
+const days = range(60);
 
 const schema = z.object({
 	companyName: z.string().trim().min(2, "Requis").max(120),
@@ -34,6 +48,8 @@ const schema = z.object({
 	swift: z.string().trim().toUpperCase().refine((v) => !v || /^[A-Z0-9]{8}([A-Z0-9]{3})?$/.test(v), "Code SWIFT invalide"),
 	graceDays: days,
 	invoiceDaysBefore: days,
+	trialReminderDays: range(30),
+	suspendAfterDays: range(120),
 });
 type SettingsInput = z.input<typeof schema>;
 
@@ -61,6 +77,8 @@ export function BillingSettingsForm({ settings, readOnly }: { settings: BillingS
 			swift: s?.swift ?? "",
 			graceDays: String(settings.graceDays),
 			invoiceDaysBefore: String(settings.invoiceDaysBefore),
+			trialReminderDays: String(settings.trialReminderDays),
+			suspendAfterDays: String(settings.suspendAfterDays),
 		},
 		mode: "onTouched",
 	});
@@ -70,6 +88,8 @@ export function BillingSettingsForm({ settings, readOnly }: { settings: BillingS
 	const ribComplete = ribDigits.length === 24;
 	const grace = Number(v.graceDays) || 0;
 	const before = Number(v.invoiceDaysBefore) || 0;
+	const reminder = Number(v.trialReminderDays) || 0;
+	const suspendAfter = Number(v.suspendAfterDays) || 0;
 
 	const onSubmit = form.handleSubmit(
 		async (values) => {
@@ -80,6 +100,8 @@ export function BillingSettingsForm({ settings, readOnly }: { settings: BillingS
 						...values,
 						graceDays: Number(values.graceDays),
 						invoiceDaysBefore: Number(values.invoiceDaysBefore),
+						trialReminderDays: Number(values.trialReminderDays),
+						suspendAfterDays: Number(values.suspendAfterDays),
 					}),
 				});
 				toast.success("Coordonnées de facturation enregistrées");
@@ -111,7 +133,7 @@ export function BillingSettingsForm({ settings, readOnly }: { settings: BillingS
 			<div className="grid gap-4">
 				<FormSection
 					step={1}
-					icon={Landmark}
+					icon={IconBank}
 					title="Compte bancaire"
 					description="Le compte sur lequel les cabinets vous paient par virement."
 				>
@@ -128,7 +150,7 @@ export function BillingSettingsForm({ settings, readOnly }: { settings: BillingS
 									ribComplete ? "text-emerald-700" : "text-muted-foreground",
 								)}
 							>
-								{ribComplete && <Check className="size-3.5" />}
+								{ribComplete && <IconCheck className="size-3.5" />}
 								{ribDigits.length} / 24 chiffres
 							</span>
 						</div>
@@ -167,7 +189,7 @@ export function BillingSettingsForm({ settings, readOnly }: { settings: BillingS
 
 				<FormSection
 					step={2}
-					icon={ReceiptText}
+					icon={IconReceiptText}
 					title="Émetteur des factures"
 					description="Votre identité légale, en tête de chaque facture."
 				>
@@ -185,19 +207,47 @@ export function BillingSettingsForm({ settings, readOnly }: { settings: BillingS
 
 				<FormSection
 					step={3}
-					icon={CalendarClock}
+					icon={IconCalendarClock}
 					title="Délais de paiement"
-					description="Quand les factures partent, et quand elles passent en retard."
+					description="Quand les factures partent, quand elles passent en retard, et ce qui se passe sans paiement."
 				>
 					<div className="grid gap-4 sm:grid-cols-2">
 						{text("invoiceDaysBefore", "Facturer le renouvellement", { inputMode: "numeric" }, "jours avant l’échéance")}
 						{text("graceDays", "Délai de paiement", { inputMode: "numeric" }, "jours après le début de la période")}
 					</div>
-					<ol className="grid gap-2 rounded-lg bg-muted/50 p-3 text-xs sm:grid-cols-3">
+					<div className="grid gap-4 sm:grid-cols-2">
+						{text(
+							"trialReminderDays",
+							"Rappel de fin d’essai",
+							{ inputMode: "numeric" },
+							"jours avant la fin de l’essai (0 : pas de rappel)",
+						)}
+						{text(
+							"suspendAfterDays",
+							"Suspension automatique",
+							{ inputMode: "numeric" },
+							suspendAfter
+								? "jours après l’échéance d’une facture impayée ; prévenu 3 jours avant"
+								: "0 : jamais, la suspension reste manuelle",
+						)}
+					</div>
+					<ol className="grid gap-2 rounded-lg bg-muted/50 p-3 text-xs">
 						{[
-							{ icon: Mail, title: `J−${before}`, text: "Facture envoyée avec votre RIB" },
-							{ icon: CalendarClock, title: "J", text: "Début de la nouvelle période" },
-							{ icon: CircleAlert, title: `J+${grace}`, text: "Sans virement : « En retard » et rappel" },
+							...(reminder
+								? [{ icon: IconBellRing, title: `Essai J−${reminder}`, text: "Rappel : l’essai se termine bientôt" }]
+								: []),
+							{ icon: IconMail, title: `J−${before}`, text: "Facture envoyée avec votre RIB" },
+							{ icon: IconCalendarClock, title: "J", text: "Début de la nouvelle période" },
+							{ icon: IconAlertCircle, title: `J+${grace}`, text: "Sans virement : « En retard » et rappel" },
+							...(suspendAfter
+								? [
+										{
+											icon: IconBan,
+											title: `J+${grace + suspendAfter}`,
+											text: `Accès suspendu (prévenu à J+${grace + Math.max(0, suspendAfter - 3)}), rétabli au paiement`,
+										},
+									]
+								: []),
 						].map((step) => (
 							<li key={step.title + step.text} className="flex items-start gap-2">
 								<step.icon className="mt-0.5 size-3.5 shrink-0 text-muted-foreground" />
@@ -225,7 +275,7 @@ export function BillingSettingsForm({ settings, readOnly }: { settings: BillingS
 							{settings.configured ? "Configuré" : "À configurer"}
 						</Badge>
 					</div>
-					<div className="grid gap-3 rounded-lg border bg-white p-4 text-xs text-zinc-900">
+					<div className="paper grid gap-3 rounded-lg border bg-white p-4 text-xs text-zinc-900">
 						<div className="grid gap-0.5">
 							<span className="flex items-center gap-1.5 font-semibold">
 								<span className="flex size-5 items-center justify-center rounded bg-[#613f75] text-[10px] font-bold text-white">
@@ -266,7 +316,7 @@ export function BillingSettingsForm({ settings, readOnly }: { settings: BillingS
 				</div>
 				{!readOnly && (
 					<Button type="submit" disabled={!isDirty || isSubmitting} className="w-full">
-						{isSubmitting && <Loader className="animate-spin" />}
+						{isSubmitting && <IconSpinner className="animate-spin" />}
 						{isDirty ? "Enregistrer les modifications" : "Aucune modification"}
 					</Button>
 				)}

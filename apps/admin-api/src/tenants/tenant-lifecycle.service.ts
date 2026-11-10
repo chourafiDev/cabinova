@@ -1,3 +1,4 @@
+import { moroccoZone } from '@cabinova/morocco-time';
 import {
   BadRequestException,
   ConflictException,
@@ -11,11 +12,12 @@ import {
   type Transaction,
 } from '../database/database.module.js';
 import {
+  quotes,
   subscriptions,
   tenants,
   tenantStatusChanges,
 } from '../database/schema/index.js';
-import { EmailService } from '../email/email.service.js';
+import { EmailService, mailLocale } from '../email/email.service.js';
 import type { ChangeTenantStatusDto } from './dto.js';
 import {
   canTransition,
@@ -34,6 +36,13 @@ const OUTCOME: Partial<Record<TenantTransition, string>> = {
   reactivate: 'réactivé',
   start_closure: 'mis en période de fermeture',
   close: 'fermé',
+};
+
+const OUTCOME_AR: Partial<Record<TenantTransition, string>> = {
+  suspend: 'معلقة',
+  reactivate: 'أُعيد تفعيلها',
+  start_closure: 'في فترة الإغلاق',
+  close: 'مغلقة',
 };
 
 /** Furthest a change can be scheduled ahead. */
@@ -145,10 +154,12 @@ export class TenantLifecycleService {
     tenantId: string,
     action: Extract<
       TenantTransition,
-      'provision' | 'activate' | 'provision_failed'
+      'provision' | 'activate' | 'provision_failed' | 'suspend' | 'reactivate'
     >,
     actor: AuditActor,
     comment: string,
+    /** Billing: suspend for 'unpaid', reactivate on 'payment_regularized'. */
+    reason?: string,
   ) {
     const tenant = await this.lockTenant(tx, tenantId);
     if (!canTransition(tenant.status, action)) {
@@ -165,6 +176,7 @@ export class TenantLifecycleService {
         action,
         fromStatus: tenant.status,
         toStatus: TENANT_TRANSITIONS[action].to,
+        reason: reason ?? null,
         comment,
         effectiveAt: now,
         state: 'applied',
@@ -292,6 +304,15 @@ export class TenantLifecycleService {
             ne(subscriptions.status, 'cancelled'),
           ),
         );
+      await tx
+        .update(quotes)
+        .set({ status: 'void', voidReason: 'Cabinet fermé' })
+        .where(
+          and(
+            eq(quotes.tenantId, change.tenantId),
+            eq(quotes.status, 'pending'),
+          ),
+        );
     }
     await auditTenant(tx, actor, {
       action: 'tenant.status.apply',
@@ -331,13 +352,21 @@ export class TenantLifecycleService {
         email: tenant.email,
         name: tenant.responsibleName,
         tenantName: tenant.name,
+        locale: mailLocale(tenant.locale),
         outcome,
+        outcomeAr: OUTCOME_AR[change.action as TenantTransition] ?? '',
         effectiveOn:
           change.state === 'scheduled'
-            ? new Intl.DateTimeFormat('fr-MA', {
-                dateStyle: 'long',
-                timeZone: tenant.timezone,
-              }).format(change.effectiveAt)
+            ? new Intl.DateTimeFormat(
+                tenant.locale === 'ar' ? 'ar-MA-u-nu-latn' : 'fr-MA',
+                {
+                  dateStyle: 'long',
+                  timeZone:
+                    tenant.timezone === 'Africa/Casablanca'
+                      ? moroccoZone(change.effectiveAt)
+                      : tenant.timezone,
+                },
+              ).format(change.effectiveAt)
             : undefined,
         comment: change.comment,
       });

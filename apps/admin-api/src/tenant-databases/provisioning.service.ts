@@ -3,6 +3,7 @@ import {
   Inject,
   Injectable,
   Logger,
+  NotFoundException,
   ServiceUnavailableException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
@@ -19,7 +20,8 @@ import {
   tenants,
   tenantSecrets,
 } from '../database/schema/index.js';
-import { EmailService } from '../email/email.service.js';
+import { EmailService, mailLocale } from '../email/email.service.js';
+import { NotificationsService } from '../notifications/notifications.service.js';
 import { canTransition } from '../tenants/lifecycle.js';
 import { TenantLifecycleService } from '../tenants/tenant-lifecycle.service.js';
 import { TENANT_DB_PROVIDER, type TenantDatabaseProvider } from './provider.js';
@@ -49,6 +51,7 @@ export class ProvisioningService {
     private readonly databases: TenantDatabasesService,
     private readonly lifecycle: TenantLifecycleService,
     private readonly email: EmailService,
+    private readonly notifications: NotificationsService,
     private readonly config: ConfigService<Env, true>,
     @Inject(TENANT_DB_PROVIDER)
     private readonly provider: TenantDatabaseProvider | null,
@@ -122,6 +125,56 @@ export class ProvisioningService {
       .limit(limit);
   }
 
+  /**
+   * A new invitation link for the responsible doctor of an active cabinet
+   * (lost e-mail, link expired after 7 days). Refused once they've chosen
+   * their password: from then on they sign in.
+   */
+  async resendInvitation(tenantId: string, actor: AuditActor) {
+    const tenant = await this.tenant(tenantId);
+    if (!tenant) {
+      throw new NotFoundException({
+        code: 'TENANT_NOT_FOUND',
+        message: 'Cabinet introuvable.',
+      });
+    }
+    if (tenant.status !== 'active') {
+      throw new ConflictException({
+        code: 'NOT_ACTIVE',
+        message: 'Seul un cabinet actif peut recevoir une invitation.',
+      });
+    }
+    const invitation = await this.seed(tenant);
+    if (!invitation.token) {
+      throw new ConflictException({
+        code: 'ALREADY_ACCEPTED',
+        message:
+          'Le médecin a déjà choisi son mot de passe : il se connecte directement.',
+      });
+    }
+    const url = await this.inviteUrl(tenant.id, invitation.token);
+    await this.email.sendInvitation({
+      email: tenant.email,
+      name: tenant.responsibleName,
+      tenantName: tenant.name,
+      url,
+      locale: mailLocale(tenant.locale),
+    });
+    await writeAudit(this.database.db, actor, {
+      action: 'tenant.invitation.resend',
+      entity: 'tenant',
+      entityId: tenant.id,
+      tenantId: tenant.id,
+      metadata: { email: tenant.email },
+    });
+    // Development: the admin gets the link too — test cabinets use fake or
+    // shared addresses, and Resend's test sender only delivers to its owner.
+    // Never in production: the link opens a cabinet's account and its
+    // medical data.
+    const showLink = this.config.get('NODE_ENV') === 'development';
+    return { email: tenant.email, ...(showLink && { devUrl: url }) };
+  }
+
   /** Fails runs whose process died mid-way and puts their cabinet back to pending. */
   async recoverStale() {
     const stale = await this.database.db
@@ -178,6 +231,7 @@ export class ProvisioningService {
           name: tenant.responsibleName,
           tenantName: tenant.name,
           url: await this.inviteUrl(tenant.id, invitation.token),
+          locale: mailLocale(tenant.locale),
         });
         return tenant.email;
       });
@@ -205,6 +259,15 @@ export class ProvisioningService {
           tenantId: tenant.id,
           metadata: { runId },
         });
+      });
+      await this.notifications.notify({
+        kind: 'tenant.provision.succeeded',
+        severity: 'success',
+        title: 'Cabinet prêt',
+        body: `${tenant.name} est actif : base créée et médecin invité.`,
+        href: `/tenants/${tenant.id}`,
+        tenantId: tenant.id,
+        permission: 'tenants:read',
       });
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
@@ -256,50 +319,68 @@ export class ProvisioningService {
     error: string,
     step?: string,
   ) {
-    await this.database.db.transaction(async (tx) => {
-      const [run] = await tx
-        .update(tenantProvisioningRuns)
-        .set({
-          state: 'failed',
-          error,
-          finishedAt: new Date(),
-          ...(step && {
-            steps: this.appendStep({
-              key: step,
-              status: 'failed',
-              detail: error,
+    await this.database.db
+      .transaction(async (tx) => {
+        const [run] = await tx
+          .update(tenantProvisioningRuns)
+          .set({
+            state: 'failed',
+            error,
+            finishedAt: new Date(),
+            ...(step && {
+              steps: this.appendStep({
+                key: step,
+                status: 'failed',
+                detail: error,
+              }),
             }),
-          }),
-        })
-        .where(
-          and(
-            eq(tenantProvisioningRuns.id, runId),
-            eq(tenantProvisioningRuns.state, 'running'),
-          ),
-        )
-        .returning();
-      if (!run) return;
-      const [tenant] = await tx
-        .select({ status: tenants.status })
-        .from(tenants)
-        .where(eq(tenants.id, run.tenantId));
-      if (tenant && canTransition(tenant.status, 'provision_failed')) {
-        await this.lifecycle.applySystem(
-          tx,
-          run.tenantId,
-          'provision_failed',
-          actor,
-          `Échec du provisionnement${step ? ` (${step})` : ''} : ${error}`,
-        );
-      }
-      await writeAudit(tx, actor, {
-        action: 'tenant.provision.fail',
-        entity: 'tenant',
-        entityId: run.tenantId,
-        tenantId: run.tenantId,
-        metadata: { runId, step, error },
+          })
+          .where(
+            and(
+              eq(tenantProvisioningRuns.id, runId),
+              eq(tenantProvisioningRuns.state, 'running'),
+            ),
+          )
+          .returning();
+        if (!run) return;
+        const [tenant] = await tx
+          .select({ status: tenants.status })
+          .from(tenants)
+          .where(eq(tenants.id, run.tenantId));
+        if (tenant && canTransition(tenant.status, 'provision_failed')) {
+          await this.lifecycle.applySystem(
+            tx,
+            run.tenantId,
+            'provision_failed',
+            actor,
+            `Échec du provisionnement${step ? ` (${step})` : ''} : ${error}`,
+          );
+        }
+        await writeAudit(tx, actor, {
+          action: 'tenant.provision.fail',
+          entity: 'tenant',
+          entityId: run.tenantId,
+          tenantId: run.tenantId,
+          metadata: { runId, step, error },
+        });
+        return run;
+      })
+      .then(async (run) => {
+        if (!run) return;
+        const [tenant] = await this.database.db
+          .select({ name: tenants.name })
+          .from(tenants)
+          .where(eq(tenants.id, run.tenantId));
+        await this.notifications.notify({
+          kind: 'tenant.provision.failed',
+          severity: 'critical',
+          title: 'Provisionnement échoué',
+          body: `${tenant?.name ?? run.tenantId}${step ? ` (étape ${step})` : ''} — ${error.slice(0, 200)}`,
+          href: `/tenants/${run.tenantId}?tab=technical`,
+          tenantId: run.tenantId,
+          permission: 'technical:read',
+        });
       });
-    });
   }
 
   /** Creates the database and role once; a later run reuses them. */
@@ -357,6 +438,13 @@ export class ProvisioningService {
           tenant.timezone,
         ],
       );
+      // The first space takes the cabinet's address (migration 0004 creates it).
+      await pool.query(
+        `update spaces set city = coalesce(city, $1), address = coalesce(address, $2),
+           phone = coalesce(phone, $3), updated_at = now()
+         where name = 'Espace principal'`,
+        [tenant.city, tenant.address, tenant.phone],
+      );
       const { rows } = await pool.query<{ password_hash: string | null }>(
         'select password_hash from users where email = $1',
         [tenant.email],
@@ -386,7 +474,10 @@ export class ProvisioningService {
       .select({ subdomain: tenantDomains.subdomain })
       .from(tenantDomains)
       .where(eq(tenantDomains.tenantId, tenantId));
-    return `https://${domain.subdomain}.${this.config.get('TENANT_BASE_DOMAIN')}/invite/${token}`;
+    const base =
+      this.config.get('CLINIC_APP_URL', { infer: true }) ??
+      `https://{subdomain}.${this.config.get('TENANT_BASE_DOMAIN')}`;
+    return `${base.replace('{subdomain}', domain.subdomain)}/invite/${token}`;
   }
 
   private async tenant(id: string) {

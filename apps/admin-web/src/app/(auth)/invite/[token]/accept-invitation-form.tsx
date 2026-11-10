@@ -1,8 +1,8 @@
 "use client";
 
-import { Loader } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { IconSpinner } from "@/components/icons";
 import { PasswordInput } from "@/components/password-input";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -78,7 +78,7 @@ export function AcceptInvitationForm({ token, email }: { token: string; email: s
 				</p>
 			)}
 			<Button type="submit" disabled={pending} className={authButtonClass}>
-				{pending && <Loader className="size-4 animate-spin" />}
+				{pending && <IconSpinner className="size-4 animate-spin" />}
 				{pending ? "Enregistrement…" : "Enregistrer et se connecter"}
 			</Button>
 		</form>

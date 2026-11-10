@@ -1,16 +1,34 @@
 "use client";
 
-import { CircleCheck, CircleDashed, CircleX, Loader, MinusCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, useTransition } from "react";
 import { toast } from "sonner";
+import {
+	IconCheckCircle,
+	IconCopy,
+	IconError,
+	IconExternal,
+	IconMinusCircle,
+	IconPending,
+	IconSpinner,
+} from "@/components/icons";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import {
+	Dialog,
+	DialogContent,
+	DialogDescription,
+	DialogFooter,
+	DialogHeader,
+	DialogTitle,
+} from "@/components/ui/dialog";
 import { Field, FieldLabel } from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
 import { api } from "@/lib/api-client";
 import { formatDate } from "@/lib/format";
-import { PROVISIONING_STEPS, type ProvisioningRun, type TenantDatabaseInfo } from "@/lib/tenant-databases";
+import { formatStorage } from "@/lib/plans";
+import { formatBytes, PROVISIONING_STEPS, type ProvisioningRun, type TenantDatabaseInfo } from "@/lib/tenant-databases";
 import type { TenantStatus } from "@/lib/tenants";
 import { cn } from "@/lib/utils";
 import { FormCard } from "../../../_components/shared/form-card";
@@ -27,15 +45,20 @@ export function TenantTechnical({
 	status,
 	info,
 	canWrite,
+	storageQuotaMb,
 }: {
 	tenantId: string;
 	status: TenantStatus;
 	info: TenantDatabaseInfo;
 	canWrite: boolean;
+	/** The cabinet's storage quota (NULL = unlimited). */
+	storageQuotaMb: number | null;
 }) {
 	const router = useRouter();
 	const [pending, startTransition] = useTransition();
 	const [sendInvitation, setSendInvitation] = useState(true);
+	/** Development without e-mail: the invitation link to hand over. */
+	const [devInvite, setDevInvite] = useState<{ email: string; url: string } | null>(null);
 	const latestRun = info.runs[0];
 	const running = latestRun?.state === "running";
 	const db = info.database;
@@ -100,7 +123,7 @@ export function TenantTechnical({
 										act(`/tenants/${tenantId}/provision`, { sendInvitation }, () => "Provisionnement lancé")
 									}
 								>
-									{pending && <Loader className="animate-spin" />} Provisionner
+									{pending && <IconSpinner className="animate-spin" />} Provisionner
 								</Button>
 							</div>
 						</div>
@@ -137,6 +160,39 @@ export function TenantTechnical({
 									>
 										Migrer
 									</Button>
+									<Button
+										size="sm"
+										variant="outline"
+										disabled={pending}
+										onClick={() =>
+											act(
+												`/tenants/${tenantId}/database/invitation`,
+												{},
+												(r: { email: string; devUrl?: string }) => {
+													if (r.devUrl) setDevInvite({ email: r.email, url: r.devUrl });
+													return `Invitation envoyée à ${r.email}`;
+												},
+											)
+										}
+									>
+										Renvoyer l’invitation
+									</Button>
+									<Button
+										size="sm"
+										variant="outline"
+										disabled={pending}
+										onClick={() => {
+											if (
+												window.confirm(
+													"Réinitialiser la double authentification du médecin responsable ? Il sera déconnecté partout. Vérifiez son identité avant de confirmer.",
+												)
+											) {
+												act(`/tenants/${tenantId}/owner-two-factor/reset`, {}, () => "Double authentification réinitialisée");
+											}
+										}}
+									>
+										Réinitialiser la 2FA du médecin
+									</Button>
 								</div>
 							)
 						}
@@ -163,6 +219,14 @@ export function TenantTechnical({
 								),
 							)}
 							{db.lastHealthError && row("Erreur", <span className="text-destructive">{db.lastHealthError}</span>)}
+							{row(
+								"Stockage",
+								db.sizeBytes === null ? (
+									"Mesuré au prochain test de connexion"
+								) : (
+									<StorageMeter bytes={db.sizeBytes} quotaMb={storageQuotaMb} />
+								),
+							)}
 							{row(
 								"Schéma",
 								<span className="flex flex-wrap items-center gap-2">
@@ -208,6 +272,37 @@ export function TenantTechnical({
 					</FormCard>
 				)}
 			</div>
+			<Dialog open={devInvite !== null} onOpenChange={(open) => !open && setDevInvite(null)}>
+				<DialogContent className="sm:max-w-lg">
+					<DialogHeader>
+						<DialogTitle>Lien d’invitation</DialogTitle>
+						<DialogDescription>
+							Développement uniquement : le lien envoyé à {devInvite?.email}, pour ouvrir l’invitation vous-même.
+							C’est le seul lien valable — les invitations précédentes ne marchent plus. Valable 7 jours, une
+							seule fois.
+						</DialogDescription>
+					</DialogHeader>
+					<Input readOnly value={devInvite?.url ?? ""} onFocus={(e) => e.currentTarget.select()} className="font-mono text-xs" />
+					<DialogFooter>
+						<Button
+							variant="outline"
+							onClick={() =>
+								navigator.clipboard
+									.writeText(devInvite?.url ?? "")
+									.then(() => toast.success("Lien copié"))
+									.catch(() => toast.error("Copie impossible : sélectionnez le lien."))
+							}
+						>
+							<IconCopy /> Copier
+						</Button>
+						<Button asChild>
+							<a href={devInvite?.url} target="_blank" rel="noreferrer">
+								<IconExternal /> Ouvrir
+							</a>
+						</Button>
+					</DialogFooter>
+				</DialogContent>
+			</Dialog>
 		</div>
 	);
 }
@@ -239,13 +334,13 @@ function RunTimeline({ run }: { run: ProvisioningRun }) {
 					const isCurrent = run.state === "running" && !step && index === run.steps.length;
 					const Icon = !step
 						? isCurrent
-							? Loader
-							: CircleDashed
+							? IconSpinner
+							: IconPending
 						: step.status === "done"
-							? CircleCheck
+							? IconCheckCircle
 							: step.status === "skipped"
-								? MinusCircle
-								: CircleX;
+								? IconMinusCircle
+								: IconError;
 					return (
 						<li key={key} className="flex gap-2">
 							<Icon
@@ -288,5 +383,34 @@ function RunTimeline({ run }: { run: ProvisioningRun }) {
 				</p>
 			)}
 		</FormCard>
+	);
+}
+
+/** Database size against the quota; amber from 75 %, red from 90 %. Files (uploads) will add to it later. */
+function StorageMeter({ bytes, quotaMb }: { bytes: number; quotaMb: number | null }) {
+	const ratio = quotaMb ? bytes / (quotaMb * 1024 * 1024) : null;
+	return (
+		<span className="grid max-w-xs gap-1">
+			<span className="text-xs">
+				<span className="font-medium tabular-nums">{formatBytes(bytes)}</span>
+				<span className="text-muted-foreground">
+					{" "}
+					/ {formatStorage(quotaMb)}
+					{ratio !== null && ` · ${Math.round(ratio * 100)} %`}
+				</span>
+			</span>
+			{ratio !== null && (
+				<span className="h-1.5 overflow-hidden rounded-full bg-muted" aria-hidden>
+					<span
+						className={cn(
+							"block h-full rounded-full",
+							ratio >= 0.9 ? "bg-red-600" : ratio >= 0.75 ? "bg-amber-500" : "bg-emerald-600",
+						)}
+						style={{ width: `${Math.min(100, Math.max(2, ratio * 100))}%` }}
+					/>
+				</span>
+			)}
+			<span className="text-[11px] text-muted-foreground">Base de données seule ; les fichiers s’y ajouteront avec l’application des cabinets.</span>
+		</span>
 	);
 }

@@ -1,0 +1,15 @@
+{
+  "name": "@cabinova/morocco-time",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Moroccan time for Intl, right on any runtime: older Node and browser time zone data still put Morocco at UTC+1.",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./src/index.d.ts",
+      "default": "./src/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": ["src"]
+}

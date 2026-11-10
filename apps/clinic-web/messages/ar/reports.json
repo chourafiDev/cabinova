@@ -1,0 +1,134 @@
+{
+  "title": "الإحصائيات",
+  "comparedTo": "مقارنة بآخر {days} يومًا",
+  "buckets": {
+    "day": "اليوم",
+    "week": "الأسبوع",
+    "month": "الشهر"
+  },
+  "tabs": {
+    "overview": "نظرة عامة",
+    "revenue": "المداخيل",
+    "patients": "المرضى",
+    "affluence": "الإقبال",
+    "doctorsSpaces": "الأطباء والفضاءات",
+    "doctors": "الأطباء",
+    "spaces": "الفضاءات"
+  },
+  "overview": {
+    "activity": "النشاط",
+    "appointments": "المواعيد: {count}",
+    "keyPoints": "نقاط أساسية",
+    "cancellationRate": "نسبة الإلغاء",
+    "peakHour": "ساعة الذروة",
+    "peakValue": "{day} {hour}:00",
+    "leadTime": "مهلة الحجز",
+    "sameDay": "في نفس اليوم",
+    "days": "{count, plural, one {يوم واحد} two {يومان} few {# أيام} other {# يومًا}}",
+    "outstanding": "المتبقي"
+  },
+  "revenue": {
+    "received": "المحصّل",
+    "refunded": "المسترد: {amount}",
+    "outstanding": "المتبقي: {amount}",
+    "byMethod": "حسب طريقة الدفع",
+    "noPayments": "لا توجد مدفوعات خلال الفترة.",
+    "byAct": "حسب العمل"
+  },
+  "patients": {
+    "seen": "المرضى الذين تم فحصهم",
+    "sex": "الجنس",
+    "women": "نساء",
+    "men": "رجال",
+    "age": "العمر",
+    "coverage": "التغطية"
+  },
+  "ages": {
+    "0-14": "0–14 سنة",
+    "15-24": "15–24 سنة",
+    "25-44": "25–44 سنة",
+    "45-64": "45–64 سنة",
+    "65+": "65 سنة فما فوق",
+    "unknown": "عمر غير معروف"
+  },
+  "leadTimes": {
+    "same-day": "في نفس اليوم",
+    "1-2": "يوم إلى يومين",
+    "3-7": "3 إلى 7 أيام",
+    "8-14": "8 إلى 14 يومًا",
+    "15-30": "15 إلى 30 يومًا",
+    "31+": "أكثر من شهر"
+  },
+  "affluence": {
+    "byDayHour": "حسب اليوم والساعة",
+    "onPeriod": "المواعيد خلال الفترة",
+    "leadTime": "مهلة الحجز",
+    "sameDayHint": "نصف المواعيد تُحجز في نفس اليوم",
+    "daysHint": "نصف المواعيد تُحجز قبل {days} أو أقل",
+    "empty": "لا توجد مواعيد خلال الفترة.",
+    "hour": "{hour}:00",
+    "cell": "{day} {from}:00 – {to}:00: المواعيد {count}",
+    "count": "المواعيد: {count}",
+    "range": "{day}، {from}:00 – {to}:00",
+    "busiest": "أكثر الأوقات ازدحامًا:",
+    "slot": "{day} {hour}:00",
+    "less": "أقل",
+    "more": "أكثر"
+  },
+  "team": {
+    "consultationsByDoctor": "الاستشارات حسب الطبيب",
+    "patients": "المرضى: {count}",
+    "absences": "الغياب {rate}",
+    "receivedByDoctor": "المحصّل حسب الطبيب",
+    "consultationsBySpace": "الاستشارات حسب الفضاء",
+    "newPatients": "مرضى جدد: {count}"
+  },
+  "cards": {
+    "received": "المحصّل",
+    "receivedHint": "المبالغ المحصلة خلال الفترة بعد خصم المستردة.",
+    "consultations": "الاستشارات",
+    "consultationsHint": "المواعيد المنتهية خلال الفترة.",
+    "seen": "المرضى الذين تم فحصهم",
+    "seenHint": "مرضى مختلفون تم فحصهم مرة واحدة على الأقل خلال الفترة.",
+    "newPatients": "مرضى جدد",
+    "newPatientsHint": "مرضى كانت أول استشارة لهم في العيادة خلال الفترة.",
+    "noShowRate": "نسبة الغياب",
+    "noShowHint": "المرضى الغائبون من بين المواعيد السابقة."
+  },
+  "empty": {
+    "title": "لا توجد مواعيد خلال هذه الفترة",
+    "hint": "تمتلئ الإحصائيات من المواعيد: اختر فترة أو فضاء آخر.",
+    "noData": "لا توجد بيانات خلال الفترة."
+  },
+  "series": {
+    "completed": "تم فحصهم",
+    "pending": "القادمة",
+    "noShow": "غائبون",
+    "cancelled": "ملغاة",
+    "newPatients": "جدد",
+    "returningPatients": "متابَعون"
+  },
+  "filters": {
+    "period": "الفترة",
+    "7j": "7 أيام",
+    "30j": "30 يومًا",
+    "90j": "3 أشهر",
+    "12m": "12 شهرًا",
+    "custom": "مخصصة",
+    "pickDates": "اختر تاريخين",
+    "apply": "تطبيق",
+    "space": "الفضاء",
+    "allSpaces": "كل الفضاءات",
+    "doctor": "الطبيب",
+    "allDoctors": "كل الأطباء",
+    "you": "{name} (أنت)",
+    "appointments": "المواعيد",
+    "wholeCabinet": "كل العيادة",
+    "mine": "مواعيدي"
+  },
+  "view": {
+    "label": "العرض",
+    "chart": "رسم بياني",
+    "table": "جدول"
+  }
+}

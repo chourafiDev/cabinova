@@ -1,6 +1,7 @@
 import { Controller, Get, Query, Res } from '@nestjs/common';
 import type { Response } from 'express';
-import { RequirePermissions } from '../auth/decorators.js';
+import type { AuthUser } from '../auth/auth.types.js';
+import { CurrentUser, RequirePermissions } from '../auth/decorators.js';
 import { dashboardCsv } from './csv.js';
 import { DashboardService } from './dashboard.service.js';
 import { DashboardQuery } from './dto.js';
@@ -12,8 +13,8 @@ export class DashboardController {
 
   @RequirePermissions('dashboard:read')
   @Get()
-  overview(@Query() query: DashboardQuery) {
-    return this.dashboard.overview(query);
+  overview(@Query() query: DashboardQuery, @CurrentUser() user: AuthUser) {
+    return this.dashboard.overview(query, user);
   }
 
   /** Same figures as CSV (opens in Excel). */
@@ -21,9 +22,10 @@ export class DashboardController {
   @Get('export.csv')
   async export(
     @Query() query: DashboardQuery,
+    @CurrentUser() user: AuthUser,
     @Res({ passthrough: true }) res: Response,
   ) {
-    const overview = await this.dashboard.overview(query);
+    const overview = await this.dashboard.overview(query, user);
     const day = overview.generatedAt.slice(0, 10);
     res.setHeader('Content-Type', 'text/csv; charset=utf-8');
     res.setHeader(

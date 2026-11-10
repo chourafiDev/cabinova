@@ -1,10 +1,10 @@
 "use client";
 
 import { Subscribe, type Table } from "@tanstack/react-table";
-import { ChevronDown, Loader } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
+import { IconChevronDown, IconSpinner } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -110,7 +110,7 @@ export function BulkActionsHeader<TData extends { id: string }>({
 									<DropdownMenuTrigger asChild>
 										<Button type="button" variant="ghost" size="sm" className="gap-1 font-medium">
 											{count} sélectionné{count > 1 ? "s" : ""}
-											<ChevronDown className="size-4" />
+											<IconChevronDown className="size-4" />
 										</Button>
 									</DropdownMenuTrigger>
 									<DropdownMenuContent align="start" className="w-56">
@@ -135,7 +135,7 @@ export function BulkActionsHeader<TData extends { id: string }>({
 											onClick={() => (action.confirm ? setConfirming(action) : run(action))}
 										>
 											{busy === action.id ? (
-												<Loader className="size-4 animate-spin" />
+												<IconSpinner className="size-4 animate-spin" />
 											) : (
 												<action.icon className="size-4" />
 											)}
@@ -150,9 +150,9 @@ export function BulkActionsHeader<TData extends { id: string }>({
 												<DropdownMenu key={group.label}>
 													<DropdownMenuTrigger asChild>
 														<Button type="button" variant="outline" size="sm" disabled={busy !== null}>
-															{running ? <Loader className="size-4 animate-spin" /> : <group.icon className="size-4" />}
+															{running ? <IconSpinner className="size-4 animate-spin" /> : <group.icon className="size-4" />}
 															{group.label}
-															<ChevronDown className="size-3.5" />
+															<IconChevronDown className="size-3.5" />
 														</Button>
 													</DropdownMenuTrigger>
 													<DropdownMenuContent align="end" className="min-w-52">
@@ -194,7 +194,7 @@ export function BulkActionsHeader<TData extends { id: string }>({
 												disabled={busy !== null}
 												onClick={() => confirming && run(confirming)}
 											>
-												{busy !== null && <Loader className="size-4 animate-spin" />}
+												{busy !== null && <IconSpinner className="size-4 animate-spin" />}
 												{confirming?.label}
 											</Button>
 										</DialogFooter>

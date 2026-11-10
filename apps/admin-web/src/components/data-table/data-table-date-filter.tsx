@@ -4,6 +4,7 @@ import type { DateRange } from "react-day-picker";
 
 import { type Column, type RowData, Subscribe } from "@tanstack/react-table";
 import * as React from "react";
+import { IconCalendar, IconError } from "@/components/icons";
 import { cn } from "@/lib/utils";
 
 import type { DataTableFeatures } from "@/lib/data-table-features";
@@ -17,7 +18,6 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Separator } from "@/components/ui/separator";
-import { XCircle, CalendarIcon } from "lucide-react";
 import { focusRing } from "@/lib/focus-ring"
 
 type DateSelection = Date[] | DateRange;
@@ -210,11 +210,11 @@ function DataTableDateFilterContent<TData extends RowData>({
               onClick={onReset}
               className={cn(focusRing, "rounded-sm opacity-70 transition-opacity hover:opacity-100")}
             >
-              <XCircle
+              <IconError
               />
             </div>
           ) : (
-            <CalendarIcon
+            <IconCalendar
             />
           )}
           {label}

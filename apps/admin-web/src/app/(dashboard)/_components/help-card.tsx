@@ -1,12 +1,12 @@
-import { LifeBuoy } from "lucide-react";
+import { IconSupport } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 
 /** Support card at the bottom of the sidebar; hidden when collapsed to icons. */
 export function HelpCard() {
 	return (
-		<div className="group-data-[collapsible=icon]:hidden rounded-xl bg-primary p-3">
+		<div className="group-data-[collapsible=icon]:hidden rounded-xl bg-brand p-3">
 			<div className="mb-2 flex size-8 items-center justify-center rounded-lg bg-white/15 text-white">
-				<LifeBuoy className="size-4" />
+				<IconSupport className="size-4" />
 			</div>
 			<p className="text-sm font-medium text-white">Besoin d&apos;aide ?</p>
 			<p className="mt-0.5 text-xs text-white/70">

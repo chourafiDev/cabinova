@@ -1,8 +1,9 @@
-import { ArrowRight } from "lucide-react";
 import Link from "next/link";
+import { IconArrowRight } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import { formatDate } from "@/lib/format";
 import { BILLING_PERIOD_LABELS, type BillingPeriod, formatStorage } from "@/lib/plans";
+import { auditActorName } from "@/lib/security";
 import {
 	reasonLabel,
 	STATUS_LABELS,
@@ -71,7 +72,7 @@ function describe(entry: TenantAuditEntry): { title: string; details?: React.Rea
 							<li key={field} className="flex flex-wrap items-center gap-1.5">
 								<span className="text-muted-foreground">{FIELD_LABELS[field] ?? field} :</span>
 								<span className="line-through decoration-muted-foreground/60">{show(field, from)}</span>
-								<ArrowRight className="size-3 text-muted-foreground" />
+								<IconArrowRight className="size-3 text-muted-foreground" />
 								<span>{show(field, to)}</span>
 							</li>
 						))}
@@ -150,7 +151,7 @@ export function TenantAuditLog({
 								<time dateTime={entry.createdAt}>
 									{formatDate(entry.createdAt, { month: "short", hour: "2-digit", minute: "2-digit" })}
 								</time>
-								<div>{entry.actor?.name ?? "Système"}</div>
+								<div>{auditActorName(entry) ?? "Système"}</div>
 							</div>
 							<div className="grid gap-1">
 								<p className="font-medium">{title}</p>

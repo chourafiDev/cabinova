@@ -1,7 +1,6 @@
-import { ShieldCheck } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { HiUserGroup } from "react-icons/hi2";
+import { IconPeople, IconShieldCheck } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { formatDate } from "@/lib/format";
@@ -19,7 +18,7 @@ import { FormCard } from "../_components/shared/form-card";
 import { ListHeader } from "../_components/shared/list-header";
 import { ListTransitionProvider } from "../_components/shared/list-transition";
 import { InviteUserDialog } from "./_components/invite-user-dialog";
-import { UserStatusBadge } from "./_components/user-status-badge";
+import { TwoFactorBadge, UserStatusBadge } from "./_components/user-status-badge";
 
 export const metadata = { title: "Utilisateurs" };
 
@@ -49,14 +48,14 @@ export default async function UsersPage({ searchParams }: PageProps<"/users">) {
 	return (
 		<ListTransitionProvider>
 			<ListHeader
-				icon={<HiUserGroup />}
+				icon={<IconPeople />}
 				total={users.length}
 				label={{ singular: "Utilisateur", plural: "Utilisateurs" }}
 				action={
 					<div className="flex w-full gap-2 md:w-auto">
 						<Button asChild variant="outline">
 							<Link href="/users/roles">
-								<ShieldCheck /> Rôles et permissions
+								<IconShieldCheck /> Rôles et permissions
 							</Link>
 						</Button>
 						{canWrite && (
@@ -117,7 +116,10 @@ export default async function UsersPage({ searchParams }: PageProps<"/users">) {
 									</td>
 									<td className={td}>{u.roles.map((r) => r.name).join(", ")}</td>
 									<td className={td}>
-										<UserStatusBadge status={u.status} inviteExpired={u.inviteExpired} />
+										<span className="flex flex-wrap items-center gap-1.5">
+											<UserStatusBadge status={u.status} inviteExpired={u.inviteExpired} />
+											{u.status === "active" && <TwoFactorBadge enabled={u.twoFactorEnabled} />}
+										</span>
 									</td>
 									<td className={cn(td, "whitespace-nowrap text-muted-foreground")}>
 										{u.lastLoginAt
