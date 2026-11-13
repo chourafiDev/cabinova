@@ -18,6 +18,7 @@
     "settings": "Paramètres",
     "calendar": "Calendrier",
     "waiting": "Salle d’attente",
+    "board": "Patient aujourd’hui",
     "seen": "Patients vus"
   },
   "home": "{cabinet} — tableau de bord",

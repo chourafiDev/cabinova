@@ -176,7 +176,7 @@ export function FlowBoard({ practitioners }: { practitioners: Practitioner[] }) 
 	return (
 		<div className="grid min-w-0 gap-4">
 			<div className="flex flex-wrap items-center gap-2">
-				<div className="relative w-full sm:w-64">
+				<div className="relative w-full sm:w-80">
 					<IconSearch className="text-muted-foreground pointer-events-none absolute start-2.5 top-1/2 size-4 -translate-y-1/2" />
 					<Input
 						value={search}

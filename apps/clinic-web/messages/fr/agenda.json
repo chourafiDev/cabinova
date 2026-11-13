@@ -86,7 +86,7 @@
     "waiting": "Salle d’attente",
     "agenda": "Agenda",
     "seen": "Patients vus",
-    "board": "Tableau"
+    "board": "Patient aujourd’hui"
   },
   "waiting": {
     "order": "N°",

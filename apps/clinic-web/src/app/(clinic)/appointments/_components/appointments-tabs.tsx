@@ -3,7 +3,12 @@
 import { useTranslations } from "next-intl";
 import { parseAsString, parseAsStringEnum, useQueryStates } from "nuqs";
 import { useState } from "react";
-import { IconCalendar, IconClock, IconKanban, IconUserCheck } from "@/components/icons";
+import {
+	IconCalendar,
+	IconClock,
+	IconKanban,
+	IconUserCheck,
+} from "@/components/icons";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { Practitioner } from "@/lib/appointments";
 import { FlowBoard } from "./flow-board";
@@ -23,8 +28,16 @@ const searchParams = {
 };
 
 /** Waiting room first, then the day's flow board, who was seen today, then the agenda. The tab lives in the URL. */
-export function AppointmentsTabs({ agenda, practitioners }: { agenda: React.ReactNode; practitioners: Practitioner[] }) {
-	const [{ tab, view, date, book }, setParams] = useQueryStates(searchParams, { history: "replace" });
+export function AppointmentsTabs({
+	agenda,
+	practitioners,
+}: {
+	agenda: React.ReactNode;
+	practitioners: Practitioner[];
+}) {
+	const [{ tab, view, date, book }, setParams] = useQueryStates(searchParams, {
+		history: "replace",
+	});
 	const { waiting, seen } = useWaiting();
 	const t = useTranslations("agenda.tabs");
 	// Decided on arrival: the agenda clearing its params (booking done, "today") keeps it open.
@@ -32,9 +45,16 @@ export function AppointmentsTabs({ agenda, practitioners }: { agenda: React.Reac
 	const current = tab ?? arrival;
 
 	return (
-		<Tabs value={current} onValueChange={(v) => setParams({ tab: v as Tab })} className="min-w-0 gap-4">
+		<Tabs
+			value={current}
+			onValueChange={(v) => setParams({ tab: v as Tab })}
+			className="min-w-0 gap-4"
+		>
 			<div className="no-scrollbar -mx-1 overflow-x-auto px-1">
 				<TabsList className="min-w-max">
+					<TabsTrigger value="board" className="px-3">
+						<IconKanban /> {t("board")}
+					</TabsTrigger>
 					<TabsTrigger value="waiting" className="px-3">
 						<IconClock /> {t("waiting")}
 						{waiting.length > 0 && (
@@ -42,9 +62,6 @@ export function AppointmentsTabs({ agenda, practitioners }: { agenda: React.Reac
 								{waiting.length}
 							</span>
 						)}
-					</TabsTrigger>
-					<TabsTrigger value="board" className="px-3">
-						<IconKanban /> {t("board")}
 					</TabsTrigger>
 					<TabsTrigger value="seen" className="px-3">
 						<IconUserCheck /> {t("seen")}
@@ -59,11 +76,11 @@ export function AppointmentsTabs({ agenda, practitioners }: { agenda: React.Reac
 					</TabsTrigger>
 				</TabsList>
 			</div>
-			<TabsContent value="waiting" className="min-w-0">
-				<WaitingRoom practitioners={practitioners} />
-			</TabsContent>
 			<TabsContent value="board" className="min-w-0">
 				<FlowBoard practitioners={practitioners} />
+			</TabsContent>
+			<TabsContent value="waiting" className="min-w-0">
+				<WaitingRoom practitioners={practitioners} />
 			</TabsContent>
 			<TabsContent value="seen" className="min-w-0">
 				<SeenToday />

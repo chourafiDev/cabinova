@@ -6,6 +6,7 @@ import {
   IconClock,
   IconDashboard,
   IconIdCard,
+  IconKanban,
   IconSettings,
   IconUserCheck,
   IconUsers,
@@ -42,6 +43,7 @@ export const navGroups: { key: string; items: NavItem[] }[] = [
     items: [
       { key: "calendar", href: "/appointments?tab=agenda", icon: IconCalendar, shortcut: "a" },
       { key: "waiting", href: "/appointments?tab=waiting", icon: IconClock, shortcut: "s" },
+      { key: "board", href: "/appointments?tab=board", icon: IconKanban, shortcut: "b" },
       { key: "seen", href: "/appointments?tab=seen", icon: IconUserCheck, shortcut: "v" },
     ],
   },

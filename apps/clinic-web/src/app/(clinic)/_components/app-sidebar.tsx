@@ -78,6 +78,13 @@ export function AppSidebar({
 											<LinkPending />
 										</Link>
 									</SidebarMenuButton>
+									{active?.href === item.href && (
+										// Over the active item's background, at its start edge.
+										<span
+											aria-hidden
+											className="bg-primary pointer-events-none absolute start-0 top-1/2 h-4 w-1 -translate-y-1/2 rounded-full"
+										/>
+									)}
 									{item.key === "messages" && <ChatBadge />}
 								</SidebarMenuItem>
 							))}
