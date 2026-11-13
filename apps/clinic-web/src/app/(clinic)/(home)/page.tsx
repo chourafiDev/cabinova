@@ -1,13 +1,12 @@
-import Link from "next/link";
 import { IconCalendarCheck, IconMoney, IconStethoscope, IconUserAdd } from "@/components/icons";
 import { pageTitle } from "@/i18n/titles";
-import type { DashboardData } from "@/lib/dashboard";
+import { type DashboardData, dashboardPeriod } from "@/lib/dashboard";
 import { getFormat } from "@/lib/get-format";
 import { getTranslations } from "next-intl/server";
 import { apiGet } from "@/lib/server-api";
 import { getClinicState } from "@/lib/session";
 import { spaceLabel } from "@/lib/spaces";
-import { cn } from "@/lib/utils";
+import { DashboardFilters } from "../_components/dashboard/dashboard-filters";
 import { GettingStarted, type ChecklistSteps } from "../_components/dashboard/getting-started";
 import { SpacesOverview } from "../_components/dashboard/spaces-overview";
 import { SubscriptionCard } from "../_components/dashboard/subscription-card";
@@ -20,8 +19,9 @@ import { KpiCard } from "../_components/kpi-card";
 export const generateMetadata = () => pageTitle("dashboard");
 
 /**
- * The day at a glance, from the agenda and the patients of the current
- * space — or, for the owner, of every space (?espaces=tous).
+ * Figures and activity over a period (?periode=7j|30j|90j|1a, or ?du=&au=;
+ * 7 days by default) plus today's appointments and waiting room, for the
+ * current space — or, for the owner, every space (?espaces=tous).
  */
 export default async function DashboardPage({ searchParams }: PageProps<"/">) {
 	const state = await getClinicState();
@@ -29,9 +29,13 @@ export default async function DashboardPage({ searchParams }: PageProps<"/">) {
 	const { session } = state;
 	const isOwner = session.user.role === "owner";
 	const manySpaces = (session.spaces?.spaces.length ?? 0) > 1;
-	const all = isOwner && manySpaces && (await searchParams).espaces === "tous";
+	const params = await searchParams;
+	const all = isOwner && manySpaces && params.espaces === "tous";
+	const { preset, from, to } = dashboardPeriod(params);
+	const query = new URLSearchParams({ from, to });
+	if (all) query.set("scope", "all");
 	const [data, checklist] = await Promise.all([
-		apiGet<DashboardData>(all ? "/dashboard?scope=all" : "/dashboard"),
+		apiGet<DashboardData>(`/dashboard?${query}`),
 		isOwner ? apiGet<{ steps: ChecklistSteps | null }>("/onboarding/checklist") : null,
 	]);
 	const { kpis } = data;
@@ -45,51 +49,36 @@ export default async function DashboardPage({ searchParams }: PageProps<"/">) {
 
 			{checklist?.steps && <GettingStarted steps={checklist.steps} />}
 
-			{isOwner && manySpaces && current && (
-				<nav className="bg-muted mb-3 flex w-fit rounded-lg p-0.5 text-sm" aria-label={t("scope")}>
-					{[
-						{ href: "/", label: spaceLabel(current), active: !all },
-						{ href: "/?espaces=tous", label: t("allSpaces"), active: all },
-					].map((tab) => (
-						<Link
-							key={tab.href}
-							href={tab.href}
-							aria-current={tab.active ? "page" : undefined}
-							className={cn(
-								"rounded-md px-3 py-1 transition-colors",
-								tab.active ? "bg-background font-medium shadow-sm" : "text-muted-foreground hover:text-foreground",
-							)}
-						>
-							{tab.label}
-						</Link>
-					))}
-				</nav>
-			)}
+			<DashboardFilters
+				preset={preset}
+				period={{ from, to }}
+				space={isOwner && manySpaces && current ? { label: spaceLabel(current), all } : undefined}
+			/>
 
 			<section data-tour="kpis" className="mb-3 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
 				<KpiCard
 					icon={IconCalendarCheck}
 					title={t("kpi.appointments")}
-					value={kpis.appointmentsToday}
-					period={t("kpi.upcoming", { count: kpis.upcomingToday })}
+					value={kpis.appointments}
+					period={t("kpi.upcoming", { count: kpis.pending })}
 					hint={t("kpi.appointmentsHint")}
 					actions={[{ label: t("kpi.openAgenda"), href: "/appointments?view=day" }]}
 				/>
 				<KpiCard
 					icon={IconStethoscope}
 					title={t("kpi.seen")}
-					value={kpis.seenToday}
+					value={kpis.seen}
 					change={kpis.seenChange}
-					period={t("kpi.sameDay")}
+					period={t("kpi.previous")}
 					hint={t("kpi.seenHint")}
 					actions={[{ label: t("kpi.openAgenda"), href: "/appointments?view=day" }]}
 				/>
 				<KpiCard
 					icon={IconUserAdd}
 					title={t("kpi.newPatients")}
-					value={kpis.newPatientsMonth}
+					value={kpis.newPatients}
 					change={kpis.newPatientsChange}
-					period={t("kpi.thisMonth")}
+					period={t("kpi.previous")}
 					hint={t("kpi.newPatientsHint")}
 					actions={[{ label: t("kpi.seePatients"), href: "/patients" }]}
 				/>
@@ -99,7 +88,7 @@ export default async function DashboardPage({ searchParams }: PageProps<"/">) {
 						title={t("kpi.received")}
 						value={format.mad(data.cashier.received)}
 						change={data.cashier.receivedChange}
-						period={t("kpi.sameDay")}
+						period={t("kpi.previous")}
 						hint={t("kpi.receivedHint")}
 						actions={[{ label: t("kpi.openPayments"), href: "/payments" }]}
 					/>
@@ -132,7 +121,7 @@ export default async function DashboardPage({ searchParams }: PageProps<"/">) {
 
 			<section className="grid grid-cols-1 gap-3 xl:grid-cols-3">
 				<div className="xl:col-span-2">
-					<WeekActivityChart week={data.week} />
+					<WeekActivityChart series={data.series} bucket={data.period.bucket} />
 				</div>
 				<div data-tour="subscription" className="h-full">
 					<SubscriptionCard subscription={session.subscription} canManage={session.user.role === "owner"} />

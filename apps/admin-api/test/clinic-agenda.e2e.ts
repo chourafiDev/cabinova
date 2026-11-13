@@ -257,7 +257,8 @@ describe('clinic: agenda', () => {
   it('feeds the dashboard from the agenda, per space and for all spaces', async () => {
     const { body: before } = await cab().get('/dashboard').expect(200);
     expect(before.scope).toBe('space');
-    expect(before.week).toHaveLength(6);
+    // The last 7 days by default, one bar per day.
+    expect(before.series).toHaveLength(7);
     // Noon, Moroccan time, is safely inside today.
     const today = await bookToday(clinic, 'agenda-atlas', doctor, tenant, {
       patientId,
@@ -268,9 +269,7 @@ describe('clinic: agenda', () => {
     });
 
     const { body: after } = await cab().get('/dashboard').expect(200);
-    expect(after.kpis.appointmentsToday).toBe(
-      before.kpis.appointmentsToday + 1,
-    );
+    expect(after.kpis.appointments).toBe(before.kpis.appointments + 1);
     expect(after.kpis.upcomingToday).toBe(before.kpis.upcomingToday + 1);
     const listed = after.appointments.find(
       (a: { id: string }) => a.id === today.id,
@@ -287,7 +286,7 @@ describe('clinic: agenda', () => {
       .send({ status: 'completed' })
       .expect(200);
     const { body: seen } = await cab().get('/dashboard').expect(200);
-    expect(seen.kpis.seenToday).toBe(before.kpis.seenToday + 1);
+    expect(seen.kpis.seen).toBe(before.kpis.seen + 1);
     expect(seen.kpis.upcomingToday).toBe(before.kpis.upcomingToday);
 
     const { body: all } = await cab().get('/dashboard?scope=all').expect(200);
@@ -297,9 +296,17 @@ describe('clinic: agenda', () => {
       'Espace principal',
       'Marrakech',
     ]);
-    expect(all.kpis.appointmentsToday).toBeGreaterThanOrEqual(
-      seen.kpis.appointmentsToday,
+    expect(all.kpis.appointments).toBeGreaterThanOrEqual(
+      seen.kpis.appointments,
     );
+
+    // A one-day period on today: one bar, the same visit counted.
+    const { body: day } = await cab()
+      .get(`/dashboard?from=${seen.date}&to=${seen.date}`)
+      .expect(200);
+    expect(day.series).toHaveLength(1);
+    expect(day.kpis.seen).toBeGreaterThanOrEqual(1);
+    await cab().get('/dashboard?from=2020-01-01&to=2026-01-01').expect(400);
   });
 
   it('closes past visits: Confirmé becomes Absent, Planifié becomes Annulé', async () => {

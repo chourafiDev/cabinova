@@ -11,6 +11,7 @@ import {
 	ChartTooltipContent,
 } from "@/components/ui/chart";
 import type { DashboardData } from "@/lib/dashboard";
+import type { Bucket } from "@/lib/reports";
 import { directionOf } from "@/i18n/config";
 import { useFormat } from "@/lib/use-format";
 import { ChartCard } from "./chart-card";
@@ -21,8 +22,8 @@ const COLORS = {
 	consultations: { light: "#00a896", dark: "#00a896" },
 };
 
-/** Monday → Saturday: booked appointments vs consultations done. */
-export function WeekActivityChart({ week }: { week: DashboardData["week"] }) {
+/** The period, per day, week or month: booked appointments vs consultations done. */
+export function WeekActivityChart({ series: week, bucket }: { series: DashboardData["series"]; bucket: Bucket }) {
 	const booked = week.reduce((s, d) => s + d.appointments, 0);
 	const seen = week.reduce((s, d) => s + d.consultations, 0);
 	const t = useTranslations("dashboard.week");
@@ -32,8 +33,8 @@ export function WeekActivityChart({ week }: { week: DashboardData["week"] }) {
 		appointments: { label: t("appointments"), theme: COLORS.appointments },
 		consultations: { label: t("consultations"), theme: COLORS.consultations },
 	} satisfies ChartConfig;
-	const dayLabel = (date: string, weekday: "short" | "long" = "short") =>
-		format.date(`${date}T12:00:00`, { weekday, day: "numeric", month: weekday === "long" ? "long" : undefined, year: undefined });
+	const label = (date: string) => format.bucketLabel(date, bucket);
+	const title = (date: string) => format.bucketTitle(date, bucket);
 
 	return (
 		<ChartCard
@@ -55,7 +56,8 @@ export function WeekActivityChart({ week }: { week: DashboardData["week"] }) {
 						tickLine={false}
 						axisLine={false}
 						tickMargin={10}
-						tickFormatter={(d) => dayLabel(d).replace(".", "")}
+						tickFormatter={label}
+						minTickGap={8}
 						className="text-[10px] capitalize"
 					/>
 					<YAxis allowDecimals={false} tickLine={false} axisLine={false} width={40} orientation={rtl ? "right" : "left"} />
@@ -65,7 +67,7 @@ export function WeekActivityChart({ week }: { week: DashboardData["week"] }) {
 							<ChartTooltipContent
 								indicator="dot"
 								labelFormatter={(_, payload) => (
-									<span className="capitalize">{dayLabel(payload[0]?.payload.date, "long")}</span>
+									<span className="capitalize">{title(payload[0]?.payload.date)}</span>
 								)}
 							/>
 						}
@@ -92,7 +94,7 @@ export function WeekActivityChart({ week }: { week: DashboardData["week"] }) {
 					<tbody className="divide-y">
 						{week.map((d) => (
 							<tr key={d.date}>
-								<td className="py-1 capitalize">{dayLabel(d.date, "long")}</td>
+								<td className="py-1 capitalize">{title(d.date)}</td>
 								<td className="py-1 text-end">{d.appointments}</td>
 								<td className="py-1 text-end">{d.consultations}</td>
 							</tr>

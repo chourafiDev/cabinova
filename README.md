@@ -66,6 +66,11 @@ A pnpm monorepo (`pnpm@9`, Node 22).
 
 ### Cabinet app (`clinic-web` + `clinic-api`)
 
+**Dashboard**
+- Period filter: 7 jours (default), 30 jours, 90 jours, 1 an, or a custom date range (a year at most). The KPI cards compare with the previous period of the same length, and the activity chart switches between days, weeks and months to fit the period.
+- Today's appointments, the waiting room and the welcome line always show today.
+- The owner of several spaces picks one space or *Tous les espaces* from a dropdown next to the period.
+
 **Agenda and waiting room**
 - Calendar per space (cabinet location), with opening hours, closures and protection against double booking across spaces.
 - Status flow: Planifié → Confirmé → Salle d'attente → En consultation → Terminé, plus Annulé and Absent.
@@ -178,6 +183,9 @@ Run these from the repo root:
 
 Add new entries at the top, as *date: what changed*.
 
+- **2026-11-13**
+  - Dashboard: period filter (7 days, 30 days, 90 days, 1 year or a date range) instead of the space toggle; the space choice moved to a dropdown.
+  - Sidebar: Patient aujourd’hui (the flow board) in the Agenda group, and a marker on the active item.
 - **2026-11-10**
   - Agenda: new Tableau tab, a kanban board of the day's patient flow.
   - Paid visits are read-only in the checkout (UI and API).

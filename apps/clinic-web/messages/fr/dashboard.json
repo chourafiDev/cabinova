@@ -1,5 +1,4 @@
 {
-  "scope": "Périmètre",
   "allSpaces": "Tous les espaces",
   "welcome": {
     "hello": "Bonjour,",
@@ -11,24 +10,23 @@
   "kpi": {
     "appointments": "Rendez-vous",
     "upcoming": "{count} à venir",
-    "appointmentsHint": "Rendez-vous prévus aujourd’hui, hors annulations.",
+    "appointmentsHint": "Rendez-vous de la période, hors annulations.",
     "openAgenda": "Ouvrir l’agenda",
     "seen": "Patients vus",
-    "sameDay": "vs même jour, semaine dernière",
-    "seenHint": "Rendez-vous terminés aujourd’hui.",
+    "seenHint": "Rendez-vous terminés sur la période.",
     "newPatients": "Nouveaux patients",
-    "thisMonth": "Ce mois-ci",
-    "newPatientsHint": "Dossiers créés ce mois-ci, comparés au mois dernier.",
+    "newPatientsHint": "Dossiers créés sur la période, comparés à la période précédente.",
     "seePatients": "Voir les patients",
-    "received": "Encaissé aujourd’hui",
-    "receivedHint": "Paiements reçus aujourd’hui moins les remboursements.",
+    "received": "Encaissé",
+    "receivedHint": "Paiements reçus sur la période moins les remboursements.",
     "openPayments": "Ouvrir les encaissements",
     "toCollect": "À encaisser",
-    "toCollectPeriod": "{count, plural, one {visite terminée aujourd’hui} other {visites terminées aujourd’hui}}",
-    "toCollectHint": "Visites terminées aujourd’hui qui ne sont pas encore entièrement réglées.",
+    "toCollectPeriod": "{count, plural, one {visite terminée non réglée} other {visites terminées non réglées}}",
+    "toCollectHint": "Visites terminées sur la période qui ne sont pas encore entièrement réglées.",
     "openCashier": "Ouvrir la caisse du jour",
     "new": "Nouveau",
-    "pts": "pts"
+    "pts": "pts",
+    "previous": "vs période précédente"
   },
   "checklist": {
     "title": "Bien démarrer avec Cabinova",
@@ -68,10 +66,10 @@
   "spaces": {
     "title": "Par espace",
     "space": "Espace",
-    "today": "RDV aujourd’hui",
     "waiting": "En attente",
     "seen": "Vus",
-    "newPatients": "Nouveaux patients (mois)"
+    "newPatients": "Nouveaux patients",
+    "appointments": "Rendez-vous"
   },
   "subscription": {
     "eyebrow": "Mon abonnement",
@@ -113,11 +111,23 @@
     "walkIn": "Sans RDV"
   },
   "week": {
-    "title": "Activité de la semaine",
+    "title": "Activité",
     "appointments": "Rendez-vous",
     "consultations": "Consultations",
     "summary": "consultations · {count} rendez-vous prévus",
     "table": "Voir les données en tableau",
-    "day": "Jour"
+    "day": "Période"
+  },
+  "filters": {
+    "period": "Période",
+    "7j": "7 jours",
+    "30j": "30 jours",
+    "90j": "90 jours",
+    "1a": "1 an",
+    "custom": "Personnalisée",
+    "pickDates": "Choisissez deux dates",
+    "apply": "Appliquer",
+    "space": "Espace",
+    "allSpaces": "Tous les espaces"
   }
 }

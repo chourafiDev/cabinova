@@ -1,26 +1,34 @@
 import type { Pool } from '@neondatabase/serverless';
 import { Injectable } from '@nestjs/common';
 import { noShowsOf } from '../patients/no-shows.js';
+import { addDays, type Bucket, bucketFor, buckets, daysBetween } from '../reports/period.js';
 import { percentChange } from './change.js';
 
-// Day, week and month in Moroccan time, computed by Postgres (Morocco moves
-// to UTC+0 during Ramadan: no fixed offset in code).
-const BOUNDS = `
-  with b as (select (now() at time zone 'Africa/Casablanca')::date as d),
+const TZ = `'Africa/Casablanca'`;
+
+// Today in Moroccan time, computed by Postgres (Morocco moves to UTC+0
+// during Ramadan: no fixed offset in code).
+const TODAY = `
+  with b as (select (now() at time zone ${TZ})::date as d),
   r as (select
-    (b.d::timestamp at time zone 'Africa/Casablanca') as day_start,
-    ((b.d + 1)::timestamp at time zone 'Africa/Casablanca') as day_end,
-    ((b.d - 7)::timestamp at time zone 'Africa/Casablanca') as last_week_start,
-    ((b.d - 6)::timestamp at time zone 'Africa/Casablanca') as last_week_end,
-    (date_trunc('month', b.d)::timestamp at time zone 'Africa/Casablanca') as month_start,
-    ((date_trunc('month', b.d) - interval '1 month')::timestamp at time zone 'Africa/Casablanca') as prev_month_start,
-    (date_trunc('week', b.d)::date) as monday
+    (b.d::timestamp at time zone ${TZ}) as day_start,
+    ((b.d + 1)::timestamp at time zone ${TZ}) as day_end
   from b)`;
 
+/** Moroccan days $from..$to (both included) as a timestamptz range test on `col`. */
+const within = (col: string, from: string, to: string) =>
+  `${col} >= (${from}::date::timestamp at time zone ${TZ})
+   and ${col} < ((${to}::date + 1)::timestamp at time zone ${TZ})`;
+
+/** Money in minus refunds, for payments matching `where`. */
+const NET = `coalesce(sum(case when kind = 'payment' then amount else -amount end), 0)`;
+
+export type Period = { from: string; to: string };
+
 /**
- * The clinic dashboard from the agenda and the patients: today's
- * appointments, waiting room, figures and the week, for one space — or,
- * for the owner, every space added up with a line per space.
+ * The clinic dashboard from the agenda and the patients: figures and
+ * activity over a period, plus today's appointments and waiting room, for
+ * one space — or, for the owner, every space added up with a line per space.
  */
 @Injectable()
 export class DashboardService {
@@ -28,56 +36,51 @@ export class DashboardService {
     db: Pool,
     spaceIds: string[],
     withToday: boolean,
-    owner = false,
+    owner: boolean,
+    { from, to }: Period,
   ) {
-    const [kpis, week, today, bySpace, cashier] = await Promise.all([
+    const days = daysBetween(from, to);
+    const bucket = bucketFor(days);
+    const previous = { from: addDays(from, -days), to: addDays(from, -1) };
+    const period = [spaceIds, from, to, previous.from, previous.to];
+
+    const [kpis, series, today, bySpace, cashier] = await Promise.all([
       db.query<{
-        appointments_today: string;
+        appointments: string;
+        pending: string;
+        seen: string;
+        seen_before: string;
+        new_patients: string;
+        new_patients_before: string;
         upcoming_today: string;
-        seen_today: string;
-        seen_last_week: string;
-        new_patients_month: string;
-        new_patients_prev_month: string;
         today: string;
       }>(
-        `${BOUNDS}
+        `${TODAY}
          select
            (select count(*) from appointments a where a.space_id = any($1) and a.status <> 'cancelled'
-              and a.starts_at >= r.day_start and a.starts_at < r.day_end) as appointments_today,
+              and ${within('a.starts_at', '$2', '$3')}) as appointments,
+           (select count(*) from appointments a where a.space_id = any($1)
+              and a.status in ('scheduled', 'confirmed', 'arrived', 'in_consultation')
+              and ${within('a.starts_at', '$2', '$3')}) as pending,
+           (select count(*) from appointments a where a.space_id = any($1) and a.status = 'completed'
+              and ${within('a.starts_at', '$2', '$3')}) as seen,
+           (select count(*) from appointments a where a.space_id = any($1) and a.status = 'completed'
+              and ${within('a.starts_at', '$4', '$5')}) as seen_before,
+           (select count(*) from patients p where p.space_id = any($1)
+              and ${within('p.created_at', '$2', '$3')}) as new_patients,
+           (select count(*) from patients p where p.space_id = any($1)
+              and ${within('p.created_at', '$4', '$5')}) as new_patients_before,
            (select count(*) from appointments a where a.space_id = any($1)
               and a.status in ('scheduled', 'confirmed', 'arrived', 'in_consultation')
               and a.starts_at >= r.day_start and a.starts_at < r.day_end) as upcoming_today,
-           (select count(*) from appointments a where a.space_id = any($1) and a.status = 'completed'
-              and a.starts_at >= r.day_start and a.starts_at < r.day_end) as seen_today,
-           (select count(*) from appointments a where a.space_id = any($1) and a.status = 'completed'
-              and a.starts_at >= r.last_week_start and a.starts_at < r.last_week_end) as seen_last_week,
-           (select count(*) from patients p where p.space_id = any($1)
-              and p.created_at >= r.month_start) as new_patients_month,
-           (select count(*) from patients p where p.space_id = any($1)
-              and p.created_at >= r.prev_month_start and p.created_at < r.month_start) as new_patients_prev_month,
            (select to_char(d, 'YYYY-MM-DD') from b) as today
          from r`,
-        [spaceIds],
+        period,
       ),
-      db.query<{ date: string; appointments: string; consultations: string }>(
-        `${BOUNDS}
-         select to_char(day, 'YYYY-MM-DD') as date,
-           (select count(*) from appointments a where a.space_id = any($1)
-              and a.status not in ('cancelled', 'no_show')
-              and a.starts_at >= (day::timestamp at time zone 'Africa/Casablanca')
-              and a.starts_at < ((day + 1)::timestamp at time zone 'Africa/Casablanca')) as appointments,
-           (select count(*) from appointments a where a.space_id = any($1) and a.status = 'completed'
-              and a.starts_at >= (day::timestamp at time zone 'Africa/Casablanca')
-              and a.starts_at < ((day + 1)::timestamp at time zone 'Africa/Casablanca')) as consultations
-         from r, generate_series(r.monday::timestamp, r.monday::timestamp + interval '5 days',
-                                 interval '1 day') as g(ts),
-              lateral (select g.ts::date as day) d
-         order by day`,
-        [spaceIds],
-      ),
+      this.series(db, spaceIds, { from, to }, bucket),
       withToday
         ? db.query(
-            `${BOUNDS}
+            `${TODAY}
              select a.id, a.starts_at as "startsAt", a.ends_at as "endsAt", a.status, a.reason,
                a.arrived_at as "arrivedAt", a.walk_in as "walkIn", a.left_at as "leftAt",
                json_build_object('id', p.id, 'firstName', p.first_name, 'lastName', p.last_name,
@@ -101,98 +104,115 @@ export class DashboardService {
             id: string;
             name: string;
             city: string | null;
-            appointments_today: string;
+            appointments: string;
             waiting: string;
-            seen_today: string;
-            new_patients_month: string;
+            seen: string;
+            new_patients: string;
           }>(
-            `${BOUNDS}
+            `${TODAY}
              select s.id, s.name, s.city,
                (select count(*) from appointments a where a.space_id = s.id and a.status <> 'cancelled'
-                  and a.starts_at >= r.day_start and a.starts_at < r.day_end) as appointments_today,
+                  and ${within('a.starts_at', '$2', '$3')}) as appointments,
                (select count(*) from appointments a where a.space_id = s.id and a.status = 'arrived'
                   and a.starts_at >= r.day_start and a.starts_at < r.day_end) as waiting,
                (select count(*) from appointments a where a.space_id = s.id and a.status = 'completed'
-                  and a.starts_at >= r.day_start and a.starts_at < r.day_end) as seen_today,
+                  and ${within('a.starts_at', '$2', '$3')}) as seen,
                (select count(*) from patients p where p.space_id = s.id
-                  and p.created_at >= r.month_start) as new_patients_month
+                  and ${within('p.created_at', '$2', '$3')}) as new_patients
              from r, spaces s where s.id = any($1)
              order by s.created_at, s.name`,
-            [spaceIds],
+            [spaceIds, from, to],
           )
         : null,
       db.query<{
         to_collect: string;
         received: string | null;
-        received_last_week: string | null;
+        received_before: string | null;
       }>(
-        `${BOUNDS}
-         select
+        `select
            (select count(*) from appointments a
               left join charges c on c.appointment_id = a.id
              where a.space_id = any($1) and a.status = 'completed'
-               and a.starts_at >= r.day_start and a.starts_at < r.day_end
+               and ${within('a.starts_at', '$2', '$3')}
                and (c.id is null or c.total > (
-                 select coalesce(sum(case when kind = 'payment' then amount else -amount end), 0)
-                   from payments where charge_id = c.id and cancelled_at is null))) as to_collect,
-           case when $2 then (select coalesce(sum(case when kind = 'payment' then amount else -amount end), 0)
-              from payments p where p.space_id = any($1) and p.cancelled_at is null
-               and p.received_at >= r.day_start and p.received_at < r.day_end) end as received,
-           case when $2 then (select coalesce(sum(case when kind = 'payment' then amount else -amount end), 0)
-              from payments p where p.space_id = any($1) and p.cancelled_at is null
-               and p.received_at >= r.last_week_start and p.received_at < r.last_week_end) end as received_last_week
-         from r`,
-        [spaceIds, owner],
+                 select ${NET} from payments where charge_id = c.id and cancelled_at is null))) as to_collect,
+           case when $6 then (select ${NET} from payments p where p.space_id = any($1)
+               and p.cancelled_at is null and ${within('p.received_at', '$2', '$3')}) end as received,
+           case when $6 then (select ${NET} from payments p where p.space_id = any($1)
+               and p.cancelled_at is null and ${within('p.received_at', '$4', '$5')}) end as received_before`,
+        [...period, owner],
       ),
     ]);
 
     const k = kpis.rows[0];
+    const c = cashier.rows[0];
     const n = (v: string) => Number(v);
     return {
       /** Today, in Moroccan time. */
       date: k.today,
+      period: { from, to, days, bucket, previous },
       kpis: {
-        appointmentsToday: n(k.appointments_today),
-        upcomingToday: n(k.upcoming_today),
-        seenToday: n(k.seen_today),
-        seenChange: percentChange(n(k.seen_today), n(k.seen_last_week)),
-        newPatientsMonth: n(k.new_patients_month),
+        appointments: n(k.appointments),
+        pending: n(k.pending),
+        seen: n(k.seen),
+        seenChange: percentChange(n(k.seen), n(k.seen_before)),
+        newPatients: n(k.new_patients),
         newPatientsChange: percentChange(
-          n(k.new_patients_month),
-          n(k.new_patients_prev_month),
+          n(k.new_patients),
+          n(k.new_patients_before),
         ),
+        /** For the welcome line: still to come today, whatever the period. */
+        upcomingToday: n(k.upcoming_today),
       },
-      week: week.rows.map((d) => ({
-        date: d.date,
-        appointments: n(d.appointments),
-        consultations: n(d.consultations),
-      })),
+      series,
       appointments: today?.rows ?? null,
-      /** Encaissements today: finished visits still to check out; money is the owner's. */
+      /** The period's finished visits still to check out; money is the owner's. */
       cashier: {
-        toCollect: n(cashier.rows[0].to_collect),
-        received:
-          cashier.rows[0].received === null
-            ? null
-            : n(cashier.rows[0].received),
+        toCollect: n(c.to_collect),
+        received: c.received === null ? null : n(c.received),
         receivedChange:
-          cashier.rows[0].received === null
+          c.received === null
             ? null
-            : percentChange(
-                n(cashier.rows[0].received),
-                n(cashier.rows[0].received_last_week ?? '0'),
-              ),
+            : percentChange(n(c.received), n(c.received_before ?? '0')),
       },
       bySpace:
         bySpace?.rows.map((s) => ({
           id: s.id,
           name: s.name,
           city: s.city,
-          appointmentsToday: n(s.appointments_today),
+          appointments: n(s.appointments),
           waiting: n(s.waiting),
-          seenToday: n(s.seen_today),
-          newPatientsMonth: n(s.new_patients_month),
+          seen: n(s.seen),
+          newPatients: n(s.new_patients),
         })) ?? null,
     };
+  }
+
+  /** Booked (not cancelled or absent) vs done, per day, week or month. */
+  private async series(
+    db: Pool,
+    spaceIds: string[],
+    { from, to }: Period,
+    bucket: Bucket,
+  ) {
+    const { rows } = await db.query<{
+      date: string;
+      appointments: string;
+      consultations: string;
+    }>(
+      `select to_char(date_trunc($4, a.starts_at at time zone ${TZ}), 'YYYY-MM-DD') as date,
+         count(*) filter (where a.status not in ('cancelled', 'no_show')) as appointments,
+         count(*) filter (where a.status = 'completed') as consultations
+       from appointments a
+       where a.space_id = any($1) and ${within('a.starts_at', '$2', '$3')}
+       group by 1`,
+      [spaceIds, from, to, bucket],
+    );
+    const byDate = new Map(rows.map((r) => [r.date, r]));
+    return buckets(from, to, bucket).map((date) => ({
+      date,
+      appointments: Number(byDate.get(date)?.appointments ?? 0),
+      consultations: Number(byDate.get(date)?.consultations ?? 0),
+    }));
   }
 }
