@@ -144,8 +144,6 @@ export type BloodGroup = (typeof BLOOD_GROUPS)[number];
 /** Antécédents, doctors only (absent from the API response for other staff). */
 export type MedicalProfile = {
 	bloodGroup: BloodGroup | null;
-	allergies: string | null;
-	chronicConditions: string | null;
 	medicalHistory: string | null;
 	surgicalHistory: string | null;
 	familyHistory: string | null;
@@ -155,14 +153,14 @@ export type MedicalProfile = {
 	riskFactors: string | null;
 	/** Shown at the top of every visit; edited on its own (the dossier). */
 	permanentNote: string | null;
+	/** Antécédents as one rich-text note (HTML), edited in the dossier's Interrogatoire tab. */
+	antecedents: string | null;
 	updatedAt: string;
 };
 
 /** The text fields of the medical profile, in display order. */
 export const PROFILE_FIELDS = [
-	{ name: "allergies", placeholder: true, alert: true },
 	{ name: "currentTreatments", placeholder: true },
-	{ name: "chronicConditions", placeholder: true },
 	{ name: "riskFactors", placeholder: true },
 	{ name: "medicalHistory" },
 	{ name: "surgicalHistory" },

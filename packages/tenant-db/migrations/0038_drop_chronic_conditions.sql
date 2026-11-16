@@ -1,0 +1,1 @@
+ALTER TABLE "medical_profiles" DROP COLUMN "chronic_conditions";

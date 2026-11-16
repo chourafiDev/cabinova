@@ -19,9 +19,16 @@ import { CurrentUser } from '../auth/decorators.js';
 import { assertOwner } from '../auth/roles.js';
 import { Clinic } from '../tenancy/decorators.js';
 import type { ClinicContext } from '../tenancy/tenancy.service.js';
-import { ActDto, ActsQuery } from './dto.js';
+import { ACT_COLORS, ActDto, ActsQuery } from './dto.js';
 
-const COLUMNS = 'id, name, abbreviation, price, active';
+const COLUMNS = 'id, name, abbreviation, color, price, active';
+
+/**
+ * The colour of a new act left without one: the palette's first colour
+ * that the fewest active acts wear.
+ */
+const NEXT_COLOR = `(select c from unnest($4::text[]) with ordinality as p(c, i)
+  order by (select count(*) from acts where active and color = p.c), i limit 1)`;
 
 /**
  * Tarifs: the cabinet's acts and prices. Everyone reads the active ones
@@ -55,14 +62,21 @@ export class ActsController {
     return unique(() =>
       db
         .query(
-          `insert into acts (name, abbreviation, price) values ($1, $2, $3) returning ${COLUMNS}`,
-          [dto.name, dto.abbreviation ?? null, dto.price],
+          `insert into acts (name, abbreviation, price, color)
+           values ($1, $2, $3, coalesce($5, ${NEXT_COLOR})) returning ${COLUMNS}`,
+          [
+            dto.name,
+            dto.abbreviation ?? null,
+            dto.price,
+            ACT_COLORS.filter((c) => c !== 'gray'),
+            dto.color ?? null,
+          ],
         )
         .then((r) => r.rows[0]),
     );
   }
 
-  /** New name or price: past visits keep what they were charged. */
+  /** New name or price: past visits keep what they were charged. No colour: it stays. */
   @Activity('act.update', 'act')
   @Put(':id')
   async update(
@@ -75,9 +89,10 @@ export class ActsController {
     return unique(() =>
       setOne(
         db,
-        `update acts set name = $2, abbreviation = $3, price = $4, updated_at = now()
+        `update acts set name = $2, abbreviation = $3, price = $4,
+           color = coalesce($5, color), updated_at = now()
           where id = $1 returning ${COLUMNS}`,
-        [id, dto.name, dto.abbreviation ?? null, dto.price],
+        [id, dto.name, dto.abbreviation ?? null, dto.price, dto.color ?? null],
       ),
     );
   }

@@ -5,6 +5,7 @@ import { fmt } from "@/calendar/locale";
 
 import { parseISO } from "date-fns";
 import { cva } from "class-variance-authority";
+import { colorVariant, CUSTOM_DOT, CUSTOM_TINT, customColorStyle } from "@/calendar/colors";
 
 import { useCalendar } from "@/calendar/contexts/calendar-context";
 
@@ -15,6 +16,7 @@ import type { VariantProps } from "class-variance-authority";
 import { Abbreviation } from "@/components/act-picker";
 import { cn } from "@/lib/utils";
 import { IconClock, IconText, IconUser } from "@/components/icons";
+import { released } from "@/lib/appointments";
 
 const agendaEventCardVariants = cva(
   "flex select-none items-center justify-between gap-3 rounded-md border p-3 text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
@@ -42,6 +44,9 @@ const agendaEventCardVariants = cva(
         "purple-dot": "bg-neutral-50 dark:bg-neutral-900 [&_.event-dot]:fill-purple-600",
         "yellow-dot": "bg-neutral-50 dark:bg-neutral-900 [&_.event-dot]:fill-yellow-600",
         "gray-dot": "bg-neutral-50 dark:bg-neutral-900 [&_.event-dot]:fill-neutral-600",
+        // An act's custom colour (calendar/colors.ts).
+        custom: CUSTOM_TINT,
+        "custom-dot": CUSTOM_DOT,
       },
     },
     defaultVariants: {
@@ -63,9 +68,9 @@ export function AgendaEventCard({ event, eventCurrentDay, eventTotalDays }: IPro
   const startDate = parseISO(event.startDate);
   const endDate = parseISO(event.endDate);
 
-  const color = (badgeVariant === "dot" ? `${event.color}-dot` : event.color) as VariantProps<typeof agendaEventCardVariants>["color"];
+  const color = colorVariant(event.color, badgeVariant === "dot") as VariantProps<typeof agendaEventCardVariants>["color"];
 
-  const agendaEventCardClasses = agendaEventCardVariants({ color });
+  const agendaEventCardClasses = cn(agendaEventCardVariants({ color }), released(event) && "opacity-60");
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" || e.key === " ") {
@@ -76,7 +81,7 @@ export function AgendaEventCard({ event, eventCurrentDay, eventTotalDays }: IPro
 
   return (
     <EventDetailsTrigger event={event}>
-      <div role="button" tabIndex={0} className={agendaEventCardClasses} onKeyDown={handleKeyDown}>
+      <div role="button" tabIndex={0} className={agendaEventCardClasses} style={customColorStyle(event.color)} onKeyDown={handleKeyDown}>
         <div className="flex flex-col gap-2">
           <div className="flex items-center gap-1.5">
             {["mixed", "dot"].includes(badgeVariant) && (

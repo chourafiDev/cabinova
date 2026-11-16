@@ -7,8 +7,10 @@ import { SettingsNav } from "./_components/settings-nav";
 /** Paramètres: a section list beside the current section (one page each). */
 export default async function SettingsLayout({ children }: { children: React.ReactNode }) {
 	const state = await getClinicState();
-	const isOwner = state.status === "signed-in" && state.session.user.role === "owner";
-	const sections = SETTINGS_SECTIONS.filter((s) => isOwner || !s.ownerOnly);
+	const role = state.status === "signed-in" ? state.session.user.role : null;
+	const isOwner = role === "owner";
+	const isMedical = role === "owner" || role === "doctor";
+	const sections = SETTINGS_SECTIONS.filter((s) => (isOwner || !s.ownerOnly) && (isMedical || !s.medicalOnly));
 	const t = await getTranslations("settings");
 
 	return (

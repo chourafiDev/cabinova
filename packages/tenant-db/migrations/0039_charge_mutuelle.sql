@@ -1,0 +1,1 @@
+ALTER TABLE "charges" ADD COLUMN "mutuelle" boolean DEFAULT false NOT NULL;

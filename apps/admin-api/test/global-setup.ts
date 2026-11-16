@@ -8,7 +8,7 @@ import { seedCatalog } from '../src/database/seed-catalog.js';
 
 /**
  * Once per run: a fresh catalog database (migrated and seeded exactly like
- * production), and no clinic database or role left from a previous run.
+ * production), an empty medicines database, and no clinic database or role left from a previous run.
  */
 export default async function setup(project: TestProject) {
   const env = project.config.env as Record<string, string>;
@@ -31,6 +31,10 @@ export default async function setup(project: TestProject) {
       await admin.query(`drop role "${rolname}"`);
     }
     await admin.query(`create database "${catalog}"`);
+    // The shared medicines database: empty, migrated by the API at startup.
+    const medicines = new URL(env.MEDICINES_DATABASE_URL).pathname.slice(1);
+    await admin.query(`drop database if exists "${medicines}" with (force)`);
+    await admin.query(`create database "${medicines}"`);
   } finally {
     await admin.end();
   }

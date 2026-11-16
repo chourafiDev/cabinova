@@ -18,15 +18,18 @@ import {
 } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { api } from "@/lib/api-client";
-import { type Act, actMatches, parseMad, toInput } from "@/lib/payments";
+import { ACT_COLORS, ACT_SWATCHES, type Act, type ActColor, actMatches, actSwatch, parseMad, toInput } from "@/lib/payments";
 import { useFormat } from "@/lib/use-format";
+import { cn } from "@/lib/utils";
 import { SettingsCard } from "../../_components/settings-card";
 
 /**
- * Tarifs: the price list as a table (libellé, abréviation, montant), searched
- * by name or abbreviation. Archived acts stay on past visits; an act never
+ * Tarifs: the price list as a table (couleur et libellé, abréviation,
+ * montant), searched by name or abbreviation. The colour is the act's
+ * appointments' colour on the agenda. Archived acts stay on past visits; an act never
  * charged can be deleted for good.
  */
 export function ActsManager({ acts }: { acts: Act[] }) {
@@ -149,7 +152,10 @@ function ActRow({ act, onEdit }: { act: Act; onEdit?: () => void }) {
 	return (
 		<TableRow>
 			<TableCell className={act.active ? "font-medium" : "text-muted-foreground"}>
-				<span className="line-clamp-2">{act.name}</span>
+				<span className="flex items-center gap-2.5">
+					<Swatch color={act.color} label={colorName(t, act.color)} />
+					<span className="line-clamp-2">{act.name}</span>
+				</span>
 			</TableCell>
 			<TableCell className="w-36">{act.abbreviation && <Abbreviation>{act.abbreviation}</Abbreviation>}</TableCell>
 			<TableCell className="w-36 text-end tabular-nums">{mad(act.price)}</TableCell>
@@ -198,6 +204,8 @@ function ActForm({ act, onDone }: { act?: Act; onDone: () => void }) {
 	const router = useRouter();
 	const [name, setName] = useState(act?.name ?? "");
 	const [abbreviation, setAbbreviation] = useState(act?.abbreviation ?? "");
+	// A new act without a choice gets the least-used colour from the API.
+	const [color, setColor] = useState<ActColor | null>(act?.color ?? null);
 	const [price, setPrice] = useState(act ? toInput(act.price) : "");
 	const [error, setError] = useState<string | null>(null);
 	const [saving, setSaving] = useState(false);
@@ -213,7 +221,7 @@ function ActForm({ act, onDone }: { act?: Act; onDone: () => void }) {
 		try {
 			await api(act ? `/acts/${act.id}` : "/acts", {
 				method: act ? "PUT" : "POST",
-				body: JSON.stringify({ name, abbreviation: abbreviation.trim() || null, price: value }),
+				body: JSON.stringify({ name, abbreviation: abbreviation.trim() || null, price: value, ...(color && { color }) }),
 			});
 			toast.success(act ? t("saved") : t("added", { name: name.trim() }));
 			onDone();
@@ -236,7 +244,9 @@ function ActForm({ act, onDone }: { act?: Act; onDone: () => void }) {
 	return (
 		<TableRow className="bg-muted/30 hover:bg-muted/30">
 			<TableCell className="align-top">
-				<Input
+				<div className="flex items-center gap-2">
+					<ColorPicker value={color} onChange={setColor} />
+					<Input
 					autoFocus
 					value={name}
 					maxLength={120}
@@ -246,6 +256,7 @@ function ActForm({ act, onDone }: { act?: Act; onDone: () => void }) {
 					onKeyDown={keys}
 					className="h-8"
 				/>
+				</div>
 				{error && <p className="text-destructive mt-1.5 text-xs">{error}</p>}
 			</TableCell>
 			<TableCell className="w-36 align-top">
@@ -284,5 +295,131 @@ function ActForm({ act, onDone }: { act?: Act; onDone: () => void }) {
 				</span>
 			</TableCell>
 		</TableRow>
+	);
+}
+
+const isCustom = (color: ActColor) => color.startsWith("#");
+
+/** A colour's name: the palette's ("Bleu"), or "Personnalisée · #14b8a6". */
+function colorName(t: ReturnType<typeof useTranslations<"settings.acts">>, color: ActColor) {
+	return isCustom(color) ? `${t("colors.custom")} · ${color}` : t(`colors.${color as (typeof ACT_COLORS)[number]}`);
+}
+
+/** An act's colour, as a dot. */
+function Swatch({ color, label, className }: { color: ActColor; label?: string; className?: string }) {
+	const swatch = actSwatch(color);
+	return (
+		<span
+			role={label ? "img" : undefined}
+			aria-label={label}
+			title={label}
+			style={swatch.style}
+			className={cn("ring-background size-3 shrink-0 rounded-full ring-2", swatch.className, className)}
+		/>
+	);
+}
+
+/** The act's colour on the agenda: a dot that opens the palette. null: chosen by the API. */
+function ColorPicker({ value, onChange }: { value: ActColor | null; onChange: (color: ActColor) => void }) {
+	const [open, setOpen] = useState(false);
+	const t = useTranslations("settings.acts");
+	return (
+		<Popover open={open} onOpenChange={setOpen}>
+			<PopoverTrigger asChild>
+				<Button
+					type="button"
+					variant="outline"
+					size="icon"
+					className="size-8 shrink-0"
+					aria-label={value ? t("colorLabel", { color: colorName(t, value) }) : t("colorAuto")}
+					title={value ? colorName(t, value) : t("colorAuto")}
+				>
+					{value ? (
+						<Swatch color={value} />
+					) : (
+						<span className="border-muted-foreground/50 size-3 rounded-full border border-dashed" />
+					)}
+				</Button>
+			</PopoverTrigger>
+			<PopoverContent align="start" className="w-auto p-2">
+				<p className="text-muted-foreground mb-2 px-0.5 text-xs">{t("colorHint")}</p>
+				<div className="grid grid-cols-5 gap-1.5" role="radiogroup" aria-label={t("colorTitle")}>
+					{ACT_COLORS.map((c) => (
+						<button
+							key={c}
+							type="button"
+							role="radio"
+							aria-checked={value === c}
+							aria-label={t(`colors.${c}`)}
+							title={t(`colors.${c}`)}
+							onClick={() => {
+								onChange(c);
+								setOpen(false);
+							}}
+							className={cn(
+								"focus-visible:ring-ring flex size-8 items-center justify-center rounded-md transition-colors hover:bg-muted focus-visible:ring-2 focus-visible:outline-none",
+								value === c && "bg-muted",
+							)}
+						>
+							<span className={cn("flex size-5 items-center justify-center rounded-full text-white", ACT_SWATCHES[c])}>
+								{value === c && <IconCheck className="size-3" />}
+							</span>
+						</button>
+					))}
+					{/* Any colour: the system's colour chooser. */}
+					<label
+						title={t("colors.custom")}
+						className={cn(
+							"focus-within:ring-ring relative flex size-8 cursor-pointer items-center justify-center rounded-md transition-colors hover:bg-muted focus-within:ring-2",
+							value && isCustom(value) && "bg-muted",
+						)}
+					>
+						<span
+							className="flex size-5 items-center justify-center rounded-full text-white"
+							style={{
+								background:
+									value && isCustom(value)
+										? value
+										: "conic-gradient(#ef4444, #f59e0b, #22c55e, #06b6d4, #3b82f6, #a855f7, #ef4444)",
+							}}
+						>
+							{value && isCustom(value) && <IconCheck className="size-3" />}
+						</span>
+						<input
+							type="color"
+							aria-label={t("colors.custom")}
+							value={value && isCustom(value) ? value : "#14b8a6"}
+							onChange={(e) => onChange(e.target.value.toLowerCase() as ActColor)}
+							className="absolute inset-0 cursor-pointer opacity-0"
+						/>
+					</label>
+				</div>
+				<HexInput value={value && isCustom(value) ? value : ""} onChange={onChange} />
+			</PopoverContent>
+		</Popover>
+	);
+}
+
+/** The custom colour as a code ("#14b8a6"), typed or pasted. */
+function HexInput({ value, onChange }: { value: string; onChange: (color: ActColor) => void }) {
+	const t = useTranslations("settings.acts");
+	const [text, setText] = useState(value);
+	return (
+		<label className="mt-2 flex items-center gap-2 border-t px-0.5 pt-2 text-xs">
+			<span className="text-muted-foreground shrink-0">{t("colorCode")}</span>
+			<Input
+				value={text}
+				placeholder="#14b8a6"
+				maxLength={7}
+				dir="ltr"
+				onChange={(e) => {
+					const next = e.target.value.trim().toLowerCase();
+					setText(next);
+					const hex = next.startsWith("#") ? next : `#${next}`;
+					if (/^#[0-9a-f]{6}$/.test(hex)) onChange(hex as ActColor);
+				}}
+				className="h-7 w-28 font-mono text-xs"
+			/>
+		</label>
 	);
 }

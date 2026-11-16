@@ -5,10 +5,11 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { AppointmentsService } from '../appointments/appointments.service.js';
+import { richOrNull } from '../common/rich-text.js';
 import type { PrescriptionDto } from './dto.js';
 
 const PRESCRIPTION = `pr.id, pr.appointment_id as "appointmentId", pr.items,
-  pr.notes, pr.updated_at as "updatedAt"`;
+  pr.notes, pr.body, pr.updated_at as "updatedAt"`;
 
 /** Ordonnances, one per visit. Callers check who may write (doctors) or browse a patient's history. */
 @Injectable()
@@ -47,12 +48,15 @@ export class PrescriptionsService {
       medication: i.medication,
       posology: i.posology ?? null,
       duration: i.duration ?? null,
+      // Kept only when given: lines typed by hand stay as before.
+      ...(i.ammpsId != null && { ammpsId: i.ammpsId }),
+      ...(i.customMedicationId != null && { customMedicationId: i.customMedicationId }),
     }));
     const { rows } = await db.query(
-      `insert into prescriptions as pr (appointment_id, patient_id, practitioner_id, items, notes)
-       values ($1, $2, $3, $4, $5)
+      `insert into prescriptions as pr (appointment_id, patient_id, practitioner_id, items, notes, body)
+       values ($1, $2, $3, $4, $5, $6)
        on conflict (appointment_id) do update set
-         items = excluded.items, notes = excluded.notes,
+         items = excluded.items, notes = excluded.notes, body = excluded.body,
          practitioner_id = excluded.practitioner_id, updated_at = now()
        returning ${PRESCRIPTION}`,
       [
@@ -61,6 +65,8 @@ export class PrescriptionsService {
         userId,
         JSON.stringify(items),
         dto.notes ?? null,
+        // Cleaned like every rich text: the editor's formatting, nothing else.
+        richOrNull(dto.body),
       ],
     );
     return rows[0];
@@ -88,10 +94,11 @@ export class PrescriptionsService {
    */
   async medications(db: Pool, userId: string) {
     const { rows } = await db.query(
-      `select medication, posology, duration from (
+      `select medication, posology, duration, "ammpsId", "customMedicationId" from (
          select distinct on (lower(i->>'medication'))
                 i->>'medication' as medication, i->>'posology' as posology,
-                i->>'duration' as duration, pr.updated_at
+                i->>'duration' as duration, (i->>'ammpsId')::int as "ammpsId",
+                i->>'customMedicationId' as "customMedicationId", pr.updated_at
            from prescriptions pr, jsonb_array_elements(pr.items) i
           where pr.practitioner_id = $1
           order by lower(i->>'medication'), pr.updated_at desc
@@ -106,7 +113,7 @@ export class PrescriptionsService {
   /** Everything the printed ordonnance shows. */
   async print(db: Pool, spaceId: string, appointmentId: string) {
     const { rows } = await db.query(
-      `select pr.items, pr.notes, a.starts_at as date,
+      `select pr.items, pr.notes, pr.body, a.starts_at as date,
               json_build_object('firstName', p.first_name, 'lastName', p.last_name,
                 'sex', p.sex, 'birthDate', to_char(p.birth_date, 'YYYY-MM-DD'),
                 'fileNumber', p.file_number) as patient,
@@ -122,7 +129,7 @@ export class PrescriptionsService {
          join users du on du.id = a.practitioner_id
          left join users u on u.id = pr.practitioner_id
         where pr.appointment_id = $1 and a.space_id = $2
-          and jsonb_array_length(pr.items) > 0`,
+          and (jsonb_array_length(pr.items) > 0 or pr.body is not null)`,
       [appointmentId, spaceId],
     );
     if (!rows[0]) {

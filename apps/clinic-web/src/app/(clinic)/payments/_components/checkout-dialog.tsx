@@ -43,6 +43,7 @@ import {
 } from "@/lib/payments";
 import { useFormat } from "@/lib/use-format";
 import { cn } from "@/lib/utils";
+import { PrintLink } from "@/components/print-dialog";
 
 /** Queries a checkout refreshes (desk, patient file, visit). */
 // Appointments carry their account too (Patients vus: réglé or not).
@@ -180,6 +181,7 @@ function CheckoutForm({
 	const collects = !inline;
 	const [rows, setRows] = useState<Row[]>(() => account.items.map(rowOf));
 	const [discountText, setDiscountText] = useState(() => (account.discount ? toInput(account.discount) : ""));
+	const [mutuelle, setMutuelle] = useState(account.mutuelle);
 	const [amount, setAmount] = useState<string | null>(null);
 	const [method, setMethod] = useState<PaymentMethod>("cash");
 	const [reference, setReference] = useState("");
@@ -207,7 +209,8 @@ function CheckoutForm({
 	const changed =
 		JSON.stringify(rows.map((r, i) => [r.actId, r.label.trim(), prices[i], r.quantity])) !==
 			JSON.stringify(account.items.map((i) => [i.actId, i.label, i.unitPrice, i.quantity])) ||
-		(medical && typedDiscount !== account.discount);
+		(medical && typedDiscount !== account.discount) ||
+		mutuelle !== account.mutuelle;
 
 	const setRow = (key: number, change: Partial<Row>) =>
 		setRows((all) => all.map((r) => (r.key === key ? { ...r, ...change } : r)));
@@ -241,6 +244,7 @@ function CheckoutForm({
 						quantity: r.quantity,
 					})),
 					...(medical && { discount }),
+					mutuelle,
 					...(withPayment && {
 						payment: { amount: amountValue, method, reference: reference.trim() || undefined },
 					}),
@@ -288,9 +292,9 @@ function CheckoutForm({
 						{t("finish")}
 					</Button>
 					<Button asChild>
-						<a href={`/receipts/${paid.id}`} target="_blank" rel="noopener">
+						<PrintLink href={`/receipts/${paid.id}`}>
 							<IconPrinter /> {t("print")}
-						</a>
+						</PrintLink>
 					</Button>
 				</Footer>
 			</div>
@@ -345,6 +349,10 @@ function CheckoutForm({
 							<dd className="tabular-nums text-emerald-700">− {mad(account.discount)}</dd>
 						</div>
 					)}
+					<div className="flex justify-between">
+						<dt className="text-muted-foreground">{t("mutuelle")}</dt>
+						<dd>{account.mutuelle ? t("yes") : t("no")}</dd>
+					</div>
 					<div className="flex justify-between">
 						<dt className="text-muted-foreground">{t("alreadyPaid")}</dt>
 						<dd className="tabular-nums">{mad(account.paid)}</dd>
@@ -522,6 +530,30 @@ function CheckoutForm({
 						{owner ? t("noActsOwner") : t("noActs")}
 					</p>
 				)}
+			</section>
+
+			{/* Whether the patient sends this visit to their mutuelle (the desk prepares the feuille de soins). */}
+			<section className="grid gap-1.5">
+				<p id="checkout-mutuelle" className="text-sm font-medium">
+					{t("mutuelle")}
+				</p>
+				<div role="radiogroup" aria-labelledby="checkout-mutuelle" className="bg-muted flex w-fit rounded-lg p-0.5 text-sm">
+					{[true, false].map((value) => (
+						<button
+							key={String(value)}
+							type="button"
+							role="radio"
+							aria-checked={mutuelle === value}
+							onClick={() => setMutuelle(value)}
+							className={cn(
+								"rounded-md px-4 py-1 transition-colors",
+								mutuelle === value ? "bg-background font-medium shadow-sm" : "text-muted-foreground hover:text-foreground",
+							)}
+						>
+							{value ? t("yes") : t("no")}
+						</button>
+					))}
+				</div>
 			</section>
 
 			{medical && (
@@ -839,9 +871,9 @@ function Movements({
 							<span className="ms-auto flex items-center gap-1">
 								{p.receiptNumber && !p.cancelledAt && (
 									<Button asChild variant="ghost" size="sm" className="h-7 font-mono text-xs">
-										<a href={`/receipts/${p.id}`} target="_blank" rel="noopener" title={t("print")}>
+										<PrintLink href={`/receipts/${p.id}`} title={t("print")}>
 											<IconPrinter /> {p.receiptNumber}
-										</a>
+										</PrintLink>
 									</Button>
 								)}
 								{!p.cancelledAt && !p.locked && (owner || p.receivedById === user.id) && cancelling !== p.id && (

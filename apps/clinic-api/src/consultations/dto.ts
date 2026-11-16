@@ -24,12 +24,15 @@ const num = () =>
         : value,
   );
 
-/** The whole consultation, as the doctor's form sends it on every save. */
+/**
+ * The whole consultation, as the doctor's form sends it on every save.
+ * Motif (complaint), observation (examination) and diagnostic are editor HTML.
+ */
 export class ConsultationDto {
   @clean()
   @IsOptional()
   @IsString()
-  @MaxLength(8000)
+  @MaxLength(20_000)
   complaint?: string | null;
 
   @clean()
@@ -41,13 +44,13 @@ export class ConsultationDto {
   @clean()
   @IsOptional()
   @IsString()
-  @MaxLength(8000)
+  @MaxLength(20_000)
   examination?: string | null;
 
   @clean()
   @IsOptional()
   @IsString()
-  @MaxLength(8000)
+  @MaxLength(20_000)
   diagnosis?: string | null;
 
   @clean()

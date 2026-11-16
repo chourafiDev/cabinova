@@ -12,6 +12,7 @@ import type {
 } from './dto.js';
 import { noShowsOf } from './no-shows.js';
 import { patientSearch } from './search.js';
+import { richOrNull } from '../common/rich-text.js';
 
 /** A name as compared for homonyms: no accents, case or extra spaces. */
 const NAME = (sql: string) =>
@@ -56,8 +57,6 @@ const FIELDS = [
 
 const PROFILE_FIELDS = [
   ['blood_group', 'bloodGroup'],
-  ['allergies', 'allergies'],
-  ['chronic_conditions', 'chronicConditions'],
   ['medical_history', 'medicalHistory'],
   ['surgical_history', 'surgicalHistory'],
   ['family_history', 'familyHistory'],
@@ -130,8 +129,7 @@ export class PatientsService {
     const patient = await this.find(db, spaceId, id);
     if (!withMedical) return patient;
     const { rows } = await db.query(
-      `select blood_group as "bloodGroup", allergies,
-              chronic_conditions as "chronicConditions",
+      `select blood_group as "bloodGroup",
               medical_history as "medicalHistory",
               surgical_history as "surgicalHistory",
               family_history as "familyHistory",
@@ -140,6 +138,7 @@ export class PatientsService {
               gyneco_history as "gynecoHistory",
               risk_factors as "riskFactors",
               permanent_note as "permanentNote",
+              antecedents,
               updated_at as "updatedAt"
          from medical_profiles where patient_id = $1`,
       [id],
@@ -244,6 +243,48 @@ export class PatientsService {
       params,
     );
     return this.get(db, spaceId, id, true);
+  }
+
+  /** The permanent note alone, as rich text (cleaned); the rest of the profile is left as is. */
+  async savePermanentNote(
+    db: Pool,
+    spaceId: string,
+    id: string,
+    html: string | null,
+    userId: string,
+  ) {
+    await this.find(db, spaceId, id);
+    const { rows } = await db.query<{ permanentNote: string | null; updatedAt: string }>(
+      `insert into medical_profiles (patient_id, permanent_note, updated_by)
+       values ($1, $2, $3)
+       on conflict (patient_id) do update set
+         permanent_note = excluded.permanent_note,
+         updated_by = excluded.updated_by, updated_at = now()
+       returning permanent_note as "permanentNote", updated_at as "updatedAt"`,
+      [id, richOrNull(html), userId],
+    );
+    return rows[0];
+  }
+
+  /** Rich text, cleaned; only this column changes (created with the profile row if needed). */
+  async saveAntecedents(
+    db: Pool,
+    spaceId: string,
+    id: string,
+    html: string | null,
+    userId: string,
+  ) {
+    await this.find(db, spaceId, id);
+    const { rows } = await db.query<{ antecedents: string | null; updatedAt: string }>(
+      `insert into medical_profiles (patient_id, antecedents, updated_by)
+       values ($1, $2, $3)
+       on conflict (patient_id) do update set
+         antecedents = excluded.antecedents,
+         updated_by = excluded.updated_by, updated_at = now()
+       returning antecedents, updated_at as "updatedAt"`,
+      [id, richOrNull(html), userId],
+    );
+    return rows[0];
   }
 
   private async find(db: Pool | PoolClient, spaceId: string, id: string) {

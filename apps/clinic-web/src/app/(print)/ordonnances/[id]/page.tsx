@@ -1,12 +1,10 @@
 import { differenceInMonths, differenceInYears, parseISO } from "date-fns";
 import type { Metadata } from "next";
-import Link from "next/link";
 import { formatDate } from "@/lib/format";
 import { formatFileNumber, formatPhone } from "@/lib/patients";
 import type { PrintedPrescription } from "@/lib/prescriptions";
 import { apiGet } from "@/lib/server-api";
 import { cn } from "@/lib/utils";
-import { PrintButton } from "../../receipts/[id]/print-button";
 
 /** Moroccan ordonnances are mostly A5; A4 for pre-printed or full-page paper. */
 const FORMATS = {
@@ -30,7 +28,8 @@ function ageAt(birthDate: string | null, date: string) {
 
 /**
  * Ordonnance (print / save as PDF), on the cabinet's letterhead: the doctor,
- * the patient, one numbered line per medication, the advice, the signature.
+ * the patient, one numbered line per medication, the advice, the signature —
+ * or the whole text as the doctor reworded it in the editor.
  * Written in French, like every ordonnance in Morocco.
  */
 export default async function PrescriptionPage({ params, searchParams }: PageProps<"/ordonnances/[id]">) {
@@ -51,24 +50,14 @@ export default async function PrescriptionPage({ params, searchParams }: PagePro
 			{/* The paper size the browser prints on. */}
 			<style>{`@page { size: ${f.page}; margin: 0; }`}</style>
 
-			<div className={cn("flex max-w-full flex-wrap items-center justify-between gap-3 print:hidden", f.width)}>
-				<div className="bg-muted inline-flex rounded-lg p-[3px] text-sm">
-					{(Object.keys(FORMATS) as Format[]).map((key) => (
-						<Link
-							key={key}
-							href={`?format=${key}`}
-							replace
-							className={cn(
-								"rounded-md px-3 py-1 font-medium",
-								key === format ? "bg-background shadow-sm" : "text-muted-foreground hover:text-foreground",
-							)}
-						>
-							{FORMATS[key].label}
-						</Link>
-					))}
-				</div>
-				<PrintButton />
-			</div>
+			{/* No toolbar: printed from the app's print dialog, which reads these for its A5 / A4 switch. */}
+			<nav hidden>
+				{(Object.keys(FORMATS) as Format[]).map((key) => (
+					<a key={key} href={`?format=${key}`}>
+						{FORMATS[key].label}
+					</a>
+				))}
+			</nav>
 
 			<article
 				className={cn(
@@ -115,6 +104,14 @@ export default async function PrescriptionPage({ params, searchParams }: PagePro
 
 				<h1 className="mt-6 mb-5 text-center text-base font-semibold tracking-[0.3em] uppercase">Ordonnance</h1>
 
+				{rx.body ? (
+					// Reworded by the doctor (cleaned by the API: formatting only).
+					<div
+						className="[&_li]:mb-3 [&_li]:break-inside-avoid [&_li_p]:mb-0.5 [&_ol]:list-decimal [&_ol]:ps-5 [&_p]:mb-1 [&_strong]:font-semibold [&_ul]:list-disc [&_ul]:ps-5 [&_li::marker]:font-semibold"
+						dangerouslySetInnerHTML={{ __html: rx.body }}
+					/>
+				) : (
+				<>
 				<ol className="grid gap-4">
 					{rx.items.map((item, i) => (
 						<li key={i} className="grid grid-cols-[1.5rem_1fr] break-inside-avoid">
@@ -133,6 +130,8 @@ export default async function PrescriptionPage({ params, searchParams }: PagePro
 						<p className="mb-0.5 text-xs text-zinc-500">Conseils</p>
 						<p className="whitespace-pre-line">{rx.notes}</p>
 					</div>
+				)}
+				</>
 				)}
 
 				<footer className="mt-auto flex justify-end pt-8">

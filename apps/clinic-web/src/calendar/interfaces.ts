@@ -1,5 +1,5 @@
 import type { AppointmentStatus } from "@/lib/appointments";
-import type { TEventColor } from "@/calendar/types";
+import type { TAnyColor } from "@/calendar/colors";
 
 /** A practitioner (column filter / event owner). */
 export interface IUser {
@@ -15,7 +15,8 @@ export interface IEvent {
   endDate: string;
   /** Patient name */
   title: string;
-  color: TEventColor;
+  /** A palette colour, or an act's custom one ("#14b8a6"). */
+  color: TAnyColor;
   /** Motif */
   description: string;
   user: IUser;

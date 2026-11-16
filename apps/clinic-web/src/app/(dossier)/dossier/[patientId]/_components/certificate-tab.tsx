@@ -44,6 +44,7 @@ import { useFormat } from "@/lib/use-format";
 import { cn } from "@/lib/utils";
 import { ModelsSheet } from "./certificate-models";
 import { Card } from "./patient-aside";
+import { PrintLink, usePrintDialog } from "@/components/print-dialog";
 
 /** The model the text came from: one of Cabinova's, the doctor's own, or the library's. */
 type Template = { key: string; body: string };
@@ -57,6 +58,7 @@ export function CertificateTab({ patient, appointmentId }: { patient: PatientFil
 	const t = useTranslations("dossier.certificate");
 	const user = useCurrentUser();
 	const queryClient = useQueryClient();
+	const openPrint = usePrintDialog();
 	const today = moroccoDay();
 	const [kind, setKind] = useState<CertificateKind>("period");
 	const [startsOn, setStartsOn] = useState(today);
@@ -103,7 +105,7 @@ export function CertificateTab({ patient, appointmentId }: { patient: PatientFil
 			});
 			await queryClient.invalidateQueries({ queryKey: certificatesKey(patient.id) });
 			toast.success(t("saved"));
-			window.open(`/certificats/${certificate.id}`, "_blank", "noopener");
+			openPrint(`/certificats/${certificate.id}`);
 			setEdited(false);
 		} catch (err) {
 			toast.error(err instanceof Error ? err.message : t("saveError"));
@@ -452,9 +454,9 @@ function HistoryActions({ certificate }: { certificate: Certificate }) {
 	return (
 		<span className="flex items-center gap-1">
 			<Button asChild variant="outline" size="sm" className="h-8">
-				<a href={`/certificats/${certificate.id}`} target="_blank" rel="noopener">
+				<PrintLink href={`/certificats/${certificate.id}`}>
 					<IconPrinter /> {t("print")}
-				</a>
+				</PrintLink>
 			</Button>
 			{confirming ? (
 				<Button variant="destructive" size="sm" className="h-8" disabled={pending} onClick={cancel} onBlur={() => setConfirming(false)}>

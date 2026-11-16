@@ -72,6 +72,7 @@ import {
   Refresh,
   RefreshLeftSquare,
   Ruler,
+  Save2,
   Scan,
   Scanning,
   SearchNormal1,
@@ -82,6 +83,7 @@ import {
   ShieldTick,
   Sms,
   Speedometer,
+  Star1,
   Stickynote,
   Sun1,
   Tag,
@@ -243,6 +245,7 @@ export const IconRefresh = bulk(Refresh);
 export const IconReset = bulk(ArrowRotateLeft);
 export const IconRestore = bulk(RefreshLeftSquare);
 export const IconRuler = bulk(Ruler);
+export const IconSave = bulk(Save2);
 export const IconScan = bulk(Scan);
 export const IconScanSearch = bulk(Scanning);
 export const IconSearch = bulk(SearchNormal1);
@@ -253,6 +256,7 @@ export const IconShieldCheck = bulk(ShieldTick);
 export const IconShieldOff = bulk(ShieldSlash);
 export const IconSignature = bulk(Edit);
 export const IconSparkles = bulk(MagicStar);
+export const IconStar = bulk(Star1);
 export const IconStatus = bulk(RecordCircle);
 export const IconSun = bulk(Sun1);
 export const IconSupport = bulk(Lifebuoy);

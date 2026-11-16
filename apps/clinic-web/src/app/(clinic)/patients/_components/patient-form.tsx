@@ -13,7 +13,6 @@ import {
 	IconChevronRight,
 	IconContact,
 	IconLocation,
-	IconNote,
 	IconPlus,
 	IconShieldCheck,
 	IconSpinner,
@@ -25,7 +24,6 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Field, FieldError, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { useDebouncedValue } from "@/hooks/use-debounced-value";
 import { ApiError, api } from "@/lib/api-client";
 import {
@@ -420,25 +418,6 @@ export function PatientForm({
 							{input("emergencyContactName", t("nameAndLink"), { placeholder: t("nameAndLinkPlaceholder") })}
 							{input("emergencyContactPhone", t("phone"), { type: "tel", inputMode: "tel" })}
 						</div>
-					</OptionalSection>
-
-					<OptionalSection
-						icon={IconNote}
-						title={t("note")}
-						summary={values.notes || undefined}
-						open={isOpen("notes")}
-						onToggle={() => toggle("notes")}
-					>
-						<Field data-invalid={!!errors.notes}>
-							<Textarea
-								id="notes"
-								rows={3}
-								placeholder={t("notePlaceholder")}
-								aria-invalid={!!errors.notes}
-								{...form.register("notes")}
-							/>
-							<FieldError errors={[errors.notes]} />
-						</Field>
 					</OptionalSection>
 				</div>
 			</div>

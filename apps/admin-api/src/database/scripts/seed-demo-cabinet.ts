@@ -174,14 +174,6 @@ const REASONS = [
   null,
 ];
 const BLOOD = ['A+', 'A+', 'O+', 'O+', 'O+', 'B+', 'AB+', 'A-', 'O-'] as const;
-const ALLERGIES = ['Pénicilline', 'Aspirine', 'Arachides', 'Pollen', 'Iode'];
-const CHRONIC = [
-  'Hypertension artérielle',
-  'Diabète de type 2',
-  'Asthme',
-  'Hypothyroïdie',
-  'Hypercholestérolémie',
-];
 const TREATMENTS = [
   'Amlodipine 5 mg, 1 cp/jour',
   'Metformine 850 mg, 2 cp/jour',
@@ -470,15 +462,13 @@ async function seedDemo(
   // Antécédents for most adults.
   const profiled = patients.filter(() => chance(0.6));
   await db.query(
-    `insert into medical_profiles (patient_id, blood_group, allergies, chronic_conditions, medical_history,
+    `insert into medical_profiles (patient_id, blood_group, medical_history,
                                    surgical_history, family_history, current_treatments, updated_by)
-     select * , $9::uuid from unnest($1::uuid[], $2::blood_group[], $3::text[], $4::text[], $5::text[],
-                                     $6::text[], $7::text[], $8::text[])`,
+     select * , $7::uuid from unnest($1::uuid[], $2::blood_group[], $3::text[], $4::text[], $5::text[],
+                                     $6::text[])`,
     [
       profiled.map((p) => p.id),
       profiled.map(() => (chance(0.8) ? pick(BLOOD) : null)),
-      profiled.map(() => (chance(0.2) ? pick(ALLERGIES) : null)),
-      profiled.map(() => (chance(0.35) ? pick(CHRONIC) : null)),
       profiled.map(() =>
         chance(0.3)
           ? pick([

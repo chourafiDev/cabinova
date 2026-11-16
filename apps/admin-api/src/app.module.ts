@@ -8,6 +8,8 @@ import { validateEnv } from './config/env.js';
 import { CryptoModule } from './crypto/crypto.module.js';
 import { DashboardModule } from './dashboard/dashboard.module.js';
 import { DatabaseModule } from './database/database.module.js';
+import { MedicinesDbModule } from './medicines/medicines-db.module.js';
+import { MedicinesModule } from './medicines/medicines.module.js';
 import { FeaturesModule } from './features/features.module.js';
 import { EmailModule } from './email/email.module.js';
 import { HealthController } from './health/health.controller.js';
@@ -39,6 +41,8 @@ import { TenantsModule } from './tenants/tenants.module.js';
     // routes are much stricter with @Throttle (login: 5 / minute).
     ThrottlerModule.forRoot([{ ttl: 60_000, limit: 600 }]),
     DatabaseModule,
+    MedicinesDbModule,
+    MedicinesModule,
     CryptoModule,
     SettingsModule,
     NotificationsModule,

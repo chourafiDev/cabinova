@@ -42,6 +42,7 @@ export function onCabinet(
     get: (path: string) => agent.get(path).set('Host', host),
     post: (path: string) => agent.post(path).set('Host', host),
     put: (path: string) => agent.put(path).set('Host', host),
+    patch: (path: string) => agent.patch(path).set('Host', host),
     delete: (path: string) => agent.delete(path).set('Host', host),
   };
 }

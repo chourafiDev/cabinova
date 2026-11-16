@@ -53,10 +53,17 @@ export const DEFAULT_OPENING_HOURS: OpeningHours = {
 	"6": [{ from: "08:00", to: "13:00" }],
 };
 
-export type SettingsSection = { href: string; key: "profile" | "cabinet" | "spaces" | "hours" | "tarifs" | "sessions" | "activity" | "integrations"; ownerOnly?: boolean };
+export type SettingsSection = {
+	href: string;
+	key: "profile" | "medications" | "cabinet" | "spaces" | "hours" | "tarifs" | "sessions" | "activity" | "integrations";
+	ownerOnly?: boolean;
+	/** Doctors only (owner included): their own medical settings. */
+	medicalOnly?: boolean;
+};
 
 export const SETTINGS_SECTIONS: SettingsSection[] = [
 	{ href: "/settings/profile", key: "profile" },
+	{ href: "/settings/medications", key: "medications", medicalOnly: true },
 	{ href: "/settings/cabinet", key: "cabinet", ownerOnly: true },
 	{ href: "/settings/spaces", key: "spaces", ownerOnly: true },
 	{ href: "/settings/hours", key: "hours", ownerOnly: true },

@@ -34,6 +34,8 @@ const searchParams = {
 	practitioner: parseAsString.withDefault("all"),
 	/** The statuses shown (?statut=confirmed,arrived); none: every one. */
 	statut: parseAsArrayOf(parseAsStringEnum<AppointmentStatus>([...APPOINTMENT_STATUSES])).withDefault([]),
+	/** The acts shown, by name (?acte=Consultation,ECG); none: every one. */
+	acte: parseAsArrayOf(parseAsString).withDefault([]),
 	/** Patient id: open the booking dialog for them (link from the patient file). */
 	book: parseAsString,
 };
@@ -53,7 +55,7 @@ export function Agenda({
 	/** The public holidays the cabinet works (keys). */
 	openHolidays: string[];
 }) {
-	const [{ view, date, practitioner, statut, book }, setParams] = useQueryStates(searchParams, { history: "replace" });
+	const [{ view, date, practitioner, statut, acte, book }, setParams] = useQueryStates(searchParams, { history: "replace" });
 	const selectedDate = useMemo(() => date ?? new Date(), [date]);
 	const t = useTranslations("agenda");
 	const range = visibleRange(view, selectedDate);
@@ -76,10 +78,13 @@ export function Agenda({
 		placeholderData: keepPreviousData,
 	});
 
-	const events = useMemo(
-		() => (data ?? []).filter((a) => statut.length === 0 || statut.includes(a.status)).map(toEvent),
-		[data, statut],
-	);
+	const events = useMemo(() => {
+		const acts = new Set(acte.map((a) => a.toLowerCase()));
+		return (data ?? [])
+			.filter((a) => statut.length === 0 || statut.includes(a.status))
+			.filter((a) => acts.size === 0 || (!!a.reason && acts.has(a.reason.toLowerCase())))
+			.map(toEvent);
+	}, [data, statut, acte]);
 	const users = useMemo(() => practitioners.map((p) => ({ ...p, picturePath: null })), [practitioners]);
 
 	return (
@@ -97,6 +102,8 @@ export function Agenda({
 			setSelectedUserId={(id) => setParams({ practitioner: id === "all" ? null : id })}
 			selectedStatuses={statut}
 			setSelectedStatuses={(statuses) => setParams({ statut: statuses.length ? statuses : null })}
+			selectedActs={acte}
+			setSelectedActs={(acts) => setParams({ acte: acts.length ? acts : null })}
 			canWrite={canWrite}
 			openingHours={openingHours}
 			defaultDuration={defaultDuration}

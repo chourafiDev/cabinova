@@ -31,7 +31,8 @@
     "cabinet": "العيادة",
     "profile": "ملفي الشخصي",
     "hours": "أوقات العمل والمواعيد",
-    "integrations": "التكاملات"
+    "integrations": "التكاملات",
+    "medications": "أدويتي"
   },
   "visitChips": {
     "waiting": "في الانتظار",

@@ -25,8 +25,12 @@ export function PatientBalance({ patientId }: { patientId: string }) {
 	const format = useFormat();
 	if (!data || data.balance <= 0) return null;
 	return (
-		<p className="flex items-center gap-2 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
-			<IconWallet className="size-4 shrink-0" />
+		// A signal, so it isn't missed: the whole banner vibrates and pulses, its icon rings (off with reduced motion).
+		<p
+			role="status"
+			className="animate-signal flex items-center gap-2 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900 [--signal-border:var(--color-amber-200)] [--signal-peak:var(--color-amber-200)] [--signal-rest:var(--color-amber-50)] motion-reduce:animate-none dark:border-amber-900 dark:bg-amber-950 dark:text-amber-200 dark:[--signal-border:var(--color-amber-900)] dark:[--signal-peak:var(--color-amber-900)] dark:[--signal-rest:var(--color-amber-950)]"
+		>
+			<IconWallet className="animate-signal-ring size-4 shrink-0 origin-top motion-reduce:animate-none" />
 			<span>
 				{t("due")} <strong className="tabular-nums">{format.mad(data.balance)}</strong>
 			</span>

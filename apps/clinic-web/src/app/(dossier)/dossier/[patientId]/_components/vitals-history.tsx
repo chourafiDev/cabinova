@@ -24,7 +24,7 @@ import { bmiCategory, bmiOf, type Consultation, isAbnormal, VITAL_FIELDS, type V
 import { useFormat } from "@/lib/use-format";
 import { cn } from "@/lib/utils";
 import { ARMS, bmiFor, MEASURES, type Measure, type VitalSigns } from "@/lib/vitals";
-import { Eyebrow, SectionHeading, SmallCard } from "./patient-aside";
+import { Eyebrow, SectionHeading } from "./patient-aside";
 import { type Point, TrendsCard } from "./trends-card";
 
 /** One dated measurement: taken by the team, or during a consultation. */
@@ -165,10 +165,9 @@ export function LatestVitals({
 			title: fields("bloodGroup"), value: bloodGroup, abnormal: false, status: fields("bloodGroup") });
 	}
 
-	const unusual = results.filter((r) => r.abnormal);
 
 	return (
-		<section className="grid grid-cols-1 gap-3" aria-label={t("title")}>
+		<section className="grid grid-cols-1 gap-2" aria-label={t("title")}>
 			<SectionHeading
 				title={t("title")}
 				action={
@@ -184,9 +183,9 @@ export function LatestVitals({
 				}
 			/>
 			{loading ? (
-				<div className="grid grid-cols-2 gap-2">
-					{[0, 1, 2, 3].map((i) => (
-						<Skeleton key={i} className="h-20 rounded-xl" />
+				<div className="grid grid-cols-3 gap-1.5">
+					{[0, 1, 2, 3, 4, 5].map((i) => (
+						<Skeleton key={i} className="h-14 rounded-lg" />
 					))}
 				</div>
 			) : !latest ? (
@@ -198,48 +197,47 @@ export function LatestVitals({
 						{" · "}
 						{latest.vitals.recordedBy ?? t(`source.${latest.source}`)}
 					</Eyebrow>
-					{unusual.length > 0 && (
-						<div className="flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 p-3 text-amber-900">
-							<div className="grid min-w-0 flex-1 gap-1">
-								<Eyebrow className="text-amber-800">{t("watch")}</Eyebrow>
-								<ul className="grid gap-0.5 text-sm font-medium">
-									{unusual.map((r) => (
-										<li key={r.key} className="flex justify-between gap-2">
-											<span className="truncate">{r.title}</span>
-											<span dir="ltr" className="shrink-0 tabular-nums">
-												{r.value} {r.unit}
-											</span>
-										</li>
-									))}
-								</ul>
-							</div>
-							<IconWarning className="mt-0.5 size-4 shrink-0" />
-						</div>
-					)}
-					<dl className="grid grid-cols-2 gap-2">
+					{/* Three to a row, unusual ones in amber: the column fits the screen without scrolling. */}
+					<dl className="grid grid-cols-3 gap-1.5">
 						{results.map((r) => (
-							<SmallCard key={r.key} icon={r.icon} label={r.label} title={r.title}>
-								<dd className="grid gap-0.5">
+							<div
+								key={r.key}
+								title={`${r.title} · ${r.status}`}
+								className={cn(
+									"grid min-w-0 gap-0.5 rounded-lg border px-2 py-1.5",
+									r.abnormal ? "border-amber-200 bg-amber-50 dark:border-amber-900 dark:bg-amber-950" : "bg-card",
+								)}
+							>
+								<dt
+									className={cn(
+										"flex min-w-0 items-center gap-1 text-[10px] font-medium tracking-wide uppercase",
+										r.abnormal ? "text-amber-800 dark:text-amber-300" : "text-muted-foreground",
+									)}
+								>
+									<span className="truncate">{r.label}</span>
+									{r.abnormal && <IconWarning className="size-3 shrink-0" />}
+								</dt>
+								<dd className="grid min-w-0">
 									<span
 										dir="ltr"
 										className={cn(
-											"text-base font-semibold tabular-nums rtl:text-end",
-											r.abnormal && "text-amber-700",
+											"truncate text-sm font-semibold tabular-nums rtl:text-end",
+											r.abnormal && "text-amber-700 dark:text-amber-300",
 										)}
 									>
 										{r.value}
-										{r.unit && <span className="text-muted-foreground ms-1 text-xs font-normal">{r.unit}</span>}
+										{r.unit && <span className="text-muted-foreground ms-0.5 text-[10px] font-normal">{r.unit}</span>}
 									</span>
 									<span
 										className={cn(
-											"truncate text-xs",
-											r.abnormal ? "text-amber-700" : "text-muted-foreground",
+											"truncate text-[10px]",
+											r.abnormal ? "text-amber-700 dark:text-amber-300" : "text-muted-foreground",
 										)}
 									>
 										{r.status}
 									</span>
 								</dd>
-							</SmallCard>
+							</div>
 						))}
 					</dl>
 				</>

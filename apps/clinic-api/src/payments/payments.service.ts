@@ -64,12 +64,13 @@ export class PaymentsService {
       charge_id: string | null;
       total: number | null;
       discount: number | null;
+      mutuelle: boolean | null;
     }>(
       `select a.id, a.starts_at, a.status,
               json_build_object('id', pa.id, 'firstName', pa.first_name,
                 'lastName', pa.last_name, 'fileNumber', pa.file_number) as patient,
               json_build_object('id', u.id, 'name', u.name) as practitioner,
-              c.id as charge_id, c.total, c.discount
+              c.id as charge_id, c.total, c.discount, c.mutuelle
          from appointments a
          join patients pa on pa.id = a.patient_id
          join users u on u.id = a.practitioner_id
@@ -122,6 +123,8 @@ export class PaymentsService {
       discount,
       /** What the patient pays: subtotal − discount. */
       total,
+      /** The visit goes to the patient's mutuelle. */
+      mutuelle: visit.mutuelle ?? false,
       paid,
       /** Negative: the patient paid more than the acts (to refund). */
       balance: total - paid,
@@ -196,10 +199,11 @@ export class PaymentsService {
       const total = subtotal - discount;
 
       const { rows: charge } = await client.query<{ id: string }>(
-        `insert into charges (space_id, patient_id, appointment_id, practitioner_id, total, discount, created_by)
-         values ($1, $2, $3, $4, $5, $6, $7)
+        `insert into charges (space_id, patient_id, appointment_id, practitioner_id, total, discount, mutuelle, created_by)
+         values ($1, $2, $3, $4, $5, $6, coalesce($8::boolean, false), $7)
          on conflict (appointment_id) do update
-           set total = excluded.total, discount = excluded.discount, updated_at = now()
+           set total = excluded.total, discount = excluded.discount,
+               mutuelle = coalesce($8::boolean, charges.mutuelle), updated_at = now()
          returning id`,
         [
           spaceId,
@@ -209,6 +213,7 @@ export class PaymentsService {
           total,
           discount,
           user.id,
+          dto.mutuelle ?? null,
         ],
       );
       const chargeId = charge[0].id;

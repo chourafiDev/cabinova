@@ -6,7 +6,7 @@ import { IconCheck, IconChevronsUpDown } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import type { Act } from "@/lib/payments";
+import { type Act, actSwatch } from "@/lib/payments";
 import { useFormat } from "@/lib/use-format";
 import { cn } from "@/lib/utils";
 
@@ -62,6 +62,7 @@ export function ActPicker({
 						className={cn("h-10 w-full justify-between font-normal", !value && "text-muted-foreground")}
 					>
 						<span className="flex min-w-0 items-center gap-2">
+							{selected && <span aria-hidden className={cn("size-2.5 shrink-0 rounded-full", actSwatch(selected.color).className)} style={actSwatch(selected.color).style} />}
 							{selected?.abbreviation && <Abbreviation>{selected.abbreviation}</Abbreviation>}
 							<span className="truncate">{value || placeholder || t("placeholder")}</span>
 						</span>
@@ -88,6 +89,7 @@ export function ActPicker({
 									keywords={[act.name, act.abbreviation ?? ""]}
 									onSelect={() => pick(act)}
 								>
+									<span aria-hidden className={cn("size-2.5 shrink-0 rounded-full", actSwatch(act.color).className)} style={actSwatch(act.color).style} />
 									{act.abbreviation && <Abbreviation>{act.abbreviation}</Abbreviation>}
 									<span className="min-w-0 flex-1 truncate">{act.name}</span>
 									<span className="text-muted-foreground text-xs tabular-nums">{format.mad(act.price)}</span>

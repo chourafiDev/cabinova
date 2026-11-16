@@ -7,15 +7,18 @@ import { parseAsString, useQueryState } from "nuqs";
 import { MedicalProfile } from "@/app/(clinic)/patients/_components/medical-profile-card";
 import {
 	type AppIcon,
+	IconCalendar,
 	IconCall,
 	IconChevronRight,
 	IconContact,
 	IconHeartPulse, IconIdCard,
+	IconLocation,
 	IconMail,
 	IconShieldCheck
 } from "@/components/icons";
 import { initials } from "@/lib/format";
 import { formatFileNumber, formatPhone, fullName, type PatientFile } from "@/lib/patients";
+import { useFormat } from "@/lib/use-format";
 import { cn } from "@/lib/utils";
 
 /** The antécédents and current treatments, editable by the doctor. */
@@ -41,10 +44,20 @@ export function PatientAside({ patient }: { patient: PatientFile }) {
 	// The administrative file opens over the dossier (the patients page's sheet), never away from it.
 	const [, openFile] = useQueryState("patient", parseAsString.withOptions({ history: "push", scroll: false }));
 	const common = useTranslations("common");
+	const format = useFormat();
 	const age = exactAge(patient.birthDate);
 	const coverage = patient.coverage !== "none" || patient.insurer;
 
-	const details: { label: string; icon: AppIcon; value: React.ReactNode; wide?: boolean }[] = [
+	const details: { label: string; icon: AppIcon; value: React.ReactNode; full?: string }[] = [
+		patient.birthDate && {
+			label: t("birthDate"),
+			icon: IconCalendar,
+			value: (
+				<span className="tabular-nums">
+					{format.date(`${patient.birthDate}T12:00:00`, { day: "numeric", month: "long", year: "numeric" })}
+				</span>
+			),
+		},
 		coverage && {
 			label: t("coverage"),
 			icon: IconShieldCheck,
@@ -66,20 +79,25 @@ export function PatientAside({ patient }: { patient: PatientFile }) {
 			label: t("email"),
 			icon: IconMail,
 			value: (
-				<a href={`mailto:${patient.email}`} className="break-all hover:underline">
+				<a href={`mailto:${patient.email}`} className="hover:underline">
 					{patient.email}
 				</a>
 			),
 		},
+		patient.address && {
+			label: t("address"),
+			icon: IconLocation,
+			value: patient.address,
+			full: patient.address,
+		},
 		patient.emergencyContactName && {
 			label: t("emergency"),
 			icon: IconContact,
-			wide: true,
 			value: (
 				<>
 					{patient.emergencyContactName}
 					{patient.emergencyContactPhone && (
-						<a href={`tel:${patient.emergencyContactPhone}`} className="tabular-nums text-white/70 hover:underline">
+						<a href={`tel:${patient.emergencyContactPhone}`} className="text-muted-foreground tabular-nums hover:underline">
 							{" · "}
 							{formatPhone(patient.emergencyContactPhone)}
 						</a>
@@ -88,10 +106,7 @@ export function PatientAside({ patient }: { patient: PatientFile }) {
 			),
 		},
 	].filter((d) => !!d);
-	// An odd last half-width card spans the row rather than leaving a hole.
-	const halves = details.filter((d) => !d.wide);
-	const lastHalf = halves.length % 2 === 1 ? halves.at(-1) : undefined;
-
+	// One card that fits the column without scrolling: who, then one line per detail.
 	return (
 		<section className="grid grid-cols-1 gap-2" aria-label={t("contact")}>
 			<SectionHeading
@@ -106,34 +121,38 @@ export function PatientAside({ patient }: { patient: PatientFile }) {
 					</button>
 				}
 			/>
-			<div className="bg-brand flex items-center gap-3 rounded-xl border p-3">
-				<span className="bg-white/12 text-white flex size-11 shrink-0 items-center justify-center rounded-xl text-base font-semibold">
-					{initials(`${patient.firstName} ${patient.lastName}`)}
-				</span>
-				<div className="min-w-0">
-					<Eyebrow className="text-white">
-						{common(`sex.${patient.sex}`)} · {formatFileNumber(patient.fileNumber)}
-					</Eyebrow>
-					<p className="truncate text-white font-semibold">
-						<span className="text-white/60 font-normal">{t(`civility.${patient.sex}`)} </span>
-						{fullName(patient)}
-					</p>
-					{age && (
-						<p className="text-white/60 text-sm tabular-nums">
-							{t("exactAge", { years: age.years, months: age.months, days: age.days })}
+			<div className="bg-card overflow-hidden rounded-xl border">
+				<div className="bg-brand flex items-center gap-3 px-3 py-2.5">
+					<span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-white/12 text-sm font-semibold text-white">
+						{initials(`${patient.firstName} ${patient.lastName}`)}
+					</span>
+					<div className="min-w-0">
+						<p className="truncate font-semibold text-white">
+							<span className="font-normal text-white/60">{t(`civility.${patient.sex}`)} </span>
+							{fullName(patient)}
 						</p>
-					)}
+						<p className="truncate text-xs text-white/70 tabular-nums">
+							{formatFileNumber(patient.fileNumber)}
+							{age && ` · ${t("exactAge", { years: age.years, months: age.months, days: age.days })}`}
+						</p>
+					</div>
 				</div>
+				{details.length > 0 && (
+					<dl className="divide-y">
+						{details.map((d) => (
+							<div key={d.label} className="flex min-w-0 items-center gap-2.5 px-3 py-1.5 text-sm">
+								<d.icon className="text-muted-foreground size-3.5 shrink-0" />
+								<dt className="text-muted-foreground w-20 shrink-0 truncate text-xs" title={d.label}>
+									{d.label}
+								</dt>
+								<dd className="min-w-0 flex-1 truncate font-medium" title={d.full}>
+									{d.value}
+								</dd>
+							</div>
+						))}
+					</dl>
+				)}
 			</div>
-			{details.length > 0 && (
-				<dl className="grid grid-cols-2 gap-2">
-					{details.map((d) => (
-						<SmallCard key={d.label} icon={d.icon} label={d.label} wide={d.wide || d === lastHalf} onBrand>
-							<dd className="text-sm font-medium break-words">{d.value}</dd>
-						</SmallCard>
-					))}
-				</dl>
-			)}
 		</section>
 	);
 }

@@ -23,9 +23,41 @@ export const HISTORY_PRESETS = [
 ] as const;
 export type HistoryPreset = (typeof HISTORY_PRESETS)[number]["key"];
 
-/** A price-list act (GET /acts). */
-/** A price-list act; `abbreviation` ("CS", "CTR") shows on the agenda and is searched by. */
-export type Act = { id: string; name: string; abbreviation: string | null; price: number; active: boolean };
+/** Act colours (clinic-api ACT_COLORS), the agenda's event colours; gray is also the "no act" motif. */
+export const ACT_COLORS = ["blue", "green", "purple", "orange", "amber", "yellow", "red", "brand", "gray"] as const;
+/** A palette colour, or a custom one ("#14b8a6") chosen in Paramètres › Tarifs. */
+export type PaletteColor = (typeof ACT_COLORS)[number];
+export type ActColor = PaletteColor | `#${string}`;
+
+/** Solid swatches (Tarifs, act picker), the agenda's dot colours. */
+export const ACT_SWATCHES: Record<PaletteColor, string> = {
+	blue: "bg-blue-600",
+	green: "bg-green-600",
+	purple: "bg-purple-600",
+	orange: "bg-orange-600",
+	amber: "bg-amber-600",
+	yellow: "bg-yellow-600",
+	red: "bg-red-600",
+	brand: "bg-primary",
+	gray: "bg-neutral-500",
+};
+
+/** A solid dot of an act's colour: a palette class, or the custom colour inline. */
+export const actSwatch = (color: ActColor): { className: string; style?: { backgroundColor: string } } =>
+	color.startsWith("#") ? { className: "", style: { backgroundColor: color } } : { className: ACT_SWATCHES[color as PaletteColor] };
+
+/**
+ * A price-list act (GET /acts); `abbreviation` ("CS", "CTR") shows on the
+ * agenda and is searched by, `color` is its appointments' colour there.
+ */
+export type Act = {
+	id: string;
+	name: string;
+	abbreviation: string | null;
+	color: ActColor;
+	price: number;
+	active: boolean;
+};
 
 /** Lower case, without accents: "echo" finds Échographie. */
 const fold = (text: string) => text.normalize("NFD").replace(/\p{Diacritic}/gu, "").toLowerCase();
@@ -74,6 +106,8 @@ export type Account = {
 	discount: number;
 	/** What the patient pays: subtotal − discount. */
 	total: number;
+	/** The visit goes to the patient's mutuelle (feuille de soins). */
+	mutuelle: boolean;
 	paid: number;
 	/** Negative: overpaid, to refund. */
 	balance: number;

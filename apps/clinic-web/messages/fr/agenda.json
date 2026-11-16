@@ -11,7 +11,8 @@
     "week": "Semaine",
     "month": "Mois",
     "year": "Année",
-    "agenda": "Liste"
+    "agenda": "Liste",
+    "group": "Vue de l’agenda"
   },
   "count": "{count} rendez-vous",
   "previous": "Période précédente",
@@ -30,7 +31,6 @@
     "statusError": "Changement impossible",
     "openFile": "Ouvrir le dossier",
     "minutes": "{count} min",
-    "allergies": "Allergies :",
     "lastVisit": "Dernière visite : {date}",
     "firstVisit": "Première visite",
     "status": "Statut",
@@ -73,7 +73,13 @@
     "bookAnyway": "Réserver quand même",
     "cancel": "Annuler",
     "save": "Enregistrer",
-    "add": "Ajouter"
+    "add": "Ajouter",
+    "day": {
+      "title": "Rendez-vous du jour",
+      "count": "{count, plural, =0 {aucun} one {# rendez-vous} other {# rendez-vous}}",
+      "free": "Aucun rendez-vous ce jour-là.",
+      "loadError": "Impossible de charger les rendez-vous."
+    }
   },
   "picker": {
     "placeholder": "Rechercher un patient…",
@@ -209,5 +215,12 @@
       "in_consultation": "Aucune consultation en cours",
       "completed": "Les visites terminées s’affichent ici"
     }
-  }
+  },
+  "actFilter": {
+    "label": "Filtrer par acte",
+    "all": "Tous les actes",
+    "some": "{count} actes",
+    "reset": "Afficher tous les actes"
+  },
+  "resetFilters": "Réinitialiser les filtres"
 }

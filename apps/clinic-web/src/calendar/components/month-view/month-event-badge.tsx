@@ -1,6 +1,7 @@
 import { useTranslations } from "next-intl";
 import { fmt } from "@/calendar/locale";
 import { cva } from "class-variance-authority";
+import { colorVariant, CUSTOM_DOT, CUSTOM_TINT, customColorStyle } from "@/calendar/colors";
 import { endOfDay, isSameDay, parseISO, startOfDay } from "date-fns";
 
 import { useCalendar } from "@/calendar/contexts/calendar-context";
@@ -13,6 +14,7 @@ import { cn } from "@/lib/utils";
 import type { IEvent } from "@/calendar/interfaces";
 import type { VariantProps } from "class-variance-authority";
 import { Abbreviation } from "@/components/act-picker";
+import { released } from "@/lib/appointments";
 
 const eventBadgeVariants = cva(
   "mx-1 flex size-auto h-6.5 select-none items-center justify-between gap-1.5 truncate whitespace-nowrap rounded-md border px-2 text-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
@@ -40,6 +42,9 @@ const eventBadgeVariants = cva(
         "amber-dot": "bg-neutral-50 dark:bg-neutral-900 [&_.event-dot]:fill-amber-600",
         "brand-dot": "bg-neutral-50 dark:bg-neutral-900 [&_.event-dot]:fill-primary",
         "gray-dot": "bg-neutral-50 dark:bg-neutral-900 [&_.event-dot]:fill-neutral-600",
+        // An act's custom colour (calendar/colors.ts).
+        custom: CUSTOM_TINT,
+        "custom-dot": CUSTOM_DOT,
       },
       multiDayPosition: {
         first: "relative z-10 me-0 w-[calc(100%_-_3px)] rounded-e-none border-e-0 [&>span]:me-2.5",
@@ -90,9 +95,9 @@ export function MonthEventBadge({ event, cellDate, eventCurrentDay, eventTotalDa
 
   const renderBadgeText = ["first", "none"].includes(position);
 
-  const color = (badgeVariant === "dot" ? `${event.color}-dot` : event.color) as VariantProps<typeof eventBadgeVariants>["color"];
+  const color = colorVariant(event.color, badgeVariant === "dot") as VariantProps<typeof eventBadgeVariants>["color"];
 
-  const eventBadgeClasses = cn(eventBadgeVariants({ color, multiDayPosition: position, className }));
+  const eventBadgeClasses = cn(eventBadgeVariants({ color, multiDayPosition: position, className }), released(event) && "opacity-60");
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" || e.key === " ") {
@@ -104,7 +109,7 @@ export function MonthEventBadge({ event, cellDate, eventCurrentDay, eventTotalDa
   return (
     <DraggableEvent event={event}>
       <EventDetailsTrigger event={event}>
-        <div role="button" tabIndex={0} className={eventBadgeClasses} onKeyDown={handleKeyDown}>
+        <div role="button" tabIndex={0} className={eventBadgeClasses} style={customColorStyle(event.color)} onKeyDown={handleKeyDown}>
           <div className="flex items-center gap-1.5 truncate">
             {!["middle", "last"].includes(position) && ["mixed", "dot"].includes(badgeVariant) && (
               <svg width="8" height="8" viewBox="0 0 8 8" className="event-dot shrink-0">

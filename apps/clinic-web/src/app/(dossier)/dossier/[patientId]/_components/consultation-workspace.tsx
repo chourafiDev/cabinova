@@ -11,6 +11,7 @@ import {
 	IconScanSearch,
 	IconStethoscope,
 } from "@/components/icons";
+import { RichTextEditor } from "@/components/rich-text-editor";
 import { Textarea } from "@/components/ui/textarea";
 import { api } from "@/lib/api-client";
 import {
@@ -29,6 +30,7 @@ import {
 	type VitalField,
 	type Visit,
 } from "@/lib/consultations";
+import { htmlToText, textToHtml } from "@/lib/rich-text";
 import { useFormat } from "@/lib/use-format";
 import { cn } from "@/lib/utils";
 import { PhrasesMenu } from "./phrases-menu";
@@ -71,7 +73,12 @@ type Draft = {
 	visit: Visit;
 	phrases: (field: PhraseField) => React.ReactNode;
 	note: (field: NoteField, minHeight: string, placeholder?: string) => React.ReactNode;
+	rich: (field: RichField, minHeight: string) => React.ReactNode;
 };
+
+/** Notes written in the rich editor (HTML): motif, observation and diagnostic. */
+type RichField = "complaint" | "examination" | "diagnosis";
+const RICH_FIELDS: readonly NoteField[] = ["complaint", "examination", "diagnosis"];
 const DraftContext = createContext<Draft | null>(null);
 
 /**
@@ -183,13 +190,21 @@ export function ConsultationDraft({
 		};
 	}, [flush, save]);
 
-	/** A saved phrase goes on its own line, after what's written. */
+	/** A saved phrase goes on its own line (its own paragraph in a rich note), after what's written. */
 	const insert = (field: PhraseField, text: string) => {
+		if (RICH_FIELDS.includes(field)) {
+			change(field, `${latest.current[field]}${textToHtml(text)}`);
+			return;
+		}
 		const current = latest.current[field].trimEnd();
 		change(field, current ? `${current}\n${text}` : text);
 	};
 	const phrases = (field: PhraseField) => (
-		<PhrasesMenu field={field} value={draft[field]} onInsert={(text) => insert(field, text)} />
+		<PhrasesMenu
+			field={field}
+			value={RICH_FIELDS.includes(field) ? htmlToText(draft[field]) : draft[field]}
+			onInsert={(text) => insert(field, text)}
+		/>
 	);
 
 	/** Grows with the text, from a height that says how much is expected. */
@@ -204,8 +219,17 @@ export function ConsultationDraft({
 		/>
 	);
 
+	const rich = (field: RichField, minHeight: string) => (
+		<RichTextEditor
+			id={`consultation-${field}`}
+			value={draft[field]}
+			onChange={(html) => change(field, html)}
+			minHeight={minHeight}
+		/>
+	);
+
 	return (
-		<DraftContext value={{ draft, change, invalid, previous, visit, phrases, note }}>{children}</DraftContext>
+		<DraftContext value={{ draft, change, invalid, previous, visit, phrases, note, rich }}>{children}</DraftContext>
 	);
 }
 
@@ -219,23 +243,12 @@ export function ConsultationSections({ sections }: { sections: SectionKey[] }) {
 	const t = useTranslations("dossier");
 	const context = useContext(DraftContext);
 	if (!context) throw new Error("ConsultationSections outside ConsultationDraft");
-	const { draft, change, invalid, previous, visit, phrases, note } = context;
+	const { draft, change, invalid, previous, phrases, note, rich } = context;
 
 	const parts: Record<SectionKey, React.ReactNode> = {
 		complaint: (
-			<Section key="complaint" icon={IconMessage} title={t("sections.complaint")}>
-				<div className="grid gap-3">
-					<Labeled label={t("fields.complaint")} htmlFor="consultation-complaint" aside={phrases("complaint")}>
-						{note(
-							"complaint",
-							"min-h-16",
-							visit.appointment.reason ? t("placeholders.complaintWithAct", { act: visit.appointment.reason }) : undefined,
-						)}
-					</Labeled>
-					<Labeled label={t("fields.history")} htmlFor="consultation-history" aside={phrases("history")}>
-						{note("history", "min-h-24")}
-					</Labeled>
-				</div>
+			<Section key="complaint" icon={IconMessage} title={t("sections.complaint")} aside={phrases("complaint")}>
+				{rich("complaint", "min-h-24")}
 			</Section>
 		),
 		vitals: (
@@ -250,12 +263,12 @@ export function ConsultationSections({ sections }: { sections: SectionKey[] }) {
 		),
 		examination: (
 			<Section key="examination" icon={IconScanSearch} title={t("sections.examination")} aside={phrases("examination")}>
-				{note("examination", "min-h-32")}
+				{rich("examination", "min-h-40")}
 			</Section>
 		),
 		diagnosis: (
 			<Section key="diagnosis" icon={IconStethoscope} title={t("sections.diagnosis")} aside={phrases("diagnosis")}>
-				{note("diagnosis", "min-h-16")}
+				{rich("diagnosis", "min-h-24")}
 			</Section>
 		),
 		plan: (
@@ -297,30 +310,6 @@ function Section({
 			</header>
 			<div className="px-4 pb-4">{children}</div>
 		</section>
-	);
-}
-
-function Labeled({
-	label,
-	htmlFor,
-	aside,
-	children,
-}: {
-	label: string;
-	htmlFor: string;
-	aside?: React.ReactNode;
-	children: React.ReactNode;
-}) {
-	return (
-		<div className="grid gap-1.5">
-			<div className="flex items-center justify-between gap-2">
-				<label htmlFor={htmlFor} className="text-muted-foreground text-xs font-medium">
-					{label}
-				</label>
-				{aside}
-			</div>
-			{children}
-		</div>
 	);
 }
 

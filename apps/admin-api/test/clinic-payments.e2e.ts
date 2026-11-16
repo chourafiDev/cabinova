@@ -26,8 +26,8 @@ describe('clinic: payments', () => {
   let secretary: Agent;
   let appointmentId: string;
   let patientId: string;
-  let consultation: { id: string; name: string; price: number };
-  let ecg: { id: string; name: string; price: number };
+  let consultation: { id: string; name: string; price: number; color: string };
+  let ecg: { id: string; name: string; price: number; color: string };
   let cardPaymentId: string;
   let chargeId: string;
   let tenant: { agent: Agent; tenantId: string };
@@ -118,17 +118,55 @@ describe('clinic: payments', () => {
     ).toHaveLength(3);
   });
 
+  it('gives each act a colour, worn by its appointments on the agenda', async () => {
+    // Left out: the least-used colour, in palette order.
+    expect(consultation.color).toBe('blue');
+    expect(ecg.color).toBe('green');
+    const { body: recoloured } = await cab(owner)
+      .put(`/acts/${ecg.id}`)
+      .send({ name: 'ECG', price: 30000, color: 'red' })
+      .expect(200);
+    expect(recoloured.color).toBe('red');
+    // An edit without a colour (the checkout's quick edit) keeps it.
+    const { body: kept } = await cab(owner)
+      .put(`/acts/${ecg.id}`)
+      .send({ name: 'ECG', price: 30000 })
+      .expect(200);
+    expect(kept.color).toBe('red');
+    // A custom colour: any "#rrggbb", kept in lower case; anything else is refused.
+    const { body: custom } = await cab(owner)
+      .put(`/acts/${ecg.id}`)
+      .send({ name: 'ECG', price: 30000, color: '#14B8A6' })
+      .expect(200);
+    expect(custom.color).toBe('#14b8a6');
+    await cab(owner)
+      .put(`/acts/${ecg.id}`)
+      .send({ name: 'ECG', price: 30000, color: 'teal' })
+      .expect(400);
+    await cab(owner)
+      .put(`/acts/${ecg.id}`)
+      .send({ name: 'ECG', price: 30000, color: '#14b8a' })
+      .expect(400);
+    // The suite's visit has "Consultation" as its motif.
+    const { body: visits } = await cab()
+      .get('/appointments')
+      .query({ patientId })
+      .expect(200);
+    expect(visits[0]).toMatchObject({ reason: 'Consultation', reasonColor: 'blue' });
+  });
+
   it('checks a visit out in two payments, never more than the balance', async () => {
     const empty = (
       await cab().get(`/appointments/${appointmentId}/account`).expect(200)
     ).body;
-    expect(empty).toMatchObject({ chargeId: null, total: 0, balance: 0 });
+    expect(empty).toMatchObject({ chargeId: null, total: 0, balance: 0, mutuelle: false });
 
+    // Mutuelle: answered with the checkout, kept when a later one leaves it out.
     const { body: first } = await cab()
       .post(`/appointments/${appointmentId}/checkout`)
-      .send({ items: items(), payment: { amount: 30000, method: 'cash' } })
+      .send({ items: items(), mutuelle: true, payment: { amount: 30000, method: 'cash' } })
       .expect(200);
-    expect(first).toMatchObject({ total: 55000, paid: 30000, balance: 25000 });
+    expect(first).toMatchObject({ total: 55000, paid: 30000, balance: 25000, mutuelle: true });
     expect(first.payments[0].receiptNumber).toMatch(/^R-\d{4}-\d{6}$/);
     chargeId = first.chargeId;
 
@@ -145,7 +183,7 @@ describe('clinic: payments', () => {
         payment: { amount: 25000, method: 'card', reference: 'TPE 0042' },
       })
       .expect(200);
-    expect(second).toMatchObject({ balance: 0, paid: 55000 });
+    expect(second).toMatchObject({ balance: 0, paid: 55000, mutuelle: true });
     cardPaymentId = second.paymentId;
 
     // Paid in full: the acts are final, for everyone.

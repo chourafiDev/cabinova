@@ -200,24 +200,28 @@ export class ListPatientsQuery {
   sort = 'lastName.asc';
 }
 
+/** The permanent note, shown at every visit (rich text, the dossier's Interrogatoire tab); empty clears it. */
+export class PermanentNoteDto {
+  @IsOptional()
+  @IsString()
+  @MaxLength(5_000)
+  permanentNote?: string | null;
+}
+
+/** Antécédents as one rich-text note (the dossier's Interrogatoire tab); empty clears it. */
+export class AntecedentsDto {
+  @IsOptional()
+  @IsString()
+  @MaxLength(20_000)
+  antecedents?: string | null;
+}
+
 /** Antécédents (doctors only). Every field is sent; empty clears it. */
 export class MedicalProfileDto {
   @Transform(({ value }: { value: unknown }) => value || null)
   @IsOptional()
   @IsIn(BLOOD_GROUPS)
   bloodGroup?: (typeof BLOOD_GROUPS)[number] | null;
-
-  @clean()
-  @IsOptional()
-  @IsString()
-  @MaxLength(4000)
-  allergies?: string | null;
-
-  @clean()
-  @IsOptional()
-  @IsString()
-  @MaxLength(4000)
-  chronicConditions?: string | null;
 
   @clean()
   @IsOptional()
@@ -338,4 +342,40 @@ export class VitalSignsDto {
   @IsString()
   @MaxLength(500)
   note?: string | null;
+}
+
+/** A bilan result (doctors only): the test as chosen from the catalog, its value and day. */
+export class LabResultDto {
+  @Transform(({ value }: { value: unknown }) =>
+    typeof value === 'string' ? value.trim() : value,
+  )
+  @IsString()
+  @MinLength(2)
+  @MaxLength(120)
+  name: string;
+
+  @Transform(({ value }: { value: unknown }) =>
+    typeof value === 'string' ? value.trim() || null : value,
+  )
+  @IsOptional()
+  @IsString()
+  @MaxLength(20)
+  unit?: string | null;
+
+  /** As written: "1,05", "Négatif", "< 0,5". */
+  @Transform(({ value }: { value: unknown }) =>
+    typeof value === 'string' ? value.trim() : value,
+  )
+  @IsString()
+  @MinLength(1)
+  @MaxLength(60)
+  value: string;
+
+  @Matches(/^\d{4}-\d{2}-\d{2}$/, { message: 'Date invalide (AAAA-MM-JJ).' })
+  takenOn: string;
+
+  /** The visit it is entered at, if any. */
+  @IsOptional()
+  @IsUUID()
+  appointmentId?: string;
 }

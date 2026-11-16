@@ -125,17 +125,79 @@ describe('clinic: patients', () => {
       .put(`/patients/${fatimaId}/medical-profile`)
       .send({
         bloodGroup: 'O+',
-        allergies: 'Pénicilline',
-        chronicConditions: '',
+        currentTreatments: 'Sintrom 4 mg',
+        familyHistory: '',
       })
       .expect(200);
     expect(saved.medicalProfile).toMatchObject({
       bloodGroup: 'O+',
-      allergies: 'Pénicilline',
-      chronicConditions: null,
+      currentTreatments: 'Sintrom 4 mg',
+      familyHistory: null,
     });
     const { body } = await atlas().get(`/patients/${fatimaId}`).expect(200);
-    expect(body.medicalProfile.allergies).toBe('Pénicilline');
+    expect(body.medicalProfile.currentTreatments).toBe('Sintrom 4 mg');
+    // Allergies are no longer part of the profile.
+    expect(body.medicalProfile).not.toHaveProperty('allergies');
+    await atlas()
+      .put(`/patients/${fatimaId}/medical-profile`)
+      .send({ allergies: 'Pénicilline' })
+      .expect(400);
+
+    // Antécédents: one rich-text note, cleaned, saved on its own.
+    const { body: note } = await atlas()
+      .put(`/patients/${fatimaId}/antecedents`)
+      .send({
+        antecedents:
+          '<p style="text-align: center">HTA <strong>2019</strong></p><script>alert(1)</script><img src=x onerror=alert(1)>',
+      })
+      .expect(200);
+    expect(note.antecedents).toBe(
+      '<p style="text-align:center">HTA <strong>2019</strong></p>',
+    );
+    // Saving the structured profile leaves the note alone.
+    const { body: again } = await atlas()
+      .put(`/patients/${fatimaId}/medical-profile`)
+      .send({ bloodGroup: 'O+', currentTreatments: 'Sintrom 4 mg' })
+      .expect(200);
+    expect(again.medicalProfile.antecedents).toBe(note.antecedents);
+    const { body: cleared } = await atlas()
+      .put(`/patients/${fatimaId}/antecedents`)
+      .send({ antecedents: '<p></p>' })
+      .expect(200);
+    expect(cleared.antecedents).toBeNull();
+
+    // The permanent note: rich text, saved on its own, kept by a profile save.
+    const { body: noted } = await atlas()
+      .put(`/patients/${fatimaId}/permanent-note`)
+      .send({ permanentNote: '<p>Malentendante : <strong>parler fort</strong></p><script>x</script>' })
+      .expect(200);
+    expect(noted.permanentNote).toBe('<p>Malentendante : <strong>parler fort</strong></p>');
+    const { body: file } = await atlas().get(`/patients/${fatimaId}`).expect(200);
+    expect(file.medicalProfile.permanentNote).toBe(noted.permanentNote);
+
+    // Bilan: results kept on the patient, newest analysis first.
+    const lab = () => atlas().post(`/patients/${fatimaId}/lab-results`);
+    await lab()
+      .send({ name: 'Glycémie à jeun', unit: 'g/L', value: '1,32', takenOn: '2026-01-10' })
+      .expect(201);
+    const { body: latest } = await lab()
+      .send({ name: 'Glycémie à jeun', unit: 'g/L', value: ' 1,05 ', takenOn: '2026-03-02' })
+      .expect(201);
+    expect(latest).toMatchObject({ value: '1,05', unit: 'g/L', takenOn: '2026-03-02' });
+    await lab()
+      .send({ name: 'ECBU', value: 'Stérile', takenOn: '2999-01-01' })
+      .expect(400);
+    await lab().send({ name: 'ECBU', value: '', takenOn: '2026-03-02' }).expect(400);
+    const { body: results } = await atlas()
+      .get(`/patients/${fatimaId}/lab-results`)
+      .expect(200);
+    expect(results.map((r: { value: string }) => r.value)).toEqual(['1,05', '1,32']);
+    await atlas()
+      .delete(`/patients/${fatimaId}/lab-results/${latest.id}`)
+      .expect(200);
+    await atlas()
+      .delete(`/patients/${fatimaId}/lab-results/${latest.id}`)
+      .expect(404);
   });
 
   it('keeps each space isolated: patients of Fès are invisible from Marrakech', async () => {

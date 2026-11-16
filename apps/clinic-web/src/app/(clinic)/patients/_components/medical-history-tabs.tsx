@@ -10,6 +10,7 @@ import { type Certificate, certificatesKey, periodDays } from "@/lib/certificate
 import type { PastPrescription } from "@/lib/prescriptions";
 import { useFormat } from "@/lib/use-format";
 import { cn } from "@/lib/utils";
+import { PrintLink } from "@/components/print-dialog";
 
 // Doctors only (the API refuses anyone else). Same queries as the dossier,
 // so both share the cache. Read-only here: writing and cancelling stay in
@@ -25,16 +26,11 @@ function Empty({ icon: Icon, title, hint }: { icon: React.ComponentType<{ classN
 	);
 }
 
-function PrintLink({ href, label }: { href: string; label: string }) {
+function PrintAction({ href, label }: { href: string; label: string }) {
 	return (
-		<a
-			href={href}
-			target="_blank"
-			rel="noopener"
-			className="text-primary flex shrink-0 items-center gap-1 text-xs font-medium hover:underline"
-		>
+		<PrintLink href={href} className="text-primary flex shrink-0 items-center gap-1 text-xs font-medium hover:underline">
 			<IconPrinter className="size-3.5" /> {label}
-		</a>
+		</PrintLink>
 	);
 }
 
@@ -61,7 +57,7 @@ export function PrescriptionsTab({ patientId }: { patientId: string }) {
 							{format.date(r.date, { weekday: "short", month: "short" })}
 							{r.practitioner && <span className="text-muted-foreground font-normal"> · {r.practitioner}</span>}
 						</p>
-						<PrintLink href={`/ordonnances/${r.appointmentId}`} label={t("reprint")} />
+						<PrintAction href={`/ordonnances/${r.appointmentId}`} label={t("reprint")} />
 					</div>
 					<ol className="grid gap-1.5 px-4 py-3 text-sm">
 						{r.items.map((item, i) => (
@@ -121,7 +117,7 @@ export function CertificatesTab({ patientId }: { patientId: string }) {
 					{c.cancelledAt ? (
 						<Badge variant="destructive">{t("cancelled")}</Badge>
 					) : (
-						<PrintLink href={`/certificats/${c.id}`} label={t("print")} />
+						<PrintAction href={`/certificats/${c.id}`} label={t("print")} />
 					)}
 				</li>
 			))}

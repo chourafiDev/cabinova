@@ -34,7 +34,7 @@ export function StatusFilter() {
       <PopoverTrigger asChild>
         <Button
           variant="outline"
-          className={cn("h-10 flex-1 justify-between gap-2 font-normal md:w-52 md:flex-none", selectedStatuses.length > 0 && "border-primary")}
+          className={cn("h-9 w-full justify-between gap-2 font-normal sm:w-52", selectedStatuses.length > 0 && "border-primary")}
           aria-label={t("label")}
         >
           <span className="flex min-w-0 items-center gap-2">

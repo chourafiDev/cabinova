@@ -29,6 +29,7 @@ import { ChartCard } from "../_components/dashboard/chart-card";
 import { Bars } from "../reports/_components/bars";
 import { CashDesk } from "./_components/cash-desk";
 import { HistoryFilters } from "./_components/history-filters";
+import { PrintLink } from "@/components/print-dialog";
 
 export const generateMetadata = () => pageTitle("payments");
 
@@ -219,15 +220,13 @@ async function HistoryView({
 												</div>
 											) : (
 												p.receiptNumber && (
-													<a
+													<PrintLink
 														href={`/receipts/${p.id}`}
-														target="_blank"
-														rel="noopener"
 														title={t("history.printReceipt")}
 														className="text-muted-foreground hover:text-foreground flex items-center justify-end gap-1 font-mono text-[11px]"
 													>
 														<IconPrinter className="size-3" /> {p.receiptNumber}
-													</a>
+													</PrintLink>
 												)
 											)}
 										</TableCell>

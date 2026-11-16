@@ -1,11 +1,9 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import type { PrintedCertificate } from "@/lib/certificates";
 import { formatDate } from "@/lib/format";
 import { formatPhone } from "@/lib/patients";
 import { apiGet } from "@/lib/server-api";
 import { cn } from "@/lib/utils";
-import { PrintButton } from "../../receipts/[id]/print-button";
 
 /** A4 by default for a certificate; A5 for cabinets that print everything small. */
 const FORMATS = {
@@ -39,24 +37,14 @@ export default async function CertificatePage({ params, searchParams }: PageProp
 			{/* The paper size the browser prints on. */}
 			<style>{`@page { size: ${f.page}; margin: 0; }`}</style>
 
-			<div className={cn("flex max-w-full flex-wrap items-center justify-between gap-3 print:hidden", f.width)}>
-				<div className="bg-muted inline-flex rounded-lg p-[3px] text-sm">
-					{(Object.keys(FORMATS) as Format[]).map((key) => (
-						<Link
-							key={key}
-							href={`?format=${key}`}
-							replace
-							className={cn(
-								"rounded-md px-3 py-1 font-medium",
-								key === format ? "bg-background shadow-sm" : "text-muted-foreground hover:text-foreground",
-							)}
-						>
-							{FORMATS[key].label}
-						</Link>
-					))}
-				</div>
-				<PrintButton />
-			</div>
+			{/* No toolbar: printed from the app's print dialog, which reads these for its A5 / A4 switch. */}
+			<nav hidden>
+				{(Object.keys(FORMATS) as Format[]).map((key) => (
+					<a key={key} href={`?format=${key}`}>
+						{FORMATS[key].label}
+					</a>
+				))}
+			</nav>
 
 			<article
 				className={cn(

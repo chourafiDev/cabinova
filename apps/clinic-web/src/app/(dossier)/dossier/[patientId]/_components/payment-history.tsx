@@ -8,6 +8,7 @@ import { api } from "@/lib/api-client";
 import type { PatientAccount } from "@/lib/payments";
 import { useFormat } from "@/lib/use-format";
 import { cn } from "@/lib/utils";
+import { PrintLink } from "@/components/print-dialog";
 
 /**
  * Prix consultation outside a visit: every visit's acts, what was paid and
@@ -91,14 +92,12 @@ export function PaymentHistory({ patientId }: { patientId: string }) {
 											{p.receiptNumber && ` · ${p.receiptNumber}`}
 										</span>
 										{p.kind === "payment" && (
-											<a
+											<PrintLink
 												href={`/receipts/${p.id}`}
-												target="_blank"
-												rel="noopener"
 												className="text-primary flex shrink-0 items-center gap-1 text-xs font-medium hover:underline"
 											>
 												<IconPrinter className="size-3.5" /> {t("receipt")}
-											</a>
+											</PrintLink>
 										)}
 									</li>
 								))}

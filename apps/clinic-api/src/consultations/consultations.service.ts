@@ -1,9 +1,13 @@
 import type { Pool } from '@neondatabase/serverless';
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { AppointmentsService } from '../appointments/appointments.service.js';
+import { richOrNull } from '../common/rich-text.js';
 import { CONSULTATION_FIELDS, type ConsultationDto } from './dto.js';
 
 /** A consultation as the API returns it (numbers as numbers). */
+/** Rich-text notes (HTML); the others stay plain text. */
+const RICH_FIELDS = new Set<string>(['complaint', 'examination', 'diagnosis']);
+
 const CONSULTATION = `
   c.id, c.appointment_id as "appointmentId", c.complaint, c.history,
   c.examination, c.diagnosis, c.plan, c.systolic, c.diastolic,
@@ -51,7 +55,10 @@ export class ConsultationsService {
       appointmentId,
       appointment.patient.id,
       userId,
-      ...CONSULTATION_FIELDS.map(([, k]) => dto[k] ?? null),
+      // Motif and observation come from the rich editor: cleaned HTML.
+      ...CONSULTATION_FIELDS.map(([, k]) =>
+        RICH_FIELDS.has(k) ? richOrNull(dto[k] as string | null) : (dto[k] ?? null),
+      ),
     ];
     await db.query(
       `insert into consultations (appointment_id, patient_id, practitioner_id, ${columns.join(', ')})

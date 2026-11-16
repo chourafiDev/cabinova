@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { api } from "@/lib/api-client";
 import { useFormat } from "@/lib/use-format";
 import { cn } from "@/lib/utils";
+import { PrintLink } from "@/components/print-dialog";
 
 /** GET /billing/summary (clinic-api), responsible doctor only. */
 type BillingSummary = {
@@ -284,9 +285,9 @@ export function SubscriptionDialog({ open, onOpenChange }: { open: boolean; onOp
 								<p className="text-muted-foreground">{t("payBefore", { date: format.date(quote.dueAt) })}</p>
 								<div className="mt-3 flex flex-wrap gap-2">
 									<Button asChild size="sm" variant="outline">
-										<a href={`/devis/${quote.id}`} target="_blank" rel="noreferrer">
+										<PrintLink href={`/devis/${quote.id}`}>
 											<IconExternal className="rtl:-scale-x-100" /> {t("seeQuote")}
-										</a>
+										</PrintLink>
 									</Button>
 									<Button size="sm" variant="ghost" onClick={() => setChanging(true)}>
 										{t("changeOffer")}
@@ -381,17 +382,15 @@ export function SubscriptionDialog({ open, onOpenChange }: { open: boolean; onOp
 								<ul className="divide-y rounded-xl border">
 									{s.invoices.map((i) => (
 										<li key={i.id}>
-											<a
+											<PrintLink
 												href={`/factures/${i.id}`}
-												target="_blank"
-												rel="noreferrer"
 												className="hover:bg-muted/60 flex items-center gap-2 px-3 py-2"
 											>
 												<IconDocument className="text-muted-foreground size-4" />
 												<span className="flex-1 font-mono text-xs">{i.number}</span>
 												<span className="text-muted-foreground text-xs">{format.date(i.issuedAt)}</span>
 												<span className="font-medium tabular-nums">{format.mad(i.amount)}</span>
-											</a>
+											</PrintLink>
 										</li>
 									))}
 								</ul>

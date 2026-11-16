@@ -31,7 +31,6 @@ import {
   IconSpinner,
   IconStethoscope,
   IconText,
-  IconWarning,
 } from "@/components/icons";
 import { NoShowBadge } from "@/components/no-show-badge";
 import { useCurrentUser } from "@/components/current-user";
@@ -169,7 +168,6 @@ function PanelContent({ event, onClose }: { event: IEvent; onClose: () => void }
     queryFn: () => api<Appointment[]>(`/appointments?patientId=${patientId}`),
   });
   const lastVisit = history?.find((a) => a.status === "completed" && a.id !== event.id && parseISO(a.startsAt) < start);
-  const allergies = isMedicalRole(role) ? patient?.medicalProfile?.allergies : null;
   const age = patient ? ageOf(patient.birthDate) : null;
 
   async function setStatus(status: AppointmentStatus) {
@@ -237,15 +235,6 @@ function PanelContent({ event, onClose }: { event: IEvent; onClose: () => void }
         </section>
 
         <section className="grid gap-3 border-t pt-4" aria-label={panel("patient")}>
-          {allergies && (
-            <p className="flex items-start gap-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-red-900">
-              <IconWarning className="mt-0.5 size-4 shrink-0" />
-              <span className="min-w-0">
-                <span className="font-semibold">{panel("allergies")} </span>
-                {allergies}
-              </span>
-            </p>
-          )}
           <PatientBalance patientId={patientId} />
           {patient && (
             <p className="text-muted-foreground">

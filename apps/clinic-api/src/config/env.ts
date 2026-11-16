@@ -18,6 +18,12 @@ const envSchema = z
      * those tables.
      */
     DATABASE_URL: z.url(),
+    /**
+     * The shared medicines database (the AMMPS list), read only: ideally a
+     * role allowed nothing but SELECT; every session is also set read-only.
+     * Optional: without it, ordonnances suggest the doctor's own medicines only.
+     */
+    MEDICINES_DATABASE_URL: z.url().optional(),
     /** Express "trust proxy": the clinic Next.js app proxies /api here. */
     TRUST_PROXY: z.string().default('loopback'),
     /** Requests at least this slow are logged, with their database time (see app.setup.ts). */

@@ -8,6 +8,8 @@ import type { PastPrescription } from "@/lib/prescriptions";
 import { useFormat } from "@/lib/use-format";
 import { cn } from "@/lib/utils";
 import { Card } from "./patient-aside";
+import { hasText, RICH_TEXT } from "@/lib/rich-text";
+import { PrintLink } from "@/components/print-dialog";
 
 /**
  * Right column: the patient's past consultations, newest first. Each shows
@@ -111,14 +113,21 @@ function Entry({
 							))}
 						</div>
 					)}
-					{(["complaint", "examination", "plan"] as const).map(
+					{(["complaint", "examination", "diagnosis"] as const).map(
 						(f) =>
-							c[f] && (
+							hasText(c[f]) && (
 								<div key={f}>
 									<p className="text-muted-foreground text-xs">{t(`fields.${f}`)}</p>
-									<p className="whitespace-pre-line">{c[f]}</p>
+									{/* Cleaned by the API (only the editor's formatting is kept). */}
+									<div className={RICH_TEXT} dangerouslySetInnerHTML={{ __html: c[f]! }} />
 								</div>
 							),
+					)}
+					{c.plan && (
+						<div>
+							<p className="text-muted-foreground text-xs">{t("fields.plan")}</p>
+							<p className="whitespace-pre-line">{c.plan}</p>
+						</div>
 					)}
 					{prescription && (
 						<div>
@@ -126,14 +135,12 @@ function Entry({
 								<p className="text-muted-foreground flex items-center gap-1 text-xs">
 									<IconPill className="size-3" /> {t("history.prescription")}
 								</p>
-								<a
+								<PrintLink
 									href={`/ordonnances/${c.appointmentId}`}
-									target="_blank"
-									rel="noopener"
 									className="text-primary flex items-center gap-1 text-xs hover:underline"
 								>
 									<IconPrinter className="size-3" /> {t("history.reprint")}
-								</a>
+								</PrintLink>
 							</div>
 							<ul className="grid gap-0.5">
 								{prescription.items.map((item, i) => (

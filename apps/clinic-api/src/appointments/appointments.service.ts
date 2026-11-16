@@ -33,6 +33,7 @@ const APPOINTMENT = `
   a.id, a.starts_at as "startsAt", a.ends_at as "endsAt", a.status,
   a.reason, a.notes, a.arrived_at as "arrivedAt", a.walk_in as "walkIn",
   (select ac.abbreviation from acts ac where lower(ac.name) = lower(a.reason)) as "reasonShort",
+  (select ac.color from acts ac where lower(ac.name) = lower(a.reason)) as "reasonColor",
   a.left_at as "leftAt", a.consultation_started_at as "consultationStartedAt",
   a.completed_at as "completedAt",
   (select json_build_object('total', c.total, 'paid', (

@@ -9,6 +9,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { directionOf } from "@/i18n/config";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { NavigationProgress } from "@/components/navigation-progress";
+import { PrintDialogProvider } from "@/components/print-dialog";
 import { QueryProvider } from "@/components/query-provider";
 import { ThemeProvider } from "@/components/theme-provider";
 import "./globals.css";
@@ -61,7 +62,9 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
           </Suspense>
           <NuqsAdapter>
             <QueryProvider>
-              <TooltipProvider>{children}</TooltipProvider>
+              <TooltipProvider>
+                <PrintDialogProvider>{children}</PrintDialogProvider>
+              </TooltipProvider>
             </QueryProvider>
           </NuqsAdapter>
           {/* Above the chat button, bottom-end of the clinic pages. */}

@@ -32,14 +32,24 @@ import {
   CertificatesController,
 } from './certificates/certificates.controller.js';
 import { CertificatesService } from './certificates/certificates.service.js';
+import {
+  LabRequestModelsController,
+  LabRequestsController,
+} from './lab-requests/lab-requests.controller.js';
+import { LabRequestsService } from './lab-requests/lab-requests.service.js';
+import { LettersController } from './letters/letters.controller.js';
+import { LettersService } from './letters/letters.service.js';
 import { ChatController } from './chat/chat.controller.js';
 import { ChatService } from './chat/chat.service.js';
 import { DocumentsController } from './documents/documents.controller.js';
 import { DocumentsService } from './documents/documents.service.js';
 import { StorageService } from './documents/storage.service.js';
+import { MedicationsController } from './medications/medications.controller.js';
+import { MedicationsService } from './medications/medications.service.js';
 import { PrescriptionsController } from './prescriptions/prescriptions.controller.js';
 import { PrescriptionsService } from './prescriptions/prescriptions.service.js';
 import { CatalogModule } from './database/catalog.module.js';
+import { MedicinesDbModule } from './database/medicines.module.js';
 import { MailService } from './mail/mail.service.js';
 import { GoogleConnectionService } from './meetings/google-connection.service.js';
 import { IntegrationsController } from './meetings/integrations.controller.js';
@@ -55,6 +65,7 @@ import { PaymentsController } from './payments/payments.controller.js';
 import { PaymentsService } from './payments/payments.service.js';
 import { PatientsController } from './patients/patients.controller.js';
 import { PatientsService } from './patients/patients.service.js';
+import { LabResultsService } from './patients/lab-results.service.js';
 import { VitalsService } from './patients/vitals.service.js';
 import { CabinetService } from './settings/cabinet.service.js';
 import { ReportsController } from './reports/reports.controller.js';
@@ -82,6 +93,7 @@ import { TenancyService } from './tenancy/tenancy.service.js';
     // Login and invitation routes are much stricter (@Throttle).
     ThrottlerModule.forRoot([{ ttl: 60_000, limit: 600 }]),
     CatalogModule,
+    MedicinesDbModule,
   ],
   controllers: [
     HealthController,
@@ -98,7 +110,11 @@ import { TenancyService } from './tenancy/tenancy.service.js';
     ConsultationsController,
     PhrasesController,
     PrescriptionsController,
+    MedicationsController,
     CertificatesController,
+    LabRequestsController,
+    LabRequestModelsController,
+    LettersController,
     DocumentsController,
     CertificateModelsController,
     ChatController,
@@ -121,13 +137,17 @@ import { TenancyService } from './tenancy/tenancy.service.js';
     NotificationsService,
     PatientsService,
     VitalsService,
+    LabResultsService,
     SpacesService,
     SpaceGuard,
     AppointmentsService,
     ClosuresService,
     ConsultationsService,
     PrescriptionsService,
+    MedicationsService,
     CertificatesService,
+    LabRequestsService,
+    LettersService,
     ChatService,
     DocumentsService,
     StorageService,

@@ -31,7 +31,8 @@
     "cabinet": "Cabinet",
     "profile": "Mon profil",
     "hours": "Horaires & agenda",
-    "integrations": "Intégrations"
+    "integrations": "Intégrations",
+    "medications": "Mes médicaments"
   },
   "visitChips": {
     "waiting": "en attente",

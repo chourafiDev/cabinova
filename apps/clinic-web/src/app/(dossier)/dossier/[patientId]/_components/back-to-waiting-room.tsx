@@ -32,7 +32,9 @@ export function BackToWaitingRoom({
 	const t = useTranslations("dossier");
 	const [open, setOpen] = useState(false);
 	const [leaving, setLeaving] = useState(false);
-	const unfinished = appointment?.status === "in_consultation" || appointment?.status === "arrived";
+	const unfinished =
+		appointment?.status === "in_consultation" ||
+		appointment?.status === "arrived";
 
 	async function leave() {
 		setLeaving(true);
@@ -49,7 +51,7 @@ export function BackToWaitingRoom({
 
 	return (
 		<>
-			<Button variant="ghost" size="sm" className="-ms-2" onClick={() => setOpen(true)}>
+			<Button variant="default" className="-ms-2" onClick={() => setOpen(true)}>
 				<IconArrowLeft className="rtl:-scale-x-100" /> {t("back")}
 			</Button>
 			<Dialog open={open} onOpenChange={(o) => !leaving && setOpen(o)}>
@@ -58,16 +60,23 @@ export function BackToWaitingRoom({
 						<DialogTitle>{t("leave.title")}</DialogTitle>
 						<DialogDescription>
 							{unfinished && appointment
-								? t("leave.unfinished", { patient: fullName(appointment.patient) })
+								? t("leave.unfinished", {
+										patient: fullName(appointment.patient),
+									})
 								: t("leave.saved")}
 						</DialogDescription>
 					</DialogHeader>
 					<DialogFooter>
-						<Button variant="outline" onClick={() => setOpen(false)} disabled={leaving}>
+						<Button
+							variant="outline"
+							onClick={() => setOpen(false)}
+							disabled={leaving}
+						>
 							{t("leave.stay")}
 						</Button>
 						<Button onClick={leave} disabled={leaving} autoFocus>
-							{leaving && <IconSpinner className="animate-spin" />} {t("leave.confirm")}
+							{leaving && <IconSpinner className="animate-spin" />}{" "}
+							{t("leave.confirm")}
 						</Button>
 					</DialogFooter>
 				</DialogContent>

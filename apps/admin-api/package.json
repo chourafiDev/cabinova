@@ -29,11 +29,13 @@
     "db:seed": "tsx src/database/scripts/seed.ts",
     "db:seed-demo": "tsx src/database/scripts/seed-demo-cabinet.ts",
     "db:create-app-role": "tsx src/database/scripts/create-app-role.ts",
+    "medicines:import": "tsx src/medicines/scripts/import.ts",
     "billing:sweep": "node dist/billing/scripts/run-sweep.js"
   },
   "dependencies": {
     "@cabinova/features": "workspace:*",
     "@cabinova/mail": "workspace:*",
+    "@cabinova/medicines-db": "workspace:*",
     "@cabinova/morocco-time": "workspace:*",
     "@cabinova/request-timing": "workspace:*",
     "@cabinova/secret-box": "workspace:*",
@@ -50,6 +52,7 @@
     "class-validator": "^0.15.1",
     "cookie-parser": "^1.4.7",
     "drizzle-orm": "^0.45.4",
+    "fflate": "0.8.2",
     "helmet": "^8.3.0",
     "passport": "^0.7.0",
     "passport-custom": "^1.2.1",

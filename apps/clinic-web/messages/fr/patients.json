@@ -58,9 +58,7 @@
       "prescriptions": "Ordonnances",
       "certificates": "Certificats"
     },
-    "knownAllergies": "allergies connues",
     "archivedOn": "Dossier archivé le {date} : consultable, mais plus modifiable. Restaurez-le pour le modifier ou prendre rendez-vous.",
-    "allergies": "Allergies",
     "nextAppointment": "Prochain rendez-vous",
     "nextAt": "{day} à {time}",
     "noAppointment": "Aucun rendez-vous prévu",
@@ -77,7 +75,7 @@
     "emergency": "Contact d’urgence",
     "nameAndLink": "Nom et lien",
     "phone": "Téléphone",
-    "note": "Note administrative",
+    "note": "Note permanente",
     "createdOn": "Dossier créé le {date}",
     "updatedOn": "modifié le {date}",
     "noAppointments": "Aucun rendez-vous pour ce patient.",
@@ -115,7 +113,7 @@
     "privateLine": "Visible uniquement par les médecins du cabinet",
     "edit": "Modifier",
     "empty": "Aucun antécédent renseigné",
-    "emptyHint": "Allergies, traitements, maladies chroniques, groupe sanguin…",
+    "emptyHint": "Traitements en cours, groupe sanguin…",
     "fill": "Renseigner les antécédents",
     "bloodGroup": "Groupe sanguin",
     "updatedOn": "Mis à jour le {date}",
@@ -125,9 +123,7 @@
     "cancel": "Annuler",
     "save": "Enregistrer",
     "fields": {
-      "allergies": "Allergies",
       "currentTreatments": "Traitements en cours",
-      "chronicConditions": "Maladies chroniques",
       "medicalHistory": "Antécédents médicaux",
       "surgicalHistory": "Antécédents chirurgicaux",
       "familyHistory": "Antécédents familiaux",
@@ -136,9 +132,7 @@
       "gynecoHistory": "Antécédents gynéco-obstétricaux"
     },
     "placeholders": {
-      "allergies": "Médicaments, aliments… ou « Aucune connue »",
       "currentTreatments": "Médicament, dose, fréquence",
-      "chronicConditions": "Diabète, HTA, asthme…",
       "riskFactors": "Obésité, sédentarité, HTA familiale…",
       "toxicHabits": "Tabac (paquets-années), alcool, autres",
       "gynecoHistory": "Gestité, parité, DDR, contraception, ménopause…"
@@ -169,8 +163,6 @@
     "emergency": "Contact d’urgence",
     "nameAndLink": "Nom et lien",
     "nameAndLinkPlaceholder": "Ahmed (époux)",
-    "note": "Note administrative",
-    "notePlaceholder": "Informations pratiques pour l’accueil. Jamais médicales : elles vont dans les antécédents.",
     "required": "obligatoire",
     "toSave": "pour enregistrer",
     "cancel": "Annuler",

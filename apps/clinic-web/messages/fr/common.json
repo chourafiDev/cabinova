@@ -47,10 +47,10 @@
   },
   "palette": {
     "open": "Ouvrir la palette de commandes",
-    "trigger": "Aller à…",
+    "trigger": "Rechercher…",
     "title": "Palette de commandes",
-    "description": "Aller à une page ou lancer une action",
-    "placeholder": "Aller à une page ou lancer une action…",
+    "description": "Rechercher un patient, aller à une page ou lancer une action",
+    "placeholder": "Rechercher un patient, une page ou une action…",
     "empty": "Aucun résultat pour « {term} ».",
     "pages": "Pages",
     "actions": "Actions",
@@ -64,7 +64,8 @@
     "navigate": "naviguer",
     "select": "ouvrir",
     "escape": "Échap",
-    "dismiss": "fermer"
+    "dismiss": "fermer",
+    "patients": "Patients"
   },
   "shortcuts": {
     "title": "Raccourcis clavier",
@@ -223,5 +224,15 @@
   "datePicker": {
     "placeholder": "Choisir une date",
     "clear": "Effacer la date"
+  },
+  "printDialog": {
+    "title": "Aperçu avant impression",
+    "description": "Vérifiez le document, puis imprimez-le ou enregistrez-le en PDF.",
+    "paper": "Format du papier",
+    "loading": "Préparation du document…",
+    "cancel": "Annuler",
+    "save": "Enregistrer (PDF)",
+    "print": "Imprimer",
+    "pdfError": "Le PDF n’a pas pu être créé. Réessayez, ou imprimez puis choisissez « Enregistrer au format PDF »."
   }
 }

@@ -342,3 +342,80 @@ html[lang="ar"] .font-heading {
   .rich-text a { color: var(--primary); text-decoration: underline; }
   .rich-text strong { font-weight: 600; }
 }
+
+/* "Reste à payer" and other money still owed: the whole banner pulses like a signal
+   (it vibrates, its background and border brighten, it swells slightly, a halo spreads out), then rests. */
+@theme {
+  /* The pulse, plus a short vibration at the start of each beat (on `translate`, so it adds to the swell). */
+  --animate-signal: signal 1.8s ease-in-out infinite, signal-vibrate 1.8s linear infinite;
+
+  @keyframes signal {
+    0%,
+    100% {
+      background-color: var(--signal-rest);
+      border-color: var(--signal-border);
+      box-shadow: 0 0 0 0 color-mix(in oklab, var(--color-amber-400) 50%, transparent);
+      transform: scale(1);
+    }
+    50% {
+      background-color: var(--signal-peak);
+      border-color: var(--color-amber-400);
+      box-shadow: 0 0 0 8px color-mix(in oklab, var(--color-amber-400) 0%, transparent);
+      transform: scale(1.015);
+    }
+  }
+
+  @keyframes signal-vibrate {
+    0%,
+    24%,
+    100% {
+      translate: 0 0;
+    }
+    3%,
+    9%,
+    15% {
+      translate: -2px 0;
+    }
+    6%,
+    12%,
+    18% {
+      translate: 2px 0;
+    }
+    21% {
+      translate: -1px 0;
+    }
+  }
+
+  /* Its icon rings at the same beat: a quick shake, then still. */
+  --animate-signal-ring: signal-ring 1.8s ease-in-out infinite;
+
+  @keyframes signal-ring {
+    0%,
+    30%,
+    100% {
+      transform: rotate(0);
+    }
+    5%,
+    15% {
+      transform: rotate(-14deg);
+    }
+    10%,
+    20% {
+      transform: rotate(14deg);
+    }
+    25% {
+      transform: rotate(-6deg);
+    }
+  }
+}
+
+/* A print page shown in the app's print dialog: its toolbar is the dialog's. */
+[data-embed] .print\:hidden {
+  display: none !important;
+}
+/* Saved as PDF: the sheet as on paper, without its screen shadow and border. */
+[data-capturing] .paper {
+  box-shadow: none !important;
+  border-color: transparent !important;
+  border-radius: 0 !important;
+}

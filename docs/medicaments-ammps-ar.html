@@ -1,0 +1,606 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>دليل ميزة الأدوية AMMPS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f7f6f9;
+    --card: #ffffff;
+    --ink: #1d2340;
+    --muted: #5d6380;
+    --line: #e4e2ea;
+    --plum: #613f75;
+    --plum-soft: #f1ebf5;
+    --teal: #119da4;
+    --teal-soft: #e5f5f6;
+    --amber: #b26a00;
+    --amber-soft: #fff4e0;
+    --red: #b42318;
+    --red-soft: #fdecea;
+    --green: #1f7a4d;
+    --green-soft: #e8f5ee;
+    --code-bg: #f3f2f7;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #12131a;
+      --card: #1b1d27;
+      --ink: #e9e9f1;
+      --muted: #a2a6bd;
+      --line: #2c2f3d;
+      --plum: #c9a6e0;
+      --plum-soft: #2a2233;
+      --teal: #4fc6cc;
+      --teal-soft: #15292c;
+      --amber: #f0b45a;
+      --amber-soft: #2d2415;
+      --red: #f08a80;
+      --red-soft: #2e1a19;
+      --green: #6fd19c;
+      --green-soft: #15291f;
+      --code-bg: #232634;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #12131a; --card: #1b1d27; --ink: #e9e9f1; --muted: #a2a6bd; --line: #2c2f3d;
+    --plum: #c9a6e0; --plum-soft: #2a2233; --teal: #4fc6cc; --teal-soft: #15292c;
+    --amber: #f0b45a; --amber-soft: #2d2415; --red: #f08a80; --red-soft: #2e1a19;
+    --green: #6fd19c; --green-soft: #15291f; --code-bg: #232634;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: "IBM Plex Sans Arabic", "Segoe UI", Tahoma, sans-serif;
+    font-size: 16.5px;
+    line-height: 1.95;
+  }
+  .wrap { max-width: 900px; margin: 0 auto; padding: 32px 16px 80px; }
+  header.hero {
+    background: linear-gradient(135deg, var(--plum), #3c2650);
+    color: #fff;
+    border-radius: 20px;
+    padding: 32px 28px;
+    margin-bottom: 28px;
+  }
+  header.hero h1 { margin: 0 0 8px; font-size: 30px; line-height: 1.5; }
+  header.hero p { margin: 0; opacity: .9; }
+  nav.toc {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 18px 22px;
+    margin-bottom: 28px;
+  }
+  nav.toc h2 { margin: 0 0 8px; font-size: 18px; }
+  nav.toc ol { margin: 0; padding-inline-start: 22px; columns: 2; column-gap: 32px; }
+  nav.toc a { color: var(--plum); text-decoration: none; }
+  nav.toc a:hover { text-decoration: underline; }
+  section.card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 24px 26px;
+    margin-bottom: 22px;
+  }
+  h2 { font-size: 23px; margin: 0 0 6px; line-height: 1.6; }
+  h3 { font-size: 18px; margin: 22px 0 4px; color: var(--plum); }
+  .step-badge {
+    display: inline-block;
+    background: var(--plum-soft);
+    color: var(--plum);
+    font-weight: 700;
+    font-size: 13px;
+    border-radius: 999px;
+    padding: 2px 12px;
+    margin-bottom: 6px;
+  }
+  .lead { color: var(--muted); margin-top: 0; }
+  code, pre, .ltr {
+    font-family: "JetBrains Mono", ui-monospace, Menlo, monospace;
+    direction: ltr;
+    unicode-bidi: isolate;
+  }
+  code {
+    background: var(--code-bg);
+    border-radius: 6px;
+    padding: 1px 6px;
+    font-size: 13.5px;
+  }
+  pre {
+    background: var(--code-bg);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 14px 16px;
+    overflow-x: auto;
+    font-size: 13.5px;
+    line-height: 1.7;
+    text-align: left;
+  }
+  pre code { background: none; padding: 0; }
+  .note, .why, .warn, .ok {
+    border-radius: 12px;
+    padding: 12px 16px;
+    margin: 14px 0;
+    border: 1px solid transparent;
+  }
+  .note { background: var(--teal-soft); border-color: color-mix(in srgb, var(--teal) 30%, transparent); }
+  .why { background: var(--plum-soft); border-color: color-mix(in srgb, var(--plum) 25%, transparent); }
+  .warn { background: var(--amber-soft); border-color: color-mix(in srgb, var(--amber) 30%, transparent); }
+  .ok { background: var(--green-soft); border-color: color-mix(in srgb, var(--green) 30%, transparent); }
+  .note b, .why b, .warn b, .ok b { display: block; margin-bottom: 2px; }
+  table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 15px; }
+  th, td { border-bottom: 1px solid var(--line); padding: 8px 10px; text-align: start; vertical-align: top; }
+  th { color: var(--muted); font-weight: 600; font-size: 14px; }
+  .files li { margin-bottom: 2px; }
+  .arch {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+    margin: 16px 0;
+  }
+  .box {
+    border: 2px solid var(--line);
+    border-radius: 14px;
+    padding: 12px 14px;
+    background: var(--bg);
+    font-size: 14.5px;
+    line-height: 1.8;
+  }
+  .box h4 { margin: 0 0 4px; font-size: 15.5px; }
+  .box.plum { border-color: var(--plum); }
+  .box.teal { border-color: var(--teal); }
+  .box.amber { border-color: var(--amber); }
+  .flow { counter-reset: f; list-style: none; padding: 0; margin: 12px 0; }
+  .flow li {
+    counter-increment: f;
+    position: relative;
+    padding: 8px 46px 8px 12px;
+    border-inline-start: 2px solid var(--line);
+    margin-inline-start: 16px;
+  }
+  .flow li::before {
+    content: counter(f);
+    position: absolute;
+    right: -16px;
+    top: 8px;
+    width: 30px; height: 30px;
+    border-radius: 50%;
+    background: var(--plum);
+    color: #fff;
+    font-weight: 700;
+    font-size: 14px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .term { border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; background: var(--bg); }
+  .term h4 { margin: 0 0 2px; font-size: 15.5px; color: var(--teal); }
+  .term p { margin: 0; font-size: 15px; }
+  kbd {
+    font-family: inherit;
+    border: 1px solid var(--line);
+    border-bottom-width: 2px;
+    border-radius: 6px;
+    padding: 0 6px;
+    font-size: 13px;
+    background: var(--card);
+  }
+  .check { list-style: none; padding: 0; }
+  .check li { padding: 6px 0; border-bottom: 1px dashed var(--line); }
+  .check li::before { content: "☐ "; color: var(--plum); font-weight: 700; }
+  footer { color: var(--muted); font-size: 14px; text-align: center; margin-top: 30px; }
+  @media (max-width: 680px) {
+    nav.toc ol { columns: 1; }
+    .arch, .grid2 { grid-template-columns: 1fr; }
+    header.hero h1 { font-size: 24px; }
+    section.card { padding: 18px 16px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="hero">
+  <h1>ميزة الأدوية من قائمة AMMPS — شرح كامل خطوة بخطوة</h1>
+  <p>دليل تعليمي يشرح ما بنيناه في Cabinova في 9 خطوات: لماذا، كيف، وأين يوجد كل شيء في الكود.</p>
+</header>
+
+<nav class="toc">
+  <h2>المحتويات</h2>
+  <ol>
+    <li><a href="#overview">الفكرة العامة والبنية</a></li>
+    <li><a href="#s1">الخطوة 1: قاعدة بيانات الأدوية</a></li>
+    <li><a href="#s2">الخطوة 2: قراءة ملف Excel</a></li>
+    <li><a href="#s3">الخطوة 3: الاستيراد الآمن</a></li>
+    <li><a href="#s4">الخطوة 4: صفحة Super Admin</a></li>
+    <li><a href="#s5">الخطوة 5: جداول كل عيادة</a></li>
+    <li><a href="#s6">الخطوة 6: واجهة البحث في clinic-api</a></li>
+    <li><a href="#s7">الخطوة 7: الإكمال التلقائي في الوصفة</a></li>
+    <li><a href="#s8">الخطوة 8: صفحة «أدويتي»</a></li>
+    <li><a href="#s9">الخطوة 9: الاختبارات والتوثيق</a></li>
+    <li><a href="#journey">رحلة طلب بحث من البداية للنهاية</a></li>
+    <li><a href="#concepts">مفاهيم يجب أن تفهمها</a></li>
+    <li><a href="#bugs">الأخطاء التي اكتشفناها والدروس</a></li>
+    <li><a href="#deploy">قائمة التشغيل في الإنتاج</a></li>
+  </ol>
+</nav>
+
+<!-- ============ OVERVIEW ============ -->
+<section class="card" id="overview">
+  <h2>الفكرة العامة والبنية</h2>
+  <p class="lead">المشكلة: عندما يكتب الطبيب وصفة (ordonnance)، كان يكتب اسم الدواء يدوياً بالكامل. الهدف: اقتراح الأدوية من القائمة الرسمية المغربية التي تنشرها الوكالة المغربية للأدوية والمنتجات الصحية <b>AMMPS</b> (حوالي 9,950 دواء).</p>
+
+  <h3>القرار المعماري الأهم: ثلاثة أنواع من قواعد البيانات</h3>
+  <p>Cabinova يعمل بنظام <b>قاعدة بيانات لكل عيادة</b> (database-per-tenant). لكن قائمة الأدوية واحدة للجميع، فلا معنى لنسخها 100 مرة. لذلك أضفنا قاعدة بيانات <b>مشتركة</b> جديدة:</p>
+
+  <div class="arch">
+    <div class="box plum">
+      <h4>قاعدة المنصة (Platform DB)</h4>
+      العيادات، الاشتراكات، مستخدمو Super Admin، سجل التدقيق.<br>
+      <small>كانت موجودة من قبل. في clinic-api اسمها <code>CATALOG</code>.</small>
+    </div>
+    <div class="box teal">
+      <h4>قاعدة الأدوية (جديدة)</h4>
+      قائمة AMMPS الوطنية + سجل عمليات الاستيراد.<br>
+      <small>واحدة للجميع. <b>admin-api فقط</b> يكتب فيها. العيادات تقرأ فقط.</small>
+    </div>
+    <div class="box amber">
+      <h4>قاعدة كل عيادة (Tenant DB)</h4>
+      المرضى، الوصفات… والآن: تخصيصات كل طبيب وأدويته الخاصة.<br>
+      <small>الربط مع قائمة الأدوية عبر رقم <code>ammps_id</code> فقط.</small>
+    </div>
+  </div>
+
+  <div class="why"><b>لماذا لا نربطها بمفتاح أجنبي (foreign key)؟</b>
+    لأنها قواعد بيانات <u>منفصلة</u> فعلياً، وPostgres لا يستطيع ربط جداول بين قاعدتين. لذلك الربط يتم في الكود (service layer): نقرأ من القاعدتين ثم ندمج النتائج في JavaScript بواسطة الرقم <code>ammps_id</code>.</div>
+
+  <h3>لماذا اسمها «قاعدة الأدوية» وليس «catalog»؟</h3>
+  <p>الطلب الأصلي سماها catalog، لكن الكلمة مستعملة أصلاً في clinic-api للإشارة إلى قاعدة المنصة (<code>CatalogService</code>). لو استعملنا نفس الاسم لحدث خلط خطير. فاخترنا <code>MEDICINES_DATABASE_URL</code> و<code>@cabinova/medicines-db</code>.</p>
+
+  <h3>القواعد الذهبية الأربع</h3>
+  <ol>
+    <li>الأطباء <b>لا يكتبون أبداً</b> في قاعدة الأدوية المشتركة.</li>
+    <li>الاستيراد <b>لا يكتب أبداً</b> في قواعد العيادات.</li>
+    <li>لا يُحذف أي دواء أبداً: الدواء الذي يختفي من الملف يصبح «غير نشط» فقط، لأن وصفات قديمة قد تشير إليه.</li>
+    <li>سطر الوصفة المطبوع <b>صورة ثابتة (snapshot)</b>: لا يتغير أبداً حتى لو تغيرت القائمة لاحقاً.</li>
+  </ol>
+
+  <h3>تكييف الطلب مع المشروع الحقيقي</h3>
+  <table>
+    <tr><th>الطلب الأصلي افترض</th><th>الواقع في Cabinova</th><th>ما فعلناه</th></tr>
+    <tr><td>Prisma</td><td>Drizzle + SQL خام على Neon</td><td>حزمة Drizzle جديدة بنفس أسلوب <code>tenant-db</code></td></tr>
+    <tr><td><code>@nestjs/schedule</code> وscraper شهري</td><td>الملف متوفر جاهزاً من AMMPS</td><td>رفع ملف xlsx من Super Admin (قرارك)</td></tr>
+    <tr><td>الوصفة تحتاج migration للـ snapshot</td><td>الأسطر مخزنة أصلاً كـ JSON snapshot</td><td>أضفنا حقلين اختياريين فقط، بدون migration بيانات</td></tr>
+    <tr><td>التخصيصات للعيادة كلها</td><td>العبارات المحفوظة والتحاليل الخاصة لكل طبيب</td><td>التخصيصات <b>لكل طبيب</b> (<code>practitioner_id</code>)</td></tr>
+  </table>
+</section>
+
+<!-- ============ STEP 1 ============ -->
+<section class="card" id="s1">
+  <span class="step-badge">الخطوة 1</span>
+  <h2>إنشاء قاعدة بيانات الأدوية المشتركة</h2>
+  <p class="lead">بنينا حزمة جديدة <code>packages/medicines-db</code> تحتوي على شكل الجداول (schema) وملفات الـ migration.</p>
+
+  <h3>الجدول الأول: <code>medications</code></h3>
+  <table>
+    <tr><th>العمود</th><th>المعنى</th></tr>
+    <tr><td><code>ammps_id</code></td><td>رقم الدواء عند AMMPS — هو المفتاح الأساسي (primary key) وهو جسر الربط مع العيادات</td></tr>
+    <tr><td><code>name</code>, <code>substances</code></td><td>الاسم التجاري والمادة الفعالة (عدة مواد تفصلها <code dir="ltr">" // "</code>)</td></tr>
+    <tr><td><code>dosage</code>, <code>form</code>, <code>presentation</code>, <code>lab</code></td><td>الجرعة، الشكل الصيدلاني، حجم العلبة، المختبر</td></tr>
+    <tr><td><code>status</code></td><td>الحالة كما يكتبها AMMPS حرفياً («Commercialisé AO»…)</td></tr>
+    <tr><td><code>availability</code></td><td>تصنيف مبسّط من 3 قيم: <code>marketed</code> مسوّق، <code>not_marketed</code> غير مسوّق، <code>withdrawn</code> مسحوب/معلّق</td></tr>
+    <tr><td><code>ppv</code>, <code>ph</code></td><td>سعر البيع للعموم وسعر المستشفى بالدرهم — نوع <code>numeric(10,2)</code></td></tr>
+    <tr><td><code>is_active</code></td><td>هل الدواء موجود في آخر ملف تم استيراده؟</td></tr>
+  </table>
+
+  <h3>الجدول الثاني: <code>medication_imports</code></h3>
+  <p>سجل لكل عملية استيراد: اسم الملف، من قام بها، الحالة (<code>running</code> / <code>success</code> / <code>failed</code>)، وعدد الأدوية المضافة والمعدّلة والمعطّلة، وسبب الفشل إن وُجد.</p>
+
+  <h3>البحث السريع: امتداد <code>pg_trgm</code></h3>
+  <p>أضفنا فهارس (indexes) من نوع <b>trigram</b> على الاسم والمادة الفعالة. هذا ما يجعل البحث بجزء من الكلمة سريعاً جداً: كتابة «lipr» تجد DOLIPRANE.</p>
+<pre><code>CREATE EXTENSION IF NOT EXISTS pg_trgm;
+CREATE INDEX "medications_name_trgm_idx"
+  ON "medications" USING gin ("name" gin_trgm_ops);</code></pre>
+
+  <h3>الاتصال في admin-api</h3>
+  <p>ملف <code>apps/admin-api/src/medicines/medicines-db.module.ts</code>:</p>
+  <ul>
+    <li>المتغير <code>MEDICINES_DATABASE_URL</code> <b>اختياري</b>: بدونه يعمل كل شيء، والصفحة تقول «غير مُعدّة».</li>
+    <li>عند تشغيل admin-api يطبّق الـ migrations تلقائياً (مثل قواعد العيادات تماماً).</li>
+  </ul>
+
+  <div class="ok"><b>تم التحقق</b>اختبار e2e يتأكد أن الجداول أُنشئت وأن البحث بالـ trigram يعمل.</div>
+</section>
+
+<!-- ============ STEP 2 ============ -->
+<section class="card" id="s2">
+  <span class="step-badge">الخطوة 2</span>
+  <h2>قراءة ملف Excel الخاص بـ AMMPS</h2>
+  <p class="lead">ملف <code>apps/admin-api/src/medicines/ammps-file.ts</code> — دالة «نقية» (pure function): تأخذ bytes الملف وتعيد أسطراً نظيفة، بدون أي قاعدة بيانات. هذا يجعل اختبارها سهلاً جداً.</p>
+
+  <h3>كيف يُقرأ ملف xlsx؟</h3>
+  <p>ملف <code>.xlsx</code> هو في الحقيقة <b>ملف ZIP</b> يحتوي على ملفات XML. استعملنا مكتبة صغيرة اسمها <code>fflate</code> لفك الضغط، ثم قرأنا الـ XML بأنفسنا:</p>
+  <ol>
+    <li><code>xl/workbook.xml</code> ← نعرف أول ورقة (sheet).</li>
+    <li><code>xl/worksheets/sheet1.xml</code> ← الخلايا سطراً سطراً.</li>
+    <li>النصوص قد تكون داخل الخلية نفسها (<code>inlineStr</code>، مثل ملفك) أو في قائمة مشتركة <code>sharedStrings.xml</code> (عندما يُحفظ من Excel). ندعم الحالتين.</li>
+  </ol>
+
+  <h3>قواعد التنظيف</h3>
+  <ul>
+    <li><b>الأعمدة تُعرف من عناوينها</b> وليس من ترتيبها، مع تجاهل الحروف الكبيرة والتشكيل و«(DH)». الأعمدة الإلزامية: ID AMMPS، Nom commercial، Substance active.</li>
+    <li><b>الأسعار</b>: دالة <code>parsePrice</code> تفهم كل الأشكال:
+<pre><code>"4.303.00 DH"  → "4303.00"
+"10,70 DH"     → "10.70"
+"1.200,50 DH"  → "1200.50"
+"SANS PPV DH"  → null</code></pre></li>
+    <li><b>الحالة</b>: دالة <code>availabilityOf</code> تحوّل 10 حالات مختلفة إلى 3 فئات (مثلاً «Retiré» و«Suspendu» ← <code>withdrawn</code>).</li>
+    <li><b>الأسطر السيئة</b> لا توقف كل شيء: سطر بدون رقم صالح يُتخطى مع رقم السطر والسبب. والرقم المكرر نحتفظ بأول ظهور له.</li>
+  </ul>
+
+  <div class="warn"><b>حماية من «القنابل»</b>نرفض الملفات فوق 20 ميغا، ونرفض أي ملف يصبح ضخماً جداً بعد فك الضغط (zip bomb).</div>
+
+  <div class="ok"><b>النتيجة على ملفك الحقيقي</b>9,947 دواء في 0.2 ثانية، صفر أسطر مرفوضة: 5,217 مسوّق، 3,861 غير مسوّق، 869 مسحوب. 27 اختبار وحدة (unit test).</div>
+</section>
+
+<!-- ============ STEP 3 ============ -->
+<section class="card" id="s3">
+  <span class="step-badge">الخطوة 3</span>
+  <h2>الاستيراد: «الكل أو لا شيء» مع قاعدة الأمان</h2>
+  <p class="lead">ملف <code>apps/admin-api/src/medicines/ammps-import.ts</code>.</p>
+
+  <h3>طريقة العمل (داخل transaction واحدة)</h3>
+  <ol class="flow">
+    <li>ننشئ جدولاً مؤقتاً <code>ammps_rows</code> وننسخ فيه الملف على دفعات من 1000 سطر.</li>
+    <li><b>إضافة</b>: كل دواء غير موجود ← <code>INSERT</code>.</li>
+    <li><b>تحديث</b>: فقط ما تغيّر فعلاً (نستعمل <code>IS DISTINCT FROM</code>)، حتى يبقى «آخر تعديل» ذا معنى.</li>
+    <li><b>تعطيل</b>: كل دواء نشط غير موجود في الملف ← <code>is_active = false</code>. لا حذف أبداً.</li>
+    <li>دواء معطّل يعود في ملف لاحق ← يُعاد تفعيله.</li>
+  </ol>
+
+  <div class="why"><b>لماذا transaction؟</b>لو حدث خطأ في منتصف العملية، Postgres يلغي كل شيء تلقائياً (rollback). القائمة إما تُحدَّث كاملة أو تبقى كما كانت. لا توجد حالة «نصف مستوردة».</div>
+
+  <h3>قاعدة الأمان (أهم جزء)</h3>
+  <p>قبل أي تغيير، نرفض الملف إذا:</p>
+  <ul>
+    <li>يحتوي أقل من <b>80%</b> من الأدوية النشطة حالياً (ملف مقطوع؟ موقع AMMPS معطّل؟).</li>
+    <li>أكثر من <b>5%</b> من أسطره غير مقروءة (تغيّر شكل الملف؟).</li>
+  </ul>
+  <p>بدون هذه القاعدة، ملف ناقص قد يعطّل آلاف الأدوية عند كل العيادات في ثانية واحدة.</p>
+
+  <h3>استيراد واحد فقط في نفس الوقت</h3>
+  <p>استعملنا «فهرس فريد جزئي» (partial unique index): قاعدة البيانات نفسها ترفض وجود سطرين بحالة <code>running</code>:</p>
+<pre><code>CREATE UNIQUE INDEX medication_imports_one_running_idx
+  ON medication_imports (status) WHERE status = 'running';</code></pre>
+  <p>وإذا انقطع استيراد بسبب إعادة تشغيل السيرفر، يُحرَّر تلقائياً بعد 15 دقيقة.</p>
+
+  <h3>أمر سطر الأوامر</h3>
+<pre><code>pnpm --filter admin-api medicines:import ~/Downloads/medicaments-ammps.xlsx</code></pre>
+  <div class="ok"><b>على ملفك</b>أول تشغيل: 9,947 مضاف. ثاني تشغيل: 0 تغيير. أقل من ثانيتين. 7 اختبارات e2e تغطي كل الحالات.</div>
+</section>
+
+<!-- ============ STEP 4 ============ -->
+<section class="card" id="s4">
+  <span class="step-badge">الخطوة 4</span>
+  <h2>صفحة «Médicaments» في Super Admin</h2>
+  <p class="lead">الواجهة الخلفية في <code>apps/admin-api/src/medicines/</code> والصفحة في <code>apps/admin-web/src/app/(dashboard)/medicines/</code>.</p>
+
+  <h3>الواجهة البرمجية (API)</h3>
+  <table>
+    <tr><th>المسار</th><th>الوظيفة</th><th>الصلاحية</th></tr>
+    <tr><td><code>GET /medicines/overview</code></td><td>الأرقام وآخر استيراد</td><td><code>medicines:read</code></td></tr>
+    <tr><td><code>GET /medicines</code></td><td>القائمة مع البحث والفلترة، 25 في الصفحة</td><td><code>medicines:read</code></td></tr>
+    <tr><td><code>GET /medicines/imports</code></td><td>سجل الاستيرادات</td><td><code>medicines:read</code></td></tr>
+    <tr><td><code>POST /medicines/imports</code></td><td>رفع ملف xlsx</td><td><code>medicines:write</code></td></tr>
+  </table>
+  <p>الرفع يستعمل <code>FileInterceptor</code> من NestJS (مكتبة multer). كل استيراد — ناجح أو مرفوض — يُكتب في سجل التدقيق (audit log).</p>
+
+  <h3>الصفحة</h3>
+  <ul>
+    <li>4 بطاقات: الأدوية النشطة، المسوّقة، غير المسوّقة، المسحوبة.</li>
+    <li>القائمة مع بحث وتبويبات للحالة.</li>
+    <li>سجل الاستيرادات على الجانب.</li>
+    <li>نافذة «Importer la liste AMMPS»: اسحب الملف وأفلته، ثم ترى النتيجة أو سبب الرفض.</li>
+  </ul>
+
+  <div class="warn"><b>صلاحيات جديدة</b>أضفنا <code>medicines:read</code> و<code>medicines:write</code>. يجب تشغيل <code>pnpm --filter admin-api db:seed</code> مرة واحدة حتى يحصل عليها Super Admin.</div>
+</section>
+
+<!-- ============ STEP 5 ============ -->
+<section class="card" id="s5">
+  <span class="step-badge">الخطوة 5</span>
+  <h2>جداول كل عيادة: تخصيصات الطبيب</h2>
+  <p class="lead">Migration رقم <code>0041_medication_overrides</code> في <code>packages/tenant-db</code>.</p>
+
+  <h3>الجدول <code>medication_overrides</code></h3>
+  <p>«نسخة الطبيب» من دواء AMMPS:</p>
+  <ul>
+    <li><code>custom_name</code>, <code>custom_dosage</code>: اسمه وجرعته الخاصة («Doliprane» بدل «DOLIPRANE»). <b>الحقل الفارغ = كما يقول AMMPS.</b></li>
+    <li><code>default_posology</code>, <code>default_duration</code>: الجرعة والمدة المعتادة، تُملأ تلقائياً.</li>
+    <li><code>is_favorite</code>, <code>is_hidden</code>: مفضّل / مخفي من الاقتراحات.</li>
+    <li><code>base_name</code>, <code>base_dosage</code>: اسم وجرعة AMMPS <b>لحظة الحفظ</b>. الفكرة الذكية هنا: لو غيّر AMMPS الاسم لاحقاً، نقارن ونعرف أن هناك تحديثاً يجب أن يراه الطبيب.</li>
+  </ul>
+
+  <h3>الجدول <code>custom_medications</code></h3>
+  <p>أدوية غير موجودة في القائمة (تحضيرات صيدلانية، منتجات مستوردة). نفس الطبيب لا يستطيع إضافة نفس الاسم والجرعة مرتين.</p>
+
+  <h3>سطر الوصفة</h3>
+<pre><code>type PrescriptionItem = {
+  medication: string;        // النص المطبوع — لا يتغير أبداً
+  posology: string | null;
+  duration: string | null;
+  ammpsId?: number | null;            // جديد: من أين اختير
+  customMedicationId?: string | null; // جديد
+};</code></pre>
+  <div class="why"><b>لماذا لم نحتج migration بيانات؟</b>الأسطر مخزنة أصلاً كـ JSON (<code>jsonb</code>). أضفنا حقلين اختياريين فقط. الوصفات القديمة تبقى كما هي تماماً.</div>
+</section>
+
+<!-- ============ STEP 6 ============ -->
+<section class="card" id="s6">
+  <span class="step-badge">الخطوة 6</span>
+  <h2>واجهة البحث في clinic-api</h2>
+  <p class="lead">الملفات في <code>apps/clinic-api/src/medications/</code>.</p>
+
+  <h3>اتصال «للقراءة فقط»</h3>
+  <p>في <code>database/medicines.module.ts</code>، كل اتصال جديد ينفّذ:</p>
+<pre><code>set default_transaction_read_only = on</code></pre>
+  <p>حتى لو أُعطي clinic-api رابطاً بصلاحيات كتابة بالخطأ، لن يستطيع تعديل القائمة. (اختبار يتأكد من ذلك.)</p>
+
+  <h3>منطق الدمج — <code>merge.ts</code> (دوال نقية)</h3>
+  <ul>
+    <li><b>تجميع العلب</b>: AMMPS يكتب كل حجم علبة كسطر منفصل (Amlor 10 mg ×3 مرات). نجمعها بحسب (الاسم، الجرعة، الشكل) ونختار العلبة المسوّقة الأرخص كممثل.</li>
+    <li><b>تطبيق التخصيص</b>: اسم الطبيب يغلب، والمخفي يُحذف.</li>
+    <li><b>لا نقترح أبداً</b> المسحوب أو غير النشط.</li>
+    <li><b>الترتيب</b>: المفضلة أولاً ← الاسم يبدأ بما كُتب ← كلمة في الاسم ← المادة الفعالة ← المسوّق قبل غير المسوّق ← أبجدياً.</li>
+    <li><b>«محدّث من AMMPS»</b>: فقط إذا غيّر AMMPS شيئاً كان الطبيب قد أعاد تسميته.</li>
+  </ul>
+
+  <h3>المسارات</h3>
+  <table>
+    <tr><th>المسار</th><th>الوظيفة</th></tr>
+    <tr><td><code>GET /medications/search?q=</code></td><td>البحث (من حرفين)</td></tr>
+    <tr><td><code>GET /medications/favorites</code></td><td>المفضلة</td></tr>
+    <tr><td><code>GET /medications/overrides</code></td><td>كل التخصيصات مع قيم AMMPS بجانبها</td></tr>
+    <tr><td><code>PUT/DELETE /medications/ammps/:id/override</code></td><td>حفظ تخصيص / العودة لقيم AMMPS</td></tr>
+    <tr><td><code>POST …/override/accept-ammps</code></td><td>قبول القيمة الجديدة من AMMPS</td></tr>
+    <tr><td><code>/medications/custom</code></td><td>إضافة/تعديل/حذف الأدوية الخاصة</td></tr>
+    <tr><td><code>POST /medications/check-renewal</code></td><td>قبل تجديد وصفة قديمة: ما الذي سُحب منذ ذلك الحين؟</td></tr>
+  </table>
+  <div class="ok"><b>تم التحقق</b>11 ثم 14 اختبار وحدة لقواعد الدمج، و9 اختبارات e2e في عيادة اختبار بطبيبين وسكرتيرة.</div>
+</section>
+
+<!-- ============ STEP 7 ============ -->
+<section class="card" id="s7">
+  <span class="step-badge">الخطوة 7</span>
+  <h2>الإكمال التلقائي داخل الوصفة</h2>
+  <p class="lead"><code>medication-input.tsx</code> (الحقل) و<code>prescription-editor.tsx</code> (المحرر) في clinic-web.</p>
+
+  <h3>ما يراه الطبيب عند الكتابة</h3>
+  <ol>
+    <li>⭐ المفضلة أولاً مع الجرعة المعتادة بخط مائل.</li>
+    <li>أدوية AMMPS: الاسم والجرعة، الشكل، المادة، عدد العلب، أقل سعر.</li>
+    <li>أدويته الخاصة (علامة «Perso»).</li>
+    <li>«Déjà prescrits»: ما كتبه سابقاً.</li>
+    <li>«Ajouter « … » à mes médicaments» لأي نص مكتوب.</li>
+  </ol>
+  <p>التنقل بـ <kbd>↑</kbd> <kbd>↓</kbd> <kbd>Enter</kbd> <kbd>Esc</kbd>. بعد الاختيار: يمتلئ السطر، تُضاف الجرعة المعتادة، وينتقل المؤشر لحقل الجرعة.</p>
+
+  <h3>تقنيات مهمة</h3>
+  <ul>
+    <li><b>Debounce 200ms</b>: لا نرسل طلباً مع كل حرف، بل عندما يتوقف الطبيب عن الكتابة.</li>
+    <li><b>React Query</b>: يخزّن النتائج مؤقتاً (<code>staleTime</code> 60 ثانية)، و<code>keepPreviousData</code> يُبقي القائمة القديمة ظاهرة أثناء التحميل فلا «ترمش».</li>
+    <li><b>زرّان على السطر المختار</b>: ⭐ مفضّل، و🔖 «احفظ هذه الجرعة كمعتادة».</li>
+    <li><b>التجديد</b>: قبل نسخ وصفة قديمة نستدعي <code>check-renewal</code>، والأسطر المسحوبة تظهر بعلامة برتقالية.</li>
+    <li><b>تعديل النص يدوياً</b> يقطع الربط: السطر يصبح نصاً حراً.</li>
+  </ul>
+</section>
+
+<!-- ============ STEP 8 ============ -->
+<section class="card" id="s8">
+  <span class="step-badge">الخطوة 8</span>
+  <h2>صفحة «Mes médicaments» في الإعدادات</h2>
+  <p class="lead"><code>apps/clinic-web/src/app/(clinic)/settings/medications/</code> — للأطباء فقط (السكرتيرة لا ترى القسم).</p>
+  <ul>
+    <li><b>تحديثات AMMPS للمراجعة</b>: «اسمك / القديم مشطوب ← الجديد» مع زرين: «Prendre la nouvelle valeur» أو «Garder la mienne».</li>
+    <li><b>أدوية AMMPS المخصصة</b>: النجمة، التعديل، والعودة لقيم AMMPS (تحتاج نقرة ثانية للتأكيد قبل المسح).</li>
+    <li><b>«Personnaliser un médicament»</b>: بحث في القائمة ثم نموذج (الاسم، الجرعة، الجرعة المعتادة، المدة، مفضّل، مخفي).</li>
+    <li><b>الأدوية خارج القائمة</b>: إضافة، تعديل، مفضّل، حذف.</li>
+  </ul>
+
+  <h3>درس العربية: عزل النص اللاتيني (bidi)</h3>
+  <p>في الواجهة العربية (من اليمين لليسار) ظهر «Crème magistrale urée 10 %» هكذا: «% 10 Crème…». السبب: خوارزمية الاتجاه الثنائي (Unicode Bidi) تعيد ترتيب الرموز المحايدة مثل % والأرقام. الحل: نضع الأسماء داخل عنصر <code>&lt;bdi&gt;</code> الذي يعزل اتجاه النص:</p>
+<pre><code>&lt;bdi&gt;{nameOf(c.name, c.dosage)}&lt;/bdi&gt;</code></pre>
+</section>
+
+<!-- ============ STEP 9 ============ -->
+<section class="card" id="s9">
+  <span class="step-badge">الخطوة 9</span>
+  <h2>الاختبارات النهائية والتوثيق</h2>
+  <table>
+    <tr><th>الفحص</th><th>النتيجة</th></tr>
+    <tr><td>Typecheck لكل التطبيقات الخمسة</td><td>✅</td></tr>
+    <tr><td>Lint</td><td>✅ بدون أي تحذير</td></tr>
+    <tr><td>Unit tests</td><td>✅ clinic-api 66، admin-api 93</td></tr>
+    <tr><td>كل اختبارات e2e</td><td>✅ 26 ملف، 160 اختبار</td></tr>
+    <tr><td>في المتصفح</td><td>✅ على بيئة اختبار معزولة بقائمتك الحقيقية</td></tr>
+  </table>
+  <p>وحدّثنا README: قسم الميزات، قسم «Medicines database (optional)» مع SQL لإنشاء دور القراءة فقط، والمتغيرات.</p>
+
+  <div class="note"><b>كيف اختبرنا في المتصفح دون لمس عملك؟</b>
+    شغّلنا نسخة منفصلة: API على المنفذ 4400/4500، ونسخة مؤقتة من الواجهة على 3400/3500، مع قواعد Docker للاختبار وحساب الاختبار الموجود في إعدادات e2e. سيرفراتك على 3000/3002/4000/4100 لم تُمسّ، وحُذف كل شيء مؤقت بعد ذلك.</div>
+</section>
+
+<!-- ============ JOURNEY ============ -->
+<section class="card" id="journey">
+  <h2>رحلة طلب بحث من البداية للنهاية</h2>
+  <p class="lead">الطبيب يكتب «doliprane 1g» في الوصفة. ماذا يحدث؟</p>
+  <ol class="flow">
+    <li>الحقل ينتظر 200ms بعد آخر حرف (debounce)، ثم يرسل <code>GET /api/medications/search?q=doliprane 1g</code>.</li>
+    <li>Next.js يمرّر الطلب لـ clinic-api، الذي يعرف العيادة من النطاق الفرعي (subdomain) ويفتح قاعدتها.</li>
+    <li>يتحقق أن المستخدم طبيب (<code>assertMedical</code>).</li>
+    <li>يقسّم النص إلى كلمات: <code>["doliprane", "1g"]</code>. كل كلمة يجب أن توجد في الاسم أو المادة أو الشكل أو الجرعة (والجرعة تُقارن بدون مسافات حتى تطابق «1g» القيمة «1 G»).</li>
+    <li>من <b>قاعدة العيادة</b>: أدوية الطبيب الخاصة + تخصيصات بأسمائه.</li>
+    <li>من <b>قاعدة الأدوية</b> (قراءة فقط): الأدوية المطابقة النشطة غير المسحوبة، ثم كل علبها.</li>
+    <li>من <b>قاعدة العيادة</b> مرة أخرى: تخصيصات الطبيب لهذه الأدوية.</li>
+    <li><code>mergeCatalog</code> يجمع العلب ويطبّق التخصيصات، ثم <code>rankSuggestions</code> يرتّب ويأخذ 20.</li>
+    <li>الواجهة تعرض القائمة. عند الاختيار يُحفظ السطر مع <code>ammpsId</code> تلقائياً بعد 800ms.</li>
+  </ol>
+</section>
+
+<!-- ============ CONCEPTS ============ -->
+<section class="card" id="concepts">
+  <h2>مفاهيم يجب أن تفهمها</h2>
+  <div class="grid2">
+    <div class="term"><h4>Database per tenant</h4><p>كل عيادة لها قاعدة بيانات منفصلة. عزل تام للبيانات الطبية.</p></div>
+    <div class="term"><h4>Snapshot</h4><p>نحفظ النص كما طُبع. التغييرات اللاحقة لا تمس الماضي — مهم قانونياً للوصفات.</p></div>
+    <div class="term"><h4>Override</h4><p>طبقة فوق البيانات الرسمية: الحقل الفارغ = القيمة الرسمية.</p></div>
+    <div class="term"><h4>Soft delete (is_active)</h4><p>لا نحذف، نعطّل فقط، حتى لا تنكسر المراجع القديمة.</p></div>
+    <div class="term"><h4>Transaction</h4><p>مجموعة عمليات تنجح كلها أو تُلغى كلها.</p></div>
+    <div class="term"><h4>Staging table</h4><p>جدول مؤقت ننسخ فيه الملف ثم نقارن بعمليات SQL جماعية سريعة.</p></div>
+    <div class="term"><h4>Partial unique index</h4><p>قيد فريد على جزء من الأسطر فقط (هنا: الحالة running).</p></div>
+    <div class="term"><h4>pg_trgm</h4><p>يقسّم النص لمقاطع من 3 أحرف لتسريع البحث بجزء من الكلمة.</p></div>
+    <div class="term"><h4>Pure function</h4><p>دالة بدون آثار جانبية: نفس المدخل = نفس المخرج. سهلة الاختبار.</p></div>
+    <div class="term"><h4>Read-only session</h4><p>طبقة حماية ثانية فوق صلاحيات الدور.</p></div>
+    <div class="term"><h4>Debounce</h4><p>انتظار توقف الكتابة قبل إرسال الطلب.</p></div>
+    <div class="term"><h4>Bidi isolation</h4><p><code>&lt;bdi&gt;</code> يمنع خلط اتجاه النص اللاتيني داخل صفحة عربية.</p></div>
+  </div>
+</section>
+
+<!-- ============ BUGS ============ -->
+<section class="card" id="bugs">
+  <h2>الأخطاء التي اكتشفناها والدروس</h2>
+  <p class="lead">كلها ظهرت فقط عند التجربة الحقيقية في المتصفح — رغم أن الاختبارات الآلية كانت ناجحة.</p>
+  <table>
+    <tr><th>المشكلة</th><th>السبب</th><th>الحل</th></tr>
+    <tr><td>«doliprane 1» لا يجد شيئاً</td><td>الجرعة في عمود منفصل، والبحث كان يقارن الجملة كاملة</td><td>بحث كلمة بكلمة (<code>wordsMatch</code>)</td></tr>
+    <tr><td>الكتابة السريعة بعد الاختيار تذهب لحقل الدواء</td><td>نقل التركيز بعد إطار رسم (<code>requestAnimationFrame</code>)</td><td>نقل التركيز فوراً</td></tr>
+    <tr><td>تحذير التجديد لا يظهر</td><td>المحرر أرسل حقولاً يرفضها الـ API (خطأ 400 صامت)</td><td>إرسال الحقول المطلوبة فقط</td></tr>
+    <tr><td>الأسماء مقلوبة بالعربية</td><td>خوارزمية Bidi</td><td><code>&lt;bdi&gt;</code></td></tr>
+    <tr><td>الاتصال بقاعدة محذوفة بعد إعادة تشغيل Docker</td><td>بيانات الاختبار في tmpfs تختفي</td><td>أظهرنا السبب الحقيقي في السجلات (<code>err.cause</code>)</td></tr>
+  </table>
+  <div class="why"><b>الدرس</b>الاختبارات الآلية تتحقق مما <u>نتوقعه</u>. التجربة الحقيقية تكشف ما <u>لم نتوقعه</u> — مثل طريقة كتابة الأطباء الفعلية «اسم + جرعة».</div>
+</section>
+
+<!-- ============ DEPLOY ============ -->
+<section class="card" id="deploy">
+  <h2>قائمة التشغيل في الإنتاج</h2>
+  <ul class="check">
+    <li>إنشاء قاعدة Neon جديدة للأدوية، ووضع رابط المالك في <code>apps/admin-api/.env</code> كـ <code>MEDICINES_DATABASE_URL</code>.</li>
+    <li>إنشاء دور للقراءة فقط (SQL في README)، ووضع رابطه في <code>apps/clinic-api/.env</code>.</li>
+    <li>تشغيل <code>pnpm --filter admin-api db:seed</code> للصلاحيات الجديدة.</li>
+    <li>ملء القائمة: <code>pnpm --filter admin-api medicines:import &lt;ملف.xlsx&gt;</code>.</li>
+    <li>تطبيق migration <code>0041</code> على العيادات بزر <b>Migrer</b> (مع 0030–0040 المعلّقة).</li>
+    <li>لاحقاً، كل شهر: رفع الملف الجديد من Super Admin › Médicaments.</li>
+  </ul>
+  <div class="warn"><b>لم يُتحقق منه بعد</b>قاعدة Neon الحقيقية (جرّبنا على Postgres محلي: البحث ~9ms). وترتيب «doli» أبجدي (DOLI PEDIATRIQUE قبل DOLIPRANE) لعدم وجود بيانات شعبية — المفضلة تحل ذلك.</div>
+</section>
+
+<footer>Cabinova · دليل ميزة الأدوية AMMPS · 16 نونبر 2026</footer>
+</div>
+</body>
+</html>

@@ -27,6 +27,7 @@ import { type Account, METHODS, type PaymentMethod } from "@/lib/payments";
 import type { Prescription } from "@/lib/prescriptions";
 import { useFormat } from "@/lib/use-format";
 import { cn } from "@/lib/utils";
+import { PrintLink } from "@/components/print-dialog";
 
 /**
  * A finished visit, for the front desk: what to take from the patient (and
@@ -241,9 +242,9 @@ function PaymentTab({ account }: { account: Account }) {
 								</div>
 								{p.kind === "payment" && (
 									<Button asChild variant="ghost" size="icon-sm" aria-label={t("print")} title={t("print")}>
-										<a href={`/receipts/${p.id}`} target="_blank" rel="noopener">
+										<PrintLink href={`/receipts/${p.id}`}>
 											<IconPrinter />
-										</a>
+										</PrintLink>
 									</Button>
 								)}
 							</li>
@@ -333,9 +334,9 @@ function PrescriptionTab({
 				<p className="bg-muted/50 text-muted-foreground rounded-lg p-3 text-sm whitespace-pre-line">{prescription.notes}</p>
 			)}
 			<Button asChild>
-				<a href={`/ordonnances/${appointmentId}`} target="_blank" rel="noopener">
+				<PrintLink href={`/ordonnances/${appointmentId}`}>
 					<IconPrinter /> {t("printPrescription")}
-				</a>
+				</PrintLink>
 			</Button>
 		</section>
 	);
@@ -366,9 +367,9 @@ function CertificatesTab({ certificates }: { certificates: Certificate[] | undef
 							<Badge variant="destructive">{cert("cancelled")}</Badge>
 						) : (
 							<Button asChild size="sm" className="h-8">
-								<a href={`/certificats/${c.id}`} target="_blank" rel="noopener">
+								<PrintLink href={`/certificats/${c.id}`}>
 									<IconPrinter /> {cert("print")}
-								</a>
+								</PrintLink>
 							</Button>
 						)}
 					</div>

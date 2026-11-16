@@ -33,6 +33,22 @@ const clean = () =>
     typeof value === 'string' ? value.trim() || null : value,
   );
 
+/** Act colours, as the agenda draws them (gray for motifs that aren't an act). */
+export const ACT_COLORS = [
+  'blue',
+  'green',
+  'purple',
+  'orange',
+  'amber',
+  'yellow',
+  'red',
+  'brand',
+  'gray',
+] as const;
+/** A palette colour, or a custom one ("#14b8a6"). */
+export type ActColor = (typeof ACT_COLORS)[number] | `#${string}`;
+const ACT_COLOR_PATTERN = new RegExp(`^(${ACT_COLORS.join('|')}|#[0-9a-f]{6})$`);
+
 /** A price-list act (Paramètres › Tarifs). Prices in centimes. */
 export class ActDto {
   @trim()
@@ -52,6 +68,17 @@ export class ActDto {
   @Min(0)
   @Max(MAX_AMOUNT)
   price: number;
+
+  /**
+   * Its colour on the agenda: one of ACT_COLORS or a custom "#rrggbb";
+   * left out, a new act takes the least-used one and an edit keeps its own.
+   */
+  @Transform(({ value }: { value: unknown }) =>
+    typeof value === 'string' ? value.trim().toLowerCase() : value,
+  )
+  @IsOptional()
+  @Matches(ACT_COLOR_PATTERN, { message: 'Couleur invalide.' })
+  color?: ActColor;
 }
 
 export class ActsQuery {
@@ -122,6 +149,11 @@ export class CheckoutDto {
   @IsInt()
   @Min(0)
   discount?: number;
+
+  /** The visit goes to the patient's mutuelle; left out, the visit keeps its answer. */
+  @IsOptional()
+  @IsBoolean()
+  mutuelle?: boolean;
 }
 
 export class CancelPaymentDto {

@@ -35,6 +35,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { Appointment } from "@/lib/appointments";
 import { initials } from "@/lib/format";
 import { ageOf, dossierHref, formatFileNumber, formatPhone, fullName, type PatientFile } from "@/lib/patients";
+import { htmlToText } from "@/lib/rich-text";
 import { useFormat } from "@/lib/use-format";
 import { cn } from "@/lib/utils";
 import { ArchiveDialog } from "./archive-button";
@@ -254,8 +255,7 @@ function AppointmentRow({ a, muted }: { a: Appointment; muted?: boolean }) {
 }
 
 /**
- * The patient's file in the sheet: an overview (allergies first for
- * doctors, the next visit, the administrative blocks), the appointments,
+ * The patient's file in the sheet: an overview (the next visit, the administrative blocks), the appointments,
  * and the antécédents for doctors.
  */
 export function PatientDetails({
@@ -423,13 +423,14 @@ export function PatientDetails({
 							/>
 						</div>
 
-						{patient.notes && (
+						{/* The patient's one note: the doctors' permanent note (edited in the dossier). */}
+						{patient.medicalProfile?.permanentNote && (
 							<section className="rounded-xl border p-4">
 								<h3 className="text-muted-foreground mb-2 flex items-center gap-2 text-xs font-medium">
 									<IconNote className="size-3.5" />
 									{t("note")}
 								</h3>
-								<p className="text-sm whitespace-pre-line">{patient.notes}</p>
+								<p className="text-sm whitespace-pre-line">{htmlToText(patient.medicalProfile.permanentNote)}</p>
 							</section>
 						)}
 

@@ -33,12 +33,12 @@ export function DateNavigator({ view, events }: IProps) {
   const handleNext = () => setSelectedDate(navigateDate(selectedDate, view, "next"));
 
   return (
-    <div className="space-y-0.5">
+    <div className="min-w-0 space-y-0.5">
       <div className="flex items-center gap-2">
-        <span className="text-lg font-semibold capitalize">
+        <span className="text-lg font-semibold whitespace-nowrap capitalize">
           {month} {year}
         </span>
-        <Badge variant="outline" className="px-1.5">
+        <Badge variant="outline" className="shrink-0 px-1.5">
           {t("count", { count: eventCount })}
         </Badge>
       </div>
@@ -48,7 +48,7 @@ export function DateNavigator({ view, events }: IProps) {
           <IconChevronLeft className="rtl:rotate-180" />
         </Button>
 
-        <p className="text-sm text-muted-foreground">{rangeText(view, selectedDate, fmt)}</p>
+        <p className="text-muted-foreground text-sm whitespace-nowrap">{rangeText(view, selectedDate, fmt)}</p>
 
         <Button variant="outline" aria-label={t("next")} className="size-6.5 px-0 [&_svg]:size-4.5" onClick={handleNext}>
           <IconChevronRight className="rtl:rotate-180" />

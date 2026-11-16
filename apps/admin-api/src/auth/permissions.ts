@@ -24,6 +24,8 @@ export const PLATFORM_PERMISSIONS = {
   'support:all':
     'Voir tous les tickets, y compris ceux assignés aux autres agents',
   'security:read': "Voir le journal d'audit et les événements sensibles",
+  'medicines:read': 'Voir la base des médicaments (AMMPS)',
+  'medicines:write': 'Importer la liste des médicaments (AMMPS)',
   'settings:read': 'Voir la configuration globale',
   'settings:write': 'Modifier la configuration globale',
 } as const;

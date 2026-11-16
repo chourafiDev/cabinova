@@ -6,6 +6,7 @@ import {
   IconModules,
   IconMoney,
   IconPeople,
+  IconPill,
   IconServer,
   IconSettings,
   IconShieldCheck,
@@ -50,6 +51,7 @@ export const navGroups: { label: string; items: NavItem[] }[] = [
     label: "Administration",
     items: [
       { title: "Technique", href: "/technical", icon: IconServer, shortcut: "t", permission: "technical:read" },
+      { title: "Médicaments", href: "/medicines", icon: IconPill, permission: "medicines:read" },
       { title: "Utilisateurs", href: "/users", icon: IconPeople, shortcut: "u", permission: "users:read" },
       { title: "Sécurité", href: "/security", icon: IconShieldCheck, permission: "security:read" },
       { title: "Configuration", href: "/settings", icon: IconSettings, permission: "settings:read" },

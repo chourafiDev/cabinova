@@ -1,0 +1,608 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AMMPS Medicines Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f7f6f9;
+    --card: #ffffff;
+    --ink: #1d2340;
+    --muted: #5d6380;
+    --line: #e4e2ea;
+    --plum: #613f75;
+    --plum-soft: #f1ebf5;
+    --teal: #119da4;
+    --teal-soft: #e5f5f6;
+    --amber: #b26a00;
+    --amber-soft: #fff4e0;
+    --red: #b42318;
+    --red-soft: #fdecea;
+    --green: #1f7a4d;
+    --green-soft: #e8f5ee;
+    --code-bg: #f3f2f7;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #12131a;
+      --card: #1b1d27;
+      --ink: #e9e9f1;
+      --muted: #a2a6bd;
+      --line: #2c2f3d;
+      --plum: #c9a6e0;
+      --plum-soft: #2a2233;
+      --teal: #4fc6cc;
+      --teal-soft: #15292c;
+      --amber: #f0b45a;
+      --amber-soft: #2d2415;
+      --red: #f08a80;
+      --red-soft: #2e1a19;
+      --green: #6fd19c;
+      --green-soft: #15291f;
+      --code-bg: #232634;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #12131a; --card: #1b1d27; --ink: #e9e9f1; --muted: #a2a6bd; --line: #2c2f3d;
+    --plum: #c9a6e0; --plum-soft: #2a2233; --teal: #4fc6cc; --teal-soft: #15292c;
+    --amber: #f0b45a; --amber-soft: #2d2415; --red: #f08a80; --red-soft: #2e1a19;
+    --green: #6fd19c; --green-soft: #15291f; --code-bg: #232634;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+    font-size: 16.5px;
+    line-height: 1.75;
+  }
+  .wrap { max-width: 900px; margin: 0 auto; padding: 32px 16px 80px; }
+  header.hero {
+    background: linear-gradient(135deg, var(--plum), #3c2650);
+    color: #fff;
+    border-radius: 20px;
+    padding: 32px 28px;
+    margin-bottom: 28px;
+  }
+  header.hero h1 { margin: 0 0 8px; font-size: 30px; line-height: 1.5; }
+  header.hero p { margin: 0; opacity: .9; }
+  nav.toc {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 18px 22px;
+    margin-bottom: 28px;
+  }
+  nav.toc h2 { margin: 0 0 8px; font-size: 18px; }
+  nav.toc ol { margin: 0; padding-inline-start: 22px; columns: 2; column-gap: 32px; }
+  nav.toc a { color: var(--plum); text-decoration: none; }
+  nav.toc a:hover { text-decoration: underline; }
+  section.card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 24px 26px;
+    margin-bottom: 22px;
+  }
+  h2 { font-size: 23px; margin: 0 0 6px; line-height: 1.6; }
+  h3 { font-size: 18px; margin: 22px 0 4px; color: var(--plum); }
+  .step-badge {
+    display: inline-block;
+    background: var(--plum-soft);
+    color: var(--plum);
+    font-weight: 700;
+    font-size: 13px;
+    border-radius: 999px;
+    padding: 2px 12px;
+    margin-bottom: 6px;
+  }
+  .lead { color: var(--muted); margin-top: 0; }
+  code, pre, .ltr {
+    font-family: "JetBrains Mono", ui-monospace, Menlo, monospace;
+    direction: ltr;
+    unicode-bidi: isolate;
+  }
+  code {
+    background: var(--code-bg);
+    border-radius: 6px;
+    padding: 1px 6px;
+    font-size: 13.5px;
+  }
+  pre {
+    background: var(--code-bg);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 14px 16px;
+    overflow-x: auto;
+    font-size: 13.5px;
+    line-height: 1.7;
+    text-align: left;
+  }
+  pre code { background: none; padding: 0; }
+  .note, .why, .warn, .ok {
+    border-radius: 12px;
+    padding: 12px 16px;
+    margin: 14px 0;
+    border: 1px solid transparent;
+  }
+  .note { background: var(--teal-soft); border-color: color-mix(in srgb, var(--teal) 30%, transparent); }
+  .why { background: var(--plum-soft); border-color: color-mix(in srgb, var(--plum) 25%, transparent); }
+  .warn { background: var(--amber-soft); border-color: color-mix(in srgb, var(--amber) 30%, transparent); }
+  .ok { background: var(--green-soft); border-color: color-mix(in srgb, var(--green) 30%, transparent); }
+  .note b, .why b, .warn b, .ok b { display: block; margin-bottom: 2px; }
+  table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 15px; }
+  th, td { border-bottom: 1px solid var(--line); padding: 8px 10px; text-align: start; vertical-align: top; }
+  th { color: var(--muted); font-weight: 600; font-size: 14px; }
+  .files li { margin-bottom: 2px; }
+  .arch {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+    margin: 16px 0;
+  }
+  .box {
+    border: 2px solid var(--line);
+    border-radius: 14px;
+    padding: 12px 14px;
+    background: var(--bg);
+    font-size: 14.5px;
+    line-height: 1.8;
+  }
+  .box h4 { margin: 0 0 4px; font-size: 15.5px; }
+  .box.plum { border-color: var(--plum); }
+  .box.teal { border-color: var(--teal); }
+  .box.amber { border-color: var(--amber); }
+  .flow { counter-reset: f; list-style: none; padding: 0; margin: 12px 0; }
+  .flow li {
+    counter-increment: f;
+    position: relative;
+    padding: 8px 12px 8px 46px;
+    border-inline-start: 2px solid var(--line);
+    margin-inline-start: 16px;
+  }
+  .flow li::before {
+    content: counter(f);
+    position: absolute;
+    left: -16px;
+    top: 8px;
+    width: 30px; height: 30px;
+    border-radius: 50%;
+    background: var(--plum);
+    color: #fff;
+    font-weight: 700;
+    font-size: 14px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .term { border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; background: var(--bg); }
+  .term h4 { margin: 0 0 2px; font-size: 15.5px; color: var(--teal); }
+  .term p { margin: 0; font-size: 15px; }
+  kbd {
+    font-family: inherit;
+    border: 1px solid var(--line);
+    border-bottom-width: 2px;
+    border-radius: 6px;
+    padding: 0 6px;
+    font-size: 13px;
+    background: var(--card);
+  }
+  .check { list-style: none; padding: 0; }
+  .check li { padding: 6px 0; border-bottom: 1px dashed var(--line); }
+  .check li::before { content: "☐ "; color: var(--plum); font-weight: 700; }
+  footer { color: var(--muted); font-size: 14px; text-align: center; margin-top: 30px; }
+  @media (max-width: 680px) {
+    nav.toc ol { columns: 1; }
+    .arch, .grid2 { grid-template-columns: 1fr; }
+    header.hero h1 { font-size: 24px; }
+    section.card { padding: 18px 16px; }
+  }
+</style>
+
+</head>
+<body>
+<div class="wrap">
+
+<header class="hero">
+  <h1>The AMMPS medicines feature: a complete step-by-step guide</h1>
+  <p>A learning guide to what we built in Cabinova in 9 steps: why, how, and where everything lives in the code.</p>
+</header>
+
+<nav class="toc">
+  <h2>Contents</h2>
+  <ol>
+    <li><a href="#overview">The big picture and architecture</a></li>
+    <li><a href="#s1">Step 1: The medicines database</a></li>
+    <li><a href="#s2">Step 2: Reading the Excel file</a></li>
+    <li><a href="#s3">Step 3: The safe import</a></li>
+    <li><a href="#s4">Step 4: The Super Admin page</a></li>
+    <li><a href="#s5">Step 5: Each cabinet's tables</a></li>
+    <li><a href="#s6">Step 6: The search API in clinic-api</a></li>
+    <li><a href="#s7">Step 7: Autocomplete in the ordonnance</a></li>
+    <li><a href="#s8">Step 8: The "Mes médicaments" page</a></li>
+    <li><a href="#s9">Step 9: Tests and documentation</a></li>
+    <li><a href="#journey">A search request, end to end</a></li>
+    <li><a href="#concepts">Concepts worth understanding</a></li>
+    <li><a href="#bugs">Bugs we found, and the lessons</a></li>
+    <li><a href="#deploy">Production checklist</a></li>
+  </ol>
+</nav>
+
+<!-- ============ OVERVIEW ============ -->
+<section class="card" id="overview">
+  <h2>The big picture and architecture</h2>
+  <p class="lead">The problem: when a doctor wrote an ordonnance, they typed every medicine name by hand. The goal: suggest medicines from the official Moroccan list published by the <b>AMMPS</b> (Agence Marocaine du Médicament et des Produits de Santé), about 9,950 medicines.</p>
+
+  <h3>The key architecture decision: three kinds of database</h3>
+  <p>Cabinova gives <b>each cabinet its own database</b> (database-per-tenant). But the medicines list is the same for everyone, so copying it 100 times makes no sense. We added a new <b>shared</b> database:</p>
+
+  <div class="arch">
+    <div class="box plum">
+      <h4>Platform DB</h4>
+      Cabinets, subscriptions, Super Admin users, audit log.<br>
+      <small>Already existed. In clinic-api it's called <code>CATALOG</code>.</small>
+    </div>
+    <div class="box teal">
+      <h4>Medicines DB (new)</h4>
+      The national AMMPS list plus the history of imports.<br>
+      <small>One for everyone. <b>Only admin-api</b> writes to it; cabinets only read.</small>
+    </div>
+    <div class="box amber">
+      <h4>Each cabinet's DB (tenant)</h4>
+      Patients, ordonnances… and now each doctor's settings and own medicines.<br>
+      <small>Linked to the medicines list by <code>ammps_id</code> only.</small>
+    </div>
+  </div>
+
+  <div class="why"><b>Why not link them with a foreign key?</b>
+    Because they really are <u>separate</u> databases, and Postgres can't link tables across two databases. So the link lives in the code (the service layer): we read from both databases, then merge the results in JavaScript by <code>ammps_id</code>.</div>
+
+  <h3>Why "medicines database" and not "catalog"?</h3>
+  <p>The original request called it a catalog, but in clinic-api that word already means the platform database (<code>CatalogService</code>). Using the same name would have caused dangerous confusion, so we chose <code>MEDICINES_DATABASE_URL</code> and <code>@cabinova/medicines-db</code>.</p>
+
+  <h3>The four golden rules</h3>
+  <ol>
+    <li>Doctors <b>never write</b> to the shared medicines database.</li>
+    <li>The import <b>never writes</b> to cabinet databases.</li>
+    <li>A medicine is never deleted: one that disappears from the file only becomes "inactive", because old ordonnances may still point to it.</li>
+    <li>A printed ordonnance line is a <b>snapshot</b>: it never changes, even if the list changes later.</li>
+  </ol>
+
+  <h3>Fitting the request to the real project</h3>
+  <table>
+    <tr><th>The original request assumed</th><th>What Cabinova actually has</th><th>What we did</th></tr>
+    <tr><td>Prisma</td><td>Drizzle + raw SQL on Neon</td><td>A new Drizzle package, built like <code>tenant-db</code></td></tr>
+    <tr><td><code>@nestjs/schedule</code> and a monthly scraper</td><td>The AMMPS file is available ready-made</td><td>An xlsx upload in Super Admin (your choice)</td></tr>
+    <tr><td>Ordonnances need a migration for snapshots</td><td>Lines are already stored as a JSON snapshot</td><td>Added two optional fields only, no data migration</td></tr>
+    <tr><td>Settings for the whole cabinet</td><td>Saved phrases and custom bilans are per doctor</td><td>Settings are <b>per doctor</b> (<code>practitioner_id</code>)</td></tr>
+  </table>
+</section>
+
+<!-- ============ STEP 1 ============ -->
+<section class="card" id="s1">
+  <span class="step-badge">Step 1</span>
+  <h2>Creating the shared medicines database</h2>
+  <p class="lead">We built a new package, <code>packages/medicines-db</code>, holding the table definitions (schema) and the migration files.</p>
+
+  <h3>First table: <code>medications</code></h3>
+  <table>
+    <tr><th>Column</th><th>Meaning</th></tr>
+    <tr><td><code>ammps_id</code></td><td>The medicine's AMMPS number: the primary key, and the bridge to the cabinets</td></tr>
+    <tr><td><code>name</code>, <code>substances</code></td><td>Brand name and active substance(s), several separated by <code>" // "</code></td></tr>
+    <tr><td><code>dosage</code>, <code>form</code>, <code>presentation</code>, <code>lab</code></td><td>Dosage, pharmaceutical form, box size, laboratory</td></tr>
+    <tr><td><code>status</code></td><td>The status exactly as the AMMPS writes it ("Commercialisé AO"…)</td></tr>
+    <tr><td><code>availability</code></td><td>A simplified 3-value category: <code>marketed</code>, <code>not_marketed</code>, <code>withdrawn</code> (withdrawn or suspended)</td></tr>
+    <tr><td><code>ppv</code>, <code>ph</code></td><td>Public price and hospital price in DH, type <code>numeric(10,2)</code></td></tr>
+    <tr><td><code>is_active</code></td><td>Is the medicine in the latest imported file?</td></tr>
+  </table>
+
+  <h3>Second table: <code>medication_imports</code></h3>
+  <p>One row per import: file name, who ran it, status (<code>running</code> / <code>success</code> / <code>failed</code>), how many medicines were added, updated and deactivated, and why it failed, if it did.</p>
+
+  <h3>Fast search: the <code>pg_trgm</code> extension</h3>
+  <p>We added <b>trigram</b> indexes on the name and the substances. That's what makes searching by part of a word very fast: typing "lipr" finds DOLIPRANE.</p>
+<pre><code>CREATE EXTENSION IF NOT EXISTS pg_trgm;
+CREATE INDEX "medications_name_trgm_idx"
+  ON "medications" USING gin ("name" gin_trgm_ops);</code></pre>
+
+  <h3>The connection in admin-api</h3>
+  <p>File <code>apps/admin-api/src/medicines/medicines-db.module.ts</code>:</p>
+  <ul>
+    <li><code>MEDICINES_DATABASE_URL</code> is <b>optional</b>: without it everything runs, and the page says the database isn't set up.</li>
+    <li>When admin-api starts, it applies the migrations automatically, exactly like it does for the cabinet databases.</li>
+  </ul>
+
+  <div class="ok"><b>Verified</b>An e2e test checks that the tables are created and that trigram search works.</div>
+</section>
+
+<!-- ============ STEP 2 ============ -->
+<section class="card" id="s2">
+  <span class="step-badge">Step 2</span>
+  <h2>Reading the AMMPS Excel file</h2>
+  <p class="lead">File <code>apps/admin-api/src/medicines/ammps-file.ts</code>: a "pure" function that takes the file's bytes and returns clean rows, with no database involved. That makes it very easy to test.</p>
+
+  <h3>How is an xlsx file read?</h3>
+  <p>An <code>.xlsx</code> file is actually a <b>ZIP file</b> of XML files. We used a small library, <code>fflate</code>, to unzip it, then read the XML ourselves:</p>
+  <ol>
+    <li><code>xl/workbook.xml</code> tells us the first sheet.</li>
+    <li><code>xl/worksheets/sheet1.xml</code> holds the cells, row by row.</li>
+    <li>Text can sit inside the cell itself (<code>inlineStr</code>, like your file) or in a shared list, <code>sharedStrings.xml</code> (when saved from Excel). Both are supported.</li>
+  </ol>
+
+  <h3>Cleaning rules</h3>
+  <ul>
+    <li><b>Columns are found by their header</b>, not their position, ignoring case, accents and "(DH)". Required columns: ID AMMPS, Nom commercial, Substance active.</li>
+    <li><b>Prices</b>: <code>parsePrice</code> understands every format:
+<pre><code>"4.303.00 DH"  → "4303.00"
+"10,70 DH"     → "10.70"
+"1.200,50 DH"  → "1200.50"
+"SANS PPV DH"  → null</code></pre></li>
+    <li><b>Status</b>: <code>availabilityOf</code> maps 10 different statuses to 3 categories (for example "Retiré" and "Suspendu" become <code>withdrawn</code>).</li>
+    <li><b>Bad lines</b> don't stop everything: a line without a valid ID is skipped, with its line number and the reason. A repeated ID keeps its first line.</li>
+  </ul>
+
+  <div class="warn"><b>Protection against "bombs"</b>Files over 20 MB are refused, and so is any file that would become huge once unzipped (a zip bomb).</div>
+
+  <div class="ok"><b>Result on your real file</b>9,947 medicines in 0.2 seconds, zero lines refused: 5,217 marketed, 3,861 not marketed, 869 withdrawn. 27 unit tests.</div>
+</section>
+
+<!-- ============ STEP 3 ============ -->
+<section class="card" id="s3">
+  <span class="step-badge">Step 3</span>
+  <h2>The import: all or nothing, with a safety rule</h2>
+  <p class="lead">File <code>apps/admin-api/src/medicines/ammps-import.ts</code>.</p>
+
+  <h3>How it works (inside one transaction)</h3>
+  <ol class="flow">
+    <li>Create a temporary table, <code>ammps_rows</code>, and copy the file into it in batches of 1,000 rows.</li>
+    <li><b>Add</b>: every medicine not yet in the list gets an <code>INSERT</code>.</li>
+    <li><b>Update</b>: only what really changed (using <code>IS DISTINCT FROM</code>), so "last updated" stays meaningful.</li>
+    <li><b>Deactivate</b>: every active medicine missing from the file gets <code>is_active = false</code>. Never a delete.</li>
+    <li>A deactivated medicine that comes back in a later file is reactivated.</li>
+  </ol>
+
+  <div class="why"><b>Why a transaction?</b>If an error happens halfway, Postgres cancels everything automatically (rollback). The list is either fully updated or stays exactly as it was. There's never a "half-imported" state.</div>
+
+  <h3>The safety rule (the most important part)</h3>
+  <p>Before changing anything, the file is refused if:</p>
+  <ul>
+    <li>it holds fewer than <b>80%</b> of the currently active medicines (a cut-off file? the AMMPS site down?);</li>
+    <li>more than <b>5%</b> of its lines can't be read (the file's format changed?).</li>
+  </ul>
+  <p>Without this rule, one incomplete file could deactivate thousands of medicines for every cabinet in a second.</p>
+
+  <h3>One import at a time</h3>
+  <p>We used a "partial unique index": the database itself refuses two rows with the status <code>running</code>.</p>
+<pre><code>CREATE UNIQUE INDEX medication_imports_one_running_idx
+  ON medication_imports (status) WHERE status = 'running';</code></pre>
+  <p>And if an import is cut off by a server restart, it's released automatically after 15 minutes.</p>
+
+  <h3>The command-line command</h3>
+<pre><code>pnpm --filter admin-api medicines:import ~/Downloads/medicaments-ammps.xlsx</code></pre>
+  <div class="ok"><b>On your file</b>First run: 9,947 added. Second run: 0 changes. Under two seconds each. 7 e2e tests cover every case.</div>
+</section>
+
+<!-- ============ STEP 4 ============ -->
+<section class="card" id="s4">
+  <span class="step-badge">Step 4</span>
+  <h2>The "Médicaments" page in Super Admin</h2>
+  <p class="lead">The backend is in <code>apps/admin-api/src/medicines/</code> and the page in <code>apps/admin-web/src/app/(dashboard)/medicines/</code>.</p>
+
+  <h3>The API</h3>
+  <table>
+    <tr><th>Route</th><th>What it does</th><th>Permission</th></tr>
+    <tr><td><code>GET /medicines/overview</code></td><td>Counts and the last import</td><td><code>medicines:read</code></td></tr>
+    <tr><td><code>GET /medicines</code></td><td>The list, with search and filters, 25 per page</td><td><code>medicines:read</code></td></tr>
+    <tr><td><code>GET /medicines/imports</code></td><td>Import history</td><td><code>medicines:read</code></td></tr>
+    <tr><td><code>POST /medicines/imports</code></td><td>Upload an xlsx file</td><td><code>medicines:write</code></td></tr>
+  </table>
+  <p>The upload uses NestJS's <code>FileInterceptor</code> (the multer library). Every import, successful or refused, is written to the audit log.</p>
+
+  <h3>The page</h3>
+  <ul>
+    <li>4 cards: active, marketed, not marketed, withdrawn.</li>
+    <li>The list, with search and status tabs.</li>
+    <li>The import history on the side.</li>
+    <li>An "Importer la liste AMMPS" dialog: drag and drop the file, then see the result or why it was refused.</li>
+  </ul>
+
+  <div class="warn"><b>New permissions</b>We added <code>medicines:read</code> and <code>medicines:write</code>. Run <code>pnpm --filter admin-api db:seed</code> once so the Super Admin gets them.</div>
+</section>
+
+<!-- ============ STEP 5 ============ -->
+<section class="card" id="s5">
+  <span class="step-badge">Step 5</span>
+  <h2>Each cabinet's tables: the doctor's settings</h2>
+  <p class="lead">Migration <code>0041_medication_overrides</code> in <code>packages/tenant-db</code>.</p>
+
+  <h3>The <code>medication_overrides</code> table</h3>
+  <p>The doctor's own version of an AMMPS medicine:</p>
+  <ul>
+    <li><code>custom_name</code>, <code>custom_dosage</code>: their own name and dosage ("Doliprane" instead of "DOLIPRANE"). <b>An empty field means "as the AMMPS says".</b></li>
+    <li><code>default_posology</code>, <code>default_duration</code>: the usual posology and duration, filled in automatically.</li>
+    <li><code>is_favorite</code>, <code>is_hidden</code>: favorite, or hidden from suggestions.</li>
+    <li><code>base_name</code>, <code>base_dosage</code>: the AMMPS name and dosage <b>at the moment of saving</b>. The clever part: if the AMMPS changes the name later, we compare and know there's an update the doctor should see.</li>
+  </ul>
+
+  <h3>The <code>custom_medications</code> table</h3>
+  <p>Medicines that aren't in the list (magistral preparations, imported products). One doctor can't add the same name and dosage twice.</p>
+
+  <h3>An ordonnance line</h3>
+<pre><code>type PrescriptionItem = {
+  medication: string;        // the printed text — never changes
+  posology: string | null;
+  duration: string | null;
+  ammpsId?: number | null;            // new: where it was picked from
+  customMedicationId?: string | null; // new
+};</code></pre>
+  <div class="why"><b>Why no data migration?</b>Lines are already stored as JSON (<code>jsonb</code>). We only added two optional fields. Old ordonnances stay exactly as they were.</div>
+</section>
+
+<!-- ============ STEP 6 ============ -->
+<section class="card" id="s6">
+  <span class="step-badge">Step 6</span>
+  <h2>The search API in clinic-api</h2>
+  <p class="lead">Files in <code>apps/clinic-api/src/medications/</code>.</p>
+
+  <h3>A read-only connection</h3>
+  <p>In <code>database/medicines.module.ts</code>, every new connection runs:</p>
+<pre><code>set default_transaction_read_only = on</code></pre>
+  <p>Even if clinic-api were given a URL with write rights by mistake, it couldn't change the list. A test confirms it.</p>
+
+  <h3>The merge logic: <code>merge.ts</code> (pure functions)</h3>
+  <ul>
+    <li><b>Grouping boxes</b>: the AMMPS lists each box size as a separate row (Amlor 10 mg appears 3 times). We group by (name, dosage, form) and pick the cheapest marketed box to stand for the group.</li>
+    <li><b>Applying overrides</b>: the doctor's name wins, and hidden medicines are dropped.</li>
+    <li><b>Never suggested</b>: withdrawn or inactive medicines.</li>
+    <li><b>Order</b>: favorites first, then names starting with what was typed, then a word in the name, then the substance, then marketed before not marketed, then alphabetical.</li>
+    <li><b>"Updated by the AMMPS"</b>: only when the AMMPS changed something the doctor had renamed.</li>
+  </ul>
+
+  <h3>Routes</h3>
+  <table>
+    <tr><th>Route</th><th>What it does</th></tr>
+    <tr><td><code>GET /medications/search?q=</code></td><td>Search (from 2 letters)</td></tr>
+    <tr><td><code>GET /medications/favorites</code></td><td>Favorites</td></tr>
+    <tr><td><code>GET /medications/overrides</code></td><td>All settings, with the AMMPS values beside them</td></tr>
+    <tr><td><code>PUT/DELETE /medications/ammps/:id/override</code></td><td>Save a setting / go back to the AMMPS values</td></tr>
+    <tr><td><code>POST …/override/accept-ammps</code></td><td>Accept the AMMPS's new value</td></tr>
+    <tr><td><code>/medications/custom</code></td><td>Add, edit, delete own medicines</td></tr>
+    <tr><td><code>POST /medications/check-renewal</code></td><td>Before renewing an old ordonnance: what has been withdrawn since?</td></tr>
+  </table>
+  <div class="ok"><b>Verified</b>11, then 14, unit tests for the merge rules, and 9 e2e tests in a test cabinet with two doctors and a secretary.</div>
+</section>
+
+<!-- ============ STEP 7 ============ -->
+<section class="card" id="s7">
+  <span class="step-badge">Step 7</span>
+  <h2>Autocomplete inside the ordonnance</h2>
+  <p class="lead"><code>medication-input.tsx</code> (the field) and <code>prescription-editor.tsx</code> (the editor) in clinic-web.</p>
+
+  <h3>What the doctor sees while typing</h3>
+  <ol>
+    <li>⭐ Favorites first, with their usual posology in italics.</li>
+    <li>AMMPS medicines: name and dosage, form, substance, number of boxes, lowest price.</li>
+    <li>Their own medicines (tagged "Perso").</li>
+    <li>"Déjà prescrits": what they wrote before.</li>
+    <li>"Ajouter « … » à mes médicaments" for anything typed.</li>
+  </ol>
+  <p>Navigate with <kbd>↑</kbd> <kbd>↓</kbd> <kbd>Enter</kbd> <kbd>Esc</kbd>. After picking: the line fills in, the usual posology is added, and the cursor moves to the posology field.</p>
+
+  <h3>Techniques worth knowing</h3>
+  <ul>
+    <li><b>200 ms debounce</b>: no request on every keystroke, only once the doctor pauses.</li>
+    <li><b>React Query</b>: caches results (<code>staleTime</code> of 60 seconds), and <code>keepPreviousData</code> keeps the old list visible while loading, so it doesn't flicker.</li>
+    <li><b>Two buttons on a picked line</b>: ⭐ favorite, and 🔖 "keep this posology as the usual one".</li>
+    <li><b>Renewal</b>: before copying an old ordonnance we call <code>check-renewal</code>, and withdrawn lines get an amber label.</li>
+    <li><b>Editing the text by hand</b> breaks the link: the line becomes free text.</li>
+  </ul>
+</section>
+
+<!-- ============ STEP 8 ============ -->
+<section class="card" id="s8">
+  <span class="step-badge">Step 8</span>
+  <h2>The "Mes médicaments" page in Settings</h2>
+  <p class="lead"><code>apps/clinic-web/src/app/(clinic)/settings/medications/</code>, for doctors only (secretaries don't see the section).</p>
+  <ul>
+    <li><b>AMMPS updates to review</b>: "your label / the old value crossed out → the new one", with two buttons: "Prendre la nouvelle valeur" or "Garder la mienne".</li>
+    <li><b>Customized AMMPS medicines</b>: the star, edit, and back to the AMMPS values (which needs a second click before erasing anything).</li>
+    <li><b>"Personnaliser un médicament"</b>: search the list, then a form (label, dosage, usual posology, duration, favorite, hidden).</li>
+    <li><b>Medicines outside the list</b>: add, edit, favorite, delete.</li>
+  </ul>
+
+  <h3>An Arabic lesson: isolating Latin text (bidi)</h3>
+  <p>In the Arabic interface (right to left), "Crème magistrale urée 10 %" came out as "% 10 Crème…". The cause: the Unicode bidirectional algorithm (Bidi) reorders neutral characters such as % and digits. The fix: wrap names in a <code>&lt;bdi&gt;</code> element, which isolates the text's direction:</p>
+<pre><code>&lt;bdi&gt;{nameOf(c.name, c.dosage)}&lt;/bdi&gt;</code></pre>
+</section>
+
+<!-- ============ STEP 9 ============ -->
+<section class="card" id="s9">
+  <span class="step-badge">Step 9</span>
+  <h2>Final checks and documentation</h2>
+  <table>
+    <tr><th>Check</th><th>Result</th></tr>
+    <tr><td>Typecheck, all 5 apps</td><td>✅</td></tr>
+    <tr><td>Lint</td><td>✅ no warnings</td></tr>
+    <tr><td>Unit tests</td><td>✅ clinic-api 66, admin-api 93</td></tr>
+    <tr><td>Full e2e suite</td><td>✅ 26 files, 160 tests</td></tr>
+    <tr><td>In the browser</td><td>✅ on an isolated test setup with your real list</td></tr>
+  </table>
+  <p>We also updated the README: the Features section, a "Medicines database (optional)" section with the SQL for a read-only role, and the environment variables.</p>
+
+  <div class="note"><b>How did we test in the browser without touching your work?</b>
+    We ran a separate setup: an API on ports 4400/4500 and a temporary copy of the web app on 3400/3500, against the Docker test databases and the test account from the e2e config. Your servers on 3000/3002/4000/4100 were never touched, and everything temporary was removed afterwards.</div>
+</section>
+
+<!-- ============ JOURNEY ============ -->
+<section class="card" id="journey">
+  <h2>A search request, end to end</h2>
+  <p class="lead">The doctor types "doliprane 1g" in the ordonnance. What happens?</p>
+  <ol class="flow">
+    <li>The field waits 200 ms after the last keystroke (debounce), then sends <code>GET /api/medications/search?q=doliprane 1g</code>.</li>
+    <li>Next.js passes the request to clinic-api, which finds the cabinet from the subdomain and opens its database.</li>
+    <li>It checks that the user is a doctor (<code>assertMedical</code>).</li>
+    <li>It splits the text into words: <code>["doliprane", "1g"]</code>. Each word must appear in the name, the substance, the form or the dosage (the dosage is compared without spaces, so "1g" matches "1 G").</li>
+    <li>From the <b>cabinet database</b>: the doctor's own medicines, plus overrides matching their own names.</li>
+    <li>From the <b>medicines database</b> (read only): matching active, non-withdrawn medicines, then all their boxes.</li>
+    <li>From the <b>cabinet database</b> again: the doctor's overrides for those medicines.</li>
+    <li><code>mergeCatalog</code> groups the boxes and applies the overrides, then <code>rankSuggestions</code> sorts and keeps 20.</li>
+    <li>The interface shows the list. Once a medicine is picked, the line is saved with its <code>ammpsId</code> automatically after 800 ms.</li>
+  </ol>
+</section>
+
+<!-- ============ CONCEPTS ============ -->
+<section class="card" id="concepts">
+  <h2>Concepts worth understanding</h2>
+  <div class="grid2">
+    <div class="term"><h4>Database per tenant</h4><p>Each cabinet has its own database: medical data is fully isolated.</p></div>
+    <div class="term"><h4>Snapshot</h4><p>We store the text as it was printed. Later changes never touch the past, which matters legally for ordonnances.</p></div>
+    <div class="term"><h4>Override</h4><p>A layer on top of the official data: an empty field means the official value.</p></div>
+    <div class="term"><h4>Soft delete (is_active)</h4><p>Deactivate instead of deleting, so old references never break.</p></div>
+    <div class="term"><h4>Transaction</h4><p>A group of operations that all succeed or are all cancelled.</p></div>
+    <div class="term"><h4>Staging table</h4><p>A temporary table we copy the file into, then compare with fast set-based SQL.</p></div>
+    <div class="term"><h4>Partial unique index</h4><p>A uniqueness rule on some rows only (here: those with status running).</p></div>
+    <div class="term"><h4>pg_trgm</h4><p>Splits text into 3-letter pieces to make searching by part of a word fast.</p></div>
+    <div class="term"><h4>Pure function</h4><p>No side effects: the same input always gives the same output. Easy to test.</p></div>
+    <div class="term"><h4>Read-only session</h4><p>A second layer of protection on top of the role's permissions.</p></div>
+    <div class="term"><h4>Debounce</h4><p>Waiting for typing to pause before sending a request.</p></div>
+    <div class="term"><h4>Bidi isolation</h4><p><code>&lt;bdi&gt;</code> keeps Latin text from being scrambled inside an Arabic page.</p></div>
+  </div>
+</section>
+
+<!-- ============ BUGS ============ -->
+<section class="card" id="bugs">
+  <h2>Bugs we found, and the lessons</h2>
+  <p class="lead">All of them showed up only when trying things for real in the browser, even though the automated tests were passing.</p>
+  <table>
+    <tr><th>The problem</th><th>The cause</th><th>The fix</th></tr>
+    <tr><td>"doliprane 1" found nothing</td><td>The dosage is a separate column, and the search compared the whole phrase</td><td>Word-by-word search (<code>wordsMatch</code>)</td></tr>
+    <tr><td>Fast typing after a pick went into the medicine field</td><td>Focus moved one frame late (<code>requestAnimationFrame</code>)</td><td>Move the focus immediately</td></tr>
+    <tr><td>The renewal warning didn't appear</td><td>The editor sent fields the API refuses (a silent 400 error)</td><td>Send only the fields it needs</td></tr>
+    <tr><td>Names scrambled in Arabic</td><td>The Bidi algorithm</td><td><code>&lt;bdi&gt;</code></td></tr>
+    <tr><td>Connection to a deleted database after a Docker restart</td><td>Test data lives in tmpfs and disappears</td><td>The logs now show the real cause (<code>err.cause</code>)</td></tr>
+  </table>
+  <div class="why"><b>The lesson</b>Automated tests check what we <u>expect</u>. Trying it for real reveals what we <u>didn't expect</u>, like how doctors actually type: "brand + dosage".</div>
+</section>
+
+<!-- ============ DEPLOY ============ -->
+<section class="card" id="deploy">
+  <h2>Production checklist</h2>
+  <ul class="check">
+    <li>Create a new Neon database for the medicines, and put its owner URL in <code>apps/admin-api/.env</code> as <code>MEDICINES_DATABASE_URL</code>.</li>
+    <li>Create a read-only role (SQL in the README) and put its URL in <code>apps/clinic-api/.env</code>.</li>
+    <li>Run <code>pnpm --filter admin-api db:seed</code> for the new permissions.</li>
+    <li>Fill the list: <code>pnpm --filter admin-api medicines:import &lt;file.xlsx&gt;</code>.</li>
+    <li>Apply migration <code>0041</code> to the cabinets with <b>Migrer</b> (together with the pending 0030–0040).</li>
+    <li>Then, every month: upload the new file from Super Admin › Médicaments.</li>
+  </ul>
+  <div class="warn"><b>Not verified yet</b>The real Neon database (we tested on a local Postgres, where a search took about 9 ms). And "doli" is sorted alphabetically (DOLI PEDIATRIQUE before DOLIPRANE) because there's no popularity data; favorites solve that.</div>
+</section>
+
+<footer>Cabinova · AMMPS medicines guide · 16 November 2026</footer>
+</div>
+
+</body>
+</html>

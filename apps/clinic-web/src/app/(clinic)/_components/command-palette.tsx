@@ -1,5 +1,6 @@
 "use client";
 
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 import { useTheme } from "next-themes";
 import { usePathname, useRouter } from "next/navigation";
@@ -13,8 +14,10 @@ import {
 	IconMonitor,
 	IconMoon,
 	IconSearch,
+	IconSpinner,
 	IconSun,
 	IconSupport,
+	IconUsers,
 } from "@/components/icons";
 import { Kbd, SHORTCUTS_HELP_EVENT, useModifierLabel } from "@/components/keyboard-shortcuts";
 import {
@@ -27,7 +30,10 @@ import {
 	CommandList,
 	CommandShortcut,
 } from "@/components/ui/command";
+import { NoShowBadge } from "@/components/no-show-badge";
+import { useDebouncedCallback } from "@/hooks/use-debounced-callback";
 import { api } from "@/lib/api-client";
+import { formatFileNumber, formatPhone, fullName, patientHref, type PatientsPage } from "@/lib/patients";
 import type { ClinicSession } from "@/lib/session";
 import { spaceLabel, switchSpace } from "@/lib/spaces";
 import { allNavItems, visibleNavItems } from "./nav";
@@ -43,9 +49,9 @@ const fold = (text: string) =>
 		.toLowerCase();
 
 /**
- * Command palette of the clinic app (⌘K / Ctrl+K or "/"): jump to a page
- * or run an action — theme, product tour, shortcuts, support, sign out.
- * Patient and appointment search join it with the agenda and patients.
+ * Command palette of the clinic app (⌘K / Ctrl+K or "/"): find a patient
+ * (name, phone, CIN or file number, from 2 characters), jump to a page or
+ * run an action — theme, product tour, shortcuts, support, sign out.
  */
 export function CommandPalette({ spaces, role }: { spaces: ClinicSession["spaces"]; role: string }) {
 	const router = useRouter();
@@ -54,6 +60,9 @@ export function CommandPalette({ spaces, role }: { spaces: ClinicSession["spaces
 	const modifier = useModifierLabel();
 	const [open, setOpen] = useState(false);
 	const [input, setInput] = useState("");
+	// The patient search follows the input a moment later (server-side).
+	const [search, setSearch] = useState("");
+	const setSearchDebounced = useDebouncedCallback(setSearch, 250);
 	const t = useTranslations("common.palette");
 	const tn = useTranslations("nav.items");
 	const tc = useTranslations("common");
@@ -114,6 +123,15 @@ export function CommandPalette({ spaces, role }: { spaces: ClinicSession["spaces
 		{ id: "support", label: tc("support"), icon: IconSupport, keywords: "aide question problème", run: () => pick(() => (window.location.href = "mailto:support@cabinova.ma")) },
 		{ id: "sign-out", label: t("signOut"), icon: IconLogout, keywords: "déconnexion quitter", run: () => pick(signOut) },
 	];
+	const query = search.trim();
+	const searching = open && query.length >= 2;
+	const { data: found, isFetching } = useQuery({
+		queryKey: ["palette-patients", query],
+		queryFn: () => api<PatientsPage>(`/patients?${new URLSearchParams({ perPage: "6", search: query })}`),
+		enabled: searching,
+		placeholderData: keepPreviousData,
+	});
+	const patients = searching && input.trim().length >= 2 ? (found?.data ?? []) : [];
 	const term = fold(input.trim());
 	const pages = visibleNavItems(allNavItems, role).filter((item) => !term || fold(tn(item.key)).includes(term));
 	const visibleActions = actions.filter((a) => !term || fold(`${a.label} ${a.keywords ?? ""}`).includes(term));
@@ -137,16 +155,51 @@ export function CommandPalette({ spaces, role }: { spaces: ClinicSession["spaces
 				open={open}
 				onOpenChange={(next) => {
 					setOpen(next);
-					if (!next) setInput("");
+					if (!next) {
+						setInput("");
+						setSearch("");
+					}
 				}}
 				title={t("title")}
 				description={t("description")}
 				className="sm:max-w-lg"
 			>
 				<Command shouldFilter={false}>
-					<CommandInput value={input} onValueChange={setInput} placeholder={t("placeholder")}/>
+					<CommandInput
+						value={input}
+						onValueChange={(v) => {
+							setInput(v);
+							setSearchDebounced(v);
+						}}
+						placeholder={t("placeholder")}
+					/>
 					<CommandList className="max-h-[min(60vh,420px)]">
-						<CommandEmpty>{t("empty", { term: input.trim() })}</CommandEmpty>
+						<CommandEmpty>
+							{searching && isFetching ? (
+								<IconSpinner className="text-muted-foreground mx-auto size-4 animate-spin" />
+							) : (
+								t("empty", { term: input.trim() })
+							)}
+						</CommandEmpty>
+						{patients.length > 0 && (
+							<CommandGroup heading={t("patients")}>
+								{patients.map((p) => (
+									<CommandItem key={p.id} value={`patient-${p.id}`} onSelect={() => go(patientHref(p.id))}>
+										<IconUsers className="text-muted-foreground" />
+										<span className="flex min-w-0 flex-1 items-center gap-2">
+											<span dir="auto" className="truncate font-medium">
+												{fullName(p)}
+											</span>
+											<NoShowBadge count={p.noShows} />
+										</span>
+										<span className="text-muted-foreground flex shrink-0 items-center gap-2 text-xs tabular-nums">
+											{p.phone && <span dir="ltr">{formatPhone(p.phone)}</span>}
+											<span>{formatFileNumber(p.fileNumber)}</span>
+										</span>
+									</CommandItem>
+								))}
+							</CommandGroup>
+						)}
 						{pages.length > 0 && (
 							<CommandGroup heading={t("pages")}>
 								{pages.map((item) => (

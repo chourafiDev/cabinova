@@ -47,8 +47,6 @@ export function PermanentNote({ patient }: { patient: PatientFile }) {
 				method: "PUT",
 				body: JSON.stringify({
 					bloodGroup: profile?.bloodGroup ?? null,
-					allergies: profile?.allergies ?? null,
-					chronicConditions: profile?.chronicConditions ?? null,
 					medicalHistory: profile?.medicalHistory ?? null,
 					surgicalHistory: profile?.surgicalHistory ?? null,
 					familyHistory: profile?.familyHistory ?? null,

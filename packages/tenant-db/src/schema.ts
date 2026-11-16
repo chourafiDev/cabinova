@@ -281,8 +281,6 @@ export const medicalProfiles = pgTable('medical_profiles', {
     .primaryKey()
     .references(() => patients.id, { onDelete: 'cascade' }),
   bloodGroup: bloodGroup('blood_group'),
-  allergies: text('allergies'),
-  chronicConditions: text('chronic_conditions'),
   medicalHistory: text('medical_history'),
   surgicalHistory: text('surgical_history'),
   familyHistory: text('family_history'),
@@ -293,6 +291,8 @@ export const medicalProfiles = pgTable('medical_profiles', {
   riskFactors: text('risk_factors'),
   /** Shown at the top of every visit (e.g. "malentendant, parler fort"). */
   permanentNote: text('permanent_note'),
+  /** Antécédents as one rich-text note (HTML), edited in the dossier's Interrogatoire tab. */
+  antecedents: text('antecedents'),
   updatedBy: uuid('updated_by').references(() => users.id, {
     onDelete: 'set null',
   }),
@@ -429,6 +429,39 @@ export const appointments = pgTable(
  * One per appointment, saved as the doctor types.
  */
 /**
+ * Bilan biologique: one result per row (name and unit as chosen from the
+ * catalog, the value as written, the day of the analysis), kept on the
+ * patient across visits. Doctors only.
+ */
+export const labResults = pgTable(
+  'lab_results',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    patientId: uuid('patient_id')
+      .notNull()
+      .references(() => patients.id, { onDelete: 'cascade' }),
+    /** The visit it was entered at, if any. */
+    appointmentId: uuid('appointment_id').references(() => appointments.id, {
+      onDelete: 'set null',
+    }),
+    /** "Glycémie à jeun", copied from the catalog (it may change; this stays). */
+    name: text('name').notNull(),
+    /** "g/L"; null for a qualitative result. */
+    unit: text('unit'),
+    /** As written: "1,05", "Négatif", "< 0,5". */
+    value: text('value').notNull(),
+    takenOn: date('taken_on').notNull(),
+    createdBy: uuid('created_by').references(() => users.id, {
+      onDelete: 'set null',
+    }),
+    createdAt: timestamp('created_at', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [index('lab_results_patient_idx').on(t.patientId, t.takenOn)],
+);
+
+/**
  * A doctor's saved phrases ("Examen cardio-pulmonaire normal…"), inserted
  * in one click into a consultation field. Each doctor has their own.
  */
@@ -445,6 +478,72 @@ export const phrases = pgTable(
     ...timestamps,
   },
   (t) => [index('phrases_user_field_idx').on(t.userId, t.field)],
+);
+
+/**
+ * A doctor's own take on an AMMPS medicine (the shared medicines database,
+ * linked by its AMMPS id): their wording, their usual posology, a favorite,
+ * or hidden from their suggestions. Empty fields mean "as the AMMPS says".
+ * `base_*` keep the AMMPS name and dosage as they were when the doctor last
+ * saved, so a later AMMPS change can be shown to them. Each doctor has their own.
+ */
+export const medicationOverrides = pgTable(
+  'medication_overrides',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    practitionerId: uuid('practitioner_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    ammpsId: integer('ammps_id').notNull(),
+    /** "Doliprane" instead of "DOLIPRANE". */
+    customName: text('custom_name'),
+    customDosage: text('custom_dosage'),
+    /** "1 cp matin et soir", filled in when the medicine is picked. */
+    defaultPosology: text('default_posology'),
+    /** "7 jours", "QSP 1 mois". */
+    defaultDuration: text('default_duration'),
+    isFavorite: boolean('is_favorite').notNull().default(false),
+    isHidden: boolean('is_hidden').notNull().default(false),
+    baseName: text('base_name'),
+    baseDosage: text('base_dosage'),
+    ...timestamps,
+  },
+  (t) => [
+    uniqueIndex('medication_overrides_practitioner_ammps_idx').on(t.practitionerId, t.ammpsId),
+  ],
+);
+
+/**
+ * Medicines outside the AMMPS list that a doctor prescribes (magistral
+ * preparations, imported products…), suggested alongside the AMMPS ones.
+ * Each doctor has their own.
+ */
+export const customMedications = pgTable(
+  'custom_medications',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    practitionerId: uuid('practitioner_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    name: text('name').notNull(),
+    /** Substance(s) active(s). */
+    substances: text('substances'),
+    dosage: text('dosage'),
+    form: text('form'),
+    presentation: text('presentation'),
+    defaultPosology: text('default_posology'),
+    defaultDuration: text('default_duration'),
+    isFavorite: boolean('is_favorite').notNull().default(false),
+    ...timestamps,
+  },
+  (t) => [
+    // The same medicine twice for one doctor is a mistake (name and dosage, case aside).
+    uniqueIndex('custom_medications_practitioner_name_idx').on(
+      t.practitionerId,
+      sql`lower(${t.name})`,
+      sql`lower(coalesce(${t.dosage}, ''))`,
+    ),
+  ],
 );
 
 /** Why the cabinet or a doctor isn't working (Congés et absences). */
@@ -529,7 +628,12 @@ export const consultations = pgTable(
   (t) => [index('consultations_patient_idx').on(t.patientId)],
 );
 
-/** One line of an ordonnance, as the doctor wrote it. */
+/**
+ * One line of an ordonnance, as the doctor wrote it: a snapshot that never
+ * changes once saved, whatever happens to the AMMPS list or the doctor's
+ * own wording later. The ids only say where it was picked from (to warn
+ * when renewing a medicine since withdrawn); older lines have none.
+ */
 export type PrescriptionItem = {
   /** "Amlodipine 5 mg, comprimé" */
   medication: string;
@@ -537,6 +641,10 @@ export type PrescriptionItem = {
   posology: string | null;
   /** "3 mois", "QSP 1 mois" */
   duration: string | null;
+  /** Picked from the AMMPS list (medicines database, no key across databases). */
+  ammpsId?: number | null;
+  /** Picked from the doctor's own medicines (custom_medications.id). */
+  customMedicationId?: string | null;
 };
 
 /**
@@ -560,6 +668,12 @@ export const prescriptions = pgTable(
     items: jsonb('items').$type<PrescriptionItem[]>().notNull().default([]),
     /** Advice printed under the lines ("à prendre au cours des repas"). */
     notes: text('notes'),
+    /**
+     * The whole ordonnance as the doctor reworded it in the editor
+     * (sanitized HTML): printed instead of the lines and advice. Null while
+     * they haven't touched it — the lines are printed as they are.
+     */
+    body: text('body'),
     ...timestamps,
   },
   (t) => [index('prescriptions_patient_idx').on(t.patientId)],
@@ -631,6 +745,77 @@ export const certificateModels = pgTable(
   ],
 );
 
+/**
+ * Bilan biologique: the analyses the doctor asks the patient to have done,
+ * as printed (sanitized HTML from the editor). Saved, reprinted, taken up
+ * again at a later visit.
+ */
+export const labRequests = pgTable(
+  'lab_requests',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    patientId: uuid('patient_id')
+      .notNull()
+      .references(() => patients.id, { onDelete: 'restrict' }),
+    /** The visit it was written at, if any. */
+    appointmentId: uuid('appointment_id').references(() => appointments.id, {
+      onDelete: 'set null',
+    }),
+    practitionerId: uuid('practitioner_id').references(() => users.id, {
+      onDelete: 'set null',
+    }),
+    body: text('body').notNull(),
+    ...timestamps,
+  },
+  (t) => [index('lab_requests_patient_idx').on(t.patientId)],
+);
+
+/** A letter (to a colleague, a hospital…) or a compte rendu of the consultation. */
+export const letterKind = pgEnum('letter_kind', ['letter', 'report']);
+
+/**
+ * Lettres and comptes rendus: what the doctor writes about the patient, as
+ * printed (sanitized HTML from the editor). Saved, corrected, reprinted.
+ */
+export const letters = pgTable(
+  'letters',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    patientId: uuid('patient_id')
+      .notNull()
+      .references(() => patients.id, { onDelete: 'restrict' }),
+    /** The visit it was written at, if any. */
+    appointmentId: uuid('appointment_id').references(() => appointments.id, {
+      onDelete: 'set null',
+    }),
+    practitionerId: uuid('practitioner_id').references(() => users.id, {
+      onDelete: 'set null',
+    }),
+    kind: letterKind('kind').notNull().default('letter'),
+    body: text('body').notNull(),
+    ...timestamps,
+  },
+  (t) => [index('letters_patient_idx').on(t.patientId, t.kind)],
+);
+
+/** Each doctor's own bilans ("Bilan prénatal du 1er trimestre"…), offered with Cabinova's. */
+export const labRequestModels = pgTable(
+  'lab_request_models',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    practitionerId: uuid('practitioner_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    name: text('name').notNull(),
+    /** The analyses it asks for (sanitized HTML). */
+    body: text('body').notNull(),
+    ...timestamps,
+  },
+  (t) => [
+    uniqueIndex('lab_request_models_name_idx').on(t.practitionerId, sql`lower(${t.name})`),
+  ],
+);
+
 /** What a patient's document is, to find it again in the list. */
 export const documentCategory = pgEnum('document_category', [
   'lab',
@@ -677,6 +862,8 @@ export const acts = pgTable(
     name: text('name').notNull(),
     /** Short code ("CS", "CTR", "BL+CG"), shown on the agenda and searched by. */
     abbreviation: text('abbreviation'),
+    /** Its colour on the agenda (one of ACT_COLORS, or a custom "#rrggbb"): appointments whose motif is this act wear it. */
+    color: text('color').notNull().default('blue'),
     price: integer('price').notNull(),
     /** Archived acts stay on past visits but are no longer offered. */
     active: boolean('active').notNull().default(true),
@@ -684,6 +871,10 @@ export const acts = pgTable(
   },
   (t) => [
     check('acts_price_positive', sql`${t.price} >= 0`),
+    check(
+      'acts_color_known',
+      sql`${t.color} in ('blue', 'green', 'purple', 'orange', 'amber', 'yellow', 'red', 'brand', 'gray') or ${t.color} ~ '^#[0-9a-f]{6}$'`,
+    ),
     uniqueIndex('acts_name_idx').on(sql`lower(${t.name})`),
   ],
 );
@@ -717,6 +908,8 @@ export const charges = pgTable(
      * received, so never revenue). The acts' sum is total + discount.
      */
     discount: integer('discount').notNull().default(0),
+    /** The visit goes to the patient's mutuelle (the desk prepares the feuille de soins). */
+    mutuelle: boolean('mutuelle').notNull().default(false),
     createdBy: uuid('created_by').references(() => users.id, {
       onDelete: 'set null',
     }),

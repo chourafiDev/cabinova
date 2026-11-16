@@ -35,6 +35,10 @@
     "activity": {
       "label": "Journal d’activité",
       "hint": "Qui a fait quoi"
+    },
+    "medications": {
+      "label": "Mes médicaments",
+      "hint": "Favoris, posologies, hors AMMPS"
     }
   },
   "common": {
@@ -91,7 +95,24 @@
     "deleteLabel": "Supprimer {name}",
     "confirmDelete": "Supprimer ?",
     "deletedDone": "« {name} » supprimé",
-    "keptArchived": "« {name} » a déjà été encaissé : il est archivé pour garder l’historique."
+    "keptArchived": "« {name} » a déjà été encaissé : il est archivé pour garder l’historique.",
+    "colorTitle": "Couleur dans l’agenda",
+    "colorHint": "Les rendez-vous de cet acte prennent cette couleur dans l’agenda.",
+    "colorLabel": "Couleur : {color}",
+    "colorAuto": "Couleur choisie automatiquement",
+    "colors": {
+      "blue": "Bleu",
+      "green": "Vert",
+      "purple": "Violet",
+      "orange": "Orange",
+      "amber": "Ambre",
+      "yellow": "Jaune",
+      "red": "Rouge",
+      "brand": "Prune",
+      "gray": "Gris",
+      "custom": "Personnalisée"
+    },
+    "colorCode": "Code"
   },
   "activity": {
     "title": "Journal d’activité",
@@ -177,7 +198,13 @@
       "patient_vitals": "a enregistré les constantes de",
       "patient_vitals_delete": "a supprimé une mesure des constantes de",
       "document_upload": "a ajouté un document au dossier de",
-      "document_delete": "a supprimé un document du dossier de"
+      "document_delete": "a supprimé un document du dossier de",
+      "patient_lab_result": "a ajouté un résultat au bilan de",
+      "patient_lab_result_delete": "a supprimé un résultat du bilan de",
+      "lab_request_create": "a rédigé un bilan biologique pour",
+      "lab_request_update": "a modifié un bilan biologique de",
+      "letter_create": "a rédigé une lettre ou un compte rendu pour",
+      "letter_update": "a modifié une lettre ou un compte rendu de"
     }
   },
   "cabinet": {
@@ -366,5 +393,91 @@
     "count": "{closed, plural, =0 {Aucun jour férié fermé} one {# jour férié fermé} other {# jours fériés fermés}} sur {total}",
     "hint": "Les rendez-vous déjà pris ces jours-là ne sont pas annulés.",
     "saved": "Jours fériés enregistrés"
+  },
+  "medications": {
+    "search": "Rechercher dans mes médicaments…",
+    "noMatch": "Aucun médicament ne correspond.",
+    "loadError": "Impossible de charger vos médicaments.",
+    "error": "Action impossible, réessayez.",
+    "saved": "Enregistré",
+    "edit": "Modifier",
+    "favorite": "Ajouter à mes favoris",
+    "unfavorite": "Retirer de mes favoris",
+    "favorited": "Ajouté à vos favoris",
+    "unfavorited": "Retiré de vos favoris",
+    "hidden": "Masqué",
+    "privacy": "Ces réglages sont les vôtres : les autres médecins du cabinet ne les voient pas. Les ordonnances déjà rédigées ne changent jamais.",
+    "updates": {
+      "title": "{count, plural, one {# mise à jour de l’AMMPS à vérifier} other {# mises à jour de l’AMMPS à vérifier}}",
+      "description": "L’AMMPS a changé le nom ou le dosage de médicaments que vous avez renommés.",
+      "yours": "Votre libellé :",
+      "ammpsBefore": "AMMPS :",
+      "accept": "Prendre la nouvelle valeur",
+      "keep": "Garder la mienne",
+      "accepted": "Nouvelle valeur de l’AMMPS reprise",
+      "kept": "Votre libellé est gardé"
+    },
+    "ammps": {
+      "title": "Médicaments de la liste AMMPS",
+      "description": "Votre libellé, votre posologie habituelle, vos favoris et les médicaments masqués de vos suggestions.",
+      "add": "Personnaliser un médicament",
+      "empty": "Aucun pour l’instant. Mettez une étoile depuis l’ordonnance, ou personnalisez un médicament ici.",
+      "officialName": "Nom AMMPS : {name}",
+      "removed": "Plus dans la liste",
+      "withdrawn": "Retiré du marché",
+      "updated": "Mis à jour par l’AMMPS",
+      "revert": "Revenir aux valeurs de l’AMMPS",
+      "confirmRevert": "Confirmer : effacer vos réglages pour ce médicament",
+      "reverted": "Valeurs de l’AMMPS reprises"
+    },
+    "custom": {
+      "title": "Médicaments hors liste AMMPS",
+      "description": "Préparations magistrales, produits importés… proposés dans vos ordonnances comme les autres.",
+      "add": "Ajouter",
+      "empty": "Aucun médicament hors liste. Vous pouvez aussi en ajouter depuis l’ordonnance.",
+      "created": "« {name} » ajouté à vos médicaments",
+      "deleted": "« {name} » supprimé",
+      "delete": "Supprimer {name}",
+      "confirmDelete": "Confirmer la suppression de {name}"
+    },
+    "picker": {
+      "title": "Personnaliser un médicament",
+      "description": "Cherchez-le dans la liste AMMPS par son nom, son dosage ou sa substance.",
+      "placeholder": "Doliprane 1g, amlodipine…",
+      "searching": "Recherche…",
+      "none": "Aucun médicament ne correspond.",
+      "unavailable": "La liste AMMPS n’est pas disponible pour le moment."
+    },
+    "override": {
+      "description": "Laissez un champ vide pour garder la valeur de l’AMMPS.",
+      "name": "Votre libellé",
+      "dosage": "Dosage",
+      "posology": "Posologie habituelle",
+      "posologyPlaceholder": "1 comprimé matin et soir",
+      "duration": "Durée habituelle",
+      "durationPlaceholder": "7 jours",
+      "favorite": "Favori",
+      "favoriteHint": "Proposé en premier dans vos ordonnances.",
+      "hidden": "Masquer de mes suggestions",
+      "hiddenHint": "Il n’apparaîtra plus quand vous tapez un nom.",
+      "cancel": "Annuler",
+      "save": "Enregistrer"
+    },
+    "customForm": {
+      "newTitle": "Nouveau médicament hors liste",
+      "editTitle": "Modifier le médicament",
+      "description": "Seul le nom est obligatoire.",
+      "name": "Nom",
+      "namePlaceholder": "Crème magistrale urée 10 %",
+      "dosage": "Dosage",
+      "form": "Forme",
+      "formPlaceholder": "Crème, sirop, gélule…",
+      "substances": "Substance(s) active(s)",
+      "posology": "Posologie habituelle",
+      "duration": "Durée habituelle",
+      "favorite": "Favori",
+      "cancel": "Annuler",
+      "save": "Enregistrer"
+    }
   }
 }

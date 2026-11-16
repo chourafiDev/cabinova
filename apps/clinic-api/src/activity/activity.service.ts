@@ -22,6 +22,8 @@ export type ActivityEntity =
   | 'session'
   | 'meeting'
   | 'certificate'
+  | 'lab_request'
+  | 'letter'
   | 'document';
 
 const PATIENT_NAME = `upper(p.last_name) || ' ' || p.first_name`;
@@ -41,6 +43,12 @@ const DESCRIBE: Record<ActivityEntity, string> = {
   certificate: `select ${PATIENT_NAME} as target
                   from certificates c join patients p on p.id = c.patient_id
                  where c.id = $1`,
+  lab_request: `select ${PATIENT_NAME} as target
+                  from lab_requests r join patients p on p.id = r.patient_id
+                 where r.id = $1`,
+  letter: `select ${PATIENT_NAME} as target
+             from letters l join patients p on p.id = l.patient_id
+            where l.id = $1`,
   document: `select ${PATIENT_NAME} as target
                from patient_documents d join patients p on p.id = d.patient_id
               where d.id = $1`,
@@ -54,7 +62,7 @@ const DESCRIBE: Record<ActivityEntity, string> = {
 
 /** The prefixes of each filter in the journal. */
 const CATEGORIES: Record<string, string[]> = {
-  patients: ['patient.', 'consultation.', 'prescription.', 'certificate.', 'document.'],
+  patients: ['patient.', 'consultation.', 'prescription.', 'certificate.', 'lab_request.', 'letter.', 'document.'],
   appointments: ['appointment.', 'closure.'],
   payments: ['payment.', 'cashier.', 'act.'],
   team: ['team.', 'meeting.'],

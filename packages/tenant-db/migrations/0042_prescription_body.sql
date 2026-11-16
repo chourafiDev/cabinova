@@ -1,0 +1,1 @@
+ALTER TABLE "prescriptions" ADD COLUMN "body" text;

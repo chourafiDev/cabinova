@@ -1,11 +1,12 @@
 import { useTranslations } from "next-intl";
 
-import { type AppIcon, IconCalendarRange, IconColumns, IconGrid, IconGridLarge, IconList, IconPlus } from "@/components/icons";
+import { type AppIcon, IconCalendarRange, IconClose, IconColumns, IconGrid, IconGridLarge, IconList, IconPlus } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 
 import { useCalendar } from "@/calendar/contexts/calendar-context";
 import { UserSelect } from "@/calendar/components/header/user-select";
 import { StatusFilter } from "@/calendar/components/header/status-filter";
+import { ActFilter } from "@/calendar/components/header/act-filter";
 import { TodayButton } from "@/calendar/components/header/today-button";
 import { DateNavigator } from "@/calendar/components/header/date-navigator";
 import { useAppointmentDialogs } from "@/calendar/components/dialogs/appointment-dialogs";
@@ -28,55 +29,86 @@ const VIEWS: { view: TCalendarView; icon: AppIcon }[] = [
   { view: "agenda", icon: IconCalendarRange },
 ];
 
+/**
+ * Two rows: where we are (today, the period, its arrows) with the views and
+ * "Nouveau rendez-vous"; then the filters, with a reset once one is on.
+ */
 export function CalendarHeader({ view, events }: IProps) {
-  const { setView, canWrite } = useCalendar();
+  const {
+    setView,
+    canWrite,
+    selectedUserId,
+    setSelectedUserId,
+    selectedStatuses,
+    setSelectedStatuses,
+    selectedActs,
+    setSelectedActs,
+  } = useCalendar();
   const { openCreate } = useAppointmentDialogs();
   const t = useTranslations("agenda");
+  const filtered = selectedUserId !== "all" || selectedStatuses.length > 0 || selectedActs.length > 0;
 
   return (
     // Sized on the agenda's own width (container query), not the window's:
     // next to the sidebar, a wide window can still leave too little room.
-    <div className="@container border-b p-4">
-    <div className="flex flex-col gap-4 @4xl:flex-row @4xl:items-center @4xl:justify-between">
-      <div className="flex items-center gap-3">
-        <TodayButton />
-        <DateNavigator view={view} events={events} />
-      </div>
+    <div className="@container grid gap-3 border-b p-4">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex min-w-0 items-center gap-3">
+          <TodayButton />
+          <DateNavigator view={view} events={events} />
+        </div>
 
-      <div className="flex flex-col items-center gap-1.5 sm:flex-row sm:justify-between">
-        <div className="flex w-full items-center gap-1.5">
-          <div className="inline-flex">
-            {VIEWS.map(({ view: v, icon: Icon }, index) => (
-              <Button
+        <div className="flex items-center gap-2">
+          <div role="group" aria-label={t("views.group")} className="bg-muted inline-flex rounded-lg p-0.5">
+            {VIEWS.map(({ view: v, icon: Icon }) => (
+              <button
                 key={v}
                 type="button"
                 aria-label={t("views.label", { view: t(`views.${v}`).toLowerCase() })}
+                aria-pressed={view === v}
                 title={t(`views.${v}`)}
-                size="icon"
-                variant={view === v ? "default" : "outline"}
                 onClick={() => setView(v)}
                 className={cn(
-                  "[&_svg]:size-5 h-10 !shadow-none",
-                  index === 0 ? "rounded-e-none" : index === VIEWS.length - 1 ? "-ms-px rounded-s-none" : "-ms-px rounded-none",
+                  "flex size-8 items-center justify-center rounded-md transition-colors [&_svg]:size-4.5",
+                  view === v ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground",
                 )}
               >
                 <Icon strokeWidth={1.8} />
-              </Button>
+              </button>
             ))}
           </div>
 
+          {canWrite && (
+            <Button type="button" className="h-9" onClick={() => openCreate()}>
+              <IconPlus />
+              <span className="hidden @lg:inline">{t("newAppointment")}</span>
+            </Button>
+          )}
+        </div>
+      </div>
+
+      <div className="flex flex-wrap items-center gap-2">
+        <div className="grid w-full gap-2 sm:flex sm:w-auto sm:flex-wrap">
           <UserSelect />
           <StatusFilter />
+          <ActFilter />
         </div>
-
-        {canWrite && (
-          <Button type="button" className="w-full sm:w-auto" onClick={() => openCreate()}>
-            <IconPlus />
-            {t("newAppointment")}
+        {filtered && (
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="text-muted-foreground h-9"
+            onClick={() => {
+              setSelectedUserId("all");
+              setSelectedStatuses([]);
+              setSelectedActs([]);
+            }}
+          >
+            <IconClose /> {t("resetFilters")}
           </Button>
         )}
       </div>
-    </div>
     </div>
   );
 }

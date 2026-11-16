@@ -23,6 +23,7 @@ export default defineConfig({
     env: {
       NODE_ENV: 'test',
       DATABASE_URL: `postgresql://${PG}/cabinova_e2e`,
+      MEDICINES_DATABASE_URL: `postgresql://${PG}/medicines_e2e`,
       TENANT_DB_ADMIN_URL: `postgresql://${PG}/postgres`,
       NEON_WS_PROXY: process.env.NEON_WS_PROXY ?? 'localhost:55433',
       // Test-only key (32 zero bytes); never used outside this database.

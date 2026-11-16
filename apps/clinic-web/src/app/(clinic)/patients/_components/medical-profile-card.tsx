@@ -3,7 +3,7 @@
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { toast } from "sonner";
-import { IconEdit, IconHeartPulse, IconLock, IconSpinner, IconWarning } from "@/components/icons";
+import { IconEdit, IconHeartPulse, IconLock, IconSpinner } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import {
 	Dialog,
@@ -29,8 +29,7 @@ const toDraft = (p: Profile | null): Draft => ({
 
 /**
  * Antécédents, doctors only: blood group and the medical history, read as
- * a clean list; edited in a dialog. Allergies stand out — they matter at
- * every visit.
+ * a clean list; edited in a dialog.
  */
 export function MedicalProfile({
 	patientId,
@@ -114,23 +113,12 @@ export function MedicalProfile({
 						</div>
 					)}
 					<dl className="divide-y rounded-xl border">
-						{filled.map((f) => {
-							const alert = "alert" in f && f.alert;
-							return (
-								<div key={f.name} className={cn("grid gap-1 px-4 py-3 rounded-xl", alert && "bg-red-50 text-red-900")}>
-									<dt
-										className={cn(
-											"flex items-center gap-1.5 text-xs font-medium",
-											!alert && "text-muted-foreground",
-										)}
-									>
-										{alert && <IconWarning className="size-3.5" />}
-										{t(`fields.${f.name}`)}
-									</dt>
-									<dd className="text-sm whitespace-pre-line">{profile?.[f.name]}</dd>
-								</div>
-							);
-						})}
+						{filled.map((f) => (
+							<div key={f.name} className="grid gap-1 rounded-xl px-4 py-3">
+								<dt className="text-muted-foreground flex items-center gap-1.5 text-xs font-medium">{t(`fields.${f.name}`)}</dt>
+								<dd className="text-sm whitespace-pre-line">{profile?.[f.name]}</dd>
+							</div>
+						))}
 					</dl>
 					{profile && (
 						<p className="text-muted-foreground text-xs">{t("updatedOn", { date: format.date(profile.updatedAt) })}</p>

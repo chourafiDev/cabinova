@@ -22,11 +22,15 @@ import type { ClinicContext } from '../tenancy/tenancy.service.js';
 import {
   HomonymsQuery,
   ListPatientsQuery,
+  AntecedentsDto,
+  LabResultDto,
+  PermanentNoteDto,
   MedicalProfileDto,
   PatientDto,
   VitalSignsDto,
 } from './dto.js';
 import { PatientsService } from './patients.service.js';
+import { LabResultsService } from './lab-results.service.js';
 import { VitalsService } from './vitals.service.js';
 
 /** The current space's patients, for its staff; antécédents for doctors only. */
@@ -36,6 +40,7 @@ export class PatientsController {
   constructor(
     private readonly patients: PatientsService,
     private readonly vitals: VitalsService,
+    private readonly labResults: LabResultsService,
   ) {}
 
   @Get()
@@ -158,5 +163,71 @@ export class PatientsController {
   ) {
     assertMedical(user);
     return this.patients.saveMedicalProfile(db, space.id, id, dto, user.id);
+  }
+
+  /** Bilan biologique: the patient's results, newest first (doctors only). */
+  @Get(':id/lab-results')
+  listLabResults(
+    @Clinic() { db }: ClinicContext,
+    @CurrentSpace() space: Space,
+    @CurrentUser() user: ClinicUser,
+    @Param('id', ParseUUIDPipe) id: string,
+  ) {
+    assertMedical(user);
+    return this.labResults.list(db, space.id, id);
+  }
+
+  @Activity('patient.lab_result', 'patient')
+  @Post(':id/lab-results')
+  addLabResult(
+    @Clinic() { db }: ClinicContext,
+    @CurrentSpace() space: Space,
+    @CurrentUser() user: ClinicUser,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: LabResultDto,
+  ) {
+    assertMedical(user);
+    return this.labResults.create(db, space.id, id, dto, user.id);
+  }
+
+  @Activity('patient.lab_result_delete', 'patient')
+  @Delete(':id/lab-results/:resultId')
+  removeLabResult(
+    @Clinic() { db }: ClinicContext,
+    @CurrentSpace() space: Space,
+    @CurrentUser() user: ClinicUser,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Param('resultId', ParseUUIDPipe) resultId: string,
+  ) {
+    assertMedical(user);
+    return this.labResults.remove(db, space.id, id, resultId);
+  }
+
+  /** The permanent note alone (autosaved from the dossier). */
+  @Activity('patient.medical_update', 'patient', { hourly: true })
+  @Put(':id/permanent-note')
+  savePermanentNote(
+    @Clinic() { db }: ClinicContext,
+    @CurrentSpace() space: Space,
+    @CurrentUser() user: ClinicUser,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: PermanentNoteDto,
+  ) {
+    assertMedical(user);
+    return this.patients.savePermanentNote(db, space.id, id, dto.permanentNote ?? null, user.id);
+  }
+
+  /** The antécédents note alone (autosaved from the dossier): the structured profile is left as is. */
+  @Activity('patient.medical_update', 'patient', { hourly: true })
+  @Put(':id/antecedents')
+  saveAntecedents(
+    @Clinic() { db }: ClinicContext,
+    @CurrentSpace() space: Space,
+    @CurrentUser() user: ClinicUser,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: AntecedentsDto,
+  ) {
+    assertMedical(user);
+    return this.patients.saveAntecedents(db, space.id, id, dto.antecedents ?? null, user.id);
   }
 }

@@ -19,6 +19,8 @@ export const PERMISSIONS = [
 "support:write",
   "support:all",
   "security:read",
+  "medicines:read",
+  "medicines:write",
   "settings:read",
   "settings:write",
 ] as const;

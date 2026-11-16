@@ -21,6 +21,9 @@ interface ICalendarContext {
   /** The statuses shown; none: every one. */
   selectedStatuses: AppointmentStatus[];
   setSelectedStatuses: (statuses: AppointmentStatus[]) => void;
+  /** The acts shown (by name, as the motif keeps it); none: every one. */
+  selectedActs: string[];
+  setSelectedActs: (acts: string[]) => void;
   badgeVariant: TBadgeVariant;
   setBadgeVariant: (variant: TBadgeVariant) => void;
   /** Practitioners */
@@ -91,6 +94,8 @@ export function CalendarProvider({
   setSelectedUserId,
   selectedStatuses,
   setSelectedStatuses,
+  selectedActs = [],
+  setSelectedActs = () => {},
   canWrite,
   openingHours,
   defaultDuration,
@@ -108,6 +113,9 @@ export function CalendarProvider({
   setSelectedUserId: (userId: IUser["id"] | "all") => void;
   selectedStatuses: AppointmentStatus[];
   setSelectedStatuses: (statuses: AppointmentStatus[]) => void;
+  /** Optional: the agenda filters by act; the dossier's booking doesn't. */
+  selectedActs?: string[];
+  setSelectedActs?: (acts: string[]) => void;
   canWrite: boolean;
   openingHours: OpeningHours;
   defaultDuration: number;
@@ -148,6 +156,8 @@ export function CalendarProvider({
         setSelectedUserId,
         selectedStatuses,
         setSelectedStatuses,
+        selectedActs,
+        setSelectedActs,
         badgeVariant,
         setBadgeVariant,
         users,

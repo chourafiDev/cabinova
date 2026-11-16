@@ -5,9 +5,17 @@ import { IconPill, IconPrinter } from "@/components/icons";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { PastPrescription } from "@/lib/prescriptions";
 import { useFormat } from "@/lib/use-format";
+import { PrintLink } from "@/components/print-dialog";
 
 /** Ordonnance outside a visit: the patient's ordonnances, newest first, each to reprint. */
-export function PrescriptionHistory({ prescriptions }: { prescriptions: PastPrescription[] | undefined }) {
+export function PrescriptionHistory({
+	prescriptions,
+	title,
+}: {
+	prescriptions: PastPrescription[] | undefined;
+	/** Replaces "Ordonnances" (e.g. Traitement in the Interrogatoire tab). */
+	title?: string;
+}) {
 	const t = useTranslations("dossier.prescriptions");
 	const format = useFormat();
 
@@ -25,9 +33,9 @@ export function PrescriptionHistory({ prescriptions }: { prescriptions: PastPres
 	}
 
 	return (
-		<section className="bg-card grid gap-4 rounded-xl border p-5" aria-label={t("title")}>
+		<section className="bg-card grid gap-4 rounded-xl border p-5" aria-label={title ?? t("title")}>
 			<h2 className="flex items-center gap-2 font-semibold">
-				<IconPill className="text-muted-foreground size-4" /> {t("title")}
+				<IconPill className="text-muted-foreground size-4" /> {title ?? t("title")}
 				<span className="text-muted-foreground text-sm font-normal">{written.length}</span>
 			</h2>
 			<ul className="grid gap-3">
@@ -38,14 +46,12 @@ export function PrescriptionHistory({ prescriptions }: { prescriptions: PastPres
 								{format.date(r.date, { weekday: "short", month: "short" })}
 								{r.practitioner && <span className="text-muted-foreground font-normal"> · {r.practitioner}</span>}
 							</p>
-							<a
+							<PrintLink
 								href={`/ordonnances/${r.appointmentId}`}
-								target="_blank"
-								rel="noopener"
 								className="text-primary flex shrink-0 items-center gap-1 text-xs font-medium hover:underline"
 							>
 								<IconPrinter className="size-3.5" /> {t("reprint")}
-							</a>
+							</PrintLink>
 						</div>
 						<ol className="grid gap-1.5 p-3 text-sm">
 							{r.items.map((item, i) => (

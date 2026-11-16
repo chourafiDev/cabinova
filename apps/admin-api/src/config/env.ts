@@ -14,6 +14,12 @@ const envSchema = z
     PORT: z.coerce.number().default(4000),
     /** Neon pooled connection string, catalog database (app role). */
     DATABASE_URL: z.url(),
+    /**
+     * Owner connection to the shared medicines database (the AMMPS list).
+     * Optional: medicines are disabled without it. admin-api migrates and
+     * writes it; clinics read it with their own read-only URL.
+     */
+    MEDICINES_DATABASE_URL: z.url().optional(),
     /** Origin of the Super Admin Next.js app, comma-separated (CORS with credentials). */
     WEB_ORIGIN: z.string().default('http://localhost:3000'),
     /** Express "trust proxy": the Next.js app proxies /api to this server. */

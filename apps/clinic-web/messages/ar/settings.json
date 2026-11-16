@@ -35,6 +35,10 @@
     "activity": {
       "label": "سجل النشاط",
       "hint": "من فعل ماذا"
+    },
+    "medications": {
+      "label": "أدويتي",
+      "hint": "المفضلة، الجرعات، خارج AMMPS"
     }
   },
   "common": {
@@ -91,7 +95,24 @@
     "deleteLabel": "حذف {name}",
     "confirmDelete": "حذف؟",
     "deletedDone": "تم حذف « {name} »",
-    "keptArchived": "سبق تحصيل « {name} »: تمت أرشفته للحفاظ على السجل."
+    "keptArchived": "سبق تحصيل « {name} »: تمت أرشفته للحفاظ على السجل.",
+    "colorTitle": "اللون في الأجندة",
+    "colorHint": "تأخذ مواعيد هذا العمل هذا اللون في الأجندة.",
+    "colorLabel": "اللون: {color}",
+    "colorAuto": "لون يُختار تلقائيًا",
+    "colors": {
+      "blue": "أزرق",
+      "green": "أخضر",
+      "purple": "بنفسجي",
+      "orange": "برتقالي",
+      "amber": "كهرماني",
+      "yellow": "أصفر",
+      "red": "أحمر",
+      "brand": "برقوقي",
+      "gray": "رمادي",
+      "custom": "مخصص"
+    },
+    "colorCode": "الرمز"
   },
   "activity": {
     "title": "سجل النشاط",
@@ -177,7 +198,13 @@
       "patient_vitals": "سجّل المؤشرات الحيوية لـ",
       "patient_vitals_delete": "حذف قياسًا من المؤشرات الحيوية لـ",
       "document_upload": "أضاف وثيقة إلى ملف",
-      "document_delete": "حذف وثيقة من ملف"
+      "document_delete": "حذف وثيقة من ملف",
+      "patient_lab_result": "أضاف نتيجة إلى التحاليل البيولوجية لـ",
+      "patient_lab_result_delete": "حذف نتيجة من التحاليل البيولوجية لـ",
+      "lab_request_create": "حرّر طلب تحاليل بيولوجية لـ",
+      "lab_request_update": "عدّل طلب تحاليل بيولوجية لـ",
+      "letter_create": "حرّر رسالة أو تقريرًا لـ",
+      "letter_update": "عدّل رسالة أو تقريرًا لـ"
     }
   },
   "cabinet": {
@@ -366,5 +393,91 @@
     "count": "{closed, plural, zero {لا توجد عطلة مغلقة} one {عطلة واحدة مغلقة} two {عطلتان مغلقتان} few {# عطل مغلقة} many {# عطلة مغلقة} other {# عطلة مغلقة}} من {total}",
     "hint": "المواعيد المحجوزة في هذه الأيام لا تُلغى.",
     "saved": "تم حفظ العطل الرسمية"
+  },
+  "medications": {
+    "search": "ابحث في أدويتي…",
+    "noMatch": "لا يوجد دواء مطابق.",
+    "loadError": "تعذر تحميل أدويتك.",
+    "error": "تعذر تنفيذ الإجراء، حاول مرة أخرى.",
+    "saved": "تم الحفظ",
+    "edit": "تعديل",
+    "favorite": "إضافة إلى المفضلة",
+    "unfavorite": "إزالة من المفضلة",
+    "favorited": "أضيف إلى المفضلة",
+    "unfavorited": "أزيل من المفضلة",
+    "hidden": "مخفي",
+    "privacy": "هذه الإعدادات خاصة بك: لا يراها باقي أطباء العيادة. الوصفات المحررة لا تتغير أبداً.",
+    "updates": {
+      "title": "{count, plural, one {تحديث واحد من AMMPS للمراجعة} two {تحديثان من AMMPS للمراجعة} few {# تحديثات من AMMPS للمراجعة} many {# تحديثاً من AMMPS للمراجعة} other {# تحديث من AMMPS للمراجعة}}",
+      "description": "غيّرت AMMPS اسم أو جرعة أدوية أعدت تسميتها.",
+      "yours": "تسميتك:",
+      "ammpsBefore": "AMMPS:",
+      "accept": "اعتماد القيمة الجديدة",
+      "keep": "الاحتفاظ بتسميتي",
+      "accepted": "تم اعتماد قيمة AMMPS الجديدة",
+      "kept": "تم الاحتفاظ بتسميتك"
+    },
+    "ammps": {
+      "title": "أدوية قائمة AMMPS",
+      "description": "تسميتك، جرعتك المعتادة، مفضلتك والأدوية المخفية من اقتراحاتك.",
+      "add": "تخصيص دواء",
+      "empty": "لا شيء حالياً. ضع نجمة من الوصفة، أو خصّص دواءً هنا.",
+      "officialName": "اسم AMMPS: {name}",
+      "removed": "لم يعد في القائمة",
+      "withdrawn": "سُحب من السوق",
+      "updated": "حدّثته AMMPS",
+      "revert": "العودة إلى قيم AMMPS",
+      "confirmRevert": "تأكيد: مسح إعداداتك لهذا الدواء",
+      "reverted": "تمت العودة إلى قيم AMMPS"
+    },
+    "custom": {
+      "title": "أدوية خارج قائمة AMMPS",
+      "description": "مستحضرات صيدلانية، منتجات مستوردة… تُقترح في وصفاتك كغيرها.",
+      "add": "إضافة",
+      "empty": "لا توجد أدوية خارج القائمة. يمكنك أيضاً إضافتها من الوصفة.",
+      "created": "تمت إضافة « {name} » إلى أدويتك",
+      "deleted": "تم حذف « {name} »",
+      "delete": "حذف {name}",
+      "confirmDelete": "تأكيد حذف {name}"
+    },
+    "picker": {
+      "title": "تخصيص دواء",
+      "description": "ابحث عنه في قائمة AMMPS بالاسم أو الجرعة أو المادة الفعالة.",
+      "placeholder": "Doliprane 1g، amlodipine…",
+      "searching": "جارٍ البحث…",
+      "none": "لا يوجد دواء مطابق.",
+      "unavailable": "قائمة AMMPS غير متاحة حالياً."
+    },
+    "override": {
+      "description": "اترك الحقل فارغاً للاحتفاظ بقيمة AMMPS.",
+      "name": "تسميتك",
+      "dosage": "الجرعة",
+      "posology": "الجرعة المعتادة",
+      "posologyPlaceholder": "قرص صباحاً ومساءً",
+      "duration": "المدة المعتادة",
+      "durationPlaceholder": "7 أيام",
+      "favorite": "مفضل",
+      "favoriteHint": "يُقترح أولاً في وصفاتك.",
+      "hidden": "إخفاء من اقتراحاتي",
+      "hiddenHint": "لن يظهر عند كتابة اسم.",
+      "cancel": "إلغاء",
+      "save": "حفظ"
+    },
+    "customForm": {
+      "newTitle": "دواء جديد خارج القائمة",
+      "editTitle": "تعديل الدواء",
+      "description": "الاسم وحده إلزامي.",
+      "name": "الاسم",
+      "namePlaceholder": "كريم مستحضر يوريا 10 %",
+      "dosage": "الجرعة",
+      "form": "الشكل",
+      "formPlaceholder": "كريم، شراب، كبسولة…",
+      "substances": "المادة/المواد الفعالة",
+      "posology": "الجرعة المعتادة",
+      "duration": "المدة المعتادة",
+      "favorite": "مفضل",
+      "cancel": "إلغاء",
+      "save": "حفظ"
+    }
   }
 }

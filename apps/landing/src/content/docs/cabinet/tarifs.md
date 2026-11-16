@@ -4,7 +4,12 @@ Réservé au médecin responsable, depuis **Paramètres › Tarifs**. Les tarifs
 
 1. Cliquez sur **Nouvel acte**.
 2. Saisissez son nom et son prix en MAD, par exemple `250` ou `250,50`.
-3. Validez.
+3. Choisissez sa couleur avec la pastille à gauche du nom, ou laissez Cabinova en choisir une.
+4. Validez.
+
+## La couleur dans l’agenda
+
+Chaque acte a une couleur. Dans l’agenda, un rendez-vous prend la couleur de l’acte choisi comme motif. Un rendez-vous sans motif, ou avec un motif qui n’est pas un acte, reste gris.
 
 ## Modifier un tarif
 

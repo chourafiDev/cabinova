@@ -2,7 +2,10 @@ import { Transform, Type } from 'class-transformer';
 import {
   ArrayMaxSize,
   IsArray,
+  IsInt,
   IsOptional,
+  IsPositive,
+  IsUUID,
   IsString,
   MaxLength,
   MinLength,
@@ -35,6 +38,17 @@ export class PrescriptionItemDto {
   @IsString()
   @MaxLength(100)
   duration?: string | null;
+
+  /** Where the line was picked from (AMMPS list), if it was. */
+  @IsOptional()
+  @IsInt()
+  @IsPositive()
+  ammpsId?: number | null;
+
+  /** …or the doctor's own medicines. */
+  @IsOptional()
+  @IsUUID()
+  customMedicationId?: string | null;
 }
 
 /** The whole ordonnance, as the doctor's form sends it on every save. */
@@ -50,4 +64,10 @@ export class PrescriptionDto {
   @IsString()
   @MaxLength(2000)
   notes?: string | null;
+
+  /** The ordonnance reworded in the editor (rich text), printed as is; null = the lines. */
+  @IsOptional()
+  @IsString()
+  @MaxLength(50000)
+  body?: string | null;
 }

@@ -58,9 +58,7 @@
       "prescriptions": "الوصفات الطبية",
       "certificates": "الشهادات الطبية"
     },
-    "knownAllergies": "حساسية معروفة",
     "archivedOn": "أُرشف الملف بتاريخ {date}: يمكن الاطلاع عليه دون تعديله. استعده لتعديله أو تحديد موعد.",
-    "allergies": "الحساسية",
     "nextAppointment": "الموعد القادم",
     "nextAt": "{day} على الساعة {time}",
     "noAppointment": "لا يوجد موعد مقرر",
@@ -77,7 +75,7 @@
     "emergency": "جهة اتصال للطوارئ",
     "nameAndLink": "الاسم وصلة القرابة",
     "phone": "الهاتف",
-    "note": "ملاحظة إدارية",
+    "note": "ملاحظة دائمة",
     "createdOn": "أُنشئ الملف بتاريخ {date}",
     "updatedOn": "عُدّل بتاريخ {date}",
     "noAppointments": "لا توجد مواعيد لهذا المريض.",
@@ -115,7 +113,7 @@
     "privateLine": "مرئي فقط لأطباء العيادة",
     "edit": "تعديل",
     "empty": "لا توجد سوابق مسجلة",
-    "emptyHint": "الحساسية، العلاجات، الأمراض المزمنة، فصيلة الدم…",
+    "emptyHint": "العلاجات، فصيلة الدم…",
     "fill": "إدخال السوابق",
     "bloodGroup": "فصيلة الدم",
     "updatedOn": "آخر تحديث {date}",
@@ -125,9 +123,7 @@
     "cancel": "إلغاء",
     "save": "حفظ",
     "fields": {
-      "allergies": "الحساسية",
       "currentTreatments": "العلاجات الحالية",
-      "chronicConditions": "الأمراض المزمنة",
       "medicalHistory": "السوابق الطبية",
       "surgicalHistory": "السوابق الجراحية",
       "familyHistory": "السوابق العائلية",
@@ -136,9 +132,7 @@
       "gynecoHistory": "السوابق النسائية والتوليدية"
     },
     "placeholders": {
-      "allergies": "أدوية، أطعمة… أو «لا شيء معروف»",
       "currentTreatments": "الدواء، الجرعة، التكرار",
-      "chronicConditions": "السكري، ارتفاع الضغط، الربو…",
       "riskFactors": "سمنة، قلة الحركة، ضغط دم وراثي…",
       "toxicHabits": "التدخين، الكحول، مواد أخرى",
       "gynecoHistory": "عدد الحمل والولادات، آخر حيض، منع الحمل، سن اليأس…"
@@ -169,8 +163,6 @@
     "emergency": "جهة اتصال للطوارئ",
     "nameAndLink": "الاسم وصلة القرابة",
     "nameAndLinkPlaceholder": "أحمد (الزوج)",
-    "note": "ملاحظة إدارية",
-    "notePlaceholder": "معلومات عملية للاستقبال. لا معلومات طبية هنا: مكانها في السوابق.",
     "required": "إجباري",
     "toSave": "للحفظ",
     "cancel": "إلغاء",

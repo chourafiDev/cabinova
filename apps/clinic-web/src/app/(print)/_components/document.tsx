@@ -1,7 +1,6 @@
 import type { ReactNode } from "react";
 import { formatRib, type QuoteDocument } from "@/lib/billing";
 import { formatMad } from "@/lib/format";
-import { PrintButton } from "../receipts/[id]/print-button";
 
 type Party = Pick<QuoteDocument, "cabinet" | "issuer">;
 
@@ -24,9 +23,6 @@ export function BillingDocument({
 	const { cabinet: c, issuer } = party;
 	return (
 		<div className="mx-auto max-w-3xl px-4 print:max-w-none print:px-0">
-			<div className="mb-4 flex justify-end print:hidden">
-				<PrintButton />
-			</div>
 			<article className="paper relative overflow-hidden rounded-xl border bg-white p-10 text-sm text-zinc-900 shadow-sm print:rounded-none print:border-0 print:shadow-none">
 				{stamp && (
 					<span

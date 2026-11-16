@@ -164,6 +164,81 @@ describe('clinic: certificates', () => {
     await cab(secretary).post(`/certificates/${given.id}/cancel`).expect(403);
   });
 
+  it('keeps where an ordonnance line was picked from, as a snapshot', async () => {
+    const { body: me } = await cab(owner).get('/auth/me').expect(200);
+    const { body: visit } = await cab(owner)
+      .post('/appointments')
+      .send({
+        patientId,
+        practitionerId: me.user.id,
+        startsAt: '2026-11-11T10:00:00+00:00',
+        endsAt: '2026-11-11T10:30:00+00:00',
+        reason: 'Consultation',
+      })
+      .expect(201);
+    const items = [
+      { medication: 'DOLIPRANE 1 G, comprimé', posology: '1 cp x 3 / j', duration: '5 jours', ammpsId: 563 },
+      {
+        medication: 'Crème magistrale',
+        posology: null,
+        duration: null,
+        customMedicationId: '0b7f5c1e-3a52-4c3e-9d0e-6f1a2b3c4d5e',
+      },
+      { medication: 'Vitamine D', posology: null, duration: null },
+    ];
+    await cab(owner).put(`/prescriptions/visit/${visit.id}`).send({ items }).expect(200);
+    const { body } = await cab(owner).get(`/prescriptions/visit/${visit.id}`).expect(200);
+    expect(body.prescription.items).toEqual(items);
+
+    for (const bad of [{ ammpsId: 'abc' }, { ammpsId: -1 }, { customMedicationId: 'nope' }]) {
+      await cab(owner)
+        .put(`/prescriptions/visit/${visit.id}`)
+        .send({ items: [{ medication: 'X', ...bad }] })
+        .expect(400);
+    }
+  });
+
+  it('prints the ordonnance as the doctor reworded it, cleaned', async () => {
+    const { body: me } = await cab(owner).get('/auth/me').expect(200);
+    const { body: visit } = await cab(owner)
+      .post('/appointments')
+      .send({
+        patientId,
+        practitionerId: me.user.id,
+        startsAt: '2026-11-12T10:00:00+00:00',
+        endsAt: '2026-11-12T10:30:00+00:00',
+        reason: 'Consultation',
+      })
+      .expect(201);
+    const items = [{ medication: 'Amoxicilline 1 g', posology: '1 cp x 2 / j', duration: '7 jours' }];
+
+    // An empty editor is no rewording: the lines are printed.
+    await cab(owner).put(`/prescriptions/visit/${visit.id}`).send({ items, body: '<p></p>' }).expect(200);
+    expect((await cab(owner).get(`/prescriptions/visit/${visit.id}`).expect(200)).body.prescription.body).toBeNull();
+
+    const { body: saved } = await cab(owner)
+      .put(`/prescriptions/visit/${visit.id}`)
+      .send({
+        items,
+        body: '<ol><li><p><strong>Amoxicilline 1 g</strong></p><p>1 cp matin et soir, au milieu du repas</p></li></ol><script>alert(1)</script><img src=x onerror=alert(1)>',
+      })
+      .expect(200);
+    expect(saved.body).toBe(
+      '<ol><li><p><strong>Amoxicilline 1 g</strong></p><p>1 cp matin et soir, au milieu du repas</p></li></ol>',
+    );
+    expect(saved.items).toEqual(items);
+
+    const { body: printed } = await cab(secretary).get(`/prescriptions/visit/${visit.id}/print`).expect(200);
+    expect(printed.body).toBe(saved.body);
+
+    // Only the reworded text, no line: still printable.
+    await cab(owner)
+      .put(`/prescriptions/visit/${visit.id}`)
+      .send({ items: [], body: '<p>Repos et hydratation.</p>' })
+      .expect(200);
+    await cab(secretary).get(`/prescriptions/visit/${visit.id}/print`).expect(200);
+  });
+
   it("keeps each doctor's own models", async () => {
     await cab(secretary).get('/certificate-models').expect(403);
     const { body: model } = await cab(owner)
@@ -186,5 +261,80 @@ describe('clinic: certificates', () => {
     ]);
     await cab(owner).delete(`/certificate-models/${model.id}`).expect(204);
     await cab(owner).delete(`/certificate-models/${model.id}`).expect(404);
+  });
+
+  it('writes a bilan biologique, prints it and keeps the doctor\'s own bilans', async () => {
+    const bilan = {
+      patientId,
+      body: '<p><strong>Prière de faire :</strong></p><ul><li>NFS</li><li>Bilan lipidique</li></ul><script>x</script>',
+    };
+    await cab(secretary).post('/lab-requests').send(bilan).expect(403);
+    const { body: written } = await cab(owner).post('/lab-requests').send(bilan).expect(201);
+    expect(written.body).toBe(
+      '<p><strong>Prière de faire :</strong></p><ul><li>NFS</li><li>Bilan lipidique</li></ul>',
+    );
+    const { body: empty } = await cab(owner)
+      .post('/lab-requests')
+      .send({ patientId, body: '<p></p>' })
+      .expect(400);
+    expect(empty.code).toBe('LAB_REQUEST_EMPTY');
+
+    // Corrected after saving; the desk prints it.
+    const { body: corrected } = await cab(owner)
+      .put(`/lab-requests/${written.id}`)
+      .send({ body: '<ul><li>NFS</li><li>CRP</li></ul>' })
+      .expect(200);
+    expect(corrected.body).toBe('<ul><li>NFS</li><li>CRP</li></ul>');
+    const { body: printed } = await cab(secretary).get(`/lab-requests/${written.id}/print`).expect(200);
+    expect(printed).toMatchObject({ body: corrected.body, patient: { firstName: expect.any(String) } });
+    expect(printed.cabinet.name).toEqual(expect.any(String));
+    const { body: history } = await cab(owner).get('/lab-requests').query({ patientId }).expect(200);
+    expect(history.map((r: { id: string }) => r.id)).toEqual([written.id]);
+
+    // The doctor's own bilans: unique names, theirs only.
+    const { body: model } = await cab(owner)
+      .post('/lab-request-models')
+      .send({ name: 'Bilan prénatal T1', body: '<ul><li>Groupe sanguin</li></ul>' })
+      .expect(201);
+    await cab(owner)
+      .post('/lab-request-models')
+      .send({ name: 'bilan prénatal t1', body: '<ul><li>x</li></ul>' })
+      .expect(409);
+    await cab(secretary).get('/lab-request-models').expect(403);
+    expect((await cab(owner).get('/lab-request-models').expect(200)).body).toHaveLength(1);
+    await cab(owner).delete(`/lab-request-models/${model.id}`).expect(204);
+    expect((await cab(owner).get('/lab-request-models').expect(200)).body).toHaveLength(0);
+  });
+
+  it('writes a letter, corrects it and lets the desk print it', async () => {
+    const letter = { patientId, body: '<p>Cher confrère,</p><p>Je vous adresse <strong>M. X</strong>.</p><img src=x onerror=alert(1)>' };
+    await cab(secretary).post('/letters').send(letter).expect(403);
+    const { body: written } = await cab(owner).post('/letters').send(letter).expect(201);
+    expect(written.body).toBe('<p>Cher confrère,</p><p>Je vous adresse <strong>M. X</strong>.</p>');
+    await cab(owner).post('/letters').send({ patientId, body: '<p> </p>' }).expect(400);
+    const { body: corrected } = await cab(owner)
+      .put(`/letters/${written.id}`)
+      .send({ body: '<p>Chère consœur,</p>' })
+      .expect(200);
+    expect(corrected.body).toBe('<p>Chère consœur,</p>');
+    const { body: printed } = await cab(secretary).get(`/letters/${written.id}/print`).expect(200);
+    expect(printed.body).toBe(corrected.body);
+    const { body: history } = await cab(owner).get('/letters').query({ patientId }).expect(200);
+    expect(history.map((l: { id: string }) => l.id)).toEqual([written.id]);
+
+    // Comptes rendus: the same, listed apart.
+    const { body: report } = await cab(owner)
+      .post('/letters')
+      .send({ patientId, kind: 'report', body: '<p>Examen normal.</p>' })
+      .expect(201);
+    expect(report.kind).toBe('report');
+    const { body: reports } = await cab(owner)
+      .get('/letters')
+      .query({ patientId, kind: 'report' })
+      .expect(200);
+    expect(reports.map((l: { id: string }) => l.id)).toEqual([report.id]);
+    const { body: lettersOnly } = await cab(owner).get('/letters').query({ patientId }).expect(200);
+    expect(lettersOnly.map((l: { id: string }) => l.id)).toEqual([written.id]);
+    await cab(owner).post('/letters').send({ patientId, kind: 'memo', body: '<p>x</p>' }).expect(400);
   });
 });

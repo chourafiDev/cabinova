@@ -12,6 +12,7 @@ import {
 import type { IEvent } from "@/calendar/interfaces";
 import { WEEK } from "@/calendar/locale";
 import type { TCalendarView, TEventColor } from "@/calendar/types";
+import type { ActColor } from "./payments";
 
 // Types and helpers of the Appointments API (clinic-api/src/appointments).
 
@@ -26,7 +27,7 @@ export const APPOINTMENT_STATUSES = [
 ] as const;
 export type AppointmentStatus = (typeof APPOINTMENT_STATUSES)[number];
 
-/** Event colour on the agenda = status. */
+/** A status's colour: badges, the status filter. Agenda events wear their act's colour instead. */
 export const STATUS_COLORS: Record<AppointmentStatus, TEventColor> = {
 	scheduled: "blue",
 	confirmed: "purple",
@@ -39,6 +40,9 @@ export const STATUS_COLORS: Record<AppointmentStatus, TEventColor> = {
 	cancelled: "red",
 };
 
+/** Absent or cancelled: still on the agenda (faded) without taking the slot, whatever the act's colour. */
+export const released = (e: { status?: AppointmentStatus }) => e.status === "no_show" || e.status === "cancelled";
+
 export type Appointment = {
 	id: string;
 	startsAt: string;
@@ -47,6 +51,8 @@ export type Appointment = {
 	reason: string | null;
 	/** The act's abbreviation (Paramètres › Tarifs), when the reason is one of them. */
 	reasonShort: string | null;
+	/** The act's colour on the agenda, when the reason is one of them. */
+	reasonColor: ActColor | null;
 	notes: string | null;
 	/** Checked in at the front desk (waiting room order). */
 	arrivedAt: string | null;
@@ -99,7 +105,8 @@ export const toEvent = (a: Appointment): IEvent => ({
 	startDate: a.startsAt,
 	endDate: a.endsAt,
 	title: `${a.patient.lastName.toUpperCase()} ${a.patient.firstName}`,
-	color: STATUS_COLORS[a.status],
+	// The act's colour; a motif that isn't an act (or none) in grey.
+	color: a.reasonColor ?? "gray",
 	description: a.reason ?? "",
 	user: { id: a.practitioner.id, name: a.practitioner.name, picturePath: null },
 	status: a.status,

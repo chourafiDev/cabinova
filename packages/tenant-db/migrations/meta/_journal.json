@@ -211,6 +211,97 @@
       "when": 1794044303894,
       "tag": "0029_staff_chat",
       "breakpoints": true
+    },
+    {
+      "idx": 30,
+      "version": "7",
+      "when": 1794657591732,
+      "tag": "0030_act_color",
+      "breakpoints": true
+    },
+    {
+      "idx": 31,
+      "version": "7",
+      "when": 1794658689119,
+      "tag": "0031_rich_dossier",
+      "breakpoints": true
+    },
+    {
+      "idx": 32,
+      "version": "7",
+      "when": 1794658931848,
+      "tag": "0032_rich_diagnosis",
+      "breakpoints": true
+    },
+    {
+      "idx": 33,
+      "version": "7",
+      "when": 1794659961678,
+      "tag": "0033_lab_results",
+      "breakpoints": true
+    },
+    {
+      "idx": 34,
+      "version": "7",
+      "when": 1794666503027,
+      "tag": "0034_lab_requests",
+      "breakpoints": true
+    },
+    {
+      "idx": 35,
+      "version": "7",
+      "when": 1794668377189,
+      "tag": "0035_letters",
+      "breakpoints": true
+    },
+    {
+      "idx": 36,
+      "version": "7",
+      "when": 1794669127747,
+      "tag": "0036_letter_kind",
+      "breakpoints": true
+    },
+    {
+      "idx": 37,
+      "version": "7",
+      "when": 1794682656302,
+      "tag": "0037_drop_allergies",
+      "breakpoints": true
+    },
+    {
+      "idx": 38,
+      "version": "7",
+      "when": 1794682901236,
+      "tag": "0038_drop_chronic_conditions",
+      "breakpoints": true
+    },
+    {
+      "idx": 39,
+      "version": "7",
+      "when": 1794687403624,
+      "tag": "0039_charge_mutuelle",
+      "breakpoints": true
+    },
+    {
+      "idx": 40,
+      "version": "7",
+      "when": 1794695045158,
+      "tag": "0040_act_custom_color",
+      "breakpoints": true
+    },
+    {
+      "idx": 41,
+      "version": "7",
+      "when": 1794846757026,
+      "tag": "0041_medication_overrides",
+      "breakpoints": true
+    },
+    {
+      "idx": 42,
+      "version": "7",
+      "when": 1794853243224,
+      "tag": "0042_prescription_body",
+      "breakpoints": true
     }
   ]
 }

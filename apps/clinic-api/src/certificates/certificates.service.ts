@@ -6,19 +6,8 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import sanitizeHtml from 'sanitize-html';
+import { cleanBody } from '../common/rich-text.js';
 import type { CertificateDto, CertificateModelDto } from './dto.js';
-
-/**
- * What a certificate may hold: the editor's formatting, nothing else (it is
- * printed as HTML, so no scripts, links or images get through).
- */
-export function cleanBody(html: string) {
-  return sanitizeHtml(html, {
-    allowedTags: ['p', 'br', 'strong', 'b', 'em', 'i', 'u', 's', 'ul', 'ol', 'li'],
-    allowedAttributes: { p: ['style'], li: ['style'] },
-    allowedStyles: { '*': { 'text-align': [/^(left|right|center|justify)$/] } },
-  }).trim();
-}
 
 /** Text left once the tags are gone: an empty editor gives "<p></p>". */
 const isEmpty = (html: string) =>

@@ -18,6 +18,7 @@ import {
   Danger,
   DocumentDownload,
   DocumentText,
+  DocumentUpload,
   Driver,
   Edit2,
   Element4,
@@ -99,6 +100,7 @@ import {
   LuLoaderCircle,
   LuMinus,
   LuPanelLeft,
+  LuPill,
   LuPlus,
   LuPower,
   LuStethoscope,
@@ -144,6 +146,7 @@ export const IconCoupon = bulk(TicketDiscount);
 export const IconDashboard = bulk(Category);
 export const IconDocument = bulk(DocumentText);
 export const IconDownload = bulk(DocumentDownload);
+export const IconUpload = bulk(DocumentUpload);
 export const IconEdit = bulk(Edit2);
 export const IconError = bulk(CloseCircle);
 export const IconExternal = bulk(ExportSquare);
@@ -218,6 +221,7 @@ export const IconMinus: AppIcon = LuMinus;
 export const IconMore: AppIcon = LuEllipsis;
 export const IconMoreVertical: AppIcon = LuEllipsisVertical;
 export const IconPending: AppIcon = LuCircleDashed;
+export const IconPill: AppIcon = LuPill;
 export const IconPlus: AppIcon = LuPlus;
 export const IconPower: AppIcon = LuPower;
 export const IconSidebar: AppIcon = LuPanelLeft;

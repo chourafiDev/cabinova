@@ -6,6 +6,7 @@ import { isReleased } from "@/calendar/helpers";
 import { cn } from "@/lib/utils";
 
 import type { IEvent } from "@/calendar/interfaces";
+import { CUSTOM_SOLID, customColorStyle, isCustomColor } from "@/calendar/colors";
 
 interface IProps {
   day: number;
@@ -55,8 +56,10 @@ export function YearViewDayCell({ day, date, events }: IProps) {
                   event.color === "orange" && "bg-orange-600",
                   event.color === "amber" && "bg-amber-500",
                   event.color === "brand" && "bg-primary",
-                  event.color === "gray" && "bg-neutral-600"
+                  event.color === "gray" && "bg-neutral-600",
+                  isCustomColor(event.color) && CUSTOM_SOLID
                 )}
+                style={customColorStyle(event.color)}
               />
             ))
           ) : (

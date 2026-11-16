@@ -146,11 +146,11 @@ describe('clinic: activity log', () => {
   it('notes a medical change, never its content', async () => {
     await cab(owner)
       .put(`/patients/${patientId}/medical-profile`)
-      .send({ allergies: 'Pénicilline-secrète' })
+      .send({ currentTreatments: 'Sintrom-secret' })
       .expect(200);
     const { data } = await journal();
     expect(has(data, 'patient.medical_update')[0].target).toBe('ALAOUI Omar');
-    expect(JSON.stringify(data)).not.toContain('Pénicilline');
+    expect(JSON.stringify(data)).not.toContain('Sintrom');
   });
 
   it('keeps the name of what was deleted', async () => {

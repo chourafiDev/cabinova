@@ -3,7 +3,6 @@ import { formatDate } from "@/lib/format";
 import { formatFileNumber } from "@/lib/patients";
 import { mad, madInWords, METHOD_LABELS, type Receipt } from "@/lib/payments";
 import { apiGet } from "@/lib/server-api";
-import { PrintButton } from "./print-button";
 
 export async function generateMetadata({ params }: PageProps<"/receipts/[id]">): Promise<Metadata> {
 	const receipt = await apiGet<Receipt>(`/payments/${(await params).id}/receipt`);
@@ -30,9 +29,6 @@ export default async function ReceiptPage({ params }: PageProps<"/receipts/[id]"
 
 	return (
 		<div className="mx-auto max-w-2xl px-4 print:max-w-none print:px-0">
-			<div className="mb-4 flex justify-end print:hidden">
-				<PrintButton />
-			</div>
 			<article className="paper relative overflow-hidden rounded-xl border bg-white p-10 text-sm text-zinc-900 shadow-sm print:rounded-none print:border-0 print:p-6 print:shadow-none">
 				{r.cancelledAt && (
 					<span className="absolute end-10 top-10 rotate-6 rounded-md border-2 border-red-600 px-3 py-1 text-base font-bold uppercase tracking-wider text-red-700">

@@ -1,5 +1,6 @@
 import { fmt } from "@/calendar/locale";
 import { cva } from "class-variance-authority";
+import { colorVariant, CUSTOM_DOT, CUSTOM_TINT, customColorStyle } from "@/calendar/colors";
 import { differenceInMinutes, parseISO } from "date-fns";
 
 import { useCalendar } from "@/calendar/contexts/calendar-context";
@@ -13,6 +14,7 @@ import type { HTMLAttributes } from "react";
 import type { IEvent } from "@/calendar/interfaces";
 import type { VariantProps } from "class-variance-authority";
 import { Abbreviation } from "@/components/act-picker";
+import { released } from "@/lib/appointments";
 
 const calendarWeekEventCardVariants = cva(
   "flex select-none flex-col gap-0.5 truncate whitespace-nowrap rounded-md border px-2 py-1.5 text-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
@@ -40,6 +42,9 @@ const calendarWeekEventCardVariants = cva(
         "purple-dot": "bg-neutral-50 dark:bg-neutral-900 [&_.event-dot]:fill-purple-600",
         "yellow-dot": "bg-neutral-50 dark:bg-neutral-900 [&_.event-dot]:fill-yellow-600",
         "gray-dot": "bg-neutral-50 dark:bg-neutral-900 [&_.event-dot]:fill-neutral-600",
+        // An act's custom colour (calendar/colors.ts).
+        custom: CUSTOM_TINT,
+        "custom-dot": CUSTOM_DOT,
       },
     },
     defaultVariants: {
@@ -60,9 +65,9 @@ export function EventBlock({ event, className }: IProps) {
   const durationInMinutes = differenceInMinutes(end, start);
   const heightInPixels = (durationInMinutes / 60) * 96 - 8;
 
-  const color = (badgeVariant === "dot" ? `${event.color}-dot` : event.color) as VariantProps<typeof calendarWeekEventCardVariants>["color"];
+  const color = colorVariant(event.color, badgeVariant === "dot") as VariantProps<typeof calendarWeekEventCardVariants>["color"];
 
-  const calendarWeekEventCardClasses = cn(calendarWeekEventCardVariants({ color, className }), durationInMinutes < 35 && "py-0 justify-center");
+  const calendarWeekEventCardClasses = cn(calendarWeekEventCardVariants({ color, className }), durationInMinutes < 35 && "py-0 justify-center", released(event) && "opacity-60");
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" || e.key === " ") {
@@ -74,7 +79,7 @@ export function EventBlock({ event, className }: IProps) {
   return (
     <DraggableEvent event={event}>
       <EventDetailsTrigger event={event}>
-        <div role="button" tabIndex={0} className={calendarWeekEventCardClasses} style={{ height: `${heightInPixels}px` }} onKeyDown={handleKeyDown}>
+        <div role="button" tabIndex={0} className={calendarWeekEventCardClasses} style={{ ...customColorStyle(event.color), height: `${heightInPixels}px` }} onKeyDown={handleKeyDown}>
           <div className="flex items-center gap-1.5 truncate">
             {["mixed", "dot"].includes(badgeVariant) && (
               <svg width="8" height="8" viewBox="0 0 8 8" className="event-dot shrink-0">
